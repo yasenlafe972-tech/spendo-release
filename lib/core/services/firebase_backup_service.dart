@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -93,15 +94,45 @@ class RestoreResult {
 
 class FirebaseBackupService {
   static final FirebaseBackupService instance = FirebaseBackupService._internal();
+
   FirebaseBackupService._internal() {
     try {
-      _firestore.settings = const Settings(persistenceEnabled: true);
+      if (isFirebaseReady) {
+        _firestore?.settings = const Settings(persistenceEnabled: true);
+      }
     } catch (_) {}
     _initAutoBackup();
   }
 
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final FirebaseAuth _auth = FirebaseAuth.instance;
+  /// Whether Firebase is initialized and ready to use
+  bool get isFirebaseReady {
+    try {
+      return Firebase.apps.isNotEmpty;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  /// Lazy, safe getter for Firestore (returns null if Firebase is not initialized)
+  FirebaseFirestore? get _firestore {
+    try {
+      if (isFirebaseReady) {
+        return FirebaseFirestore.instance;
+      }
+    } catch (_) {}
+    return null;
+  }
+
+  /// Lazy, safe getter for FirebaseAuth (returns null if Firebase is not initialized)
+  FirebaseAuth? get _auth {
+    try {
+      if (isFirebaseReady) {
+        return FirebaseAuth.instance;
+      }
+    } catch (_) {}
+    return null;
+  }
+
   final DatabaseHelper _dbHelper = DatabaseHelper.instance;
   final FlutterSecureStorage _secureStorage = const FlutterSecureStorage();
 
@@ -210,10 +241,14 @@ class FirebaseBackupService {
       debugPrint('Error getting backup key from profile: $e');
     }
 
-    final user = _auth.currentUser;
-    if (user != null && user.uid.isNotEmpty) {
-      return 'uid_${user.uid}';
-    }
+    try {
+      if (isFirebaseReady) {
+        final user = _auth?.currentUser;
+        if (user != null && user.uid.isNotEmpty) {
+          return 'uid_${user.uid}';
+        }
+      }
+    } catch (_) {}
     return 'spendo_primary_user';
   }
 
@@ -346,14 +381,16 @@ class FirebaseBackupService {
 
       // 4. Non-blocking sync to Cloud Firestore if available
       try {
-        unawaited(_firestore
-            .collection('spendo_backups')
-            .doc(backupKey)
-            .set(backupData, SetOptions(merge: true))
-            .then((_) => debugPrint('>>> [Backup] Cloud Firestore sync succeeded!'))
-            .catchError((e) {
-          debugPrint('Firestore sync notice (non-blocking): $e');
-        }));
+        if (isFirebaseReady && _firestore != null) {
+          unawaited(_firestore!
+              .collection('spendo_backups')
+              .doc(backupKey)
+              .set(backupData, SetOptions(merge: true))
+              .then((_) => debugPrint('>>> [Backup] Cloud Firestore sync succeeded!'))
+              .catchError((e) {
+            debugPrint('Firestore sync notice (non-blocking): $e');
+          }));
+        }
       } catch (_) {}
 
       final successMsg = cloudUploaded

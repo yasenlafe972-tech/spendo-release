@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:remixicon/remixicon.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/spendo_haptic_feedback.dart';
@@ -39,7 +40,11 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> with Widget
     ];
 
     // Automatic cloud sync on app launch (debounced by 3s to let UI settle)
-    FirebaseBackupService.instance.scheduleAutoBackup(debounce: const Duration(seconds: 3));
+    try {
+      if (Firebase.apps.isNotEmpty) {
+        FirebaseBackupService.instance.scheduleAutoBackup(debounce: const Duration(seconds: 3));
+      }
+    } catch (_) {}
   }
 
   @override
@@ -52,7 +57,11 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> with Widget
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) {
       // Auto-save backup snapshot when app goes to background
-      FirebaseBackupService.instance.scheduleAutoBackup(debounce: Duration.zero);
+      try {
+        if (Firebase.apps.isNotEmpty) {
+          FirebaseBackupService.instance.scheduleAutoBackup(debounce: Duration.zero);
+        }
+      } catch (_) {}
     }
   }
 

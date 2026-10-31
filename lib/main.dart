@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:sanad_app/firebase_options.dart';
 import 'package:sanad_app/core/theme/app_theme.dart';
 import 'package:sanad_app/core/security/security_service.dart';
 import 'package:sanad_app/core/database/database_helper.dart';
@@ -82,9 +83,11 @@ void main() async {
     ),
   );
 
-  // Initialize Firebase
+  // Initialize Firebase with explicit cross-platform options
   try {
-    await Firebase.initializeApp();
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
     AuthLinkService.linkAccount();
   } catch (e) {
     debugPrint('Firebase initialization notice: $e');
