@@ -3,6 +3,7 @@ import 'package:sqflite/sqflite.dart';
 import 'package:uuid/uuid.dart';
 import '../security/security_service.dart';
 import '../utils/arabic_date_helper.dart';
+import 'galaxy_seed_data.dart';
 
 class DatabaseHelper {
   static final DatabaseHelper instance = DatabaseHelper._internal();
@@ -34,6 +35,9 @@ class DatabaseHelper {
         } catch (_) {}
         try {
           await _seedLafiElectricalLogs(db);
+        } catch (_) {}
+        try {
+          await GalaxySeedData.seedCompleteData(db);
         } catch (_) {}
       },
       onCreate: (db, version) async {
@@ -248,6 +252,10 @@ class DatabaseHelper {
             'updated_at': now,
           });
         }
+
+        try {
+          await GalaxySeedData.seedCompleteData(db);
+        } catch (_) {}
       },
       onUpgrade: (db, oldVersion, newVersion) async {
         if (oldVersion < 2) {
