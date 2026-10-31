@@ -755,11 +755,14 @@ class DatabaseHelper {
       'vault_items',
     ];
 
-    await db.transaction((txn) async {
-      // 1. Temporarily disable foreign keys to safely clear and repopulate tables
-      await txn.execute('PRAGMA foreign_keys = OFF');
+    // 1. Temporarily disable foreign keys OUTSIDE before starting the transaction
+    // (In SQLite, PRAGMA foreign_keys is a no-op and ignored if called inside a transaction)
+    try {
+      await db.execute('PRAGMA foreign_keys = OFF');
+    } catch (_) {}
 
-      try {
+    try {
+      await db.transaction((txn) async {
         // 2. Clear target tables in reverse dependency order
         for (final table in orderedTables.reversed) {
           if (tablesData.containsKey(table)) {
@@ -797,11 +800,13 @@ class DatabaseHelper {
             }
           }
         }
-      } finally {
-        // Always re-enable foreign keys
-        await txn.execute('PRAGMA foreign_keys = ON');
-      }
-    });
+      });
+    } finally {
+      // Always re-enable foreign keys OUTSIDE after transaction completes
+      try {
+        await db.execute('PRAGMA foreign_keys = ON');
+      } catch (_) {}
+    }
 
     // Notify all UI listeners across the app that data has been completely updated
     notifyDataChanged();

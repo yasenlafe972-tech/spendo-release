@@ -571,6 +571,23 @@ class FirebaseBackupService {
         }
       } catch (_) {}
 
+      // Anti-Downgrade Safety Guard: Protect existing rich local database (e.g. Galaxy)
+      // from being accidentally downgraded or overwritten by a smaller/older cloud backup
+      try {
+        final localTables = await _dbHelper.exportAllTables();
+        final localLogsCount = (localTables['work_logs'] as List?)?.length ?? 0;
+        final cloudLogsCount = (tables['work_logs'] as List?)?.length ?? 0;
+
+        if (localLogsCount > cloudLogsCount && localLogsCount > 20) {
+          debugPrint('>>> [Restore] Guard triggered: local device has $localLogsCount logs, cloud has $cloudLogsCount logs. Skipping downgrade.');
+          return RestoreResult(
+            isSuccess: true,
+            message: 'البيانات المحلية على الهاتف أحدث وأشمل ($localLogsCount سجل) من النسخة السحابية ($cloudLogsCount سجل)، تم الاحتفاظ بالبيانات المحلية بأمان تام',
+            recordsRestored: localLogsCount,
+          );
+        }
+      } catch (_) {}
+
       // Import all tables into local SQLite
       await _dbHelper.importAllTables(tables);
 
