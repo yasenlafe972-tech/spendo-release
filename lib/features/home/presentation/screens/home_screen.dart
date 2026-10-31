@@ -110,12 +110,23 @@ class _HomeScreenState extends State<HomeScreen> {
         }
       }
 
+      if (user != null && (user.name == 'My profile' || user.name.trim().isEmpty)) {
+        user = user.copyWith(name: 'لافي');
+        _peopleRepo.updatePerson(user);
+      }
+
       setState(() {
         _userProfile = user;
         _allWorkLogs = logs;
         _allFuelRecords = fuelRecords;
         _allDailyExpenses = expenses;
         _isLoading = false;
+
+        // If selected month has no records but records exist in other periods,
+        // automatically switch to 'all' (كافة الفترات) so the user immediately sees all work logs & totals!
+        if (_filteredWorkLogs.isEmpty && _filteredDailyExpenses.isEmpty && _filteredFuelRecords.isEmpty && _allWorkLogs.isNotEmpty) {
+          _selectedMonthKey = 'all';
+        }
       });
     } catch (e) {
       debugPrint('Error loading dashboard: $e');
@@ -371,9 +382,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final userName = _userProfile?.name.trim().isNotEmpty == true
+    final userName = (_userProfile?.name.trim().isNotEmpty == true &&
+            _userProfile!.name.trim() != 'My profile')
         ? _userProfile!.name.trim()
-        : 'محمد';
+        : 'لافي';
 
     return Scaffold(
       backgroundColor: const Color(0xFF0A0B0B),

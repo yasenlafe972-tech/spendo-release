@@ -93,11 +93,11 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
           final displayName = fbUser.displayName;
           _nameController.text = (displayName != null && displayName.trim().isNotEmpty)
               ? displayName
-              : (user?.name.trim().isNotEmpty == true ? user!.name : 'My profile');
+              : (user?.name.trim().isNotEmpty == true && user!.name != 'My profile' ? user.name : 'لافي');
           _emailController.text = fbUser.email ?? (user?.email ?? linkedEmail);
         } else {
           _nameController.text =
-              user?.name.trim().isNotEmpty == true ? user!.name : 'My profile';
+              user?.name.trim().isNotEmpty == true && user!.name != 'My profile' ? user.name : 'لافي';
           _emailController.text = user?.email?.trim().isNotEmpty == true
               ? user!.email!
               : (linkedEmail.isNotEmpty ? linkedEmail : 'yasenlafe972@gmail.com');

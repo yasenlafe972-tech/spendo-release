@@ -210,7 +210,7 @@ class DatabaseHelper {
         final now = DateTime.now().toIso8601String();
         await db.insert('people', {
           'id': defaultId,
-          'name': 'My profile',
+          'name': 'لافي',
           'is_user': 1,
           'birthdate': '1998-10-24',
           'email': 'yasenlafi972@gmail.com',
