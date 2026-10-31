@@ -654,6 +654,13 @@ class DatabaseHelper {
   Future<void> importAllTables(Map<String, dynamic> tablesData) async {
     final db = await database;
     await db.transaction((txn) async {
+      for (final table in tablesData.keys) {
+        if (table != 'spendo_vehicle_tracker_v5') {
+          try {
+            await txn.delete(table);
+          } catch (_) {}
+        }
+      }
       for (final entry in tablesData.entries) {
         final table = entry.key;
         final rows = entry.value;

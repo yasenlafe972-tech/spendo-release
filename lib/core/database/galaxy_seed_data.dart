@@ -7,34 +7,41 @@ import 'package:sqflite/sqflite.dart';
 class GalaxySeedData {
   static Future<void> seedCompleteData(DatabaseExecutor db) async {
     try {
+      // 0. Remove legacy placeholder/dummy records from earlier builds
+      try {
+        await db.delete('people', where: "phone = '+972500000000' OR national_id = '123456789'");
+        await db.delete('workplaces', where: "name = 'לאפי חשמל' AND id != '3f07b32a-5c5f-42e4-add7-27d3a92fa1c2'");
+        await db.delete('work_logs', where: "workplace_id IS NULL OR workplace_id NOT IN ('3f07b32a-5c5f-42e4-add7-27d3a92fa1c2', '6e5d62c4-2e4e-4497-96f9-7f7b81f14a61')");
+      } catch (_) {}
+
       // 1. Workplaces
       for (final wp in _workplaces) {
-        await db.insert('workplaces', wp, conflictAlgorithm: ConflictAlgorithm.ignore);
+        await db.insert('workplaces', wp, conflictAlgorithm: ConflictAlgorithm.replace);
       }
 
       // 2. People
       for (final p in _people) {
-        await db.insert('people', p, conflictAlgorithm: ConflictAlgorithm.ignore);
+        await db.insert('people', p, conflictAlgorithm: ConflictAlgorithm.replace);
       }
 
       // 3. Work Logs
       for (final log in _workLogs) {
-        await db.insert('work_logs', log, conflictAlgorithm: ConflictAlgorithm.ignore);
+        await db.insert('work_logs', log, conflictAlgorithm: ConflictAlgorithm.replace);
       }
 
       // 4. Debts
       for (final d in _debts) {
-        await db.insert('debts', d, conflictAlgorithm: ConflictAlgorithm.ignore);
+        await db.insert('debts', d, conflictAlgorithm: ConflictAlgorithm.replace);
       }
 
       // 5. Workplace Payments
       for (final pay in _workplacePayments) {
-        await db.insert('workplace_payments', pay, conflictAlgorithm: ConflictAlgorithm.ignore);
+        await db.insert('workplace_payments', pay, conflictAlgorithm: ConflictAlgorithm.replace);
       }
 
       // 6. Person Accounts
       for (final acc in _personAccounts) {
-        await db.insert('person_accounts', acc, conflictAlgorithm: ConflictAlgorithm.ignore);
+        await db.insert('person_accounts', acc, conflictAlgorithm: ConflictAlgorithm.replace);
       }
 
       // 7. Vehicle SharedPreferences
