@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sanad_app/core/database/database_helper.dart';
 
 class CloudBackupInfo {
@@ -108,6 +109,28 @@ class FirebaseBackupService {
   static const String _keyCachedSnapshot = 'spendo_cached_backup_snapshot';
   static const String _keyAutoBackup = 'spendo_auto_backup_enabled';
 
+  Future<void> _safeStorageWrite(String key, String value) async {
+    try {
+      await _secureStorage.write(key: key, value: value);
+    } catch (_) {}
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(key, value);
+    } catch (_) {}
+  }
+
+  Future<String?> _safeStorageRead(String key) async {
+    try {
+      final v = await _secureStorage.read(key: key);
+      if (v != null && v.isNotEmpty) return v;
+    } catch (_) {}
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      return prefs.getString(key);
+    } catch (_) {}
+    return null;
+  }
+
   static const String _rtdbBaseUrl =
       'https://spendo-4813f-default-rtdb.europe-west1.firebasedatabase.app';
 
@@ -137,7 +160,7 @@ class FirebaseBackupService {
 
   /// Toggles automatic cloud backup
   Future<void> setAutoBackupEnabled(bool enabled) async {
-    await _secureStorage.write(key: _keyAutoBackup, value: enabled ? 'true' : 'false');
+    await _safeStorageWrite(_keyAutoBackup, enabled ? 'true' : 'false');
     isAutoBackupActiveNotifier.value = enabled;
     if (enabled) {
       scheduleAutoBackup(debounce: const Duration(seconds: 1));
@@ -239,7 +262,7 @@ class FirebaseBackupService {
       }
 
       // 2. Fallback: Local cached backup snapshot
-      final cachedStr = await _secureStorage.read(key: _keyCachedSnapshot);
+      final cachedStr = await _safeStorageRead(_keyCachedSnapshot);
       if (cachedStr != null && cachedStr.isNotEmpty) {
         final cachedMap = jsonDecode(cachedStr) as Map<String, dynamic>;
         final info = CloudBackupInfo.fromMap(cachedMap);
@@ -295,8 +318,8 @@ class FirebaseBackupService {
       final jsonPayload = jsonEncode(backupData);
 
       // 2. Always persist local cache snapshot immediately (guarantees 0 data loss)
-      await _secureStorage.write(key: _keyCachedSnapshot, value: jsonPayload);
-      await _secureStorage.write(key: _keyLastBackup, value: nowIso);
+      await _safeStorageWrite(_keyCachedSnapshot, jsonPayload);
+      await _safeStorageWrite(_keyLastBackup, nowIso);
 
       final info = CloudBackupInfo.fromMap(backupData);
       latestBackupNotifier.value = info;
@@ -379,7 +402,7 @@ class FirebaseBackupService {
 
       // 2. Try Local Cached Snapshot
       if (tables == null) {
-        final cached = await _secureStorage.read(key: _keyCachedSnapshot);
+        final cached = await _safeStorageRead(_keyCachedSnapshot);
         if (cached != null && cached.isNotEmpty) {
           final data = jsonDecode(cached) as Map<String, dynamic>;
           tables = data['tables'] as Map<String, dynamic>?;

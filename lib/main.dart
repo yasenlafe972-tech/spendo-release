@@ -10,10 +10,66 @@ import 'package:sanad_app/features/home/presentation/screens/main_navigation_scr
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Prevent Flutter's default grey screen in release mode if any sub-widget fails
+  // If any widget throws an exception during build in release mode, show an informative diagnostic UI
   ErrorWidget.builder = (FlutterErrorDetails details) {
     debugPrint('Widget build error: ${details.exception}');
-    return const SizedBox.shrink();
+    return Material(
+      color: const Color(0xFF121413),
+      child: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Row(
+                  children: [
+                    Icon(Icons.error_outline, color: Color(0xFFEF4444), size: 22),
+                    SizedBox(width: 8),
+                    Text(
+                      'تنبيه إقلاع Spendo',
+                      style: TextStyle(
+                        color: Color(0xFFEF4444),
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF1C1F1E),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: const Color(0xFFEF4444).withValues(alpha: 0.4)),
+                  ),
+                  child: SelectableText(
+                    details.exceptionAsString(),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 12.5,
+                      height: 1.4,
+                      fontFamily: 'monospace',
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  details.stack.toString(),
+                  style: const TextStyle(
+                    color: Color(0xFF9CA3AF),
+                    fontSize: 10,
+                    fontFamily: 'monospace',
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   };
 
   // Force dark status bar and orientation
