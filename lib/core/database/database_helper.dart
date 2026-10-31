@@ -4,7 +4,6 @@ import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:uuid/uuid.dart';
 import '../security/security_service.dart';
-import '../utils/arabic_date_helper.dart';
 import 'galaxy_seed_data.dart';
 
 class DatabaseHelper {
@@ -41,9 +40,6 @@ class DatabaseHelper {
         // Auto-reconcile and link any legacy/orphaned work logs to workplace/employer
         try {
           await _linkOrphanedWorkLogs(db);
-        } catch (_) {}
-        try {
-          await _seedLafiElectricalLogs(db);
         } catch (_) {}
         try {
           await GalaxySeedData.seedCompleteData(db);
@@ -542,94 +538,6 @@ class DatabaseHelper {
     }
   }
 
-  /// يدرج سجلات أيام العمل الـ 18 لـ "לאפי חשמל" من سجل التدقيق المالي
-  static Future<void> _seedLafiElectricalLogs(DatabaseExecutor db) async {
-    final wpQuery = await db.query(
-      'workplaces',
-      where: 'name = ?',
-      whereArgs: ['לאפי חשמל'],
-      limit: 1,
-    );
-    String wpId;
-    if (wpQuery.isNotEmpty) {
-      wpId = wpQuery.first['id'] as String;
-      // ضمان مسح أي بلد قديم غير مطلوب للمشغل
-      await db.update(
-        'workplaces',
-        {'city': ''},
-        where: 'id = ?',
-        whereArgs: [wpId],
-      );
-    } else {
-      wpId = const Uuid().v4();
-      final now = DateTime.now().toIso8601String();
-      await db.insert('workplaces', {
-        'id': wpId,
-        'name': 'לאפי חשמל',
-        'city': '',
-        'daily_rate': 400.0,
-        'hourly_rate': 0.0,
-        'status': 'active',
-        'notes': 'LAFI Electrical',
-        'created_at': now,
-        'updated_at': now,
-      });
-    }
-
-    final entries = [
-      {'date': '2026-06-06', 'notes': 'אפי', 'city': 'تل ابيب'},
-      {'date': '2026-05-30', 'notes': 'דكتور بشير', 'city': 'حيفا'},
-      {'date': '2026-05-21', 'notes': 'שלומי', 'city': 'شلومي'},
-      {'date': '2026-05-16', 'notes': 'ابو ربيع وسام', 'city': 'مزرعه'},
-      {'date': '2026-05-12', 'notes': 'גאל', 'city': 'حيفا'},
-      {'date': '2026-05-02', 'notes': 'اشرف حمود', 'city': 'كابول'},
-      {'date': '2026-04-27', 'notes': 'גאל', 'city': 'طيرت الكرمل'},
-      {'date': '2026-04-16', 'notes': 'ابو عزيز', 'city': 'المكر'},
-      {'date': '2026-04-15', 'notes': 'ابو عزيز', 'city': 'المكر'},
-      {'date': '2026-03-18', 'notes': 'ניסים +דودו', 'city': 'حيفا + نهريا'},
-      {'date': '2026-03-17', 'notes': 'שי', 'city': 'حيفا'},
-      {'date': '2026-03-15', 'notes': 'דودו+קארן', 'city': 'عكا + نهريا'},
-      {'date': '2026-03-14', 'notes': 'ابو ملك', 'city': 'طمره'},
-      {'date': '2026-03-11', 'notes': 'ניסים', 'city': 'حيفا'},
-      {'date': '2026-03-10', 'notes': 'امير', 'city': 'بيسان - بيت شان'},
-      {'date': '2026-03-08', 'notes': 'דودو +קארן', 'city': 'نهريا + عكا'},
-      {'date': '2026-03-05', 'notes': 'דودו', 'city': 'نهريا'},
-      {'date': '2026-03-04', 'notes': 'קארן', 'city': 'عكا'},
-    ];
-
-    for (final e in entries) {
-      final date = e['date']!;
-      final notes = e['notes']!;
-      final city = e['city']!;
-      final existing = await db.query(
-        'work_logs',
-        where: 'workplace_id = ? AND date = ?',
-        whereArgs: [wpId, date],
-        limit: 1,
-      );
-      if (existing.isEmpty) {
-        final dayName = ArabicDateHelper.getWeekdayFromDateString(date);
-        await db.insert('work_logs', {
-          'id': const Uuid().v4(),
-          'person_id': null,
-          'workplace_id': wpId,
-          'workplace_name': 'לאפי חשמל',
-          'city': city,
-          'day_name': dayName,
-          'date': date,
-          'rate_type': 'daily',
-          'hours_worked': null,
-          'day_fraction': 1.0,
-          'rate_applied': 400.0,
-          'total_earned': 400.0,
-          'amount_collected': 400.0,
-          'notes': notes,
-          'created_at': '${date}T08:00:00.000Z',
-        });
-      }
-    }
-  }
-
   // =================== FIREBASE CLOUD BACKUP & RESTORE ===================
 
   /// Exports all application tables into a clean serializable Map
@@ -763,14 +671,7 @@ class DatabaseHelper {
 
     try {
       await db.transaction((txn) async {
-        // 2. Clear target tables in reverse dependency order
-        for (final table in orderedTables.reversed) {
-          if (tablesData.containsKey(table)) {
-            try {
-              await txn.delete(table);
-            } catch (_) {}
-          }
-        }
+        // 2. Non-destructive smart upsert (preserves existing valid data and avoids overwriting unchanged records)
 
         // 3. Populate target tables in dependency order with safe per-record parsing
         for (final table in orderedTables) {

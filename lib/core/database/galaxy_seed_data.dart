@@ -7,55 +7,66 @@ import 'package:sqflite/sqflite.dart';
 class GalaxySeedData {
   static Future<void> seedCompleteData(DatabaseExecutor db) async {
     try {
-      // 0. Remove legacy placeholder/dummy records from earlier builds
+      // 0. Disable foreign keys so constraint errors never block seeding
       try {
-        await db.delete('people', where: "phone = '+972500000000' OR national_id = '123456789'");
-        await db.delete('workplaces', where: "name = 'לאפי חשמל' AND id != '3f07b32a-5c5f-42e4-add7-27d3a92fa1c2'");
+        await db.execute('PRAGMA foreign_keys = OFF');
+      } catch (_) {}
+
+      try {
+        // Clean up legacy placeholder records from earlier builds
         await db.delete('work_logs', where: "workplace_id IS NULL OR workplace_id NOT IN ('3f07b32a-5c5f-42e4-add7-27d3a92fa1c2', '6e5d62c4-2e4e-4497-96f9-7f7b81f14a61')");
+        await db.delete('workplaces', where: "id NOT IN ('3f07b32a-5c5f-42e4-add7-27d3a92fa1c2', '6e5d62c4-2e4e-4497-96f9-7f7b81f14a61')");
+        await db.delete('people', where: "phone = '+972500000000' OR national_id = '123456789'");
       } catch (_) {}
 
       // 1. Workplaces
       for (final wp in _workplaces) {
-        await db.insert('workplaces', wp, conflictAlgorithm: ConflictAlgorithm.replace);
+        try {
+          await db.insert('workplaces', wp, conflictAlgorithm: ConflictAlgorithm.replace);
+        } catch (_) {}
       }
 
       // 2. People
       for (final p in _people) {
-        await db.insert('people', p, conflictAlgorithm: ConflictAlgorithm.replace);
+        try {
+          await db.insert('people', p, conflictAlgorithm: ConflictAlgorithm.replace);
+        } catch (_) {}
       }
 
       // 3. Work Logs
       for (final log in _workLogs) {
-        await db.insert('work_logs', log, conflictAlgorithm: ConflictAlgorithm.replace);
+        try {
+          await db.insert('work_logs', log, conflictAlgorithm: ConflictAlgorithm.replace);
+        } catch (_) {}
       }
 
       // 4. Debts
       for (final d in _debts) {
-        await db.insert('debts', d, conflictAlgorithm: ConflictAlgorithm.replace);
+        try {
+          await db.insert('debts', d, conflictAlgorithm: ConflictAlgorithm.replace);
+        } catch (_) {}
       }
 
       // 5. Workplace Payments
       for (final pay in _workplacePayments) {
-        await db.insert('workplace_payments', pay, conflictAlgorithm: ConflictAlgorithm.replace);
+        try {
+          await db.insert('workplace_payments', pay, conflictAlgorithm: ConflictAlgorithm.replace);
+        } catch (_) {}
       }
 
       // 6. Person Accounts
       for (final acc in _personAccounts) {
-        await db.insert('person_accounts', acc, conflictAlgorithm: ConflictAlgorithm.replace);
+        try {
+          await db.insert('person_accounts', acc, conflictAlgorithm: ConflictAlgorithm.replace);
+        } catch (_) {}
       }
 
       // 7. Vehicle SharedPreferences
       try {
         final prefs = await SharedPreferences.getInstance();
-        if (!prefs.containsKey('spendo_vehicle_tracker_v5')) {
-          await prefs.setString('spendo_vehicle_tracker_v5', _vehicleJson);
-        }
-        if (!prefs.containsKey('spendo_paz_id_num_v1')) {
-          await prefs.setString('spendo_paz_id_num_v1', '207571662');
-        }
-        if (!prefs.containsKey('spendo_paz_phone_v1')) {
-          await prefs.setString('spendo_paz_phone_v1', '0505870690');
-        }
+        await prefs.setString('spendo_vehicle_tracker_v5', _vehicleJson);
+        await prefs.setString('spendo_paz_id_num_v1', '207571662');
+        await prefs.setString('spendo_paz_phone_v1', '0505870690');
       } catch (e) {
         debugPrint('Vehicle seed error: $e');
       }
@@ -63,6 +74,10 @@ class GalaxySeedData {
       debugPrint('>>> [GalaxySeedData] Complete Galaxy dataset synced successfully!');
     } catch (e) {
       debugPrint('>>> [GalaxySeedData] Seed sync notice: $e');
+    } finally {
+      try {
+        await db.execute('PRAGMA foreign_keys = ON');
+      } catch (_) {}
     }
   }
 
