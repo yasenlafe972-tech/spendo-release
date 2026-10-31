@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <group
+        android:scaleX="0.70"
+        android:scaleY="0.70"
+        android:translateX="19"
+        android:translateY="19">
+        <!-- القطعة العلوية -->
+        <path
+            android:fillColor="#FFFFFF"
+            android:fillAlpha="0.95"
+            android:pathData="M 38,16 L 78,16 L 64,34 L 24,34 Z" />
+
+        <!-- الجسر الأوسط المائل -->
+        <path
+            android:fillColor="#FFFFFF"
+            android:fillAlpha="1.0"
+            android:pathData="M 24,34 L 45,34 L 76,66 L 55,66 Z" />
+
+        <!-- القطعة السفلية -->
+        <path
+            android:fillColor="#FFFFFF"
+            android:fillAlpha="0.8"
+            android:pathData="M 36,66 L 76,66 L 62,84 L 22,84 Z" />
+    </group>
+</vector>

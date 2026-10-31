@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>API_KEY</key>
+	<string>AIzaSyBLbHVGjMk7Rj6XU8Hzb-UOFjPGSmu8atU</string>
+	<key>GCM_SENDER_ID</key>
+	<string>86073315564</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.personal.sanad.sanadApp</string>
+	<key>PROJECT_ID</key>
+	<string>spendo-4813f</string>
+	<key>STORAGE_BUCKET</key>
+	<string>spendo-4813f.firebasestorage.app</string>
+	<key>IS_ADS_ENABLED</key>
+	<false/>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false/>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true/>
+	<key>IS_GCM_ENABLED</key>
+	<true/>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true/>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:86073315564:ios:f3a609506325dbe0f695c9</string>
+</dict>
+</plist>

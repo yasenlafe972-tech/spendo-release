@@ -1,0 +1,129 @@
+name: Build Unsigned iOS IPA
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main, master ]
+
+permissions:
+  contents: write
+
+jobs:
+  build-ios-unsigned:
+    name: Build Unsigned iOS IPA
+    runs-on: macos-15
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+
+      # 1. Disable Swift Package Manager for CocoaPods stability
+      - name: Configure Flutter (Disable SPM)
+        run: |
+          flutter config --no-enable-swift-package-manager
+
+      # 2. Fix Apple rsync conflict on macOS 15 runners
+      - name: Fix Apple rsync conflict
+        run: |
+          brew unlink rsync || true
+          sudo ln -sf /usr/bin/rsync /opt/homebrew/bin/rsync || true
+          echo "/usr/bin" >> $GITHUB_PATH
+
+      # 3. Ensure GoogleService-Info.plist for Firebase iOS
+      - name: Ensure GoogleService-Info.plist for Firebase
+        run: |
+          cat << 'EOF' > ios/Runner/GoogleService-Info.plist
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+          	<key>API_KEY</key>
+          	<string>AIzaSyBLbHVGjMk7Rj6XU8Hzb-UOFjPGSmu8atU</string>
+          	<key>GCM_SENDER_ID</key>
+          	<string>86073315564</string>
+          	<key>PLIST_VERSION</key>
+          	<string>1</string>
+          	<key>BUNDLE_ID</key>
+          	<string>com.personal.sanad.sanadApp</string>
+          	<key>PROJECT_ID</key>
+          	<string>spendo-4813f</string>
+          	<key>STORAGE_BUCKET</key>
+          	<string>spendo-4813f.firebasestorage.app</string>
+          	<key>IS_ADS_ENABLED</key>
+          	<false/>
+          	<key>IS_ANALYTICS_ENABLED</key>
+          	<false/>
+          	<key>IS_APPINVITE_ENABLED</key>
+          	<true/>
+          	<key>IS_GCM_ENABLED</key>
+          	<true/>
+          	<key>IS_SIGNIN_ENABLED</key>
+          	<true/>
+          	<key>GOOGLE_APP_ID</key>
+          	<string>1:86073315564:ios:f3a609506325dbe0f695c9</string>
+          </dict>
+          </plist>
+          EOF
+
+      # 4. Install dependencies & prepare iOS config
+      - name: Install Dependencies & Prepare iOS Config
+        run: |
+          flutter pub get
+          flutter build ios --release --no-codesign --config-only
+
+      # 5. Build unsigned Runner.app via xcodebuild (headless)
+      - name: Build Unsigned Runner.app via xcodebuild
+        run: |
+          xcodebuild build \
+            -workspace ios/Runner.xcworkspace \
+            -scheme Runner \
+            -configuration Release \
+            -sdk iphoneos \
+            -derivedDataPath build/ios_integ \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGN_STYLE=Manual \
+            DEVELOPMENT_TEAM="" \
+            PROVISIONING_PROFILE_SPECIFIER=""
+
+      # 6. Package standard Payload/Runner.app into Spendo.ipa (stripping previous signatures for Signulous)
+      - name: Package Unsigned IPA
+        run: |
+          rm -rf Payload Spendo.ipa Unsigned_App.ipa
+          mkdir -p Payload
+          cp -r build/ios_integ/Build/Products/Release-iphoneos/Runner.app Payload/
+          rm -rf Payload/Runner.app/_CodeSignature
+          rm -f Payload/Runner.app/embedded.mobileprovision
+          zip -r -y Spendo.ipa Payload
+          cp Spendo.ipa Unsigned_App.ipa
+
+      # 7. Upload IPA as GitHub Actions Artifact
+      - name: Upload Unsigned IPA Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Spendo-Unsigned-IPA
+          path: Spendo.ipa
+          retention-days: 30
+
+      # 8. Publish Direct Download Link on GitHub Releases (for Signulous direct URL signing)
+      - name: Publish to GitHub Releases
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v1.0.${{ github.run_number }}
+          name: "Spendo iOS v1.0.${{ github.run_number }} (Unsigned IPA for Signulous)"
+          body: "ملف Spendo.ipa جاهز للتوقيع والتثبيت المباشر عبر Signulous"
+          files: |
+            Spendo.ipa
+            Unsigned_App.ipa
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

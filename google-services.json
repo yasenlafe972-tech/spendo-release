@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "86073315564",
+    "project_id": "spendo-4813f",
+    "storage_bucket": "spendo-4813f.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:86073315564:android:f3a609506325dbe0f695c9",
+        "android_client_info": {
+          "package_name": "com.finance.spendo"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBLbHVGjMk7Rj6XU8Hzb-UOFjPGSmu8atU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
