@@ -1,7 +1,10 @@
+import 'dart:io';
+import 'package:file_picker/file_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:remixicon/remixicon.dart';
+import 'package:share_plus/share_plus.dart';
 import '../../../../core/services/auth_link_service.dart';
 import '../../../../core/services/firebase_backup_service.dart';
 import '../../../../core/utils/spendo_haptic_feedback.dart';
@@ -284,20 +287,143 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
   Future<void> _handleExportBackup() async {
     SpendoHaptics.light();
     try {
+      // 1. Silent sync to cloud/cache first
       await _backupService.performBackup();
-      _showCustomToast('تم تصدير نسخة احتياطية كاملة (Spendo_Backup.json)');
+
+      // 2. Export to a real JSON file
+      final file = await _backupService.exportBackupToJsonFile();
+
+      // 3. Open native share sheet so user can send via Telegram, WhatsApp, Save to Files, AirDrop
+      await SharePlus.instance.share(
+        ShareParams(
+          files: [XFile(file.path, mimeType: 'application/json')],
+          subject: 'نسخة احتياطية Spendo',
+          text: 'نسخة احتياطية كاملة لبيانات Spendo',
+        ),
+      );
+      _showCustomToast('تم تجهيز ملف النسخة الاحتياطية بنجاح');
     } catch (e) {
-      _showCustomToast('فشل تصدير النسخة الاحتياطية');
+      _showCustomToast('فشل تصدير النسخة الاحتياطية: $e');
     }
   }
 
   Future<void> _handleImportBackup() async {
     SpendoHaptics.light();
-    try {
-      final res = await _backupService.performRestore();
-      _showCustomToast('تم استعادة البيانات بنجاح (${res.recordsRestored} سجل)');
-    } catch (e) {
-      _showCustomToast('فشل استعادة النسخة الاحتياطية');
+
+    // Show choice sheet: Cloud Restore vs File Import
+    final choice = await showModalBottomSheet<String>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => Container(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 22),
+        decoration: const BoxDecoration(
+          color: surfaceMain,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          border: Border(top: BorderSide(color: surfaceBorder)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const Text(
+              'استعادة البيانات والنسخ الاحتياطي',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white),
+            ),
+            const SizedBox(height: 18),
+            InkWell(
+              onTap: () => Navigator.pop(ctx, 'cloud'),
+              borderRadius: BorderRadius.circular(12),
+              child: Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: surfaceCell,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: surfaceBorder),
+                ),
+                child: Row(
+                  children: const [
+                    Icon(Remix.cloud_line, color: brandGreen, size: 20),
+                    SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('استعادة من سحابة Firebase', style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold)),
+                          SizedBox(height: 2),
+                          Text('جلب أحدث نسخة متزامنة تلقائياً من السحابة', style: TextStyle(color: textMuted, fontSize: 10)),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 10),
+            InkWell(
+              onTap: () => Navigator.pop(ctx, 'file'),
+              borderRadius: BorderRadius.circular(12),
+              child: Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: surfaceCell,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: surfaceBorder),
+                ),
+                child: Row(
+                  children: const [
+                    Icon(Remix.file_upload_line, color: brandYellow, size: 20),
+                    SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('استيراد ملف نسخة احتياطية (.json)', style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold)),
+                          SizedBox(height: 2),
+                          Text('اختيار ملف مستلم عبر تلغرام أو محفوظ في الملفات', style: TextStyle(color: textMuted, fontSize: 10)),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    if (choice == 'cloud') {
+      try {
+        final res = await _backupService.performRestore();
+        if (res.isSuccess) {
+          SpendoHaptics.success();
+          _showCustomToast('تمت استعادة البيانات بنجاح (${res.recordsRestored} سجل)');
+          setState(() {});
+        } else {
+          _showCustomToast(res.message);
+        }
+      } catch (e) {
+        _showCustomToast('فشل استعادة النسخة السحابية: $e');
+      }
+    } else if (choice == 'file') {
+      try {
+        final file = await FilePicker.pickFile();
+        if (file != null && file.path != null) {
+          final ioFile = File(file.path!);
+          final content = await ioFile.readAsString();
+          final res = await _backupService.importBackupFromJsonString(content);
+          if (res.isSuccess) {
+            SpendoHaptics.success();
+            _showCustomToast('تم استعادة البيانات بنجاح (${res.recordsRestored} سجل)');
+            setState(() {});
+          } else {
+            _showCustomToast(res.message);
+          }
+        }
+      } catch (e) {
+        _showCustomToast('فشل استيراد الملف: $e');
+      }
     }
   }
 

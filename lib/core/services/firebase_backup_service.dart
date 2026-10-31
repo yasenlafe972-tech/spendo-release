@@ -7,6 +7,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:sanad_app/core/database/database_helper.dart';
 
 class CloudBackupInfo {
@@ -323,6 +324,17 @@ class FirebaseBackupService {
       final workplacesList = tables['workplaces'] ?? [];
       final workLogsList = tables['work_logs'] ?? [];
       final debtsList = tables['debts'] ?? [];
+      final totalRecords = peopleList.length + workplacesList.length + workLogsList.length + debtsList.length;
+
+      // Safety guard: If the local database is effectively empty (e.g. fresh install),
+      // do NOT overwrite the cloud backup during silent automated sync!
+      if (totalRecords <= 1 && isSilent) {
+        debugPrint('>>> [Backup] Skipping silent cloud backup: local database is empty ($totalRecords records)');
+        return const BackupResult(
+          isSuccess: true,
+          message: 'تم تخطي الحفظ السحابي التلقائي لأن قاعدة البيانات فارغة',
+        );
+      }
 
       double totalEarned = 0.0;
       for (final log in workLogsList) {
@@ -418,31 +430,75 @@ class FirebaseBackupService {
 
       Map<String, dynamic>? tables;
 
-      // 1. Try Realtime Database (Primary & Fastest)
-      try {
-        final uri = Uri.parse('$_rtdbBaseUrl/spendo_backups/$backupKey.json');
-        final client = HttpClient();
-        final request = await client.getUrl(uri).timeout(const Duration(seconds: 6));
-        final response = await request.close().timeout(const Duration(seconds: 6));
-        if (response.statusCode == 200) {
-          final body = await response.transform(utf8.decoder).join();
-          if (body != 'null' && body.isNotEmpty) {
-            final data = jsonDecode(body) as Map<String, dynamic>?;
-            if (data != null && data['tables'] != null) {
-              tables = data['tables'] as Map<String, dynamic>?;
+      // 1. Try Cloud Firestore (Most robust and native on iOS)
+      if (isFirebaseReady && _firestore != null) {
+        final candidateKeys = <String>{backupKey, 'yasenlafe972_gmail_com', 'spendo_primary_user'};
+        if (_auth?.currentUser?.uid != null) {
+          candidateKeys.add('uid_${_auth!.currentUser!.uid}');
+        }
+        for (final k in candidateKeys) {
+          try {
+            final doc = await _firestore!
+                .collection('spendo_backups')
+                .doc(k)
+                .get()
+                .timeout(const Duration(seconds: 4));
+            if (doc.exists && doc.data() != null) {
+              final d = doc.data()!;
+              if (d['tables'] is Map) {
+                tables = Map<String, dynamic>.from(d['tables'] as Map);
+                debugPrint('>>> [Restore] Successfully found backup in Firestore doc: $k');
+                break;
+              }
             }
+          } catch (e) {
+            debugPrint('Firestore restore attempt for $k notice: $e');
           }
         }
-      } catch (e) {
-        debugPrint('RTDB restore fetch error: $e');
       }
 
-      // 2. Try Local Cached Snapshot
+      // 2. Try Realtime Database (Primary REST fallback)
+      if (tables == null) {
+        String authParam = '';
+        try {
+          final token = await _auth?.currentUser?.getIdToken();
+          if (token != null && token.isNotEmpty) {
+            authParam = '?auth=$token';
+          }
+        } catch (_) {}
+
+        final candidateKeys = <String>{backupKey, 'yasenlafe972_gmail_com', 'spendo_primary_user'};
+        for (final k in candidateKeys) {
+          try {
+            final uri = Uri.parse('$_rtdbBaseUrl/spendo_backups/$k.json$authParam');
+            final client = HttpClient();
+            final request = await client.getUrl(uri).timeout(const Duration(seconds: 4));
+            final response = await request.close().timeout(const Duration(seconds: 4));
+            if (response.statusCode == 200) {
+              final body = await response.transform(utf8.decoder).join();
+              if (body != 'null' && body.isNotEmpty) {
+                final data = jsonDecode(body) as Map<String, dynamic>?;
+                if (data != null && data['tables'] is Map) {
+                  tables = Map<String, dynamic>.from(data['tables'] as Map);
+                  debugPrint('>>> [Restore] Successfully found backup in RTDB key: $k');
+                  break;
+                }
+              }
+            }
+          } catch (e) {
+            debugPrint('RTDB restore fetch error for $k: $e');
+          }
+        }
+      }
+
+      // 3. Try Local Cached Snapshot
       if (tables == null) {
         final cached = await _safeStorageRead(_keyCachedSnapshot);
         if (cached != null && cached.isNotEmpty) {
           final data = jsonDecode(cached) as Map<String, dynamic>;
-          tables = data['tables'] as Map<String, dynamic>?;
+          if (data['tables'] is Map) {
+            tables = Map<String, dynamic>.from(data['tables'] as Map);
+          }
         }
       }
 
@@ -453,12 +509,27 @@ class FirebaseBackupService {
         );
       }
 
+      // Restore vehicle state if stored in backup
+      if (tables.containsKey('spendo_vehicle_tracker_v5')) {
+        try {
+          final vList = tables['spendo_vehicle_tracker_v5'];
+          if (vList is List && vList.isNotEmpty && vList.first is Map) {
+            final vData = vList.first['data'] as String?;
+            if (vData != null && vData.isNotEmpty) {
+              final prefs = await SharedPreferences.getInstance();
+              await prefs.setString('spendo_vehicle_tracker_v5', vData);
+            }
+          }
+        } catch (_) {}
+      }
+
       // Import all tables into local SQLite
       await _dbHelper.importAllTables(tables);
 
       int totalRestored = 0;
-      for (final val in tables.values) {
-        if (val is List) totalRestored += val.length;
+      for (final entry in tables.entries) {
+        if (entry.key == 'spendo_vehicle_tracker_v5') continue;
+        if (entry.value is List) totalRestored += (entry.value as List).length;
       }
 
       return RestoreResult(
@@ -471,6 +542,103 @@ class FirebaseBackupService {
       return RestoreResult(
         isSuccess: false,
         message: 'فشلت استعادة البيانات: $e',
+      );
+    }
+  }
+
+  /// Exports all tables + vehicle data to a standalone JSON file and returns the File object
+  Future<File> exportBackupToJsonFile() async {
+    final tables = await _dbHelper.exportAllTables();
+    final profile = await getUserProfile();
+    final backupKey = await getBackupKey();
+
+    // Include vehicle data from SharedPreferences
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final vehicleJson = prefs.getString('spendo_vehicle_tracker_v5');
+      if (vehicleJson != null && vehicleJson.isNotEmpty) {
+        tables['spendo_vehicle_tracker_v5'] = [
+          {'data': vehicleJson}
+        ];
+      }
+    } catch (_) {}
+
+    final now = DateTime.now();
+    final backupData = {
+      'backup_key': backupKey,
+      'user_name': profile['name'],
+      'user_email': profile['email'],
+      'created_at': now.toIso8601String(),
+      'timestamp': now.millisecondsSinceEpoch,
+      'app_version': '1.0.5',
+      'tables': tables,
+    };
+
+    final tempDir = await getTemporaryDirectory();
+    final dateStr = '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+    final file = File('${tempDir.path}/Spendo_Backup_$dateStr.json');
+    await file.writeAsString(const JsonEncoder.withIndent('  ').convert(backupData));
+    return file;
+  }
+
+  /// Imports backup from a JSON string into SQLite and SharedPreferences
+  Future<RestoreResult> importBackupFromJsonString(String jsonString) async {
+    try {
+      final decoded = jsonDecode(jsonString);
+      if (decoded is! Map<String, dynamic>) {
+        return const RestoreResult(
+          isSuccess: false,
+          message: 'صيغة ملف النسخة الاحتياطية غير صالحة',
+        );
+      }
+
+      Map<String, dynamic>? tables;
+      if (decoded['tables'] is Map<String, dynamic>) {
+        tables = Map<String, dynamic>.from(decoded['tables'] as Map);
+      } else if (decoded.containsKey('people') || decoded.containsKey('workplaces')) {
+        tables = decoded;
+      }
+
+      if (tables == null || tables.isEmpty) {
+        return const RestoreResult(
+          isSuccess: false,
+          message: 'لم يتم العثور على أي بيانات جداول داخل الملف',
+        );
+      }
+
+      // Check and restore vehicle state if present
+      if (tables.containsKey('spendo_vehicle_tracker_v5')) {
+        try {
+          final vList = tables['spendo_vehicle_tracker_v5'];
+          if (vList is List && vList.isNotEmpty && vList.first is Map) {
+            final vData = vList.first['data'] as String?;
+            if (vData != null && vData.isNotEmpty) {
+              final prefs = await SharedPreferences.getInstance();
+              await prefs.setString('spendo_vehicle_tracker_v5', vData);
+            }
+          }
+        } catch (_) {}
+      }
+
+      // Import all tables into SQLite
+      await _dbHelper.importAllTables(tables);
+
+      int totalRestored = 0;
+      for (final entry in tables.entries) {
+        if (entry.key == 'spendo_vehicle_tracker_v5') continue;
+        if (entry.value is List) totalRestored += (entry.value as List).length;
+      }
+
+      return RestoreResult(
+        isSuccess: true,
+        message: 'تمت استعادة $totalRestored سجلاً بنجاح من ملف النسخة الاحتياطية',
+        recordsRestored: totalRestored,
+      );
+    } catch (e) {
+      debugPrint('File Restore Failed: $e');
+      return RestoreResult(
+        isSuccess: false,
+        message: 'فشلت استعادة النسخة من الملف: $e',
       );
     }
   }

@@ -17,6 +17,7 @@ class AuthLinkService {
   static const String _keyEmail = 'spendo_linked_account_email';
   static const String _keyPassword = 'spendo_linked_account_password';
   static const String _keyIsLoggedIn = 'spendo_linked_account_logged_in';
+  static const String _keySessionActive = 'spendo_auth_session_active_v2';
 
   static const FlutterSecureStorage _storage = FlutterSecureStorage();
 
@@ -28,17 +29,14 @@ class AuthLinkService {
     } catch (_) {}
 
     try {
-      final loggedIn = await _storage.read(key: _keyIsLoggedIn);
-      if (loggedIn == 'true') return true;
-      // If credentials exist, consider linked by default
-      final email = await _storage.read(key: _keyEmail);
-      if (email != null && email.isNotEmpty) return true;
+      final sessionActive = await _storage.read(key: _keySessionActive);
+      if (sessionActive == 'true') return true;
     } catch (_) {}
 
     try {
       final prefs = await SharedPreferences.getInstance();
-      final prefLoggedIn = prefs.getString(_keyIsLoggedIn);
-      if (prefLoggedIn == 'true') return true;
+      final prefSession = prefs.getString(_keySessionActive);
+      if (prefSession == 'true') return true;
     } catch (_) {}
 
     return false;
@@ -97,10 +95,12 @@ class AuthLinkService {
   /// Marks the current local session as logged in or logged out
   static Future<void> markLoggedIn(bool loggedIn) async {
     try {
+      await _storage.write(key: _keySessionActive, value: loggedIn ? 'true' : 'false');
       await _storage.write(key: _keyIsLoggedIn, value: loggedIn ? 'true' : 'false');
     } catch (_) {}
     try {
       final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_keySessionActive, loggedIn ? 'true' : 'false');
       await prefs.setString(_keyIsLoggedIn, loggedIn ? 'true' : 'false');
     } catch (_) {}
   }
@@ -111,10 +111,12 @@ class AuthLinkService {
       await FirebaseAuth.instance.signOut();
     } catch (_) {}
     try {
+      await _storage.write(key: _keySessionActive, value: 'false');
       await _storage.write(key: _keyIsLoggedIn, value: 'false');
     } catch (_) {}
     try {
       final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_keySessionActive, 'false');
       await prefs.setString(_keyIsLoggedIn, 'false');
     } catch (_) {}
   }
@@ -131,7 +133,6 @@ class AuthLinkService {
     try {
       await _storage.write(key: _keyEmail, value: cleanEmail);
       await _storage.write(key: _keyPassword, value: cleanPassword);
-      await _storage.write(key: _keyIsLoggedIn, value: 'true');
     } catch (_) {}
 
     // 2. Remember in SharedPreferences for UI prefill

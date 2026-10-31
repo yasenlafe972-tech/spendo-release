@@ -1,3 +1,5 @@
+import 'dart:io';
+import 'package:file_picker/file_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:remixicon/remixicon.dart';
@@ -206,14 +208,23 @@ class _AuthScreenState extends State<AuthScreen> {
     final isLocalMatch = await AuthLinkService.verifyCredentials(rawIdentifier, password);
     if (isLocalMatch) {
       SpendoHaptics.success();
-      // Background persistence (unawaited to enter instantly)
+      setState(() => _isLoading = true);
+      // Background persistence
       if (_rememberMe) {
-        SharedPreferences.getInstance().then((p) => p.setString('remembered_auth_identifier', rawIdentifier));
+        await SharedPreferences.getInstance().then((p) => p.setString('remembered_auth_identifier', rawIdentifier));
       } else {
-        SharedPreferences.getInstance().then((p) => p.remove('remembered_auth_identifier'));
+        await SharedPreferences.getInstance().then((p) => p.remove('remembered_auth_identifier'));
       }
-      AuthLinkService.linkAccount(email: email, password: password);
+      await AuthLinkService.linkAccount(email: email, password: password);
+      await AuthLinkService.markLoggedIn(true);
 
+      // Attempt cloud restore to bring back all historical data
+      try {
+        await FirebaseBackupService.instance.performRestore();
+      } catch (_) {}
+
+      if (!mounted) return;
+      setState(() => _isLoading = false);
       _onAuthSuccess();
       return;
     }
@@ -239,6 +250,12 @@ class _AuthScreenState extends State<AuthScreen> {
       if (user != null) {
         await _syncLocalProfile(user, rawIdentifier);
       }
+      await AuthLinkService.markLoggedIn(true);
+
+      // Attempt cloud restore to bring back all historical data
+      try {
+        await FirebaseBackupService.instance.performRestore();
+      } catch (_) {}
 
       SpendoHaptics.success();
       if (!mounted) return;
@@ -259,6 +276,10 @@ class _AuthScreenState extends State<AuthScreen> {
               await prefs.setString('remembered_auth_identifier', rawIdentifier);
             }
             await _syncLocalProfile(createCred.user!, rawIdentifier);
+            await AuthLinkService.markLoggedIn(true);
+            try {
+              await FirebaseBackupService.instance.performRestore();
+            } catch (_) {}
             SpendoHaptics.success();
             if (!mounted) return;
             setState(() => _isLoading = false);
@@ -266,6 +287,21 @@ class _AuthScreenState extends State<AuthScreen> {
             return;
           }
         } catch (_) {}
+      }
+
+      // If Firebase Auth provider is not enabled in Firebase Console (e.g. CONFIGURATION_NOT_FOUND),
+      // allow graceful entry by securely linking local credentials and restoring
+      if (e.code == 'CONFIGURATION_NOT_FOUND' || (e.message != null && e.message!.contains('CONFIGURATION_NOT_FOUND'))) {
+        await AuthLinkService.linkAccount(email: email, password: password);
+        await AuthLinkService.markLoggedIn(true);
+        try {
+          await FirebaseBackupService.instance.performRestore();
+        } catch (_) {}
+        SpendoHaptics.success();
+        if (!mounted) return;
+        setState(() => _isLoading = false);
+        _onAuthSuccess();
+        return;
       }
 
       if (!mounted) return;
@@ -304,6 +340,35 @@ class _AuthScreenState extends State<AuthScreen> {
     }
   }
 
+  Future<void> _handleImportBackupFile() async {
+    SpendoHaptics.light();
+    try {
+      final file = await FilePicker.pickFile();
+      if (file != null && file.path != null) {
+        setState(() => _isLoading = true);
+        final ioFile = File(file.path!);
+        final content = await ioFile.readAsString();
+        final res = await FirebaseBackupService.instance.importBackupFromJsonString(content);
+        if (!mounted) return;
+        setState(() => _isLoading = false);
+
+        if (res.isSuccess) {
+          SpendoHaptics.success();
+          _showToast(res.message);
+          await AuthLinkService.markLoggedIn(true);
+          _onAuthSuccess();
+        } else {
+          _showToast(res.message, isError: true);
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+        _showToast('فشل استيراد الملف: $e', isError: true);
+      }
+    }
+  }
+
   Future<void> _handleRegister() async {
     if (!_registerFormKey.currentState!.validate()) return;
 
@@ -327,6 +392,7 @@ class _AuthScreenState extends State<AuthScreen> {
       if (user != null) {
         await _syncLocalProfile(user, name);
       }
+      await AuthLinkService.markLoggedIn(true);
 
       // Save identifier for remember me
       final prefs = await SharedPreferences.getInstance();
@@ -350,6 +416,7 @@ class _AuthScreenState extends State<AuthScreen> {
             final prefs = await SharedPreferences.getInstance();
             await prefs.setString('remembered_auth_identifier', email);
             await _syncLocalProfile(signCred.user!, name);
+            await AuthLinkService.markLoggedIn(true);
             SpendoHaptics.success();
             if (!mounted) return;
             setState(() => _isLoading = false);
@@ -358,6 +425,19 @@ class _AuthScreenState extends State<AuthScreen> {
             return;
           }
         } catch (_) {}
+      }
+
+      // If Firebase Auth provider is not enabled in Firebase Console (e.g. CONFIGURATION_NOT_FOUND),
+      // allow graceful entry by securely linking local credentials
+      if (e.code == 'CONFIGURATION_NOT_FOUND' || (e.message != null && e.message!.contains('CONFIGURATION_NOT_FOUND'))) {
+        await AuthLinkService.linkAccount(email: email, password: password);
+        await AuthLinkService.markLoggedIn(true);
+        SpendoHaptics.success();
+        if (!mounted) return;
+        setState(() => _isLoading = false);
+        _showToast('تم إعداد الحساب بنجاح! أهلاً بك في Spendo');
+        _onAuthSuccess();
+        return;
       }
 
       if (!mounted) return;
@@ -969,6 +1049,38 @@ class _AuthScreenState extends State<AuthScreen> {
                         ),
                       ],
                     ),
+            ),
+          ),
+          const SizedBox(height: 12),
+
+          // زر استيراد نسخة احتياطية من ملف
+          InkWell(
+            onTap: _isLoading ? null : _handleImportBackupFile,
+            borderRadius: BorderRadius.circular(12),
+            child: Container(
+              padding: const EdgeInsets.symmetric(vertical: 11),
+              decoration: BoxDecoration(
+                color: surfaceField,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: surfaceBorder),
+              ),
+              alignment: Alignment.center,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: const [
+                  Icon(Remix.file_upload_line, color: brandYellow, size: 15),
+                  SizedBox(width: 8),
+                  Text(
+                    'استيراد نسخة احتياطية من ملف (.json)',
+                    style: TextStyle(
+                      fontFamily: 'Cairo',
+                      color: Color(0xFFD1D5DB),
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ],

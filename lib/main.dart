@@ -6,6 +6,7 @@ import 'package:sanad_app/core/theme/app_theme.dart';
 import 'package:sanad_app/core/security/security_service.dart';
 import 'package:sanad_app/core/database/database_helper.dart';
 import 'package:sanad_app/core/services/auth_link_service.dart';
+import 'package:sanad_app/features/auth/presentation/screens/auth_screen.dart';
 import 'package:sanad_app/features/home/presentation/screens/main_navigation_screen.dart';
 
 void main() async {
@@ -88,7 +89,6 @@ void main() async {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
-    AuthLinkService.linkAccount();
   } catch (e) {
     debugPrint('Firebase initialization notice: $e');
   }
@@ -106,11 +106,18 @@ void main() async {
     debugPrint('DatabaseHelper initialization notice: $e');
   }
 
-  runApp(const SanadApp());
+  final bool isLoggedIn = await AuthLinkService.isAccountLoggedIn();
+
+  runApp(SanadApp(initialRouteIsLoggedIn: isLoggedIn));
 }
 
 class SanadApp extends StatelessWidget {
-  const SanadApp({super.key});
+  final bool initialRouteIsLoggedIn;
+
+  const SanadApp({
+    super.key,
+    required this.initialRouteIsLoggedIn,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -125,7 +132,9 @@ class SanadApp extends StatelessWidget {
           child: child ?? const SizedBox.shrink(),
         );
       },
-      home: const MainNavigationScreen(),
+      home: initialRouteIsLoggedIn
+          ? const MainNavigationScreen()
+          : const AuthScreen(),
     );
   }
 }
