@@ -2,7 +2,7 @@ import Flutter
 import UIKit
 
 @main
-@objc class AppDelegate: FlutterAppDelegate, FlutterImplicitEngineDelegate {
+@objc class AppDelegate: FlutterAppDelegate {
   static var sharedChannel: FlutterMethodChannel?
   static var initialSharedFilePath: String?
 
@@ -13,18 +13,15 @@ import UIKit
     if let url = launchOptions?[.url] as? URL {
       Self.handleIncomingFileURL(url, notifyImmediately: false)
     }
-    return super.application(application, didFinishLaunchingWithOptions: launchOptions)
-  }
 
-  func didInitializeImplicitFlutterEngine(_ engineBridge: FlutterImplicitEngineBridge) {
-    GeneratedPluginRegistrant.register(with: engineBridge.pluginRegistry)
+    GeneratedPluginRegistrant.register(with: self)
 
-    if let registrar = engineBridge.pluginRegistry.registrar(forPlugin: "SpendoShareChannel") {
-      let channel = FlutterMethodChannel(
+    if let controller = window?.rootViewController as? FlutterViewController {
+      let shareChannel = FlutterMethodChannel(
         name: "com.finance.spendo/share",
-        binaryMessenger: registrar.messenger()
+        binaryMessenger: controller.binaryMessenger
       )
-      channel.setMethodCallHandler { call, result in
+      shareChannel.setMethodCallHandler { call, result in
         if call.method == "getInitialSharedFile" {
           let path = Self.initialSharedFilePath
           Self.initialSharedFilePath = nil
@@ -33,11 +30,11 @@ import UIKit
           result(FlutterMethodNotImplemented)
         }
       }
-      Self.sharedChannel = channel
+      Self.sharedChannel = shareChannel
 
       let timeZoneChannel = FlutterMethodChannel(
         name: "com.finance.spendo/timezone",
-        binaryMessenger: registrar.messenger()
+        binaryMessenger: controller.binaryMessenger
       )
       timeZoneChannel.setMethodCallHandler { call, result in
         if call.method == "getTimeZone" {
@@ -47,6 +44,8 @@ import UIKit
         }
       }
     }
+
+    return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
 
   override func application(

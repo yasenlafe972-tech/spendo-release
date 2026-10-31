@@ -24,6 +24,16 @@ jobs:
           channel: 'stable'
           cache: true
 
+      - name: Cache CocoaPods
+        uses: actions/cache@v4
+        with:
+          path: |
+            ios/Pods
+            ~/Library/Caches/CocoaPods
+          key: ${{ runner.os }}-pods-${{ hashFiles('**/pubspec.lock', 'ios/Podfile') }}
+          restore-keys: |
+            ${{ runner.os }}-pods-
+
       # 1. Disable Swift Package Manager for CocoaPods stability
       - name: Configure Flutter (Disable SPM)
         run: |
@@ -113,13 +123,13 @@ jobs:
           path: Spendo.ipa
           retention-days: 30
 
-      # 8. Publish Direct Download Link on GitHub Releases (for Signulous direct URL signing)
+      # 8. Publish Direct Download Link on GitHub Releases (for Signulous / Telegram direct download)
       - name: Publish to GitHub Releases
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v1.0.${{ github.run_number }}
-          name: "Spendo iOS v1.0.${{ github.run_number }} (Unsigned IPA for Signulous)"
-          body: "ملف Spendo.ipa جاهز للتوقيع والتثبيت المباشر عبر Signulous"
+          name: "Spendo iOS v1.0.${{ github.run_number }} (Fixed Launch & Keychain Fallback)"
+          body: "ملف Spendo.ipa جاهز للتوقيع والتثبيت المباشر على الآيفون (مع حل مشكلة الشاشة الرمادية وتقييد Keychain)"
           files: |
             Spendo.ipa
             Unsigned_App.ipa

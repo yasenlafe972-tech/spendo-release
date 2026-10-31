@@ -10,6 +10,12 @@ import 'package:sanad_app/features/home/presentation/screens/main_navigation_scr
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  // Prevent Flutter's default grey screen in release mode if any sub-widget fails
+  ErrorWidget.builder = (FlutterErrorDetails details) {
+    debugPrint('Widget build error: ${details.exception}');
+    return const SizedBox.shrink();
+  };
+
   // Force dark status bar and orientation
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
@@ -20,18 +26,26 @@ void main() async {
     ),
   );
 
-  // Initialize Firebase from google-services.json
+  // Initialize Firebase
   try {
     await Firebase.initializeApp();
-    // Ensure account is linked to the requested user credentials
     AuthLinkService.linkAccount();
   } catch (e) {
     debugPrint('Firebase initialization notice: $e');
   }
 
-  // Initialize hardware security key & database
-  await SecurityService.instance.initialize();
-  await DatabaseHelper.instance.database;
+  // Initialize security key & SQLite database safely without blocking runApp on iOS Keychain restrictions
+  try {
+    await SecurityService.instance.initialize();
+  } catch (e) {
+    debugPrint('SecurityService initialization notice: $e');
+  }
+
+  try {
+    await DatabaseHelper.instance.database;
+  } catch (e) {
+    debugPrint('DatabaseHelper initialization notice: $e');
+  }
 
   runApp(const SanadApp());
 }
@@ -49,7 +63,7 @@ class SanadApp extends StatelessWidget {
       builder: (context, child) {
         return Directionality(
           textDirection: TextDirection.rtl,
-          child: child!,
+          child: child ?? const SizedBox.shrink(),
         );
       },
       home: const MainNavigationScreen(),

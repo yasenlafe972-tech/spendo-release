@@ -22,30 +22,47 @@ class AuthLinkService {
 
   /// Checks if an account is currently linked and logged in
   static Future<bool> isAccountLoggedIn() async {
-    final fbUser = FirebaseAuth.instance.currentUser;
-    if (fbUser != null) return true;
+    try {
+      final fbUser = FirebaseAuth.instance.currentUser;
+      if (fbUser != null) return true;
+    } catch (_) {}
 
     try {
       final loggedIn = await _storage.read(key: _keyIsLoggedIn);
       if (loggedIn == 'true') return true;
       // If credentials exist, consider linked by default
       final email = await _storage.read(key: _keyEmail);
-      return email != null && email.isNotEmpty;
-    } catch (_) {
-      return false;
-    }
+      if (email != null && email.isNotEmpty) return true;
+    } catch (_) {}
+
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final prefLoggedIn = prefs.getString(_keyIsLoggedIn);
+      if (prefLoggedIn == 'true') return true;
+    } catch (_) {}
+
+    return false;
   }
 
   /// Gets the currently linked email
   static Future<String> getLinkedEmail() async {
-    final fbUser = FirebaseAuth.instance.currentUser;
-    if (fbUser?.email != null && fbUser!.email!.isNotEmpty) {
-      return fbUser.email!;
-    }
+    try {
+      final fbUser = FirebaseAuth.instance.currentUser;
+      if (fbUser?.email != null && fbUser!.email!.isNotEmpty) {
+        return fbUser.email!;
+      }
+    } catch (_) {}
     try {
       final savedEmail = await _storage.read(key: _keyEmail);
       if (savedEmail != null && savedEmail.isNotEmpty) {
         return savedEmail;
+      }
+    } catch (_) {}
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final prefEmail = prefs.getString(_keyEmail);
+      if (prefEmail != null && prefEmail.isNotEmpty) {
+        return prefEmail;
       }
     } catch (_) {}
     return defaultEmail;
@@ -57,7 +74,13 @@ class AuthLinkService {
     final cleanPw = password.trim();
 
     final targetEmail = (await getLinkedEmail()).trim().toLowerCase();
-    final savedPw = (await _storage.read(key: _keyPassword)) ?? defaultPassword;
+    String savedPw = defaultPassword;
+    try {
+      final readPw = await _storage.read(key: _keyPassword);
+      if (readPw != null && readPw.isNotEmpty) {
+        savedPw = readPw;
+      }
+    } catch (_) {}
 
     // Match full email or username before @
     final targetPrefix = targetEmail.split('@').first;
@@ -76,6 +99,10 @@ class AuthLinkService {
     try {
       await _storage.write(key: _keyIsLoggedIn, value: loggedIn ? 'true' : 'false');
     } catch (_) {}
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_keyIsLoggedIn, loggedIn ? 'true' : 'false');
+    } catch (_) {}
   }
 
   /// Performs full logout (Firebase Auth + Secure Storage)
@@ -85,6 +112,10 @@ class AuthLinkService {
     } catch (_) {}
     try {
       await _storage.write(key: _keyIsLoggedIn, value: 'false');
+    } catch (_) {}
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_keyIsLoggedIn, 'false');
     } catch (_) {}
   }
 
