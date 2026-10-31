@@ -8,6 +8,7 @@ import 'package:sanad_app/features/people/presentation/widgets/person_card.dart'
 import 'package:sanad_app/features/people/presentation/widgets/person_details_modal_sheet.dart';
 import 'package:sanad_app/features/people/presentation/widgets/person_accounts_modal_sheet.dart';
 import 'package:sanad_app/features/settings/presentation/screens/app_settings_screen.dart';
+import 'package:sanad_app/core/database/database_helper.dart';
 
 class PeopleScreen extends StatefulWidget {
   const PeopleScreen({super.key});
@@ -37,11 +38,13 @@ class _PeopleScreenState extends State<PeopleScreen> {
   @override
   void initState() {
     super.initState();
+    DatabaseHelper.dataVersionNotifier.addListener(_loadPeople);
     _loadPeople();
   }
 
   @override
   void dispose() {
+    DatabaseHelper.dataVersionNotifier.removeListener(_loadPeople);
     _searchController.dispose();
     super.dispose();
   }

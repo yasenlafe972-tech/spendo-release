@@ -140,6 +140,7 @@ class FirebaseBackupService {
   static const String _keyLastBackup = 'spendo_last_cloud_backup_time';
   static const String _keyCachedSnapshot = 'spendo_cached_backup_snapshot';
   static const String _keyAutoBackup = 'spendo_auto_backup_enabled';
+  static const String _keyHasRestoredFromCloud = 'spendo_has_restored_from_cloud';
 
   Future<void> _safeStorageWrite(String key, String value) async {
     try {
@@ -320,20 +321,56 @@ class FirebaseBackupService {
       // 1. Export all tables from local SQLite
       final tables = await _dbHelper.exportAllTables();
 
+      // Include SharedPreferences (Vehicle tracker, Paz info, Gov info) into backup tables
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        final vehicleJson = prefs.getString('spendo_vehicle_tracker_v5');
+        if (vehicleJson != null && vehicleJson.isNotEmpty) {
+          tables['spendo_vehicle_tracker_v5'] = [
+            {'data': vehicleJson}
+          ];
+        }
+        final govInfo = prefs.getString('spendo_gov_vehicle_info_v1');
+        if (govInfo != null && govInfo.isNotEmpty) {
+          tables['spendo_gov_vehicle_info_v1'] = [
+            {'data': govInfo}
+          ];
+        }
+        final pazId = prefs.getString('spendo_paz_id_num_v1');
+        if (pazId != null && pazId.isNotEmpty) {
+          tables['spendo_paz_id_num_v1'] = [
+            {'data': pazId}
+          ];
+        }
+        final pazPhone = prefs.getString('spendo_paz_phone_v1');
+        if (pazPhone != null && pazPhone.isNotEmpty) {
+          tables['spendo_paz_phone_v1'] = [
+            {'data': pazPhone}
+          ];
+        }
+      } catch (_) {}
+
       final peopleList = tables['people'] ?? [];
       final workplacesList = tables['workplaces'] ?? [];
       final workLogsList = tables['work_logs'] ?? [];
       final debtsList = tables['debts'] ?? [];
       final totalRecords = peopleList.length + workplacesList.length + workLogsList.length + debtsList.length;
 
-      // Safety guard: If the local database is effectively empty (e.g. fresh install),
-      // do NOT overwrite the cloud backup during silent automated sync!
-      if (totalRecords <= 1 && isSilent) {
-        debugPrint('>>> [Backup] Skipping silent cloud backup: local database is empty ($totalRecords records)');
-        return const BackupResult(
-          isSuccess: true,
-          message: 'تم تخطي الحفظ السحابي التلقائي لأن قاعدة البيانات فارغة',
-        );
+      // Critical Safety Guard: Never overwrite cloud backup during silent automated sync
+      // if this device has never completed an initial restore, or if local records <= seed records (20)
+      if (isSilent) {
+        final prefs = await SharedPreferences.getInstance();
+        final hasRestored = prefs.getBool(_keyHasRestoredFromCloud) ?? false;
+
+        // If device has never verified cloud restore and local records <= 20 (just initial seed),
+        // BLOCK silent backup to prevent the reverse-overwrite disaster!
+        if (!hasRestored && totalRecords <= 20) {
+          debugPrint('>>> [Backup] Blocked reverse-overwrite: fresh install with $totalRecords records.');
+          return const BackupResult(
+            isSuccess: true,
+            message: 'تم تخطي الحفظ السحابي التلقائي لحماية النسخة السحابية من الكتابة العكسية',
+          );
+        }
       }
 
       double totalEarned = 0.0;
@@ -509,22 +546,39 @@ class FirebaseBackupService {
         );
       }
 
-      // Restore vehicle state if stored in backup
-      if (tables.containsKey('spendo_vehicle_tracker_v5')) {
-        try {
+      // Restore vehicle & Paz metadata if stored in backup
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        if (tables.containsKey('spendo_vehicle_tracker_v5')) {
           final vList = tables['spendo_vehicle_tracker_v5'];
           if (vList is List && vList.isNotEmpty && vList.first is Map) {
             final vData = vList.first['data'] as String?;
             if (vData != null && vData.isNotEmpty) {
-              final prefs = await SharedPreferences.getInstance();
               await prefs.setString('spendo_vehicle_tracker_v5', vData);
             }
           }
-        } catch (_) {}
-      }
+        }
+        for (final key in ['spendo_gov_vehicle_info_v1', 'spendo_paz_id_num_v1', 'spendo_paz_phone_v1']) {
+          if (tables.containsKey(key)) {
+            final list = tables[key];
+            if (list is List && list.isNotEmpty && list.first is Map) {
+              final v = list.first['data'] as String?;
+              if (v != null && v.isNotEmpty) {
+                await prefs.setString(key, v);
+              }
+            }
+          }
+        }
+      } catch (_) {}
 
       // Import all tables into local SQLite
       await _dbHelper.importAllTables(tables);
+
+      // Mark initial restore as permanently completed on this device
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setBool(_keyHasRestoredFromCloud, true);
+      } catch (_) {}
 
       int totalRestored = 0;
       for (final entry in tables.entries) {
@@ -552,7 +606,7 @@ class FirebaseBackupService {
     final profile = await getUserProfile();
     final backupKey = await getBackupKey();
 
-    // Include vehicle data from SharedPreferences
+    // Include vehicle data & Paz metadata from SharedPreferences
     try {
       final prefs = await SharedPreferences.getInstance();
       final vehicleJson = prefs.getString('spendo_vehicle_tracker_v5');
@@ -560,6 +614,14 @@ class FirebaseBackupService {
         tables['spendo_vehicle_tracker_v5'] = [
           {'data': vehicleJson}
         ];
+      }
+      for (final key in ['spendo_gov_vehicle_info_v1', 'spendo_paz_id_num_v1', 'spendo_paz_phone_v1']) {
+        final val = prefs.getString(key);
+        if (val != null && val.isNotEmpty) {
+          tables[key] = [
+            {'data': val}
+          ];
+        }
       }
     } catch (_) {}
 
@@ -606,22 +668,39 @@ class FirebaseBackupService {
         );
       }
 
-      // Check and restore vehicle state if present
-      if (tables.containsKey('spendo_vehicle_tracker_v5')) {
-        try {
+      // Check and restore vehicle & Paz metadata if present
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        if (tables.containsKey('spendo_vehicle_tracker_v5')) {
           final vList = tables['spendo_vehicle_tracker_v5'];
           if (vList is List && vList.isNotEmpty && vList.first is Map) {
             final vData = vList.first['data'] as String?;
             if (vData != null && vData.isNotEmpty) {
-              final prefs = await SharedPreferences.getInstance();
               await prefs.setString('spendo_vehicle_tracker_v5', vData);
             }
           }
-        } catch (_) {}
-      }
+        }
+        for (final key in ['spendo_gov_vehicle_info_v1', 'spendo_paz_id_num_v1', 'spendo_paz_phone_v1']) {
+          if (tables.containsKey(key)) {
+            final list = tables[key];
+            if (list is List && list.isNotEmpty && list.first is Map) {
+              final v = list.first['data'] as String?;
+              if (v != null && v.isNotEmpty) {
+                await prefs.setString(key, v);
+              }
+            }
+          }
+        }
+      } catch (_) {}
 
       // Import all tables into SQLite
       await _dbHelper.importAllTables(tables);
+
+      // Mark initial restore as permanently completed on this device
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setBool(_keyHasRestoredFromCloud, true);
+      } catch (_) {}
 
       int totalRestored = 0;
       for (final entry in tables.entries) {

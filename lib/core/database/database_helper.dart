@@ -1,3 +1,5 @@
+import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:uuid/uuid.dart';
@@ -8,6 +10,13 @@ import 'galaxy_seed_data.dart';
 class DatabaseHelper {
   static final DatabaseHelper instance = DatabaseHelper._internal();
   DatabaseHelper._internal();
+
+  /// Global signal to immediately trigger UI screens to reload when restore or import completes
+  static final ValueNotifier<int> dataVersionNotifier = ValueNotifier<int>(0);
+
+  static void notifyDataChanged() {
+    dataVersionNotifier.value++;
+  }
 
   static Database? _database;
 
@@ -650,33 +659,151 @@ class DatabaseHelper {
     return data;
   }
 
+  /// Safe parsing & sanitization helper for SQLite column types
+  static Map<String, dynamic> _sanitizeRowForTable(
+    String table,
+    Map<String, dynamic> rawRow,
+    Set<String> validColumns,
+  ) {
+    final Map<String, dynamic> sanitized = {};
+
+    for (final entry in rawRow.entries) {
+      final key = entry.key;
+      // Skip fields that do not exist as valid columns in the local SQLite table
+      if (!validColumns.contains(key)) continue;
+
+      dynamic val = entry.value;
+      if (val == null) {
+        sanitized[key] = null;
+        continue;
+      }
+
+      // 1. Handle Timestamp / DateTime objects (Firestore Timestamp, DateTime)
+      if (val is DateTime) {
+        val = val.toIso8601String();
+      } else if (val.runtimeType.toString() == 'Timestamp' ||
+          (val is Map && val.containsKey('_seconds'))) {
+        try {
+          if (val is Map && val.containsKey('_seconds')) {
+            final secs = (val['_seconds'] as num).toInt();
+            val = DateTime.fromMillisecondsSinceEpoch(secs * 1000).toIso8601String();
+          } else {
+            val = (val as dynamic).toDate().toIso8601String();
+          }
+        } catch (_) {
+          val = DateTime.now().toIso8601String();
+        }
+      }
+
+      // 2. Handle Booleans (SQLite expects 1 or 0 for INTEGER)
+      if (val is bool) {
+        val = val ? 1 : 0;
+      }
+
+      // 3. Handle Collections / Lists / Maps (e.g. attachments in work_logs)
+      if (val is List || val is Map) {
+        try {
+          val = jsonEncode(val);
+        } catch (_) {
+          val = '[]';
+        }
+      }
+
+      // 4. Handle Numeric conversions safely (num -> double or int based on column)
+      if (val is num) {
+        if (key == 'is_user' || key == 'is_pinned') {
+          val = val.toInt();
+        } else if (key == 'day_fraction' ||
+            key == 'rate_applied' ||
+            key == 'total_earned' ||
+            key == 'amount_collected' ||
+            key == 'hourly_rate' ||
+            key == 'daily_rate' ||
+            key == 'amount' ||
+            key == 'original_amount' ||
+            key == 'remaining_amount' ||
+            key == 'latitude' ||
+            key == 'longitude') {
+          val = val.toDouble();
+        }
+      }
+
+      // 5. Standardize work_logs date format to yyyy-MM-dd
+      if (key == 'date' && val is String && val.contains('T')) {
+        val = val.split('T').first;
+      }
+
+      sanitized[key] = val;
+    }
+
+    return sanitized;
+  }
+
   /// Imports all application tables from a cloud backup Map inside a secure transaction
   Future<void> importAllTables(Map<String, dynamic> tablesData) async {
     final db = await database;
+
+    const orderedTables = [
+      'people',
+      'workplaces',
+      'work_logs',
+      'debts',
+      'debt_payments',
+      'workplace_payments',
+      'person_accounts',
+      'payments',
+      'vault_items',
+    ];
+
     await db.transaction((txn) async {
-      for (final table in tablesData.keys) {
-        if (table != 'spendo_vehicle_tracker_v5') {
-          try {
-            await txn.delete(table);
-          } catch (_) {}
+      // 1. Temporarily disable foreign keys to safely clear and repopulate tables
+      await txn.execute('PRAGMA foreign_keys = OFF');
+
+      try {
+        // 2. Clear target tables in reverse dependency order
+        for (final table in orderedTables.reversed) {
+          if (tablesData.containsKey(table)) {
+            try {
+              await txn.delete(table);
+            } catch (_) {}
+          }
         }
-      }
-      for (final entry in tablesData.entries) {
-        final table = entry.key;
-        final rows = entry.value;
-        if (rows is List) {
-          for (final row in rows) {
-            if (row is Map) {
-              final map = Map<String, dynamic>.from(row);
+
+        // 3. Populate target tables in dependency order with safe per-record parsing
+        for (final table in orderedTables) {
+          if (!tablesData.containsKey(table)) continue;
+          final rawRows = tablesData[table];
+          if (rawRows is! List) continue;
+
+          // Fetch local schema columns for this table
+          final tableInfo = await txn.rawQuery('PRAGMA table_info("$table")');
+          final validColumns = tableInfo.map((c) => c['name'] as String).toSet();
+
+          for (final rawRow in rawRows) {
+            if (rawRow is! Map) continue;
+            try {
+              final sanitized = _sanitizeRowForTable(
+                table,
+                Map<String, dynamic>.from(rawRow),
+                validColumns,
+              );
               await txn.insert(
                 table,
-                map,
+                sanitized,
                 conflictAlgorithm: ConflictAlgorithm.replace,
               );
+            } catch (rowErr) {
+              debugPrint('>>> [Restore] Skipped row in $table: $rowErr - Data: $rawRow');
             }
           }
         }
+      } finally {
+        // Always re-enable foreign keys
+        await txn.execute('PRAGMA foreign_keys = ON');
       }
     });
+
+    // Notify all UI listeners across the app that data has been completely updated
+    notifyDataChanged();
   }
 }

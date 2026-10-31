@@ -13,6 +13,7 @@ import '../../../vehicle/models/vehicle_model.dart';
 import '../../../vehicle/presentation/widgets/fuel_expense_sheet.dart';
 import '../../../settings/presentation/screens/app_settings_screen.dart';
 import '../../models/daily_expense_model.dart';
+import '../../../../core/database/database_helper.dart';
 
 /// Spendo Central Executive Dashboard.
 class HomeScreen extends StatefulWidget {
@@ -57,6 +58,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final now = DateTime.now();
     _selectedMonthKey = '${now.year}-${now.month.toString().padLeft(2, '0')}';
     DailyExpenseService.expensesChangedNotifier.addListener(_onAutoExpensesUpdated);
+    DatabaseHelper.dataVersionNotifier.addListener(_onAutoExpensesUpdated);
     DailyExpenseService.initAutoSyncListener();
     _loadData();
   }
@@ -64,6 +66,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void dispose() {
     DailyExpenseService.expensesChangedNotifier.removeListener(_onAutoExpensesUpdated);
+    DatabaseHelper.dataVersionNotifier.removeListener(_onAutoExpensesUpdated);
     super.dispose();
   }
 

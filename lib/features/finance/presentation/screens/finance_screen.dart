@@ -11,6 +11,7 @@ import '../../models/debt_model.dart';
 import '../../repositories/finance_repository.dart';
 import '../widgets/add_debt_sheet.dart';
 import '../widgets/record_repayment_sheet.dart';
+import '../../../../core/database/database_helper.dart';
 
 /// Spendo Finance & Personal Debts Screen.
 /// Designed 1:1 based on the Spendo Obsidian Dark Design System.
@@ -40,7 +41,14 @@ class _FinanceScreenState extends State<FinanceScreen> {
   @override
   void initState() {
     super.initState();
+    DatabaseHelper.dataVersionNotifier.addListener(_loadData);
     _loadData();
+  }
+
+  @override
+  void dispose() {
+    DatabaseHelper.dataVersionNotifier.removeListener(_loadData);
+    super.dispose();
   }
 
   Future<void> _loadData() async {

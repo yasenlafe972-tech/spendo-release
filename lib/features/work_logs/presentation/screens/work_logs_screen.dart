@@ -8,6 +8,7 @@ import 'package:sanad_app/features/work_logs/models/work_log_model.dart';
 import 'package:sanad_app/features/work_logs/repositories/work_logs_repository.dart';
 import 'package:sanad_app/features/settings/presentation/screens/app_settings_screen.dart';
 import 'package:sanad_app/core/utils/spendo_haptic_feedback.dart';
+import 'package:sanad_app/core/database/database_helper.dart';
 
 /// سجل العمل - دليل المشغّلين وأصحاب العمل (מעסיקים)
 ///
@@ -40,7 +41,14 @@ class _WorkLogsScreenState extends State<WorkLogsScreen> {
   @override
   void initState() {
     super.initState();
+    DatabaseHelper.dataVersionNotifier.addListener(_loadData);
     _loadData();
+  }
+
+  @override
+  void dispose() {
+    DatabaseHelper.dataVersionNotifier.removeListener(_loadData);
+    super.dispose();
   }
 
   Future<void> _loadData() async {
