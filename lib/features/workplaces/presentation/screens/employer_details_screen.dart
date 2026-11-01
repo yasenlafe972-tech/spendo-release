@@ -685,7 +685,7 @@ class _EmployerDetailsScreenState extends State<EmployerDetailsScreen> {
           borderRadius: BorderRadius.circular(16),
           side: const BorderSide(color: EmployerDetailsScreen.surfaceBorder),
         ),
-        title: const Text('حذف المشغّل (מעסיק)', style: TextStyle(color: Colors.white, fontSize: 14)),
+        title: const Text('حذف المشغّل', style: TextStyle(color: Colors.white, fontSize: 14)),
         content: Text(
           'هل أنت متأكد من حذف المشغّل "${_workplace.name}"؟ ستبقى سجلات أيام العمل السابقة محفوظة في الأرشيف.',
           style: const TextStyle(color: EmployerDetailsScreen.textMuted, fontSize: 12),
@@ -724,7 +724,7 @@ class _EmployerDetailsScreenState extends State<EmployerDetailsScreen> {
 
     buffer.writeln('كشف حساب أيام العمل - Spendo');
     buffer.writeln('--------------------------------');
-    buffer.writeln('المشغّل (מעסיק): ${_workplace.name}');
+    buffer.writeln('المشغّل: ${_workplace.name}');
     buffer.writeln('الفترة: $monthLabel');
     buffer.writeln('عدد الأيام: $_filteredDaysWorked يوم');
     if (_filteredTotalEarned > 0) {
@@ -1556,7 +1556,7 @@ class _EmployerDetailsScreenState extends State<EmployerDetailsScreen> {
                                     Row(
                                       children: [
                                         const Text(
-                                          'مشغّل (מעסיق)',
+                                          'مشغّل',
                                           style: TextStyle(color: EmployerDetailsScreen.textMuted, fontSize: 10),
                                         ),
                                         const SizedBox(width: 6),

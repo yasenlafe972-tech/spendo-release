@@ -165,7 +165,7 @@ class _WorkLogsScreenState extends State<WorkLogsScreen> {
                                       Text(
                                         isEdit
                                             ? 'تعديل بيانات المشغّل'
-                                            : 'إضافة مشغّل جديد (מעסיק)',
+                                            : 'إضافة مشغّل جديد',
                                         style: const TextStyle(
                                           fontSize: 12,
                                           fontWeight: FontWeight.bold,
@@ -777,23 +777,12 @@ class _WorkLogsScreenState extends State<WorkLogsScreen> {
                   children: const [
                     Icon(Remix.building_2_line, size: 14, color: brandGreen),
                     SizedBox(width: 6),
-                    Text.rich(
-                      TextSpan(
-                        text: 'دليل المشغّلين وأصحاب العمل ',
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFFE5E7EB),
-                        ),
-                        children: [
-                          TextSpan(
-                            text: '(מעסיקים)',
-                            style: TextStyle(
-                              color: brandYellow,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
+                    const Text(
+                      'دليل المشغّلين وأصحاب العمل',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFFE5E7EB),
                       ),
                     ),
                   ],
@@ -986,23 +975,12 @@ class _WorkLogsScreenState extends State<WorkLogsScreen> {
                 children: const [
                   Icon(Remix.add_line, size: 13, color: brandGreen),
                   SizedBox(width: 4),
-                  Text.rich(
-                    TextSpan(
-                      text: 'إضافة مشغّل ',
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                      children: [
-                        TextSpan(
-                          text: '(מעסיק)',
-                          style: TextStyle(
-                            color: brandYellow,
-                            fontWeight: FontWeight.normal,
-                          ),
-                        ),
-                      ],
+                  const Text(
+                    'إضافة مشغّل',
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
                     ),
                   ),
                 ],
