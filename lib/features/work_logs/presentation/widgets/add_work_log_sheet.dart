@@ -126,13 +126,9 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
 
   Future<void> _loadInitialData() async {
     final workplaces = await _workplacesRepo.getAllWorkplaces();
-    final logs = await _workLogsRepo.getAllLogs();
+    final existingCities = await _workLogsRepo.getDistinctCities();
 
-    final citiesSet = <String>{};
-    for (final l in logs) {
-      final c = l.city.trim();
-      if (c.isNotEmpty) citiesSet.add(c);
-    }
+    final citiesSet = Set<String>.from(existingCities);
     // Popular fallback defaults if user has few entries
     final defaults = ['طمرة', 'مغار', 'القدس', 'كفر كنا', 'سخنين'];
     for (final d in defaults) {

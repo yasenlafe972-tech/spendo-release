@@ -11,9 +11,6 @@ import 'package:sanad_app/core/services/firebase_backup_service.dart';
 class AuthLinkService {
   AuthLinkService._();
 
-  static const String defaultEmail = 'yasenlafe972@gmail.com';
-  static const String defaultPassword = '12345678900';
-
   static const String _keyEmail = 'spendo_linked_account_email';
   static const String _keyPassword = 'spendo_linked_account_password';
   static const String _keyIsLoggedIn = 'spendo_linked_account_logged_in';
@@ -63,7 +60,7 @@ class AuthLinkService {
         return prefEmail;
       }
     } catch (_) {}
-    return defaultEmail;
+    return '';
   }
 
   /// Verifies credentials for offline/secure authentication
@@ -72,18 +69,19 @@ class AuthLinkService {
     final cleanPw = password.trim();
 
     final targetEmail = (await getLinkedEmail()).trim().toLowerCase();
-    String savedPw = defaultPassword;
+    if (targetEmail.isEmpty) return false;
+
+    String? savedPw;
     try {
-      final readPw = await _storage.read(key: _keyPassword);
-      if (readPw != null && readPw.isNotEmpty) {
-        savedPw = readPw;
-      }
+      savedPw = await _storage.read(key: _keyPassword);
     } catch (_) {}
+
+    if (savedPw == null || savedPw.isEmpty) return false;
 
     // Match full email or username before @
     final targetPrefix = targetEmail.split('@').first;
     final matchesEmail = (cleanId == targetEmail || cleanId == targetPrefix);
-    final matchesPassword = (cleanPw == savedPw || cleanPw == defaultPassword);
+    final matchesPassword = (cleanPw == savedPw);
 
     if (matchesEmail && matchesPassword) {
       await markLoggedIn(true);
@@ -123,8 +121,8 @@ class AuthLinkService {
 
   /// Links the current account with designated credentials
   static Future<User?> linkAccount({
-    String email = defaultEmail,
-    String password = defaultPassword,
+    required String email,
+    required String password,
   }) async {
     final cleanEmail = email.trim();
     final cleanPassword = password.trim();
@@ -248,8 +246,8 @@ class AuthLinkService {
     }
 
     // 1. Verify current password
-    final savedPw = (await _storage.read(key: _keyPassword)) ?? defaultPassword;
-    if (cleanCurrent != savedPw && cleanCurrent != defaultPassword) {
+    final savedPw = await _storage.read(key: _keyPassword);
+    if (savedPw == null || cleanCurrent != savedPw) {
       return {'success': false, 'error': 'كلمة المرور الحالية غير صحيحة'};
     }
 
@@ -259,16 +257,7 @@ class AuthLinkService {
       try {
         final email = fbUser.email ?? await getLinkedEmail();
         final cred = EmailAuthProvider.credential(email: email, password: cleanCurrent);
-        try {
-          await fbUser.reauthenticateWithCredential(cred);
-        } catch (_) {
-          if (cleanCurrent != defaultPassword) {
-            try {
-              final defaultCred = EmailAuthProvider.credential(email: email, password: defaultPassword);
-              await fbUser.reauthenticateWithCredential(defaultCred);
-            } catch (_) {}
-          }
-        }
+        await fbUser.reauthenticateWithCredential(cred);
         await fbUser.updatePassword(cleanNew);
         debugPrint('>>> [AuthLink] Firebase password updated successfully');
       } on FirebaseAuthException catch (e) {
@@ -283,7 +272,7 @@ class AuthLinkService {
           } catch (_) {}
         }
       } catch (e) {
-        debugPrint('>>> [AuthLink] Error updating Firebase password: $e');
+        debugPrint('>>> [AuthLink] Update password error: $e');
       }
     }
 

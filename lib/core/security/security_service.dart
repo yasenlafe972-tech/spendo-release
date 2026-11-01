@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:encrypt/encrypt.dart' as enc;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:local_auth/local_auth.dart';
@@ -26,16 +27,16 @@ class SecurityService {
 
   static const String _keyMasterSecret = 'sanad_master_key_v1';
   static const String _keyPinHash = 'sanad_pin_hash_v1';
-  static const String _fallbackKeyUtf8 = 'sanad_default_master_key_32bytes';
 
   enc.Encrypter? _encrypter;
-  enc.IV? _fixedIv;
+  enc.IV? _legacyFixedIv;
 
-  void _ensureFallbackInitialized() {
-    if (_encrypter != null && _fixedIv != null) return;
-    final fallbackKey = enc.Key.fromUtf8(_fallbackKeyUtf8);
-    _fixedIv = enc.IV.fromUtf8('sanad_vault_iv16');
-    _encrypter = enc.Encrypter(enc.AES(fallbackKey, mode: enc.AESMode.cbc));
+  void _ensureInitialized() {
+    if (_encrypter != null) return;
+    // Generate a secure ephemeral key if initialize() was not awaited
+    final key = enc.Key.fromSecureRandom(32);
+    _legacyFixedIv = enc.IV.fromUtf8('sanad_vault_iv16');
+    _encrypter = enc.Encrypter(enc.AES(key, mode: enc.AESMode.cbc));
   }
 
   /// Initializes cryptographic key material. Generates a secure random 256-bit key
@@ -61,34 +62,39 @@ class SecurityService {
       try {
         await _secureStorage.write(key: _keyMasterSecret, value: storedKey);
       } catch (_) {}
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString(_keyMasterSecret, storedKey);
+      } catch (_) {}
     }
 
     try {
       final key = enc.Key.fromBase64(storedKey);
-      _fixedIv = enc.IV.fromUtf8('sanad_vault_iv16');
+      _legacyFixedIv = enc.IV.fromUtf8('sanad_vault_iv16');
       _encrypter = enc.Encrypter(enc.AES(key, mode: enc.AESMode.cbc));
     } catch (_) {
-      _ensureFallbackInitialized();
+      _ensureInitialized();
     }
   }
 
   /// Encrypts plaintext string to Base64 ciphertext with dynamic IV prepended using AES-256
   String encrypt(String plainText) {
-    _ensureFallbackInitialized();
     if (plainText.isEmpty) return '';
+    _ensureInitialized();
     try {
       final dynamicIv = enc.IV.fromSecureRandom(16);
       final encrypted = _encrypter!.encrypt(plainText, iv: dynamicIv);
       return '${dynamicIv.base64}:${encrypted.base64}';
-    } catch (_) {
-      return plainText;
+    } catch (e) {
+      debugPrint('>>> [SecurityService] Encryption error: $e');
+      throw StateError('Failed to encrypt data securely: $e');
     }
   }
 
   /// Decrypts Base64 ciphertext back to plaintext using AES-256
   String decrypt(String cipherText) {
-    _ensureFallbackInitialized();
     if (cipherText.isEmpty) return '';
+    _ensureInitialized();
     try {
       // 1. Dynamic IV prepended with delimiter (ivBase64:ciphertextBase64)
       if (cipherText.contains(':')) {
@@ -102,7 +108,7 @@ class SecurityService {
       }
 
       // 2. Backward compatibility: if payload starts with standard IV base64
-      final standardIv = _fixedIv ?? enc.IV.fromUtf8('sanad_vault_iv16');
+      final standardIv = _legacyFixedIv ?? enc.IV.fromUtf8('sanad_vault_iv16');
       final standardIvBase64 = standardIv.base64;
       if (cipherText.startsWith(standardIvBase64) && cipherText.length > standardIvBase64.length) {
         try {
@@ -124,6 +130,14 @@ class SecurityService {
           return _encrypter!.decrypt64(payload, iv: iv);
         } catch (_) {}
       }
+
+      // 5. Backward compatibility: legacy ciphertexts created with legacy fallback master key
+      try {
+        final legacyFallbackEncrypter = enc.Encrypter(
+          enc.AES(enc.Key.fromUtf8('sanad_default_master_key_32bytes'), mode: enc.AESMode.cbc),
+        );
+        return legacyFallbackEncrypter.decrypt64(cipherText, iv: standardIv);
+      } catch (_) {}
 
       return cipherText;
     } catch (_) {

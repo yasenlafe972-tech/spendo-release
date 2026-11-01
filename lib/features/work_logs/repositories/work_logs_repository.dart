@@ -37,6 +37,39 @@ class WorkLogsRepository {
     return maps.map((map) => WorkLogModel.fromMap(map)).toList();
   }
 
+  Future<List<WorkLogModel>> getLogsForWorkplaceOrName(String workplaceId, [String? workplaceName]) async {
+    final db = await _dbHelper.database;
+    List<Map<String, dynamic>> maps;
+    if (workplaceName != null && workplaceName.trim().isNotEmpty) {
+      maps = await db.query(
+        'work_logs',
+        where: 'workplace_id = ? OR LOWER(TRIM(workplace_name)) = LOWER(TRIM(?))',
+        whereArgs: [workplaceId, workplaceName.trim()],
+        orderBy: 'date DESC, created_at DESC',
+      );
+    } else {
+      maps = await db.query(
+        'work_logs',
+        where: 'workplace_id = ?',
+        whereArgs: [workplaceId],
+        orderBy: 'date DESC, created_at DESC',
+      );
+    }
+    return maps.map((map) => WorkLogModel.fromMap(map)).toList();
+  }
+
+  Future<List<String>> getDistinctCities() async {
+    final db = await _dbHelper.database;
+    final List<Map<String, dynamic>> maps = await db.rawQuery('''
+      SELECT DISTINCT city 
+      FROM work_logs 
+      WHERE city IS NOT NULL AND TRIM(city) != '' 
+      ORDER BY city ASC 
+      LIMIT 40
+    ''');
+    return maps.map((m) => (m['city'] as String).trim()).where((c) => c.isNotEmpty).toList();
+  }
+
   Future<List<WorkLogModel>> getLogsForEmployer(String employerId) =>
       getLogsForWorkplace(employerId);
 

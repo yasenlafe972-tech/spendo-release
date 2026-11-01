@@ -348,6 +348,20 @@ class FirebaseBackupService {
             {'data': pazPhone}
           ];
         }
+
+        final dailyExpenses = prefs.getString('spendo_daily_expenses_v1');
+        if (dailyExpenses != null && dailyExpenses.isNotEmpty) {
+          tables['spendo_daily_expenses_v1'] = [
+            {'data': dailyExpenses}
+          ];
+        }
+
+        final merchantCats = prefs.getString('spendo_merchant_categories_v1');
+        if (merchantCats != null && merchantCats.isNotEmpty) {
+          tables['spendo_merchant_categories_v1'] = [
+            {'data': merchantCats}
+          ];
+        }
       } catch (_) {}
 
       final peopleList = tables['people'] ?? [];
@@ -357,18 +371,13 @@ class FirebaseBackupService {
       final totalRecords = peopleList.length + workplacesList.length + workLogsList.length + debtsList.length;
 
       // Critical Safety Guard: Never overwrite cloud backup during silent automated sync
-      // if this device has never completed an initial restore, or if local records <= seed records (20)
+      // if local database is completely empty to prevent reverse-overwrite
       if (isSilent) {
-        final prefs = await SharedPreferences.getInstance();
-        final hasRestored = prefs.getBool(_keyHasRestoredFromCloud) ?? false;
-
-        // If device has never verified cloud restore and local records <= 20 (just initial seed),
-        // BLOCK silent backup to prevent the reverse-overwrite disaster!
-        if (!hasRestored && totalRecords <= 20) {
-          debugPrint('>>> [Backup] Blocked reverse-overwrite: fresh install with $totalRecords records.');
+        if (totalRecords == 0) {
+          debugPrint('>>> [Backup] Blocked silent backup: completely empty local database.');
           return const BackupResult(
             isSuccess: true,
-            message: 'تم تخطي الحفظ السحابي التلقائي لحماية النسخة السحابية من الكتابة العكسية',
+            message: 'تم تخطي الحفظ السحابي التلقائي لقاعدة بيانات فارغة',
           );
         }
       }
@@ -477,7 +486,7 @@ class FirebaseBackupService {
 
       // 1. Try Cloud Firestore (Most robust and native on iOS)
       if (isFirebaseReady && _firestore != null) {
-        final candidateKeys = <String>{backupKey, 'yasenlafe972_gmail_com', 'spendo_primary_user'};
+        final candidateKeys = <String>{backupKey};
         if (_auth?.currentUser?.uid != null) {
           candidateKeys.add('uid_${_auth!.currentUser!.uid}');
         }
@@ -512,11 +521,14 @@ class FirebaseBackupService {
           }
         } catch (_) {}
 
-        final candidateKeys = <String>{backupKey, 'yasenlafe972_gmail_com', 'spendo_primary_user'};
+        final candidateKeys = <String>{backupKey};
+        if (_auth?.currentUser?.uid != null) {
+          candidateKeys.add('uid_${_auth!.currentUser!.uid}');
+        }
         for (final k in candidateKeys) {
+          final client = HttpClient();
           try {
             final uri = Uri.parse('$_rtdbBaseUrl/spendo_backups/$k.json$authParam');
-            final client = HttpClient();
             final request = await client.getUrl(uri).timeout(const Duration(seconds: 4));
             final response = await request.close().timeout(const Duration(seconds: 4));
             if (response.statusCode == 200) {
@@ -532,6 +544,8 @@ class FirebaseBackupService {
             }
           } catch (e) {
             debugPrint('RTDB restore fetch error for $k: $e');
+          } finally {
+            client.close(force: true);
           }
         }
       }
@@ -566,7 +580,13 @@ class FirebaseBackupService {
             }
           }
         }
-        for (final key in ['spendo_gov_vehicle_info_v1', 'spendo_paz_id_num_v1', 'spendo_paz_phone_v1']) {
+        for (final key in [
+          'spendo_gov_vehicle_info_v1',
+          'spendo_paz_id_num_v1',
+          'spendo_paz_phone_v1',
+          'spendo_daily_expenses_v1',
+          'spendo_merchant_categories_v1',
+        ]) {
           if (tables.containsKey(key)) {
             final list = tables[key];
             if (list is List && list.isNotEmpty && list.first is Map) {
@@ -640,7 +660,13 @@ class FirebaseBackupService {
           {'data': vehicleJson}
         ];
       }
-      for (final key in ['spendo_gov_vehicle_info_v1', 'spendo_paz_id_num_v1', 'spendo_paz_phone_v1']) {
+      for (final key in [
+        'spendo_gov_vehicle_info_v1',
+        'spendo_paz_id_num_v1',
+        'spendo_paz_phone_v1',
+        'spendo_daily_expenses_v1',
+        'spendo_merchant_categories_v1',
+      ]) {
         final val = prefs.getString(key);
         if (val != null && val.isNotEmpty) {
           tables[key] = [
@@ -705,7 +731,13 @@ class FirebaseBackupService {
             }
           }
         }
-        for (final key in ['spendo_gov_vehicle_info_v1', 'spendo_paz_id_num_v1', 'spendo_paz_phone_v1']) {
+        for (final key in [
+          'spendo_gov_vehicle_info_v1',
+          'spendo_paz_id_num_v1',
+          'spendo_paz_phone_v1',
+          'spendo_daily_expenses_v1',
+          'spendo_merchant_categories_v1',
+        ]) {
           if (tables.containsKey(key)) {
             final list = tables[key];
             if (list is List && list.isNotEmpty && list.first is Map) {

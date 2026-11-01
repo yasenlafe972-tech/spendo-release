@@ -91,22 +91,14 @@ class _EmployerDetailsScreenState extends State<EmployerDetailsScreen> {
         _workplace = updatedWp;
       }
 
-      final allLogs = await _workRepo.getAllLogs();
+      final workplaceLogs = await _workRepo.getLogsForWorkplaceOrName(_workplace.id, _workplace.name);
       final people = await _peopleRepo.getAllPeople();
       final payments = await _paymentsRepo.getPaymentsForWorkplace(_workplace.id);
-
-      final filtered = allLogs.where((l) {
-        if (l.workplaceId != null && l.workplaceId == _workplace.id) return true;
-        if (l.workplaceName.trim().toLowerCase() == _workplace.name.trim().toLowerCase()) return true;
-        return false;
-      }).toList();
-
-      filtered.sort((a, b) => b.date.compareTo(a.date));
 
       if (mounted) {
         setState(() {
           _allWorkplaces = allWp;
-          _employerLogs = filtered;
+          _employerLogs = workplaceLogs;
           _workplacePayments = payments;
           _peopleMap = {for (var p in people) p.id: p};
           _isLoading = false;

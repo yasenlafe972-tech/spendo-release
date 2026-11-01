@@ -4,7 +4,6 @@ import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:uuid/uuid.dart';
 import '../security/security_service.dart';
-import 'galaxy_seed_data.dart';
 
 class DatabaseHelper {
   static final DatabaseHelper instance = DatabaseHelper._internal();
@@ -34,13 +33,15 @@ class DatabaseHelper {
       path,
       version: _databaseVersion,
       onConfigure: (db) async {
-        // Enforce SQLite Foreign Key constraints
-        await db.execute('PRAGMA foreign_keys = ON');
+        // Enforce SQLite Foreign Key constraints and busy timeout to avoid locked errors
+        await db.execute('PRAGMA foreign_keys = ON;');
+        await db.execute('PRAGMA busy_timeout = 5000;');
       },
       onOpen: (db) async {
-        // Auto-reconcile and link any legacy/orphaned work logs to workplace/employer
+        // Enable Write-Ahead Logging (WAL) and normal synchronous for high concurrency
         try {
-          await _linkOrphanedWorkLogs(db);
+          await db.execute('PRAGMA journal_mode = WAL;');
+          await db.execute('PRAGMA synchronous = NORMAL;');
         } catch (_) {}
       },
       onCreate: (db, version) async {
@@ -263,14 +264,6 @@ class DatabaseHelper {
             'updated_at': now,
           });
         }
-
-        try {
-          final countResult = await db.rawQuery('SELECT COUNT(*) as count FROM workplaces');
-          final count = Sqflite.firstIntValue(countResult) ?? 0;
-          if (count == 0) {
-            await GalaxySeedData.seedCompleteData(db);
-          }
-        } catch (_) {}
       },
       onUpgrade: (db, oldVersion, newVersion) async {
         if (oldVersion < 2) {
@@ -517,6 +510,24 @@ class DatabaseHelper {
           } catch (_) {}
           try {
             await db.execute('CREATE INDEX IF NOT EXISTS idx_people_is_user ON people(is_user)');
+          } catch (_) {}
+
+          // Ensure vault_items exists on all legacy upgrade paths
+          try {
+            await db.execute('''
+              CREATE TABLE IF NOT EXISTS vault_items (
+                id TEXT PRIMARY KEY,
+                title TEXT NOT NULL,
+                category TEXT NOT NULL,
+                username TEXT,
+                encrypted_password TEXT,
+                notes TEXT,
+                url TEXT,
+                is_favorite INTEGER NOT NULL DEFAULT 0,
+                created_at TEXT NOT NULL,
+                updated_at TEXT NOT NULL
+              )
+            ''');
           } catch (_) {}
         }
       },
