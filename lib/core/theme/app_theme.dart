@@ -11,13 +11,6 @@ class AppTheme {
       brightness: Brightness.dark,
       scaffoldBackgroundColor: AppColors.background,
       fontFamily: 'Cairo',
-      fontFamilyFallback: const [
-        'Geeza Pro',
-        'SF Pro Text',
-        'SF Pro Display',
-        'Arial',
-        'sans-serif',
-      ],
       colorScheme: const ColorScheme.dark(
         surface: AppColors.surface,
         primary: AppColors.spendoGreen,
@@ -60,16 +53,6 @@ class AppTheme {
         unselectedItemColor: AppColors.monoIcon,
         type: BottomNavigationBarType.fixed,
         elevation: 0,
-        selectedLabelStyle: TextStyle(
-          fontSize: 12.5,
-          fontWeight: FontWeight.bold,
-          fontFamily: 'Cairo',
-        ),
-        unselectedLabelStyle: TextStyle(
-          fontSize: 11.5,
-          fontWeight: FontWeight.w600,
-          fontFamily: 'Cairo',
-        ),
       ),
     );
   }

@@ -134,21 +134,24 @@ class SanadApp extends StatelessWidget {
       theme: AppTheme.darkTheme,
       // Arabic RTL support by default for natural directionality
       builder: (context, child) {
-        final mediaQuery = MediaQuery.of(context);
         final isIOS = defaultTargetPlatform == TargetPlatform.iOS;
-        // On iOS (iPhone), adjust text scaler within a safe clamped range to avoid RenderFlex overflows
-        final adjustedScaler = isIOS
-            ? mediaQuery.textScaler.clamp(minScaleFactor: 1.0, maxScaleFactor: 1.12)
-            : mediaQuery.textScaler;
+        if (isIOS) {
+          final mediaQuery = MediaQuery.of(context);
+          return MediaQuery(
+            data: mediaQuery.copyWith(
+              textScaler: mediaQuery.textScaler.clamp(minScaleFactor: 1.0, maxScaleFactor: 1.10),
+            ),
+            child: Directionality(
+              textDirection: TextDirection.rtl,
+              child: child ?? const SizedBox.shrink(),
+            ),
+          );
+        }
 
-        return MediaQuery(
-          data: mediaQuery.copyWith(
-            textScaler: adjustedScaler,
-          ),
-          child: Directionality(
-            textDirection: TextDirection.rtl,
-            child: child ?? const SizedBox.shrink(),
-          ),
+        // On Android / other platforms: strictly natural 100% scale without any override
+        return Directionality(
+          textDirection: TextDirection.rtl,
+          child: child ?? const SizedBox.shrink(),
         );
       },
       home: initialRouteIsLoggedIn
