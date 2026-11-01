@@ -12,13 +12,6 @@ class GalaxySeedData {
         await db.execute('PRAGMA foreign_keys = OFF');
       } catch (_) {}
 
-      try {
-        // Clean up legacy placeholder records from earlier builds
-        await db.delete('work_logs', where: "workplace_id IS NULL OR workplace_id NOT IN ('3f07b32a-5c5f-42e4-add7-27d3a92fa1c2', '6e5d62c4-2e4e-4497-96f9-7f7b81f14a61')");
-        await db.delete('workplaces', where: "id NOT IN ('3f07b32a-5c5f-42e4-add7-27d3a92fa1c2', '6e5d62c4-2e4e-4497-96f9-7f7b81f14a61')");
-        await db.delete('people', where: "phone = '+972500000000' OR national_id = '123456789'");
-      } catch (_) {}
-
       // 1. Workplaces
       for (final wp in _workplaces) {
         try {
@@ -64,9 +57,16 @@ class GalaxySeedData {
       // 7. Vehicle SharedPreferences
       try {
         final prefs = await SharedPreferences.getInstance();
-        await prefs.setString('spendo_vehicle_tracker_v5', _vehicleJson);
-        await prefs.setString('spendo_paz_id_num_v1', '207571662');
-        await prefs.setString('spendo_paz_phone_v1', '0505870690');
+        final existingVehicle = prefs.getString('spendo_vehicle_tracker_v5');
+        if (existingVehicle == null || existingVehicle.isEmpty) {
+          await prefs.setString('spendo_vehicle_tracker_v5', _vehicleJson);
+          if (!prefs.containsKey('spendo_paz_id_num_v1')) {
+            await prefs.setString('spendo_paz_id_num_v1', '207571662');
+          }
+          if (!prefs.containsKey('spendo_paz_phone_v1')) {
+            await prefs.setString('spendo_paz_phone_v1', '0505870690');
+          }
+        }
       } catch (e) {
         debugPrint('Vehicle seed error: $e');
       }

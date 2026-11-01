@@ -13,6 +13,12 @@ import 'package:sanad_app/features/home/presentation/screens/main_navigation_scr
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  // Global error handler for async unhandled errors
+  PlatformDispatcher.instance.onError = (error, stack) {
+    debugPrint('Global error: $error');
+    return true;
+  };
+
   // If any widget throws an exception during build in release mode, show an informative diagnostic UI
   ErrorWidget.builder = (FlutterErrorDetails details) {
     debugPrint('Widget build error: ${details.exception}');
@@ -130,10 +136,9 @@ class SanadApp extends StatelessWidget {
       builder: (context, child) {
         final mediaQuery = MediaQuery.of(context);
         final isIOS = defaultTargetPlatform == TargetPlatform.iOS;
-        // On iOS (iPhone), enlarge text scaler by ~18% so dimensions, cards and Arabic text match Galaxy
-        final baseScale = mediaQuery.textScaler.scale(1.0);
+        // On iOS (iPhone), adjust text scaler within a safe clamped range to avoid RenderFlex overflows
         final adjustedScaler = isIOS
-            ? TextScaler.linear((baseScale * 1.18).clamp(1.15, 1.45))
+            ? mediaQuery.textScaler.clamp(minScaleFactor: 1.0, maxScaleFactor: 1.12)
             : mediaQuery.textScaler;
 
         return MediaQuery(

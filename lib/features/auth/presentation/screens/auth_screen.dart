@@ -556,6 +556,7 @@ class _AuthScreenState extends State<AuthScreen> {
                       child: TextField(
                         controller: _forgotEmailCtrl,
                         keyboardType: TextInputType.emailAddress,
+                        textDirection: TextDirection.ltr,
                         style: const TextStyle(
                           fontFamily: 'Cairo',
                           color: Colors.white,
@@ -864,6 +865,7 @@ class _AuthScreenState extends State<AuthScreen> {
                 Expanded(
                   child: TextFormField(
                     controller: _loginIdentifierCtrl,
+                    textDirection: TextDirection.ltr,
                     style: const TextStyle(
                       fontFamily: 'Cairo',
                       color: Colors.white,
@@ -938,6 +940,7 @@ class _AuthScreenState extends State<AuthScreen> {
                 Expanded(
                   child: TextFormField(
                     controller: _loginPasswordCtrl,
+                    textDirection: TextDirection.ltr,
                     obscureText: _loginObscurePassword,
                     style: const TextStyle(
                       fontFamily: 'Cairo',
@@ -1181,6 +1184,7 @@ class _AuthScreenState extends State<AuthScreen> {
                   child: TextFormField(
                     controller: _regEmailCtrl,
                     keyboardType: TextInputType.emailAddress,
+                    textDirection: TextDirection.ltr,
                     style: const TextStyle(
                       fontFamily: 'Cairo',
                       color: Colors.white,
@@ -1241,6 +1245,7 @@ class _AuthScreenState extends State<AuthScreen> {
                 Expanded(
                   child: TextFormField(
                     controller: _regPasswordCtrl,
+                    textDirection: TextDirection.ltr,
                     obscureText: _regObscurePassword,
                     style: const TextStyle(
                       fontFamily: 'Cairo',

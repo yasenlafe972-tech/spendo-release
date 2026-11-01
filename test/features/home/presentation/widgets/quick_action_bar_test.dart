@@ -26,13 +26,13 @@ void main() {
     expect(find.text('تسجيل يومية'), findsOneWidget);
     expect(find.text('مكان عمل جديد'), findsOneWidget);
     expect(find.text('دين أو سلفة'), findsOneWidget);
-    expect(find.text('نسخ سحابي'), findsOneWidget);
+    expect(find.text('تعبئة وقود'), findsOneWidget);
 
-    // Verify all icons are displayed
-    expect(find.byIcon(Icons.add_task_rounded), findsOneWidget);
-    expect(find.byIcon(Icons.domain_add_rounded), findsOneWidget);
-    expect(find.byIcon(Icons.receipt_long_rounded), findsOneWidget);
-    expect(find.byIcon(Icons.cloud_sync_rounded), findsOneWidget);
+    // Verify all icons are displayed (foreground and background watermark)
+    expect(find.byIcon(Icons.add_task_rounded), findsWidgets);
+    expect(find.byIcon(Icons.domain_add_rounded), findsWidgets);
+    expect(find.byIcon(Icons.receipt_long_rounded), findsWidgets);
+    expect(find.byIcon(Icons.local_gas_station_rounded), findsWidgets);
 
     // Tap each action and check callbacks
     await tester.tap(find.text('تسجيل يومية'));
@@ -47,7 +47,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(debtTapped, isTrue);
 
-    await tester.tap(find.text('نسخ سحابي'));
+    await tester.tap(find.text('تعبئة وقود'));
     await tester.pumpAndSettle();
     expect(cloudBackupTapped, isTrue);
   });

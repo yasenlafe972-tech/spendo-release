@@ -18,6 +18,7 @@ class DatabaseHelper {
   }
 
   static Database? _database;
+  static const int _databaseVersion = 10;
 
   Future<Database> get database async {
     if (_database != null) return _database!;
@@ -31,7 +32,7 @@ class DatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 9,
+      version: _databaseVersion,
       onConfigure: (db) async {
         // Enforce SQLite Foreign Key constraints
         await db.execute('PRAGMA foreign_keys = ON');
@@ -40,9 +41,6 @@ class DatabaseHelper {
         // Auto-reconcile and link any legacy/orphaned work logs to workplace/employer
         try {
           await _linkOrphanedWorkLogs(db);
-        } catch (_) {}
-        try {
-          await GalaxySeedData.seedCompleteData(db);
         } catch (_) {}
       },
       onCreate: (db, version) async {
@@ -115,6 +113,14 @@ class DatabaseHelper {
         // Indices for fast Master-Detail employer/workplace filtering and date sorting
         await db.execute('CREATE INDEX IF NOT EXISTS idx_work_logs_workplace_id ON work_logs(workplace_id)');
         await db.execute('CREATE INDEX IF NOT EXISTS idx_work_logs_date ON work_logs(date)');
+        await db.execute('CREATE INDEX IF NOT EXISTS idx_work_logs_person_id ON work_logs(person_id)');
+        await db.execute('CREATE INDEX IF NOT EXISTS idx_work_logs_wp_date ON work_logs(workplace_id, date DESC)');
+        await db.execute('CREATE INDEX IF NOT EXISTS idx_workplaces_person_id ON workplaces(person_id)');
+        await db.execute('CREATE INDEX IF NOT EXISTS idx_debts_person_id ON debts(person_id)');
+        await db.execute('CREATE INDEX IF NOT EXISTS idx_debts_tx_date ON debts(transaction_date DESC)');
+        await db.execute('CREATE INDEX IF NOT EXISTS idx_debt_payments_debt_id ON debt_payments(debt_id)');
+        await db.execute('CREATE INDEX IF NOT EXISTS idx_payments_person_id ON payments(person_id)');
+        await db.execute('CREATE INDEX IF NOT EXISTS idx_people_is_user ON people(is_user)');
 
         // 3.1 Workplace Payments table (سجل دفعات المقاولين والمشغلين على الحساب)
         await db.execute('''
@@ -259,7 +265,11 @@ class DatabaseHelper {
         }
 
         try {
-          await GalaxySeedData.seedCompleteData(db);
+          final countResult = await db.rawQuery('SELECT COUNT(*) as count FROM workplaces');
+          final count = Sqflite.firstIntValue(countResult) ?? 0;
+          if (count == 0) {
+            await GalaxySeedData.seedCompleteData(db);
+          }
         } catch (_) {}
       },
       onUpgrade: (db, oldVersion, newVersion) async {
@@ -480,6 +490,33 @@ class DatabaseHelper {
           } catch (_) {}
           try {
             await db.execute("ALTER TABLE work_logs ADD COLUMN attachments TEXT DEFAULT '[]'");
+          } catch (_) {}
+        }
+
+        if (oldVersion < 10) {
+          try {
+            await db.execute('CREATE INDEX IF NOT EXISTS idx_work_logs_person_id ON work_logs(person_id)');
+          } catch (_) {}
+          try {
+            await db.execute('CREATE INDEX IF NOT EXISTS idx_work_logs_wp_date ON work_logs(workplace_id, date DESC)');
+          } catch (_) {}
+          try {
+            await db.execute('CREATE INDEX IF NOT EXISTS idx_workplaces_person_id ON workplaces(person_id)');
+          } catch (_) {}
+          try {
+            await db.execute('CREATE INDEX IF NOT EXISTS idx_debts_person_id ON debts(person_id)');
+          } catch (_) {}
+          try {
+            await db.execute('CREATE INDEX IF NOT EXISTS idx_debts_tx_date ON debts(transaction_date DESC)');
+          } catch (_) {}
+          try {
+            await db.execute('CREATE INDEX IF NOT EXISTS idx_debt_payments_debt_id ON debt_payments(debt_id)');
+          } catch (_) {}
+          try {
+            await db.execute('CREATE INDEX IF NOT EXISTS idx_payments_person_id ON payments(person_id)');
+          } catch (_) {}
+          try {
+            await db.execute('CREATE INDEX IF NOT EXISTS idx_people_is_user ON people(is_user)');
           } catch (_) {}
         }
       },

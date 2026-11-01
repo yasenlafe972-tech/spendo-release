@@ -758,7 +758,7 @@ class _PeopleScreenState extends State<PeopleScreen> {
                               crossAxisCount: 2,
                               mainAxisSpacing: 10,
                               crossAxisSpacing: 10,
-                              childAspectRatio: 1.32,
+                              childAspectRatio: 1.15,
                             ),
                             itemCount: filtered.length,
                             itemBuilder: (context, index) {

@@ -579,14 +579,14 @@ class _AddDebtSheetState extends State<AddDebtSheet> {
                 if (_nameCtrl.text.isNotEmpty && controller.text.isEmpty) {
                   controller.text = _nameCtrl.text;
                 }
-                controller.addListener(() {
-                  _nameCtrl.text = controller.text;
-                  _selectedPersonId = null;
-                });
 
                 return TextFormField(
                   controller: controller,
                   focusNode: focusNode,
+                  onChanged: (val) {
+                    _nameCtrl.text = val;
+                    _selectedPersonId = null;
+                  },
                   style: const TextStyle(
                     fontFamily: 'Cairo',
                     color: Colors.white,

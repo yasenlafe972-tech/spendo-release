@@ -72,26 +72,28 @@ class WorkplacesRepository {
   /// Deletes a workplace by ID and optionally cascades to its work logs
   Future<void> deleteWorkplace(String id, {String? workplaceName, bool deleteLogs = true}) async {
     final db = await _dbHelper.database;
-    if (deleteLogs) {
-      if (workplaceName != null && workplaceName.trim().isNotEmpty) {
-        await db.delete(
-          'work_logs',
-          where: 'workplace_id = ? OR workplace_name = ?',
-          whereArgs: [id, workplaceName.trim()],
-        );
-      } else {
-        await db.delete(
-          'work_logs',
-          where: 'workplace_id = ?',
-          whereArgs: [id],
-        );
+    await db.transaction((txn) async {
+      if (deleteLogs) {
+        if (workplaceName != null && workplaceName.trim().isNotEmpty) {
+          await txn.delete(
+            'work_logs',
+            where: 'workplace_id = ? OR workplace_name = ?',
+            whereArgs: [id, workplaceName.trim()],
+          );
+        } else {
+          await txn.delete(
+            'work_logs',
+            where: 'workplace_id = ?',
+            whereArgs: [id],
+          );
+        }
       }
-    }
-    await db.delete(
-      'workplaces',
-      where: 'id = ?',
-      whereArgs: [id],
-    );
+      await txn.delete(
+        'workplaces',
+        where: 'id = ?',
+        whereArgs: [id],
+      );
+    });
     FirebaseBackupService.instance.scheduleAutoBackup();
   }
 

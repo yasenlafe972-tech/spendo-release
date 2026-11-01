@@ -6,7 +6,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:sanad_app/core/services/attachment_service.dart';
 import 'package:sanad_app/core/utils/spendo_haptic_feedback.dart';
 
-class AttachmentViewerModal extends StatelessWidget {
+class AttachmentViewerModal extends StatefulWidget {
   final String filePath;
   final VoidCallback? onDelete;
 
@@ -31,11 +31,47 @@ class AttachmentViewerModal extends StatelessWidget {
     );
   }
 
+  @override
+  State<AttachmentViewerModal> createState() => _AttachmentViewerModalState();
+}
+
+class _AttachmentViewerModalState extends State<AttachmentViewerModal> {
+  bool _isLoading = true;
+  bool _exists = false;
+  int _fileLength = 0;
+  late final File _file;
+  late final AttachmentItem _item;
+
+  @override
+  void initState() {
+    super.initState();
+    _file = File(widget.filePath);
+    _item = AttachmentItem.fromPath(widget.filePath);
+    _checkFile();
+  }
+
+  Future<void> _checkFile() async {
+    final exists = await _file.exists();
+    int length = 0;
+    if (exists) {
+      try {
+        length = await _file.length();
+      } catch (_) {}
+    }
+    if (mounted) {
+      setState(() {
+        _exists = exists;
+        _fileLength = length;
+        _isLoading = false;
+      });
+    }
+  }
+
   void _shareAttachment(BuildContext context) {
     SpendoHaptics.light();
     SharePlus.instance.share(
       ShareParams(
-        files: [XFile(filePath)],
+        files: [XFile(widget.filePath)],
         subject: 'مرفق توثيق العمل - Spendo',
       ),
     );
@@ -43,7 +79,7 @@ class AttachmentViewerModal extends StatelessWidget {
 
   void _openFileExternally() async {
     SpendoHaptics.light();
-    final uri = Uri.file(filePath);
+    final uri = Uri.file(widget.filePath);
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri);
     }
@@ -51,10 +87,6 @@ class AttachmentViewerModal extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final item = AttachmentItem.fromPath(filePath);
-    final file = File(filePath);
-    final exists = file.existsSync();
-
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
@@ -67,7 +99,7 @@ class AttachmentViewerModal extends StatelessWidget {
             onPressed: () => Navigator.pop(context),
           ),
           title: Text(
-            item.name,
+            _item.name,
             style: const TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.bold,
@@ -82,110 +114,112 @@ class AttachmentViewerModal extends StatelessWidget {
               tooltip: 'مشاركة',
               onPressed: () => _shareAttachment(context),
             ),
-            if (onDelete != null)
+            if (widget.onDelete != null)
               IconButton(
                 icon: const Icon(Remix.delete_bin_6_line, color: Color(0xFFEF4444)),
                 tooltip: 'حذف المرفق',
                 onPressed: () {
                   SpendoHaptics.light();
                   Navigator.pop(context);
-                  onDelete!();
+                  widget.onDelete!();
                 },
               ),
           ],
         ),
         body: Center(
-          child: !exists
-              ? const Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Remix.file_damage_line, size: 48, color: Color(0xFF71717A)),
-                    SizedBox(height: 12),
-                    Text(
-                      'الملف غير متوفر في الذاكرة المحلية',
-                      style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 13),
-                    ),
-                  ],
-                )
-              : item.isImage
-                  ? InteractiveViewer(
-                      minScale: 0.8,
-                      maxScale: 4.0,
-                      child: Image.file(
-                        file,
-                        fit: BoxFit.contain,
-                      ),
+          child: _isLoading
+              ? const CircularProgressIndicator(color: Color(0xFF00A86B))
+              : !_exists
+                  ? const Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Remix.file_damage_line, size: 48, color: Color(0xFF71717A)),
+                        SizedBox(height: 12),
+                        Text(
+                          'الملف غير متوفر في الذاكرة المحلية',
+                          style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 13),
+                        ),
+                      ],
                     )
-                  : Container(
-                      margin: const EdgeInsets.all(24),
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF171A19),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: const Color(0xFF242927)),
-                      ),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            item.isPdf ? Remix.file_pdf_2_fill : Remix.file_text_fill,
-                            size: 64,
-                            color: item.isPdf ? const Color(0xFFEF4444) : const Color(0xFF38BDF8),
+                  : _item.isImage
+                      ? InteractiveViewer(
+                          minScale: 0.8,
+                          maxScale: 4.0,
+                          child: Image.file(
+                            _file,
+                            fit: BoxFit.contain,
                           ),
-                          const SizedBox(height: 14),
-                          Text(
-                            item.name,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
-                            ),
-                            textAlign: TextAlign.center,
+                        )
+                      : Container(
+                          margin: const EdgeInsets.all(24),
+                          padding: const EdgeInsets.all(20),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF171A19),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: const Color(0xFF242927)),
                           ),
-                          const SizedBox(height: 6),
-                          Text(
-                            'الحجم: ${(file.lengthSync() / 1024).toStringAsFixed(1)} كيلوبايت',
-                            style: const TextStyle(color: Color(0xFF9CA3AF), fontSize: 11),
-                          ),
-                          const SizedBox(height: 20),
-                          Row(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
                             children: [
-                              Expanded(
-                                child: ElevatedButton.icon(
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: const Color(0xFF00A86B),
-                                    foregroundColor: Colors.white,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(10),
-                                    ),
-                                    padding: const EdgeInsets.symmetric(vertical: 10),
-                                  ),
-                                  icon: const Icon(Remix.external_link_line, size: 16),
-                                  label: const Text('فتح الملف', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
-                                  onPressed: _openFileExternally,
-                                ),
+                              Icon(
+                                _item.isPdf ? Remix.file_pdf_2_fill : Remix.file_text_fill,
+                                size: 64,
+                                color: _item.isPdf ? const Color(0xFFEF4444) : const Color(0xFF38BDF8),
                               ),
-                              const SizedBox(width: 10),
-                              Expanded(
-                                child: OutlinedButton.icon(
-                                  style: OutlinedButton.styleFrom(
-                                    side: const BorderSide(color: Color(0xFF242927)),
-                                    foregroundColor: Colors.white,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(10),
-                                    ),
-                                    padding: const EdgeInsets.symmetric(vertical: 10),
-                                  ),
-                                  icon: const Icon(Remix.share_line, size: 16),
-                                  label: const Text('مشاركة', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
-                                  onPressed: () => _shareAttachment(context),
+                              const SizedBox(height: 14),
+                              Text(
+                                _item.name,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold,
                                 ),
+                                textAlign: TextAlign.center,
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                'الحجم: ${(_fileLength / 1024).toStringAsFixed(1)} كيلوبايت',
+                                style: const TextStyle(color: Color(0xFF9CA3AF), fontSize: 11),
+                              ),
+                              const SizedBox(height: 20),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: ElevatedButton.icon(
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: const Color(0xFF00A86B),
+                                        foregroundColor: Colors.white,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(10),
+                                        ),
+                                        padding: const EdgeInsets.symmetric(vertical: 10),
+                                      ),
+                                      icon: const Icon(Remix.external_link_line, size: 16),
+                                      label: const Text('فتح الملف', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                                      onPressed: _openFileExternally,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 10),
+                                  Expanded(
+                                    child: OutlinedButton.icon(
+                                      style: OutlinedButton.styleFrom(
+                                        side: const BorderSide(color: Color(0xFF242927)),
+                                        foregroundColor: Colors.white,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(10),
+                                        ),
+                                        padding: const EdgeInsets.symmetric(vertical: 10),
+                                      ),
+                                      icon: const Icon(Remix.share_line, size: 16),
+                                      label: const Text('مشاركة', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                                      onPressed: () => _shareAttachment(context),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ],
                           ),
-                        ],
-                      ),
-                    ),
+                        ),
         ),
       ),
     );

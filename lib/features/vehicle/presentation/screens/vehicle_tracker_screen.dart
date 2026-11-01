@@ -85,6 +85,7 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
 
   @override
   void dispose() {
+    _shareChannel.setMethodCallHandler(null);
     _odometerController.dispose();
     super.dispose();
   }

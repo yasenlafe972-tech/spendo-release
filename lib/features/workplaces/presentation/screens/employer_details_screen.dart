@@ -2295,8 +2295,10 @@ class _EmployerDetailsScreenState extends State<EmployerDetailsScreen> {
       decoration: const BoxDecoration(
         border: Border(bottom: BorderSide(color: EmployerDetailsScreen.surfaceBorder)),
       ),
-      child: IntrinsicHeight(
+      child: SizedBox(
+        height: 42,
         child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             // Col 1: Day & Date (flex: 4)
             Expanded(

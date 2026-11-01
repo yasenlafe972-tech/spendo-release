@@ -61,10 +61,6 @@ class SecurityService {
       try {
         await _secureStorage.write(key: _keyMasterSecret, value: storedKey);
       } catch (_) {}
-      try {
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setString(_keyMasterSecret, storedKey);
-      } catch (_) {}
     }
 
     try {
@@ -76,13 +72,14 @@ class SecurityService {
     }
   }
 
-  /// Encrypts plaintext string to Base64 ciphertext using AES-256
+  /// Encrypts plaintext string to Base64 ciphertext with dynamic IV prepended using AES-256
   String encrypt(String plainText) {
     _ensureFallbackInitialized();
     if (plainText.isEmpty) return '';
     try {
-      final encrypted = _encrypter!.encrypt(plainText, iv: _fixedIv);
-      return encrypted.base64;
+      final dynamicIv = enc.IV.fromSecureRandom(16);
+      final encrypted = _encrypter!.encrypt(plainText, iv: dynamicIv);
+      return '${dynamicIv.base64}:${encrypted.base64}';
     } catch (_) {
       return plainText;
     }
@@ -93,8 +90,42 @@ class SecurityService {
     _ensureFallbackInitialized();
     if (cipherText.isEmpty) return '';
     try {
-      final decrypted = _encrypter!.decrypt64(cipherText, iv: _fixedIv);
-      return decrypted;
+      // 1. Dynamic IV prepended with delimiter (ivBase64:ciphertextBase64)
+      if (cipherText.contains(':')) {
+        final parts = cipherText.split(':');
+        if (parts.length == 2 && parts[0].isNotEmpty && parts[1].isNotEmpty) {
+          try {
+            final iv = enc.IV.fromBase64(parts[0]);
+            return _encrypter!.decrypt64(parts[1], iv: iv);
+          } catch (_) {}
+        }
+      }
+
+      // 2. Backward compatibility: if payload starts with standard IV base64
+      final standardIv = _fixedIv ?? enc.IV.fromUtf8('sanad_vault_iv16');
+      final standardIvBase64 = standardIv.base64;
+      if (cipherText.startsWith(standardIvBase64) && cipherText.length > standardIvBase64.length) {
+        try {
+          final payload = cipherText.substring(standardIvBase64.length);
+          return _encrypter!.decrypt64(payload, iv: standardIv);
+        } catch (_) {}
+      }
+
+      // 3. Backward compatibility: legacy payload encrypted with standard IV directly (no prepended IV)
+      try {
+        return _encrypter!.decrypt64(cipherText, iv: standardIv);
+      } catch (_) {}
+
+      // 4. Backward compatibility: fixed-length 16-byte IV prepended without delimiter (24 chars base64)
+      if (cipherText.length > 24) {
+        try {
+          final iv = enc.IV.fromBase64(cipherText.substring(0, 24));
+          final payload = cipherText.substring(24);
+          return _encrypter!.decrypt64(payload, iv: iv);
+        } catch (_) {}
+      }
+
+      return cipherText;
     } catch (_) {
       // In case data is unencrypted or key rotated
       return cipherText;
@@ -106,7 +137,7 @@ class SecurityService {
     try {
       final bool canAuthenticate =
           await _localAuth.canCheckBiometrics || await _localAuth.isDeviceSupported();
-      if (!canAuthenticate) return true; // Fallback if hardware not supported
+      if (!canAuthenticate) return false; // Fallback if hardware not supported
 
       return await _localAuth.authenticate(
         localizedReason: reason,

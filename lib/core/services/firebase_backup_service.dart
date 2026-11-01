@@ -412,7 +412,15 @@ class FirebaseBackupService {
 
       // 3. Primary Sync to Realtime Database via REST
       try {
-        final uri = Uri.parse('$_rtdbBaseUrl/spendo_backups/$backupKey.json');
+        String authParam = '';
+        try {
+          final token = await _auth?.currentUser?.getIdToken();
+          if (token != null && token.isNotEmpty) {
+            authParam = '?auth=$token';
+          }
+        } catch (_) {}
+
+        final uri = Uri.parse('$_rtdbBaseUrl/spendo_backups/$backupKey.json$authParam');
         final client = HttpClient();
         final request = await client.putUrl(uri).timeout(const Duration(seconds: 6));
         request.headers.contentType = ContentType.json;
