@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -127,9 +128,22 @@ class SanadApp extends StatelessWidget {
       theme: AppTheme.darkTheme,
       // Arabic RTL support by default for natural directionality
       builder: (context, child) {
-        return Directionality(
-          textDirection: TextDirection.rtl,
-          child: child ?? const SizedBox.shrink(),
+        final mediaQuery = MediaQuery.of(context);
+        final isIOS = defaultTargetPlatform == TargetPlatform.iOS;
+        // On iOS (iPhone), enlarge text scaler by ~18% so dimensions, cards and Arabic text match Galaxy
+        final baseScale = mediaQuery.textScaler.scale(1.0);
+        final adjustedScaler = isIOS
+            ? TextScaler.linear((baseScale * 1.18).clamp(1.15, 1.45))
+            : mediaQuery.textScaler;
+
+        return MediaQuery(
+          data: mediaQuery.copyWith(
+            textScaler: adjustedScaler,
+          ),
+          child: Directionality(
+            textDirection: TextDirection.rtl,
+            child: child ?? const SizedBox.shrink(),
+          ),
         );
       },
       home: initialRouteIsLoggedIn
