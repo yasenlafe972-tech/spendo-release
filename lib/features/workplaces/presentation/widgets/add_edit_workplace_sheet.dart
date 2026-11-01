@@ -224,7 +224,7 @@ class _AddEditWorkplaceSheetState extends State<AddEditWorkplaceSheet> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Text(
-                            isEditing ? 'تعديل بيانات المشغّل' : 'إضافة مشغّل جديد',
+                            isEditing ? 'تعديل بيانات المشغّل (מעסיק)' : 'إضافة مشغّل جديد (מעסיק)',
                             style: const TextStyle(
                               color: Color(0xFFF4F4F5),
                               fontSize: 17,
@@ -282,7 +282,7 @@ class _AddEditWorkplaceSheetState extends State<AddEditWorkplaceSheet> {
                     textInputAction: TextInputAction.next,
                     style: const TextStyle(color: AppColors.textPrimary, fontSize: 14.5),
                     decoration: _inputDecoration(
-                      label: 'اسم المشغّل أو الشركة *',
+                      label: 'اسم المشغّل أو الشركة (מעסיק) *',
                       icon: Icons.domain_rounded,
                       hint: 'مثال: لا في חשמל، شركة الأفق...',
                     ),

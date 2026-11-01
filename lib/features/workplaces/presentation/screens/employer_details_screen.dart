@@ -1555,9 +1555,24 @@ class _EmployerDetailsScreenState extends State<EmployerDetailsScreen> {
                                     const SizedBox(height: 3),
                                     Row(
                                       children: [
-                                        const Text(
-                                          'مشغّل',
-                                          style: TextStyle(color: EmployerDetailsScreen.textMuted, fontSize: 10),
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                                          decoration: BoxDecoration(
+                                            color: const Color(0xFFEAB308).withValues(alpha: 0.12),
+                                            borderRadius: BorderRadius.circular(6),
+                                            border: Border.all(
+                                              color: const Color(0xFFEAB308).withValues(alpha: 0.4),
+                                              width: 0.8,
+                                            ),
+                                          ),
+                                          child: const Text(
+                                            'מעסיק',
+                                            style: TextStyle(
+                                              color: Color(0xFFEAB308),
+                                              fontSize: 10.5,
+                                              fontWeight: FontWeight.w700,
+                                            ),
+                                          ),
                                         ),
                                         const SizedBox(width: 6),
                                         InkWell(
