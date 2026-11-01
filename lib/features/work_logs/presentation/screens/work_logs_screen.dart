@@ -777,7 +777,7 @@ class _WorkLogsScreenState extends State<WorkLogsScreen> {
                   children: const [
                     Icon(Remix.building_2_line, size: 14, color: brandGreen),
                     SizedBox(width: 6),
-                    const Text(
+                    Text(
                       'دليل المشغّلين وأصحاب العمل',
                       style: TextStyle(
                         fontSize: 11,
@@ -975,7 +975,7 @@ class _WorkLogsScreenState extends State<WorkLogsScreen> {
                 children: const [
                   Icon(Remix.add_line, size: 13, color: brandGreen),
                   SizedBox(width: 4),
-                  const Text(
+                  Text(
                     'إضافة مشغّل',
                     style: TextStyle(
                       fontSize: 11,
