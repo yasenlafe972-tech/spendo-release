@@ -4,6 +4,9 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import com.google.mlkit.vision.common.InputImage
+import com.google.mlkit.vision.text.TextRecognition
+import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 import io.flutter.embedding.android.FlutterFragmentActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
@@ -40,6 +43,26 @@ class MainActivity : FlutterFragmentActivity() {
             if (call.method == "getInitialSharedFile") {
                 result.success(initialSharedFilePath)
                 initialSharedFilePath = null
+            } else if (call.method == "extractImageText") {
+                val path = call.arguments as? String
+                if (path != null && File(path).exists()) {
+                    try {
+                        val file = File(path)
+                        val image = InputImage.fromFilePath(this, Uri.fromFile(file))
+                        val recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
+                        recognizer.process(image)
+                            .addOnSuccessListener { visionText ->
+                                result.success(visionText.text)
+                            }
+                            .addOnFailureListener {
+                                result.success("")
+                            }
+                    } catch (_: Exception) {
+                        result.success("")
+                    }
+                } else {
+                    result.success("")
+                }
             } else {
                 result.notImplemented()
             }

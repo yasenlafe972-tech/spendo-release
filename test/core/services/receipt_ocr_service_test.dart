@@ -88,6 +88,50 @@ void main() {
       expect(result.invoiceNumber, equals('778899'));
     });
 
+    test('parses real Yellow receipt from Biina station', () {
+      const sample = '''
+מסמך ממוחשב
+פז קמעונאות ואנרגיה בע"מ
+איחוד עוסק 557100641
+פז בעינה 365
+כביש עכו צפת
+טל 054-5246045
+
+חשבונית מס/קבלה מקור
+036509901116246
+02/10/26 13:08
+רכב: 55505403
+משאבה: 06
+
+אוקטן 95 8.270 ש"ח לליטר
+כמות: 2.423 ליטרים
+סה"כ דלקים: 20.04 ש"ח
+
+סה"כ לפני מע"מ 16.98 ש"ח
+מע"מ לחוץ רכב 3.06 ש"ח
+
+סה"כ לתשלום 20.04 ש"ח
+כולל מע"מ
+
+Yellow Friends
+שולם באפליקציה
+שם לקוח yasen lafe
+''';
+
+      final result = ReceiptOcrService.parseReceiptText(sample);
+      expect(result.isFuel, isTrue);
+      expect(result.amount, equals(20.04));
+      expect(result.liters, equals(2.423));
+      expect(result.pricePerLiter, equals(8.27));
+      expect(result.providerName, contains('פז בעינה'));
+      expect(result.invoiceNumber, equals('036509901116246'));
+      expect(result.date.day, equals(2));
+      expect(result.date.month, equals(10));
+      expect(result.date.year, equals(2026));
+      expect(result.date.hour, equals(13));
+      expect(result.date.minute, equals(8));
+    });
+
     test('handles empty or unrecognized text without throwing', () {
       final emptyResult = ReceiptOcrService.parseReceiptText('');
       expect(emptyResult.amount, equals(0.0));

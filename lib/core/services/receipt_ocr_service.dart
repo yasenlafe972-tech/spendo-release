@@ -41,13 +41,13 @@ class ReceiptOcrService {
   static const String _ocrEndpoint = 'https://api.ocr.space/parse/image';
 
   /// Performs OCR on an image file and parses Hebrew Israeli fuel/garage receipts.
-  /// Tier 1: On-device native Apple Vision OCR on iOS (100% offline, 0 latency).
+  /// Tier 1: On-device native OCR (Apple Vision on iOS, Google ML Kit on Android, 100% offline).
   /// Tier 2: OCR.space API fallback.
   static Future<ParsedReceiptResult?> analyzeReceiptImage(File imageFile) async {
     if (!imageFile.existsSync()) return null;
 
-    // TIER 1: Native Apple Vision OCR on iOS
-    if (Platform.isIOS) {
+    // TIER 1: Native on-device OCR (Apple Vision on iOS, Google ML Kit on Android)
+    if (Platform.isIOS || Platform.isAndroid) {
       try {
         final visionText = await _shareChannel.invokeMethod<String>(
           'extractImageText',
@@ -68,7 +68,7 @@ class ReceiptOcrService {
       final base64Image = 'data:image/jpeg;base64,${base64Encode(bytes)}';
 
       final client = HttpClient()
-        ..connectionTimeout = const Duration(seconds: 10);
+        ..connectionTimeout = const Duration(seconds: 4);
 
       try {
         final uri = Uri.parse(_ocrEndpoint);
@@ -86,7 +86,7 @@ class ReceiptOcrService {
         }).query;
 
         request.write(body);
-        final response = await request.close().timeout(const Duration(seconds: 12));
+        final response = await request.close().timeout(const Duration(seconds: 4));
 
         if (response.statusCode == 200) {
           final responseBody = await response.transform(utf8.decoder).join();
@@ -112,47 +112,62 @@ class ReceiptOcrService {
   }
 
   /// High-reliability multi-tier analyzer for Yellow and Israeli fuel receipts.
-  /// Tier 1: Instant on-device native PDFKit text extraction (iOS) & Dart stream decoder (0ms latency, 100% offline).
-  /// Tier 2: Printing rasterization to PNG with optical scan fallback for scanned image PDFs.
+  /// Tier 1: Instant on-device text extraction (< 10ms, 100% offline).
+  /// Tier 2: Instant embedded JPEG image extraction from digital receipt PDFs (< 5ms).
+  /// Tier 3: Printing rasterization for physical scanned PDFs (Page 0 only, 3s timeout).
   static Future<ParsedReceiptResult?> analyzeReceiptPdf(File pdfFile) async {
     try {
-      // TIER 1: On-device direct digital text extraction (Fastest & 100% accurate for Yellow invoices)
+      final bytes = await pdfFile.readAsBytes();
+
+      // TIER 1: On-device direct digital text extraction (Fastest & 100% accurate)
       final extractedText = await PdfTextExtractor.extractText(pdfFile);
       if (extractedText.trim().isNotEmpty) {
         final parsed = parseReceiptText(extractedText);
         if (parsed.amount > 0 || parsed.liters != null) {
-          debugPrint('>>> [ReceiptOcr] Successfully extracted Yellow PDF text locally (${extractedText.length} chars). Amount: ${parsed.amount}, Liters: ${parsed.liters}');
+          debugPrint('>>> [ReceiptOcr] Successfully extracted digital text (${extractedText.length} chars). Amount: ${parsed.amount}, Liters: ${parsed.liters}');
           return parsed;
         }
       }
 
-      // TIER 2: If digital text was empty (scanned paper PDF), rasterize first page to PNG
-      final bytes = await pdfFile.readAsBytes();
-      await for (final page in Printing.raster(bytes, pages: const [0], dpi: 200)) {
-        final pngBytes = await page.toPng();
-        final tempImg = File(
-            '${pdfFile.parent.path}/pdf_page_${DateTime.now().millisecondsSinceEpoch}.png');
+      // TIER 2: Fast extraction of embedded JPEG streams (Standard for Yellow invoices, < 5ms)
+      final embeddedJpeg = PdfTextExtractor.extractFirstEmbeddedJpeg(bytes);
+      if (embeddedJpeg != null) {
+        final tempJpg = File(
+            '${pdfFile.parent.path}/embedded_receipt_${DateTime.now().millisecondsSinceEpoch}.jpg');
         try {
-          await tempImg.writeAsBytes(pngBytes);
-          final res = await analyzeReceiptImage(tempImg);
+          await tempJpg.writeAsBytes(embeddedJpeg);
+          final res = await analyzeReceiptImage(tempJpg);
           if (res != null && (res.amount > 0 || res.liters != null)) {
+            debugPrint('>>> [ReceiptOcr] Successfully extracted embedded receipt image. Amount: ${res.amount}, Liters: ${res.liters}');
             return res;
           }
         } finally {
           try {
-            await tempImg.delete();
+            await tempJpg.delete();
           } catch (_) {}
         }
       }
 
-      // TIER 3: Fallback extraction from raw bytes strings
-      final fallbackRawText = PdfTextExtractor.extractTextFromBytes(bytes);
-      if (fallbackRawText.trim().isNotEmpty) {
-        final fallbackParsed = parseReceiptText(fallbackRawText);
-        if (fallbackParsed.amount > 0 || fallbackParsed.liters != null) {
-          return fallbackParsed;
+      // TIER 3: If neither succeeded, rasterize first page to PNG with strict 3-second limit
+      try {
+        await for (final page in Printing.raster(bytes, pages: const [0], dpi: 150)
+            .timeout(const Duration(seconds: 3))) {
+          final pngBytes = await page.toPng();
+          final tempImg = File(
+              '${pdfFile.parent.path}/pdf_page_${DateTime.now().millisecondsSinceEpoch}.png');
+          try {
+            await tempImg.writeAsBytes(pngBytes);
+            final res = await analyzeReceiptImage(tempImg);
+            if (res != null && (res.amount > 0 || res.liters != null)) {
+              return res;
+            }
+          } finally {
+            try {
+              await tempImg.delete();
+            } catch (_) {}
+          }
         }
-      }
+      } catch (_) {}
     } catch (e) {
       debugPrint('>>> [ReceiptOcr] Error analyzing PDF receipt: $e');
     }
@@ -269,9 +284,9 @@ class ReceiptOcrService {
     String providerName = '';
     // Look for known cities in Israeli gas stations
     final cityBranches = [
-      'בית הכרם', 'טמרה', 'שפרעם', 'מגאר', 'סחנין', 'עכו', 'כרמיאל',
+      'בעינה', 'בענה', 'בית הכרם', 'טמרה', 'שפרעם', 'מגאר', 'סחנין', 'עכו', 'כרמיאל',
       'חיפה', 'נצרת', 'תל אביב', 'ירושלים', 'כפר כנא', 'קרית שמונה',
-      'עפולה', 'טבריה', 'נתניה', 'אום אל פחם', 'רמלה', 'באר שבע'
+      'עפולה', 'טבריה', 'נתניה', 'אום אל פחם', 'רמלה', 'באר שבע', 'דיר אל אסד', 'ירכא'
     ];
 
     for (final city in cityBranches) {
@@ -339,16 +354,28 @@ class ReceiptOcrService {
 
     // 8. Extract Invoice / Receipt Number
     String? invoiceNumber;
-    final invMatch = RegExp(
-      r"""(?:חשבונית(?:\s*מס(?:'?|פר)?)?(?:\s*קבלה)?|קבלה|אסמכתא|אישור)[^\d\n\r]{0,30}[:#]?\s*(\d{3,20})""",
+    // Same-line invoice number first: חשבונית מס 417
+    final sameLineInvMatch = RegExp(
+      r"""(?:חשבונית(?:\s*מס(?:'?|פר)?)?(?:[\s\/]*קבלה)?|קבלה|אסמכתא|אישור)[^\d\n\r]{0,30}[:#]?\s*(\d{3,20})""",
       caseSensitive: false,
     ).firstMatch(clean);
-    if (invMatch != null) {
-      invoiceNumber = invMatch.group(1);
+
+    if (sameLineInvMatch != null) {
+      invoiceNumber = sameLineInvMatch.group(1);
     } else {
-      final codeMatch = RegExp(r"""(?:מספר|מס(?:'?|פר)?|קוד)[^\d\n\r]{0,10}[:#]?\s*(\d{3,16})""", caseSensitive: false).firstMatch(clean);
-      if (codeMatch != null) {
-        invoiceNumber = codeMatch.group(1);
+      // Next-line invoice number: חשבונית מס/קבלה מקור \n 036509901116246
+      final multiLineInvMatch = RegExp(
+        r"""(?:חשבונית(?:\s*מס(?:'?|פר)?)?(?:[\s\/]*קבלה)?|קבלה|אסמכתא|אישור)[\s\S]{0,30}?(\d{5,20})""",
+        caseSensitive: false,
+      ).firstMatch(clean);
+
+      if (multiLineInvMatch != null) {
+        invoiceNumber = multiLineInvMatch.group(1);
+      } else {
+        final codeMatch = RegExp(r"""(?:מספר|מס(?:'?|פר)?|קוד)[^\d\n\r]{0,10}[:#]?\s*(\d{3,16})""", caseSensitive: false).firstMatch(clean);
+        if (codeMatch != null) {
+          invoiceNumber = codeMatch.group(1);
+        }
       }
     }
 
