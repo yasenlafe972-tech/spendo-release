@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:printing/printing.dart';
 import 'pdf_text_extractor.dart';
 
@@ -33,12 +34,35 @@ class ParsedReceiptResult {
 }
 
 class ReceiptOcrService {
+  static const MethodChannel _shareChannel = MethodChannel('com.finance.spendo/share');
+
   /// Open-tier free OCR API key for OCR.space (as tertiary fallback only)
   static const String _apiKey = 'K87899142388957';
   static const String _ocrEndpoint = 'https://api.ocr.space/parse/image';
 
   /// Performs OCR on an image file and parses Hebrew Israeli fuel/garage receipts.
+  /// Tier 1: On-device native Apple Vision OCR on iOS (100% offline, 0 latency).
+  /// Tier 2: OCR.space API fallback.
   static Future<ParsedReceiptResult?> analyzeReceiptImage(File imageFile) async {
+    if (!imageFile.existsSync()) return null;
+
+    // TIER 1: Native Apple Vision OCR on iOS
+    if (Platform.isIOS) {
+      try {
+        final visionText = await _shareChannel.invokeMethod<String>(
+          'extractImageText',
+          imageFile.path,
+        );
+        if (visionText != null && visionText.trim().isNotEmpty) {
+          final parsed = parseReceiptText(visionText);
+          if (parsed.amount > 0 || parsed.liters != null) {
+            return parsed;
+          }
+        }
+      } catch (_) {}
+    }
+
+    // TIER 2: Network OCR fallback
     try {
       final bytes = await imageFile.readAsBytes();
       final base64Image = 'data:image/jpeg;base64,${base64Encode(bytes)}';

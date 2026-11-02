@@ -92,11 +92,15 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> with Widget
       _currentIndex = 2; // Jump straight to Vehicle tab
     });
 
+    final ext = path.toLowerCase();
+    final isPdf = ext.endsWith('.pdf');
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         FuelExpenseSheet.show(
           context,
-          initialPdfFile: file,
+          initialPdfFile: isPdf ? file : null,
+          initialImageFile: !isPdf ? file : null,
         );
       }
     });

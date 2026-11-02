@@ -18,6 +18,7 @@ class FuelExpenseSheet {
     BuildContext context, {
     VoidCallback? onSaved,
     File? initialPdfFile,
+    File? initialImageFile,
   }) async {
     final prefs = await SharedPreferences.getInstance();
     final raw = prefs.getString(storageKey);
@@ -30,7 +31,7 @@ class FuelExpenseSheet {
 
     double officialFuelPrice = await IsraelGovApiService.getCachedFuel95Price();
 
-    File? fuelImageFile;
+    File? fuelImageFile = initialImageFile;
     String? loadedPdfFileName;
     bool isScanning = false;
     ParsedReceiptResult? parsedResult;
@@ -42,6 +43,7 @@ class FuelExpenseSheet {
     final picker = ImagePicker();
     bool didTriggerGovPriceFetch = false;
     bool didTriggerInitialPdf = false;
+    bool didTriggerInitialImage = false;
 
     // Design tokens from specifications
     const surfaceMain = Color(0xFF121413);
@@ -107,40 +109,45 @@ class FuelExpenseSheet {
               }
             }
 
-            Future<void> scanFuelReceipt(ImageSource source) async {
+            Future<void> scanFuelReceipt([ImageSource? source, File? directImage]) async {
               try {
-                final picked = await picker.pickImage(
-                  source: source,
-                  maxWidth: 1600,
-                  maxHeight: 1600,
-                  imageQuality: 85,
-                );
-                if (picked != null) {
+                File? imgFile = directImage;
+                if (imgFile == null && source != null) {
+                  final picked = await picker.pickImage(
+                    source: source,
+                    maxWidth: 1600,
+                    maxHeight: 1600,
+                    imageQuality: 85,
+                  );
+                  if (picked != null) {
+                    imgFile = File(picked.path);
+                  }
+                }
+                if (imgFile != null) {
                   SpendoHaptics.light();
                   setSheetState(() {
-                    fuelImageFile = File(picked.path);
+                    fuelImageFile = imgFile;
                     isScanning = true;
                     statusMessage = 'جاري تحليل وقراءة فاتورة الوقود ضوئياً...';
                   });
 
-                  final result = await ReceiptOcrService.analyzeReceiptImage(
-                      File(picked.path));
+                  final result = await ReceiptOcrService.analyzeReceiptImage(imgFile);
 
                   setSheetState(() {
                     isScanning = false;
-                    if (result != null && result.amount > 0) {
+                    if (result != null && (result.amount > 0 || (result.liters != null && result.liters! > 0))) {
                       updateFromParsed(result);
                     } else {
-                      final fallback = ReceiptOcrService.parseReceiptText(
-                          'פז בית הכרם 417 חשבונית מס קבלה תדלוק Yellow כמות 6.000 ליטרים אוקטן 95 סה"כ לתשלום 46.62 ש"ח');
-                      updateFromParsed(fallback);
+                      statusMessage =
+                          'تمت قراءة الصورة ولكن لم يتم العثور على أرقام فاتورة واضحة، يُرجى إدخال المبلغ يدوياً.';
+                      SpendoHaptics.medium();
                     }
                   });
                 }
               } catch (_) {
                 setSheetState(() {
                   isScanning = false;
-                  statusMessage = 'تعذر فتح الصورة، يرجى المحاولة مجدداً.';
+                  statusMessage = 'تعذر قراءة الصورة، يرجى المحاولة مجدداً.';
                 });
               }
             }
@@ -194,6 +201,15 @@ class FuelExpenseSheet {
               WidgetsBinding.instance.addPostFrameCallback((_) {
                 if (ctx.mounted) {
                   scanPdfFuelReceipt(initialPdfFile);
+                }
+              });
+            }
+
+            if (!didTriggerInitialImage && initialImageFile != null) {
+              didTriggerInitialImage = true;
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                if (ctx.mounted) {
+                  scanFuelReceipt(null, initialImageFile);
                 }
               });
             }

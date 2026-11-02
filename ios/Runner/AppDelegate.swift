@@ -1,6 +1,7 @@
 import Flutter
 import UIKit
 import PDFKit
+import Vision
 
 @main
 @objc class AppDelegate: FlutterAppDelegate {
@@ -31,6 +32,14 @@ import PDFKit
           if let path = call.arguments as? String {
             let text = Self.extractTextFromPDF(atPath: path)
             result(text)
+          } else {
+            result("")
+          }
+        } else if call.method == "extractImageText" {
+          if let path = call.arguments as? String {
+            Self.extractTextFromImage(atPath: path) { text in
+              result(text)
+            }
           } else {
             result("")
           }
@@ -107,5 +116,40 @@ import PDFKit
       }
     }
     return fullText
+  }
+
+  static func extractTextFromImage(atPath path: String, completion: @escaping (String) -> Void) {
+    guard let image = UIImage(contentsOfFile: path), let cgImage = image.cgImage else {
+      completion("")
+      return
+    }
+    let requestHandler = VNImageRequestHandler(cgImage: cgImage, options: [:])
+    let request = VNRecognizeTextRequest { req, err in
+      guard let observations = req.results as? [VNRecognizedTextObservation], err == nil else {
+        DispatchQueue.main.async { completion("") }
+        return
+      }
+      var fullText = ""
+      for obs in observations {
+        if let top = obs.topCandidates(1).first {
+          fullText += top.string + "\n"
+        }
+      }
+      DispatchQueue.main.async { completion(fullText) }
+    }
+    request.recognitionLevel = .accurate
+    if #available(iOS 16.0, *) {
+      request.recognitionLanguages = ["he-IL", "he", "en-US"]
+    } else {
+      request.recognitionLanguages = ["en-US"]
+    }
+    request.usesLanguageCorrection = true
+    DispatchQueue.global(qos: .userInitiated).async {
+      do {
+        try requestHandler.perform([request])
+      } catch {
+        DispatchQueue.main.async { completion("") }
+      }
+    }
   }
 }
