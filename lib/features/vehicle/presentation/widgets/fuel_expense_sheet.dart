@@ -100,9 +100,10 @@ class FuelExpenseSheet {
                     ? res.providerName
                     : 'פז Yellow';
                 final litInfo =
-                    res.liters != null ? ' • ${res.liters} لتر' : '';
+                    res.liters != null ? ' • ${res.liters} ליטר' : '';
                 statusMessage =
-                    'تم استخراج الفاتورة تلقائياً ($branchInfo$litInfo)، يمكنك تأكيد الحفظ أدناه.';
+                    'تم استخراج بيانات الفاتورة بنجاح ($branchInfo$litInfo • ${res.amount} ₪)';
+                SpendoHaptics.success();
               }
             }
 
@@ -171,19 +172,19 @@ class FuelExpenseSheet {
 
                   setSheetState(() {
                     isScanning = false;
-                    if (result != null && result.amount > 0) {
+                    if (result != null && (result.amount > 0 || (result.liters != null && result.liters! > 0))) {
                       updateFromParsed(result);
                     } else {
-                      final fallback = ReceiptOcrService.parseReceiptText(
-                          'פז בית הכרם 417 חשבונית מס קבלה תדלוק Yellow כמות 6.000 ליטרים אוקטן 95 סה"כ לתשלום 46.62 ש"ח');
-                      updateFromParsed(fallback);
+                      statusMessage =
+                          'تمت قراءة الملف لكن لم يتم العثور على أرقام فاتورة واضحة، يُرجى إدخال المبلغ يدوياً.';
+                      SpendoHaptics.medium();
                     }
                   });
                 }
               } catch (_) {
                 setSheetState(() {
                   isScanning = false;
-                  statusMessage = 'تعذر قراءة ملف ה-PDF، يرجى المحاولة مجدداً.';
+                  statusMessage = 'تعذر قراءة ملف الـ PDF، يرجى المحاولة مجدداً.';
                 });
               }
             }
@@ -230,7 +231,7 @@ class FuelExpenseSheet {
                 id: DateTime.now().millisecondsSinceEpoch.toString(),
                 title: stationTitle,
                 amount: amt,
-                odometer: 0,
+                odometer: parsedResult?.odometer ?? state.currentOdometer,
                 date: selectedDate,
                 category: ExpenseCategory.fuel,
                 invoiceNumber: parsedResult?.invoiceNumber,
@@ -238,7 +239,7 @@ class FuelExpenseSheet {
                     ? parsedResult!.providerName
                     : 'פז Yellow',
                 liters: computedLiters,
-                pricePerLiter: officialFuelPrice,
+                pricePerLiter: parsedResult?.pricePerLiter ?? officialFuelPrice,
                 notes: isDuplicateOverride
                     ? 'نسخة مكررة تم تأكيدها'
                     : 'תשלום אפליקציית Yellow',

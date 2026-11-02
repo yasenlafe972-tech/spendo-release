@@ -40,52 +40,16 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
   static const Color brandYellow = Color(0xFFEAB308);
   static const Color brandRed = Color(0xFFEF4444);
 
-  static const MethodChannel _shareChannel =
-      MethodChannel('com.finance.spendo/share');
-
   @override
   void initState() {
     super.initState();
     _odometerController =
         TextEditingController(text: _state.currentOdometer.toString());
     _loadState();
-    _initSharedPdfListener();
-  }
-
-  Future<void> _initSharedPdfListener() async {
-    _shareChannel.setMethodCallHandler((call) async {
-      if (call.method == 'onSharedFile' && call.arguments is String) {
-        final sharedPath = call.arguments as String;
-        if (mounted && sharedPath.isNotEmpty) {
-          FuelExpenseSheet.show(
-            context,
-            initialPdfFile: File(sharedPath),
-            onSaved: () => _loadState(),
-          );
-        }
-      }
-    });
-
-    try {
-      final initialPath =
-          await _shareChannel.invokeMethod<String>('getInitialSharedFile');
-      if (initialPath != null && initialPath.isNotEmpty && mounted) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (mounted) {
-            FuelExpenseSheet.show(
-              context,
-              initialPdfFile: File(initialPath),
-              onSaved: () => _loadState(),
-            );
-          }
-        });
-      }
-    } catch (_) {}
   }
 
   @override
   void dispose() {
-    _shareChannel.setMethodCallHandler(null);
     _odometerController.dispose();
     super.dispose();
   }

@@ -1,4 +1,6 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:remixicon/remixicon.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -9,6 +11,7 @@ import '../../../people/presentation/screens/people_screen.dart';
 import '../../../work_logs/presentation/screens/work_logs_screen.dart';
 import '../../../finance/presentation/screens/finance_screen.dart';
 import '../../../vehicle/presentation/screens/vehicle_tracker_screen.dart';
+import '../../../vehicle/presentation/widgets/fuel_expense_sheet.dart';
 
 class MainNavigationScreen extends StatefulWidget {
   const MainNavigationScreen({super.key});
@@ -19,6 +22,9 @@ class MainNavigationScreen extends StatefulWidget {
 
 class _MainNavigationScreenState extends State<MainNavigationScreen> with WidgetsBindingObserver {
   int _currentIndex = 0;
+  static const MethodChannel _shareChannel = MethodChannel('com.finance.spendo/share');
+  String? _lastHandledSharePath;
+  DateTime? _lastHandledShareTime;
 
   late final List<Widget> _screens;
 
@@ -39,6 +45,8 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> with Widget
       const FinanceScreen(),
     ];
 
+    _initSharedFileListener();
+
     // Automatic cloud sync on app launch (debounced by 3s to let UI settle)
     try {
       if (Firebase.apps.isNotEmpty) {
@@ -47,8 +55,56 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> with Widget
     } catch (_) {}
   }
 
+  void _initSharedFileListener() {
+    _shareChannel.setMethodCallHandler((call) async {
+      if (call.method == 'onSharedFile' && call.arguments is String) {
+        await _handleIncomingSharedFile(call.arguments as String);
+      }
+    });
+
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      try {
+        final initial = await _shareChannel.invokeMethod<String>('getInitialSharedFile');
+        if (initial != null && initial.isNotEmpty) {
+          await _handleIncomingSharedFile(initial);
+        }
+      } catch (_) {}
+    });
+  }
+
+  Future<void> _handleIncomingSharedFile(String path) async {
+    if (path.isEmpty) return;
+    final now = DateTime.now();
+    if (_lastHandledSharePath == path &&
+        _lastHandledShareTime != null &&
+        now.difference(_lastHandledShareTime!).inSeconds < 3) {
+      return;
+    }
+    _lastHandledSharePath = path;
+    _lastHandledShareTime = now;
+
+    final file = File(path);
+    if (!await file.exists()) return;
+
+    if (!mounted) return;
+
+    setState(() {
+      _currentIndex = 2; // Jump straight to Vehicle tab
+    });
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        FuelExpenseSheet.show(
+          context,
+          initialPdfFile: file,
+        );
+      }
+    });
+  }
+
   @override
   void dispose() {
+    _shareChannel.setMethodCallHandler(null);
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }

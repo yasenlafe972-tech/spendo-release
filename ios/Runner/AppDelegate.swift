@@ -1,5 +1,6 @@
 import Flutter
 import UIKit
+import PDFKit
 
 @main
 @objc class AppDelegate: FlutterAppDelegate {
@@ -26,6 +27,13 @@ import UIKit
           let path = Self.initialSharedFilePath
           Self.initialSharedFilePath = nil
           result(path)
+        } else if call.method == "extractPdfText" {
+          if let path = call.arguments as? String {
+            let text = Self.extractTextFromPDF(atPath: path)
+            result(text)
+          } else {
+            result("")
+          }
         } else {
           result(FlutterMethodNotImplemented)
         }
@@ -79,14 +87,25 @@ import UIKit
       }
       try FileManager.default.copyItem(at: url, to: tempURL)
       let savedPath = tempURL.path
+      Self.initialSharedFilePath = savedPath
       if notifyImmediately, let channel = Self.sharedChannel {
         channel.invokeMethod("onSharedFile", arguments: savedPath)
-      } else {
-        Self.initialSharedFilePath = savedPath
       }
       return true
     } catch {
       return false
     }
+  }
+
+  static func extractTextFromPDF(atPath path: String) -> String {
+    let url = URL(fileURLWithPath: path)
+    guard let document = PDFDocument(url: url) else { return "" }
+    var fullText = ""
+    for i in 0..<document.pageCount {
+      if let page = document.page(at: i), let pageText = page.string {
+        fullText += pageText + "\n"
+      }
+    }
+    return fullText
   }
 }
