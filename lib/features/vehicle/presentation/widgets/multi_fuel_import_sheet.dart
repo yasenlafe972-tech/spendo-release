@@ -203,7 +203,18 @@ class _MultiFuelImportSheetState extends State<MultiFuelImportSheet> {
         }
       }
 
-      final updatedHistory = [...newRecords, ..._state.history];
+      final existingHistory = List<VehicleExpenseRecord>.from(_state.history);
+      for (final rec in newRecords) {
+        existingHistory.removeWhere((e) =>
+            e.amount == rec.amount &&
+            e.date.year == rec.date.year &&
+            e.date.month == rec.date.month &&
+            e.date.day == rec.date.day &&
+            e.date.hour == rec.date.hour &&
+            e.date.minute == rec.date.minute);
+      }
+      final updatedHistory = [...newRecords, ...existingHistory];
+      updatedHistory.sort((a, b) => b.date.compareTo(a.date));
       final updatedState = _state.copyWith(history: updatedHistory);
       await prefs.setString(FuelExpenseSheet.storageKey, updatedState.toJson());
       DailyExpenseService.expensesChangedNotifier.value++;

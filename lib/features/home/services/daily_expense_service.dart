@@ -196,6 +196,20 @@ class DailyExpenseService {
     String? notes,
   }) async {
     final cleanMerchant = merchantName.trim();
+    final targetDate = date ?? DateTime.now();
+
+    final current = await getAllExpenses();
+    final existingIdx = current.indexWhere((e) =>
+        e.amount == amount &&
+        e.date.year == targetDate.year &&
+        e.date.month == targetDate.month &&
+        e.date.day == targetDate.day &&
+        e.date.hour == targetDate.hour &&
+        e.date.minute == targetDate.minute);
+    if (existingIdx != -1) {
+      return current[existingIdx];
+    }
+
     final resolvedCategory =
         explicitCategory ?? await resolveMerchantCategory(cleanMerchant);
 
@@ -205,11 +219,10 @@ class DailyExpenseService {
       amount: amount,
       category: resolvedCategory,
       source: source,
-      date: date ?? DateTime.now(),
+      date: targetDate,
       notes: notes,
     );
 
-    final current = await getAllExpenses();
     current.insert(0, newItem);
     await saveAllExpenses(current);
 
