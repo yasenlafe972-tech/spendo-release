@@ -183,7 +183,7 @@ class FuelExpenseSheet {
                     onProgress: (current, total) {
                       setSheetState(() {
                         statusMessage =
-                            'جاري فحص فواتير الملف ($current من $total)...';
+                            'الملف يتكون من $total صفحات - جاري فحص صفحة $current من $total...';
                       });
                     },
                   );

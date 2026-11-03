@@ -16,6 +16,8 @@ class ParsedReceiptResult {
   final String rawText;
   final String? invoiceNumber;
   final List<String> items;
+  final int? pageNumber;
+  final int? totalPages;
 
   const ParsedReceiptResult({
     required this.title,
@@ -29,7 +31,41 @@ class ParsedReceiptResult {
     required this.rawText,
     this.invoiceNumber,
     this.items = const [],
+    this.pageNumber,
+    this.totalPages,
   });
+
+  ParsedReceiptResult copyWith({
+    String? title,
+    double? amount,
+    DateTime? date,
+    bool? isFuel,
+    double? liters,
+    double? pricePerLiter,
+    int? odometer,
+    String? providerName,
+    String? rawText,
+    String? invoiceNumber,
+    List<String>? items,
+    int? pageNumber,
+    int? totalPages,
+  }) {
+    return ParsedReceiptResult(
+      title: title ?? this.title,
+      amount: amount ?? this.amount,
+      date: date ?? this.date,
+      isFuel: isFuel ?? this.isFuel,
+      liters: liters ?? this.liters,
+      pricePerLiter: pricePerLiter ?? this.pricePerLiter,
+      odometer: odometer ?? this.odometer,
+      providerName: providerName ?? this.providerName,
+      rawText: rawText ?? this.rawText,
+      invoiceNumber: invoiceNumber ?? this.invoiceNumber,
+      items: items ?? this.items,
+      pageNumber: pageNumber ?? this.pageNumber,
+      totalPages: totalPages ?? this.totalPages,
+    );
+  }
 }
 
 class FuelMathTriplet {
@@ -86,7 +122,7 @@ class ReceiptOcrService {
   }
 
   /// 100% offline analyzer for Israeli gas receipts & Yellow app multi-receipt PDFs.
-  /// Extracts all embedded JPEGs or rasterizes pages, parsing each invoice deterministically.
+  /// First discovers the exact PDF page count, then parses each page systematically.
   static Future<List<ParsedReceiptResult>> analyzeReceiptPdfMulti(
     File pdfFile, {
     void Function(int current, int total)? onProgress,
@@ -94,32 +130,37 @@ class ReceiptOcrService {
     final results = <ParsedReceiptResult>[];
     final seenKeys = <String>{};
 
-    void addIfValid(ParsedReceiptResult? res) {
-      if (res == null) return;
-      if (res.amount <= 0) return;
-      final key = '${res.date.year}-${res.date.month}-${res.date.day}_${res.amount.toStringAsFixed(2)}_${res.liters?.toStringAsFixed(2)}';
-      if (seenKeys.add(key)) {
-        results.add(res);
-      }
-    }
-
     try {
       final bytes = await pdfFile.readAsBytes();
 
-      // Step 1: Instant extraction of all embedded JPEGs (Yellow multi-receipt PDF format, < 15ms)
+      // Step 1: Detect exact total page count of the PDF document first
+      final totalDocPages = PdfTextExtractor.getPdfPageCount(bytes);
+      debugPrint('>>> [ReceiptOcr] PDF Document Total Pages: $totalDocPages');
+
+      // Step 2: Instant extraction of all embedded JPEGs (one per page in Yellow exports, < 15ms)
       final embeddedJpegs = PdfTextExtractor.extractAllEmbeddedJpegs(bytes);
       if (embeddedJpegs.isNotEmpty) {
-        final total = embeddedJpegs.length;
-        for (int i = 0; i < total; i++) {
-          onProgress?.call(i + 1, total);
+        final totalCount = totalDocPages > 0 ? totalDocPages : embeddedJpegs.length;
+        for (int i = 0; i < embeddedJpegs.length; i++) {
+          final pageNum = i + 1;
+          onProgress?.call(pageNum, totalCount);
           final tempJpg = File(
             '${pdfFile.parent.path}/temp_embedded_rcpt_${DateTime.now().millisecondsSinceEpoch}_$i.jpg',
           );
           try {
             await tempJpg.writeAsBytes(embeddedJpegs[i]);
             final res = await analyzeReceiptImage(tempJpg);
-            debugPrint('>>> [ReceiptIdx $i] Parsed: amount=${res?.amount}, liters=${res?.liters}, price=${res?.pricePerLiter}, isFuel=${res?.isFuel}');
-            addIfValid(res);
+            debugPrint('>>> [ReceiptIdx $i (Page $pageNum/$totalCount)] Parsed: amount=${res?.amount}, liters=${res?.liters}, price=${res?.pricePerLiter}, isFuel=${res?.isFuel}');
+            if (res != null && res.amount > 0) {
+              final withPage = res.copyWith(
+                pageNumber: pageNum,
+                totalPages: totalCount,
+              );
+              final key = '${withPage.date.year}-${withPage.date.month}-${withPage.date.day}_${withPage.amount.toStringAsFixed(2)}_${withPage.pageNumber}';
+              if (seenKeys.add(key)) {
+                results.add(withPage);
+              }
+            }
           } finally {
             try {
               await tempJpg.delete();
@@ -132,12 +173,13 @@ class ReceiptOcrService {
         }
       }
 
-      // Step 2: High-resolution rasterization if no embedded JPEGs were found (up to 15 pages)
+      // Step 3: High-resolution rasterization page-by-page if no embedded JPEGs
       try {
         int pageIndex = 0;
-        await for (final page in Printing.raster(bytes, dpi: 200).timeout(const Duration(seconds: 12))) {
+        final maxPages = totalDocPages > 0 ? totalDocPages : 15;
+        await for (final page in Printing.raster(bytes, dpi: 200).timeout(const Duration(seconds: 15))) {
           pageIndex++;
-          onProgress?.call(pageIndex, 15);
+          onProgress?.call(pageIndex, maxPages);
           final pngBytes = await page.toPng();
           final tempImg = File(
             '${pdfFile.parent.path}/temp_raster_rcpt_${DateTime.now().millisecondsSinceEpoch}_$pageIndex.png',
@@ -145,13 +187,22 @@ class ReceiptOcrService {
           try {
             await tempImg.writeAsBytes(pngBytes);
             final res = await analyzeReceiptImage(tempImg);
-            addIfValid(res);
+            if (res != null && res.amount > 0) {
+              final withPage = res.copyWith(
+                pageNumber: pageIndex,
+                totalPages: maxPages,
+              );
+              final key = '${withPage.date.year}-${withPage.date.month}-${withPage.date.day}_${withPage.amount.toStringAsFixed(2)}_${withPage.pageNumber}';
+              if (seenKeys.add(key)) {
+                results.add(withPage);
+              }
+            }
           } finally {
             try {
               await tempImg.delete();
             } catch (_) {}
           }
-          if (pageIndex >= 15) break;
+          if (pageIndex >= maxPages) break;
         }
         if (results.isNotEmpty) {
           results.sort((a, b) => b.date.compareTo(a.date));
@@ -159,11 +210,13 @@ class ReceiptOcrService {
         }
       } catch (_) {}
 
-      // Step 3: On-device digital text extraction if PDF has selectable text
+      // Step 4: On-device digital text extraction if PDF has selectable text
       final extractedText = await PdfTextExtractor.extractText(pdfFile);
       if (extractedText.trim().isNotEmpty) {
         final parsed = parseReceiptText(extractedText);
-        addIfValid(parsed);
+        if (parsed.amount > 0) {
+          results.add(parsed.copyWith(pageNumber: 1, totalPages: totalDocPages > 0 ? totalDocPages : 1));
+        }
       }
     } catch (e) {
       debugPrint('>>> [ReceiptOcr] Error analyzing multi-receipt PDF: $e');

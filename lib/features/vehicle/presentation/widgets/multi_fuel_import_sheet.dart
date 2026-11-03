@@ -304,12 +304,13 @@ class _MultiFuelImportSheetState extends State<MultiFuelImportSheet> {
                           const SizedBox(height: 2),
                           Text(
                             () {
+                              final totalPages = widget.receipts.firstOrNull?.totalPages ?? widget.receipts.length;
                               final fuelCnt = widget.receipts.where((r) => r.isFuel).length;
                               final storeCnt = widget.receipts.length - fuelCnt;
                               if (storeCnt > 0) {
-                                return 'تم العثور على ${widget.receipts.length} فواتير ($fuelCnt وقود • $storeCnt مشتريات Yellow)';
+                                return 'تم فحص $totalPages صفحات بالملف وعُثر على ${widget.receipts.length} فواتير ($fuelCnt وقود • $storeCnt مشتريات)';
                               }
-                              return 'تم العثور على ${widget.receipts.length} فواتير وقود';
+                              return 'تم فحص $totalPages صفحات بالملف وعُثر على ${widget.receipts.length} فواتير وقود';
                             }(),
                             style: const TextStyle(
                               color: textMuted,
@@ -515,6 +516,28 @@ class _MultiFuelImportSheetState extends State<MultiFuelImportSheet> {
                                                 overflow: TextOverflow.ellipsis,
                                               ),
                                             ),
+                                            if (r.pageNumber != null)
+                                              Container(
+                                                margin: const EdgeInsets.only(right: 6),
+                                                padding: const EdgeInsets.symmetric(
+                                                    horizontal: 6, vertical: 2),
+                                                decoration: BoxDecoration(
+                                                  color: Colors.white.withAlpha(15),
+                                                  borderRadius: BorderRadius.circular(4),
+                                                  border: Border.all(
+                                                    color: Colors.white24,
+                                                    width: 0.8,
+                                                  ),
+                                                ),
+                                                child: Text(
+                                                  'صفحة ${r.pageNumber}',
+                                                  style: const TextStyle(
+                                                    color: Colors.white70,
+                                                    fontSize: 10,
+                                                    fontWeight: FontWeight.w600,
+                                                  ),
+                                                ),
+                                              ),
                                             if (isDuplicate)
                                               Container(
                                                 margin: const EdgeInsets.only(right: 6),
