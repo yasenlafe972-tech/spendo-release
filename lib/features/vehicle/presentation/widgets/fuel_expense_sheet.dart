@@ -77,7 +77,7 @@ class FuelExpenseSheet {
 
             void updateFromParsed(ParsedReceiptResult res) {
               parsedResult = res;
-              amountCtrl.text = res.amount > 0 ? res.amount.toString() : '';
+              amountCtrl.text = res.amount > 0 ? res.amount.toStringAsFixed(2) : '';
               if (res.title.isNotEmpty) {
                 stationCtrl.text = res.title;
               } else if (res.providerName.isNotEmpty) {
@@ -103,8 +103,10 @@ class FuelExpenseSheet {
                     : 'פז Yellow';
                 final litInfo =
                     res.liters != null ? ' • ${res.liters} ליטר' : '';
+                final priceInfo =
+                    res.pricePerLiter != null ? ' • ${res.pricePerLiter} ₪/لتر' : '';
                 statusMessage =
-                    'تم استخراج بيانات الفاتورة بنجاح ($branchInfo$litInfo • ${res.amount} ₪)';
+                    'تم استخراج بيانات الفاتورة بنجاح ($branchInfo$litInfo$priceInfo • ${res.amount.toStringAsFixed(2)} ₪)';
                 SpendoHaptics.success();
               }
             }
@@ -1027,8 +1029,30 @@ class FuelExpenseSheet {
                                         final typedAmt = double.tryParse(
                                                 amountCtrl.text.trim()) ??
                                             0.0;
-                                        if (typedAmt <= 0 ||
-                                            officialFuelPrice <= 0) {
+                                        if (typedAmt <= 0) {
+                                          return const SizedBox.shrink();
+                                        }
+                                        if (parsedResult != null &&
+                                            parsedResult!.liters != null &&
+                                            parsedResult!.amount > 0 &&
+                                            (typedAmt - parsedResult!.amount).abs() < 0.01) {
+                                          final ltr = parsedResult!.liters!;
+                                          final prc = parsedResult!.pricePerLiter != null
+                                              ? ' • بسعر ${parsedResult!.pricePerLiter} ₪/لتر'
+                                              : '';
+                                          return Padding(
+                                            padding: const EdgeInsets.only(top: 4),
+                                            child: Text(
+                                              'الكمية من الفاتورة: $ltr لتر$prc',
+                                              style: const TextStyle(
+                                                fontSize: 10,
+                                                fontWeight: FontWeight.bold,
+                                                color: brandGreen,
+                                              ),
+                                            ),
+                                          );
+                                        }
+                                        if (officialFuelPrice <= 0) {
                                           return const SizedBox.shrink();
                                         }
                                         final autoLiters =

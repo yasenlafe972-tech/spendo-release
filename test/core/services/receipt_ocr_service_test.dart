@@ -132,6 +132,82 @@ Yellow Friends
       expect(result.date.minute, equals(8));
     });
 
+    test('parses Latin-only MLKit output from real Yellow Paz receipt', () {
+      const mlkitSample = '''
+557100641
+365
+054-5246045
+036509901116246
+02/10/26 13:08
+55505403
+06
+95 8.270
+2.423
+20.04
+16.98
+3.06
+20.04
+Yellow Friends
+0.24
+0.24
+yasen lafe
+2164
+Yellow
+''';
+
+      final result = ReceiptOcrService.parseReceiptText(mlkitSample);
+      expect(result.isFuel, isTrue);
+      expect(result.amount, equals(20.04));
+      expect(result.liters, equals(2.423));
+      expect(result.pricePerLiter, equals(8.27));
+      expect(result.providerName, contains('פז בעינה 365'));
+      expect(result.invoiceNumber, equals('036509901116246'));
+      expect(result.date.day, equals(2));
+      expect(result.date.month, equals(10));
+      expect(result.date.year, equals(2026));
+      expect(result.date.hour, equals(13));
+      expect(result.date.minute, equals(8));
+    });
+
+    test('Smart Fuel Math Parser picks largest total when before-tax and with-tax match', () {
+      const sample = '''
+      Paz Station
+      Date: 12/05/2026 10:15
+      Net price 7.00
+      Gross price 8.26
+      Quantity 10.000
+      Net Total 70.00
+      Total Payment 82.60
+      ''';
+
+      final result = ReceiptOcrService.parseReceiptText(sample);
+      expect(result.isFuel, isTrue);
+      expect(result.amount, equals(82.60));
+      expect(result.liters, equals(10.0));
+      expect(result.pricePerLiter, equals(8.26));
+      expect(result.providerName, equals('פז'));
+      expect(result.date.day, equals(12));
+      expect(result.date.month, equals(5));
+      expect(result.date.year, equals(2026));
+    });
+
+    test('defaults provider to تعبئة بنزين when no station name is recognized', () {
+      const sample = '''
+      05/04/2026
+      Octan 95 8.00
+      15.000
+      120.00
+      ''';
+
+      final result = ReceiptOcrService.parseReceiptText(sample);
+      expect(result.isFuel, isTrue);
+      expect(result.amount, equals(120.0));
+      expect(result.liters, equals(15.0));
+      expect(result.pricePerLiter, equals(8.0));
+      expect(result.providerName, equals('تعبئة بنزين'));
+      expect(result.title, contains('تعبئة بنزين'));
+    });
+
     test('handles empty or unrecognized text without throwing', () {
       final emptyResult = ReceiptOcrService.parseReceiptText('');
       expect(emptyResult.amount, equals(0.0));
