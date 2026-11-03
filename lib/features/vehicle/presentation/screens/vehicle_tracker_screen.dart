@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -63,6 +64,10 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
     if (raw != null && raw.isNotEmpty) {
       try {
         final loadedState = VehicleDataState.fromJson(raw);
+        final rawCount = (jsonDecode(raw)['history'] as List?)?.length ?? 0;
+        if (loadedState.history.length < rawCount) {
+          await prefs.setString(_storageKey, loadedState.toJson());
+        }
         if (mounted) {
           setState(() {
             _state = loadedState;
@@ -1858,8 +1863,8 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                                 const SizedBox(height: 2),
                                 Text(
                                   isFuel
-                                      ? '${item.date.day}/${item.date.month}/${item.date.year}${item.provider != null && item.provider!.isNotEmpty ? ' • ${item.provider}' : ''}${item.liters != null && item.liters! > 0 ? ' • ${item.liters!.toStringAsFixed(2)} ליטר' : ''}'
-                                      : '${item.date.day}/${item.date.month}/${item.date.year} • ${_formatNumber(item.odometer)} ק"מ',
+                                      ? '${item.date.day}/${item.date.month}/${item.date.year}${item.invoiceNumber != null && item.invoiceNumber!.isNotEmpty ? ' • #${item.invoiceNumber}' : ''}${item.provider != null && item.provider!.isNotEmpty ? ' • ${item.provider}' : ''}${item.liters != null && item.liters! > 0 ? ' • ${item.liters!.toStringAsFixed(2)} ליטר' : ''}'
+                                      : '${item.date.day}/${item.date.month}/${item.date.year}${item.invoiceNumber != null && item.invoiceNumber!.isNotEmpty ? ' • #${item.invoiceNumber}' : ''} • ${_formatNumber(item.odometer)} ק"מ',
                                   textDirection: TextDirection.rtl,
                                   style: const TextStyle(
                                     fontSize: 9,

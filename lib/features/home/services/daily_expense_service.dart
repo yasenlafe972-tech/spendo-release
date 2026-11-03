@@ -172,8 +172,21 @@ class DailyExpenseService {
       final items = list
           .map((e) => DailyExpenseModel.fromMap(e as Map<String, dynamic>))
           .toList();
-      items.sort((a, b) => b.date.compareTo(a.date));
-      return items;
+
+      final seen = <String>{};
+      final unique = <DailyExpenseModel>[];
+      for (final e in items) {
+        final key = '${e.date.year}_${e.date.month}_${e.date.day}_${e.date.hour}_${e.date.minute}_${e.amount.toStringAsFixed(2)}_${e.merchantName.trim()}';
+        if (!seen.contains(key)) {
+          seen.add(key);
+          unique.add(e);
+        }
+      }
+      unique.sort((a, b) => b.date.compareTo(a.date));
+      if (unique.length < items.length) {
+        await saveAllExpenses(unique);
+      }
+      return unique;
     } catch (_) {
       return [];
     }

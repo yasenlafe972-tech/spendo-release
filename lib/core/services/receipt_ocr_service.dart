@@ -650,33 +650,27 @@ class ReceiptOcrService {
       odometer = int.tryParse(odoMatch.group(1) ?? '');
     }
 
-    // 6. Extract Invoice / Receipt Number
+    // 6. Extract Invoice / Receipt Number (Prioritize real fiscal invoice numbers)
     String? invoiceNumber;
-    final sameLineInvMatch = RegExp(
-      r"""(?:חשבונית(?:\s*מס(?:'?|פר)?)?(?:[\s\/]*קבלה)?|קבלה|אסמכתא|אישור)[^\d\n\r]{0,30}[:#]?\s*(\d{3,20})""",
+    final invRegex = RegExp(
+      r"""(?:חשבונית(?:\s*מס(?:'?|פר)?)?(?:[\s\/]*קבלה)?|חשבונית|קבלה|מספר\s*חשבונית)[\s\S]{0,40}?(\d{8,18})""",
       caseSensitive: false,
-    ).firstMatch(clean);
-
-    if (sameLineInvMatch != null) {
-      invoiceNumber = sameLineInvMatch.group(1);
+    );
+    final invMatch = invRegex.firstMatch(clean);
+    if (invMatch != null) {
+      invoiceNumber = invMatch.group(1);
     } else {
-      final multiLineInvMatch = RegExp(
-        r"""(?:חשבונית(?:\s*מס(?:'?|פר)?)?(?:[\s\/]*קבלה)?|קבלה|אסמכתא|אישור)[\s\S]{0,30}?(\d{5,20})""",
-        caseSensitive: false,
-      ).firstMatch(clean);
-
-      if (multiLineInvMatch != null) {
-        invoiceNumber = multiLineInvMatch.group(1);
+      // Standalone numeric sequence of 12 to 18 digits starting with 0 (standard Israeli fiscal invoice number)
+      final standaloneInvMatch = RegExp(r'(?<!\d)(0\d{11,17})(?!\d)').firstMatch(clean);
+      if (standaloneInvMatch != null) {
+        invoiceNumber = standaloneInvMatch.group(1);
       } else {
-        final codeMatch = RegExp(r"""(?:מספר|מס(?:'?|פר)?|קוד)[^\d\n\r]{0,10}[:#]?\s*(\d{3,16})""", caseSensitive: false).firstMatch(clean);
-        if (codeMatch != null) {
-          invoiceNumber = codeMatch.group(1);
-        } else {
-          // Standalone numeric line of 10 to 20 digits (e.g. 036509901116246)
-          final standaloneInvMatch = RegExp(r'^\s*(\d{10,20})\s*$', multiLine: true).firstMatch(clean);
-          if (standaloneInvMatch != null) {
-            invoiceNumber = standaloneInvMatch.group(1);
-          }
+        final fallbackMatch = RegExp(
+          r"""(?:אסמכתא|אישור|קוד)[^\d\n\r]{0,10}[:#]?\s*(\d{4,16})""",
+          caseSensitive: false,
+        ).firstMatch(clean);
+        if (fallbackMatch != null) {
+          invoiceNumber = fallbackMatch.group(1);
         }
       }
     }

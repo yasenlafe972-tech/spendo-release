@@ -500,8 +500,33 @@ class VehicleDataState {
         'history': history.map((x) => x.toMap()).toList(),
       });
 
+  /// فلترة ومنع التكرار نهائياً في السجل باعتماد رقم الفاتورة كمعرف أساسي فريد
+  static List<VehicleExpenseRecord> deduplicateHistory(List<VehicleExpenseRecord> list) {
+    final seen = <String>{};
+    final unique = <VehicleExpenseRecord>[];
+
+    for (final r in list) {
+      final inv = r.invoiceNumber?.trim().toLowerCase();
+      final key = (inv != null && inv.isNotEmpty)
+          ? 'inv_$inv'
+          : 'dt_${r.date.year}_${r.date.month}_${r.date.day}_${r.date.hour}_${r.date.minute}_${r.amount.toStringAsFixed(2)}_${r.category.name}';
+
+      if (!seen.contains(key)) {
+        seen.add(key);
+        unique.add(r);
+      }
+    }
+    return unique;
+  }
+
   factory VehicleDataState.fromJson(String source) {
     final map = jsonDecode(source) as Map<String, dynamic>;
+    final rawList = (map['history'] as List<dynamic>?)
+            ?.map((x) =>
+                VehicleExpenseRecord.fromMap(x as Map<String, dynamic>))
+            .toList() ??
+        [];
+
     return VehicleDataState(
       vehicleName: map['vehicleName'] as String? ?? 'SYM Joyride 200',
       currentOdometer: (map['currentOdometer'] as num?)?.toInt() ?? 14350,
@@ -513,11 +538,7 @@ class VehicleDataState {
               ?.map((x) => MaintenancePart.fromMap(x as Map<String, dynamic>))
               .toList() ??
           VehicleDataState.initial().parts,
-      history: (map['history'] as List<dynamic>?)
-              ?.map((x) =>
-                  VehicleExpenseRecord.fromMap(x as Map<String, dynamic>))
-              .toList() ??
-          [],
+      history: deduplicateHistory(rawList),
     );
   }
 }

@@ -88,15 +88,16 @@ class _MultiFuelImportSheetState extends State<MultiFuelImportSheet> {
     for (int i = 0; i < widget.receipts.length; i++) {
       final r = widget.receipts[i];
       final dup = _state.findDuplicate(
+        invoiceNumber: r.invoiceNumber,
         date: r.date,
         amount: r.amount,
         category: r.isFuel ? ExpenseCategory.fuel : ExpenseCategory.maintenance,
       );
       if (dup != null) {
         duplicates.add(i);
+      } else {
+        selected.add(i);
       }
-      // All receipts selected by default so the user clearly sees all invoices found
-      selected.add(i);
     }
 
     if (mounted) {
@@ -520,25 +521,44 @@ class _MultiFuelImportSheetState extends State<MultiFuelImportSheet> {
                                     child: Column(
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
-                                        Row(
+                                        Wrap(
+                                          spacing: 6,
+                                          runSpacing: 4,
+                                          crossAxisAlignment: WrapCrossAlignment.center,
                                           children: [
-                                            Expanded(
-                                              child: Text(
-                                                r.providerName.isNotEmpty
-                                                    ? r.providerName
-                                                    : 'تعبئة وقود פז',
-                                                style: const TextStyle(
-                                                  color: Colors.white,
-                                                  fontWeight: FontWeight.bold,
-                                                  fontSize: 14,
-                                                ),
-                                                maxLines: 1,
-                                                overflow: TextOverflow.ellipsis,
+                                            Text(
+                                              r.providerName.isNotEmpty
+                                                  ? r.providerName
+                                                  : 'تعبئة وقود פז',
+                                              style: const TextStyle(
+                                                color: Colors.white,
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 14,
                                               ),
                                             ),
+                                            if (r.invoiceNumber != null && r.invoiceNumber!.isNotEmpty)
+                                              Container(
+                                                padding: const EdgeInsets.symmetric(
+                                                    horizontal: 6, vertical: 2),
+                                                decoration: BoxDecoration(
+                                                  color: const Color(0xFF1E3A8A).withAlpha(80),
+                                                  borderRadius: BorderRadius.circular(4),
+                                                  border: Border.all(
+                                                    color: const Color(0xFF60A5FA).withAlpha(120),
+                                                    width: 0.8,
+                                                  ),
+                                                ),
+                                                child: Text(
+                                                  '#${r.invoiceNumber}',
+                                                  style: const TextStyle(
+                                                    color: Color(0xFF93C5FD),
+                                                    fontSize: 10,
+                                                    fontWeight: FontWeight.w600,
+                                                  ),
+                                                ),
+                                              ),
                                             if (r.pageNumber != null)
                                               Container(
-                                                margin: const EdgeInsets.only(right: 6),
                                                 padding: const EdgeInsets.symmetric(
                                                     horizontal: 6, vertical: 2),
                                                 decoration: BoxDecoration(
@@ -560,7 +580,6 @@ class _MultiFuelImportSheetState extends State<MultiFuelImportSheet> {
                                               ),
                                             if (isDuplicate)
                                               Container(
-                                                margin: const EdgeInsets.only(right: 6),
                                                 padding: const EdgeInsets.symmetric(
                                                     horizontal: 6, vertical: 2),
                                                 decoration: BoxDecoration(

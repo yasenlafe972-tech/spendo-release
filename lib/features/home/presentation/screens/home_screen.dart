@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:remixicon/remixicon.dart';
@@ -95,6 +96,10 @@ class _HomeScreenState extends State<HomeScreen> {
       if (rawVehicle != null && rawVehicle.isNotEmpty) {
         try {
           final state = VehicleDataState.fromJson(rawVehicle);
+          final rawCount = (jsonDecode(rawVehicle)['history'] as List?)?.length ?? 0;
+          if (state.history.length < rawCount) {
+            await prefs.setString(FuelExpenseSheet.storageKey, state.toJson());
+          }
           fuelRecords = state.history
               .where((e) => e.category == ExpenseCategory.fuel)
               .toList();
@@ -146,13 +151,22 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  // Currency number formatting with thousands separator
+  // Currency number formatting with thousands separator (preserves decimals if present)
   String _formatAmount(num val) {
-    final intVal = val.round();
-    final s = intVal.abs().toString();
-    final reg = RegExp(r'\B(?=(\d{3})+(?!\d))');
-    final formatted = s.replaceAllMapped(reg, (match) => ',');
-    return intVal < 0 ? '-$formatted' : formatted;
+    if (val % 1 == 0) {
+      final intVal = val.toInt();
+      final s = intVal.abs().toString();
+      final reg = RegExp(r'\B(?=(\d{3})+(?!\d))');
+      final formatted = s.replaceAllMapped(reg, (match) => ',');
+      return intVal < 0 ? '-$formatted' : formatted;
+    } else {
+      final fixed = val.abs().toStringAsFixed(2);
+      final parts = fixed.split('.');
+      final reg = RegExp(r'\B(?=(\d{3})+(?!\d))');
+      final formattedInt = parts[0].replaceAllMapped(reg, (match) => ',');
+      final result = '$formattedInt.${parts[1]}';
+      return val < 0 ? '-$result' : result;
+    }
   }
 
   // Monthly filtered lists
@@ -401,12 +415,15 @@ class _HomeScreenState extends State<HomeScreen> {
 
     if (_selectedLogsFilter == 'all' || _selectedLogsFilter == 'fuel') {
       for (final f in _filteredFuelRecords) {
+        final invTag = (f.invoiceNumber != null && f.invoiceNumber!.isNotEmpty)
+            ? ' • #${f.invoiceNumber}'
+            : '';
         items.add(_TimelineItem(
           category: 'fuel',
           date: f.date,
           title: f.title.isNotEmpty ? f.title : 'تعبئة وقود • Yellow פז',
           subtitle:
-              '${ArabicDateHelper.getRelativeDayDescription(f.date)} • وقود المركبة',
+              '${ArabicDateHelper.getRelativeDayDescription(f.date)} • وقود المركبة$invTag',
           amount: f.amount,
           fuelRecord: f,
         ));
@@ -433,13 +450,16 @@ class _HomeScreenState extends State<HomeScreen> {
       if (_selectedLogsFilter != 'all' && _selectedLogsFilter != categoryKey) {
         continue;
       }
+      final invTag = (m.invoiceNumber != null && m.invoiceNumber!.isNotEmpty)
+          ? ' • #${m.invoiceNumber}'
+          : '';
       items.add(_TimelineItem(
         category: categoryKey,
         date: m.date,
         title: m.title.isNotEmpty ? m.title : (isStore ? 'Yellow חנות נוחות' : 'صيانة مركبة'),
         subtitle: isStore
-            ? '${ArabicDateHelper.getRelativeDayDescription(m.date)} • مشتريات Yellow'
-            : '${ArabicDateHelper.getRelativeDayDescription(m.date)} • صيانة المركبة',
+            ? '${ArabicDateHelper.getRelativeDayDescription(m.date)} • مشتريات Yellow$invTag'
+            : '${ArabicDateHelper.getRelativeDayDescription(m.date)} • صيانة المركبة$invTag',
         amount: m.amount,
         fuelRecord: m,
       ));
