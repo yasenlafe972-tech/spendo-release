@@ -168,7 +168,7 @@ class ReceiptOcrService {
           }
         }
         if (results.isNotEmpty) {
-          results.sort((a, b) => b.date.compareTo(a.date));
+          results.sort((a, b) => (a.pageNumber ?? 0).compareTo(b.pageNumber ?? 0));
           return results;
         }
       }
@@ -205,7 +205,7 @@ class ReceiptOcrService {
           if (pageIndex >= maxPages) break;
         }
         if (results.isNotEmpty) {
-          results.sort((a, b) => b.date.compareTo(a.date));
+          results.sort((a, b) => (a.pageNumber ?? 0).compareTo(b.pageNumber ?? 0));
           return results;
         }
       } catch (_) {}
@@ -222,7 +222,7 @@ class ReceiptOcrService {
       debugPrint('>>> [ReceiptOcr] Error analyzing multi-receipt PDF: $e');
     }
 
-    results.sort((a, b) => b.date.compareTo(a.date));
+    results.sort((a, b) => (a.pageNumber ?? 0).compareTo(b.pageNumber ?? 0));
     return results;
   }
 

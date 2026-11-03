@@ -4,6 +4,7 @@ import '../../../../core/services/israel_gov_api_service.dart';
 import '../../../../core/services/receipt_ocr_service.dart';
 import '../../../../core/utils/arabic_date_helper.dart';
 import '../../../../core/utils/spendo_haptic_feedback.dart';
+import '../../../home/services/daily_expense_service.dart';
 import '../../models/vehicle_model.dart';
 import 'fuel_expense_sheet.dart';
 
@@ -89,20 +90,13 @@ class _MultiFuelImportSheetState extends State<MultiFuelImportSheet> {
       final dup = _state.findDuplicate(
         date: r.date,
         amount: r.amount,
-        category: ExpenseCategory.fuel,
+        category: r.isFuel ? ExpenseCategory.fuel : ExpenseCategory.maintenance,
       );
       if (dup != null) {
         duplicates.add(i);
-      } else {
-        selected.add(i);
       }
-    }
-
-    // If all are marked duplicates, select all anyway so user has control
-    if (selected.isEmpty && widget.receipts.isNotEmpty) {
-      for (int i = 0; i < widget.receipts.length; i++) {
-        selected.add(i);
-      }
+      // All receipts selected by default so the user clearly sees all invoices found
+      selected.add(i);
     }
 
     if (mounted) {
@@ -193,11 +187,26 @@ class _MultiFuelImportSheetState extends State<MultiFuelImportSheet> {
                 ],
         );
         newRecords.add(rec);
+
+        // Sync store purchases directly to daily expenses (Shopping)
+        if (!r.isFuel) {
+          try {
+            await DailyExpenseService.addExpense(
+              merchantName: r.providerName.isNotEmpty ? r.providerName : 'Yellow חנות נוחות',
+              amount: r.amount,
+              explicitCategory: 'shopping',
+              source: 'yellow_store',
+              date: r.date,
+              notes: 'مشتريات متجر Yellow (صفحة ${r.pageNumber ?? (idx + 1)})',
+            );
+          } catch (_) {}
+        }
       }
 
       final updatedHistory = [...newRecords, ..._state.history];
       final updatedState = _state.copyWith(history: updatedHistory);
       await prefs.setString(FuelExpenseSheet.storageKey, updatedState.toJson());
+      DailyExpenseService.expensesChangedNotifier.value++;
 
       SpendoHaptics.success();
       widget.onSaved?.call();

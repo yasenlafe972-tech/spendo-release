@@ -36,7 +36,9 @@ class _HomeScreenState extends State<HomeScreen> {
   PersonModel? _userProfile;
   List<WorkLogModel> _allWorkLogs = [];
   List<VehicleExpenseRecord> _allFuelRecords = [];
+  List<VehicleExpenseRecord> _allMaintenanceRecords = [];
   List<DailyExpenseModel> _allDailyExpenses = [];
+  bool _showAllTimelineItems = false;
 
   // Filter state
   late String _selectedMonthKey; // e.g. '2026-10' or 'all'
@@ -89,11 +91,15 @@ class _HomeScreenState extends State<HomeScreen> {
       final prefs = await SharedPreferences.getInstance();
       final rawVehicle = prefs.getString(FuelExpenseSheet.storageKey);
       List<VehicleExpenseRecord> fuelRecords = [];
+      List<VehicleExpenseRecord> maintenanceRecords = [];
       if (rawVehicle != null && rawVehicle.isNotEmpty) {
         try {
           final state = VehicleDataState.fromJson(rawVehicle);
           fuelRecords = state.history
               .where((e) => e.category == ExpenseCategory.fuel)
+              .toList();
+          maintenanceRecords = state.history
+              .where((e) => e.category == ExpenseCategory.maintenance)
               .toList();
         } catch (_) {}
       }
@@ -122,6 +128,7 @@ class _HomeScreenState extends State<HomeScreen> {
         _userProfile = user;
         _allWorkLogs = logs;
         _allFuelRecords = fuelRecords;
+        _allMaintenanceRecords = maintenanceRecords;
         _allDailyExpenses = expenses;
         _isLoading = false;
 
@@ -170,6 +177,14 @@ class _HomeScreenState extends State<HomeScreen> {
     }).toList();
   }
 
+  List<VehicleExpenseRecord> get _filteredMaintenanceRecords {
+    if (_selectedMonthKey == 'all') return _allMaintenanceRecords;
+    return _allMaintenanceRecords.where((m) {
+      final key = '${m.date.year}-${m.date.month.toString().padLeft(2, '0')}';
+      return key == _selectedMonthKey;
+    }).toList();
+  }
+
   List<DailyExpenseModel> get _filteredDailyExpenses {
     if (_selectedMonthKey == 'all') return _allDailyExpenses;
     return _allDailyExpenses.where((e) {
@@ -190,9 +205,21 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   double get _totalShoppingExpense {
-    return _filteredDailyExpenses
+    final daily = _filteredDailyExpenses
         .where((e) => e.category == 'shopping')
         .fold(0.0, (sum, e) => sum + e.amount);
+    final vehicleStore = _filteredMaintenanceRecords
+        .where((m) =>
+            (m.notes?.contains('مشتريات') == true ||
+                m.title.contains('Yellow') ||
+                m.provider?.contains('Yellow') == true) &&
+            !_filteredDailyExpenses.any((d) =>
+                d.amount == m.amount &&
+                d.date.year == m.date.year &&
+                d.date.month == m.date.month &&
+                d.date.day == m.date.day))
+        .fold(0.0, (sum, m) => sum + m.amount);
+    return daily + vehicleStore;
   }
 
   double get _totalFuelExpense {
@@ -203,8 +230,15 @@ class _HomeScreenState extends State<HomeScreen> {
     return vehicleFuel + cardFuel;
   }
 
+  double get _totalMaintenanceExpense => _filteredMaintenanceRecords
+      .where((m) =>
+          !(m.notes?.contains('مشتريات') == true ||
+              m.title.contains('Yellow') ||
+              m.provider?.contains('Yellow') == true))
+      .fold(0.0, (sum, m) => sum + m.amount);
+
   double get _totalAllExpenses =>
-      _totalFoodExpense + _totalShoppingExpense + _totalFuelExpense;
+      _totalFoodExpense + _totalShoppingExpense + _totalFuelExpense + _totalMaintenanceExpense;
 
   double get _netMonthlyIncome => _totalWorkIncome - _totalAllExpenses;
 
@@ -377,6 +411,38 @@ class _HomeScreenState extends State<HomeScreen> {
           fuelRecord: f,
         ));
       }
+    }
+
+    // Vehicle maintenance / Yellow store records
+    for (final m in _filteredMaintenanceRecords) {
+      final isStore = m.notes?.contains('مشتريات') == true ||
+          m.title.contains('Yellow') ||
+          m.provider?.contains('Yellow') == true;
+      final categoryKey = isStore ? 'shopping' : 'maintenance';
+
+      // Avoid duplicate display if it's already in _filteredDailyExpenses
+      final alreadyInDaily = _filteredDailyExpenses.any((d) =>
+          d.amount == m.amount &&
+          d.date.year == m.date.year &&
+          d.date.month == m.date.month &&
+          d.date.day == m.date.day &&
+          d.date.hour == m.date.hour &&
+          d.date.minute == m.date.minute);
+      if (alreadyInDaily) continue;
+
+      if (_selectedLogsFilter != 'all' && _selectedLogsFilter != categoryKey) {
+        continue;
+      }
+      items.add(_TimelineItem(
+        category: categoryKey,
+        date: m.date,
+        title: m.title.isNotEmpty ? m.title : (isStore ? 'Yellow חנות נוחות' : 'صيانة مركبة'),
+        subtitle: isStore
+            ? '${ArabicDateHelper.getRelativeDayDescription(m.date)} • مشتريات Yellow'
+            : '${ArabicDateHelper.getRelativeDayDescription(m.date)} • صيانة المركبة',
+        amount: m.amount,
+        fuelRecord: m,
+      ));
     }
 
     items.sort((a, b) => b.date.compareTo(a.date));
@@ -969,108 +1035,155 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
             )
-          else
-            ListView.separated(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: timelineItems.take(10).length,
-              separatorBuilder: (_, __) =>
-                  const Divider(color: Color(0x66242927), height: 1),
-              itemBuilder: (context, index) {
-                final item = timelineItems[index];
-                final IconData itemIcon;
-                final Color itemColor;
+          else ...[
+            Builder(builder: (context) {
+              final displayList = _showAllTimelineItems
+                  ? timelineItems
+                  : timelineItems.take(10).toList();
 
-                if (item.category == 'food') {
-                  itemIcon = Remix.restaurant_2_line;
-                  itemColor = brandYellow;
-                } else if (item.category == 'fuel') {
-                  itemIcon = Remix.gas_station_line;
-                  itemColor = brandYellow;
-                } else {
-                  itemIcon = Remix.shopping_bag_3_line;
-                  itemColor = brandGreen;
-                }
+              return ListView.separated(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: displayList.length,
+                separatorBuilder: (_, __) =>
+                    const Divider(color: Color(0x66242927), height: 1),
+                itemBuilder: (context, index) {
+                  final item = displayList[index];
+                  final IconData itemIcon;
+                  final Color itemColor;
 
-                return InkWell(
-                  onTap: () {
-                    SpendoHaptics.light();
-                    if (item.dailyExpense != null) {
-                      _showMerchantCategorySheet(item.dailyExpense!);
-                    } else if (item.fuelRecord != null) {
-                      _showFuelDetailsModal(item.fuelRecord!);
-                    }
-                  },
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Expanded(
-                          child: Row(
-                            children: [
-                              Icon(
-                                itemIcon,
-                                size: 16,
-                                color: itemColor,
-                              ),
-                              const SizedBox(width: 9),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      item.title,
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: const TextStyle(
-                                        fontSize: 11.5,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 1),
-                                    Text(
-                                      item.subtitle,
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: const TextStyle(
-                                        fontSize: 9.5,
-                                        color: textMuted,
-                                      ),
-                                    ),
-                                  ],
+                  if (item.category == 'food') {
+                    itemIcon = Remix.restaurant_2_line;
+                    itemColor = brandYellow;
+                  } else if (item.category == 'fuel') {
+                    itemIcon = Remix.gas_station_line;
+                    itemColor = brandYellow;
+                  } else if (item.category == 'maintenance') {
+                    itemIcon = Remix.tools_line;
+                    itemColor = const Color(0xFF60A5FA);
+                  } else {
+                    itemIcon = Remix.shopping_bag_3_line;
+                    itemColor = brandGreen;
+                  }
+
+                  return InkWell(
+                    onTap: () {
+                      SpendoHaptics.light();
+                      if (item.dailyExpense != null) {
+                        _showMerchantCategorySheet(item.dailyExpense!);
+                      } else if (item.fuelRecord != null) {
+                        _showFuelDetailsModal(item.fuelRecord!);
+                      }
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                            child: Row(
+                              children: [
+                                Icon(
+                                  itemIcon,
+                                  size: 16,
+                                  color: itemColor,
                                 ),
+                                const SizedBox(width: 9),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        item.title,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: const TextStyle(
+                                          fontSize: 11.5,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 1),
+                                      Text(
+                                        item.subtitle,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: const TextStyle(
+                                          fontSize: 9.5,
+                                          color: textMuted,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                '-${_formatAmount(item.amount)} ₪',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                  color: itemColor,
+                                ),
+                              ),
+                              const SizedBox(width: 4),
+                              const Icon(
+                                Remix.equalizer_line,
+                                size: 12,
+                                color: Color(0xFF71717A),
                               ),
                             ],
                           ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              );
+            }),
+            if (timelineItems.length > 10)
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: InkWell(
+                  onTap: () {
+                    SpendoHaptics.selection();
+                    setState(() => _showAllTimelineItems = !_showAllTimelineItems);
+                  },
+                  borderRadius: BorderRadius.circular(8),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 6),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          _showAllTimelineItems
+                              ? 'إظهار أقل'
+                              : 'عرض كافة السجلات (${timelineItems.length})',
+                          style: const TextStyle(
+                            color: brandGreen,
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                        const SizedBox(width: 8),
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              '-${_formatAmount(item.amount)} ₪',
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                                color: itemColor,
-                              ),
-                            ),
-                            const SizedBox(width: 4),
-                            const Icon(
-                              Remix.equalizer_line,
-                              size: 12,
-                              color: Color(0xFF71717A),
-                            ),
-                          ],
+                        const SizedBox(width: 4),
+                        Icon(
+                          _showAllTimelineItems
+                              ? Icons.keyboard_arrow_up
+                              : Icons.keyboard_arrow_down,
+                          color: brandGreen,
+                          size: 16,
                         ),
                       ],
                     ),
                   ),
-                );
-              },
-            ),
+                ),
+              ),
+          ],
         ],
       ),
     );

@@ -24,7 +24,7 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
   static const String _storageKey = 'spendo_vehicle_tracker_v5';
   VehicleDataState _state = VehicleDataState.initial();
   bool _isLoading = true;
-  bool _showAllHistory = false;
+  bool _showAllHistory = true;
   String _selectedMonthKey = 'all';
   bool _isOdometerEditOpen = false;
   late final TextEditingController _odometerController;
