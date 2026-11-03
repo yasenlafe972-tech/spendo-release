@@ -164,12 +164,14 @@ class _MultiFuelImportSheetState extends State<MultiFuelImportSheet> {
 
         final stationTitle = r.providerName.isNotEmpty
             ? r.providerName
-            : 'תדלוק Yellow פז';
+            : (r.isFuel ? 'תדלוק Yellow פז' : 'Yellow חנות נוחות');
 
-        final computedLiters = r.liters ??
-            (_officialFuelPrice > 0
-                ? double.parse((r.amount / _officialFuelPrice).toStringAsFixed(2))
-                : null);
+        final computedLiters = r.isFuel
+            ? (r.liters ??
+                (_officialFuelPrice > 0
+                    ? double.parse((r.amount / _officialFuelPrice).toStringAsFixed(2))
+                    : null))
+            : null;
 
         final rec = VehicleExpenseRecord(
           id: '${r.date.millisecondsSinceEpoch}_${r.amount.toStringAsFixed(2)}_$idx',
@@ -177,17 +179,17 @@ class _MultiFuelImportSheetState extends State<MultiFuelImportSheet> {
           amount: r.amount,
           odometer: r.odometer ?? _state.currentOdometer,
           date: r.date,
-          category: ExpenseCategory.fuel,
+          category: r.isFuel ? ExpenseCategory.fuel : ExpenseCategory.maintenance,
           invoiceNumber: r.invoiceNumber,
-          provider: r.providerName.isNotEmpty ? r.providerName : 'פז Yellow',
+          provider: r.providerName.isNotEmpty ? r.providerName : 'Yellow פז',
           liters: computedLiters,
-          pricePerLiter: r.pricePerLiter ?? _officialFuelPrice,
-          notes: 'استيراد فواتير Yellow تلقائياً',
+          pricePerLiter: r.isFuel ? (r.pricePerLiter ?? _officialFuelPrice) : null,
+          notes: r.isFuel ? 'استيراد وقود Yellow' : 'مشتريات متجر Yellow',
           items: r.items.isNotEmpty
               ? r.items
               : [
                   if (computedLiters != null) 'בנזין 95 אוקטן ($computedLiters ליטר)',
-                  'תשלום Yellow פז',
+                  r.isFuel ? 'תשלום Yellow פז' : 'مشتريات Yellow',
                 ],
         );
         newRecords.add(rec);
@@ -301,9 +303,14 @@ class _MultiFuelImportSheetState extends State<MultiFuelImportSheet> {
                           ),
                           const SizedBox(height: 2),
                           Text(
-                            widget.sourceFileName != null
-                                ? 'تم العثور على ${widget.receipts.length} فواتير في ${widget.sourceFileName}'
-                                : 'تم استخراج ${widget.receipts.length} فواتير من الملف',
+                            () {
+                              final fuelCnt = widget.receipts.where((r) => r.isFuel).length;
+                              final storeCnt = widget.receipts.length - fuelCnt;
+                              if (storeCnt > 0) {
+                                return 'تم العثور على ${widget.receipts.length} فواتير ($fuelCnt وقود • $storeCnt مشتريات Yellow)';
+                              }
+                              return 'تم العثور على ${widget.receipts.length} فواتير وقود';
+                            }(),
                             style: const TextStyle(
                               color: textMuted,
                               fontSize: 12,
@@ -407,65 +414,85 @@ class _MultiFuelImportSheetState extends State<MultiFuelImportSheet> {
                           color: brandGreen,
                         ),
                       )
-                    : ListView.separated(
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                        itemCount: widget.receipts.length,
-                        separatorBuilder: (_, __) => const SizedBox(height: 8),
-                        itemBuilder: (ctx, idx) {
-                          final r = widget.receipts[idx];
-                          final isSelected = _selectedIndices.contains(idx);
-                          final isDuplicate = _duplicateIndices.contains(idx);
+                    : Scrollbar(
+                        thumbVisibility: true,
+                        child: ListView.separated(
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                          itemCount: widget.receipts.length,
+                          separatorBuilder: (_, __) => const SizedBox(height: 8),
+                          itemBuilder: (ctx, idx) {
+                            final r = widget.receipts[idx];
+                            final isSelected = _selectedIndices.contains(idx);
+                            final isDuplicate = _duplicateIndices.contains(idx);
 
-                          return InkWell(
-                            onTap: () {
-                              SpendoHaptics.selection();
-                              setState(() {
-                                if (isSelected) {
-                                  _selectedIndices.remove(idx);
-                                } else {
-                                  _selectedIndices.add(idx);
-                                }
-                              });
-                            },
-                            borderRadius: BorderRadius.circular(14),
-                            child: AnimatedContainer(
-                              duration: const Duration(milliseconds: 180),
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                              decoration: BoxDecoration(
-                                color: isSelected
-                                    ? surfaceField
-                                    : surfaceField.withAlpha(120),
-                                borderRadius: BorderRadius.circular(14),
-                                border: Border.all(
+                            return InkWell(
+                              onTap: () {
+                                SpendoHaptics.selection();
+                                setState(() {
+                                  if (isSelected) {
+                                    _selectedIndices.remove(idx);
+                                  } else {
+                                    _selectedIndices.add(idx);
+                                  }
+                                });
+                              },
+                              borderRadius: BorderRadius.circular(14),
+                              child: AnimatedContainer(
+                                duration: const Duration(milliseconds: 180),
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                                decoration: BoxDecoration(
                                   color: isSelected
-                                      ? brandGreen.withAlpha(150)
-                                      : surfaceBorder,
-                                  width: isSelected ? 1.5 : 1,
+                                      ? surfaceField
+                                      : surfaceField.withAlpha(120),
+                                  borderRadius: BorderRadius.circular(14),
+                                  border: Border.all(
+                                    color: isSelected
+                                        ? brandGreen.withAlpha(150)
+                                        : surfaceBorder,
+                                    width: isSelected ? 1.5 : 1,
+                                  ),
                                 ),
-                              ),
-                              child: Row(
-                                children: [
-                                  // Checkbox
-                                  Container(
-                                    width: 22,
-                                    height: 22,
-                                    decoration: BoxDecoration(
-                                      color: isSelected ? brandGreen : Colors.transparent,
-                                      borderRadius: BorderRadius.circular(6),
-                                      border: Border.all(
-                                        color: isSelected ? brandGreen : textMuted,
-                                        width: 1.5,
+                                child: Row(
+                                  children: [
+                                    // Checkbox
+                                    Container(
+                                      width: 22,
+                                      height: 22,
+                                      decoration: BoxDecoration(
+                                        color: isSelected ? brandGreen : Colors.transparent,
+                                        borderRadius: BorderRadius.circular(6),
+                                        border: Border.all(
+                                          color: isSelected ? brandGreen : textMuted,
+                                          width: 1.5,
+                                        ),
+                                      ),
+                                      child: isSelected
+                                          ? const Icon(
+                                              Icons.check_rounded,
+                                              size: 16,
+                                              color: Colors.black,
+                                            )
+                                          : null,
+                                    ),
+                                    const SizedBox(width: 10),
+
+                                    // Fuel vs Store Icon
+                                    Container(
+                                      width: 32,
+                                      height: 32,
+                                      decoration: BoxDecoration(
+                                        color: (r.isFuel ? brandGreen : brandYellow).withAlpha(25),
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: Icon(
+                                        r.isFuel
+                                            ? Icons.local_gas_station_rounded
+                                            : Icons.shopping_bag_outlined,
+                                        size: 18,
+                                        color: r.isFuel ? brandGreen : brandYellow,
                                       ),
                                     ),
-                                    child: isSelected
-                                        ? const Icon(
-                                            Icons.check_rounded,
-                                            size: 16,
-                                            color: Colors.black,
-                                          )
-                                        : null,
-                                  ),
-                                  const SizedBox(width: 12),
+                                    const SizedBox(width: 10),
 
                                   // Station & Details
                                   Expanded(
@@ -577,6 +604,7 @@ class _MultiFuelImportSheetState extends State<MultiFuelImportSheet> {
                           );
                         },
                       ),
+                    ),
               ),
 
               // Bottom buttons
