@@ -72,50 +72,76 @@ class ReceiptOcrService {
     return null;
   }
 
-  /// 100% offline analyzer for Israeli gas receipts & Yellow app PDFs.
-  /// Step 1: Instant embedded JPEG extraction of Page 1 (< 3ms).
-  /// Step 2: High-resolution rasterization of Page 1 ONLY (Scale 2.8x @ 200 DPI).
-  /// Step 3: Direct digital text extraction for vector PDFs.
-  static Future<ParsedReceiptResult?> analyzeReceiptPdf(File pdfFile) async {
+  /// 100% offline analyzer for Israeli gas receipts & Yellow app multi-receipt PDFs.
+  /// Extracts all embedded JPEGs or rasterizes pages, parsing each invoice deterministically.
+  static Future<List<ParsedReceiptResult>> analyzeReceiptPdfMulti(
+    File pdfFile, {
+    void Function(int current, int total)? onProgress,
+  }) async {
+    final results = <ParsedReceiptResult>[];
+    final seenKeys = <String>{};
+
+    void addIfValid(ParsedReceiptResult? res) {
+      if (res == null) return;
+      if (res.amount <= 0) return;
+      final key = '${res.date.year}-${res.date.month}-${res.date.day}_${res.amount.toStringAsFixed(2)}_${res.liters?.toStringAsFixed(2)}';
+      if (seenKeys.add(key)) {
+        results.add(res);
+      }
+    }
+
     try {
       final bytes = await pdfFile.readAsBytes();
 
-      // Step 1: Instant extraction of embedded JPEG (Yellow app Page 1 format, < 3ms)
-      final embeddedJpeg = PdfTextExtractor.extractFirstEmbeddedJpeg(bytes);
-      if (embeddedJpeg != null) {
-        final tempJpg = File(
-            '${pdfFile.parent.path}/embedded_page1_${DateTime.now().millisecondsSinceEpoch}.jpg');
-        try {
-          await tempJpg.writeAsBytes(embeddedJpeg);
-          final res = await analyzeReceiptImage(tempJpg);
-          if (res != null && (res.amount > 0 || res.liters != null)) {
-            return res;
-          }
-        } finally {
+      // Step 1: Instant extraction of all embedded JPEGs (Yellow multi-receipt PDF format, < 15ms)
+      final embeddedJpegs = PdfTextExtractor.extractAllEmbeddedJpegs(bytes);
+      if (embeddedJpegs.isNotEmpty) {
+        final total = embeddedJpegs.length;
+        for (int i = 0; i < total; i++) {
+          onProgress?.call(i + 1, total);
+          final tempJpg = File(
+            '${pdfFile.parent.path}/temp_embedded_rcpt_${DateTime.now().millisecondsSinceEpoch}_$i.jpg',
+          );
           try {
-            await tempJpg.delete();
-          } catch (_) {}
+            await tempJpg.writeAsBytes(embeddedJpegs[i]);
+            final res = await analyzeReceiptImage(tempJpg);
+            addIfValid(res);
+          } finally {
+            try {
+              await tempJpg.delete();
+            } catch (_) {}
+          }
+        }
+        if (results.isNotEmpty) {
+          results.sort((a, b) => b.date.compareTo(a.date));
+          return results;
         }
       }
 
-      // Step 2: High-resolution rasterization of Page 1 ONLY (Scale 2.8x @ 200 DPI)
+      // Step 2: High-resolution rasterization if no embedded JPEGs were found (up to 15 pages)
       try {
-        await for (final page in Printing.raster(bytes, pages: const [0], dpi: 200)
-            .timeout(const Duration(seconds: 4))) {
+        int pageIndex = 0;
+        await for (final page in Printing.raster(bytes, dpi: 200).timeout(const Duration(seconds: 12))) {
+          pageIndex++;
+          onProgress?.call(pageIndex, 15);
           final pngBytes = await page.toPng();
           final tempImg = File(
-              '${pdfFile.parent.path}/pdf_page1_${DateTime.now().millisecondsSinceEpoch}.png');
+            '${pdfFile.parent.path}/temp_raster_rcpt_${DateTime.now().millisecondsSinceEpoch}_$pageIndex.png',
+          );
           try {
             await tempImg.writeAsBytes(pngBytes);
             final res = await analyzeReceiptImage(tempImg);
-            if (res != null && (res.amount > 0 || res.liters != null)) {
-              return res;
-            }
+            addIfValid(res);
           } finally {
             try {
               await tempImg.delete();
             } catch (_) {}
           }
+          if (pageIndex >= 15) break;
+        }
+        if (results.isNotEmpty) {
+          results.sort((a, b) => b.date.compareTo(a.date));
+          return results;
         }
       } catch (_) {}
 
@@ -123,14 +149,20 @@ class ReceiptOcrService {
       final extractedText = await PdfTextExtractor.extractText(pdfFile);
       if (extractedText.trim().isNotEmpty) {
         final parsed = parseReceiptText(extractedText);
-        if (parsed.amount > 0 || parsed.liters != null) {
-          return parsed;
-        }
+        addIfValid(parsed);
       }
     } catch (e) {
-      debugPrint('>>> [ReceiptOcr] Error analyzing PDF receipt: $e');
+      debugPrint('>>> [ReceiptOcr] Error analyzing multi-receipt PDF: $e');
     }
-    return null;
+
+    results.sort((a, b) => b.date.compareTo(a.date));
+    return results;
+  }
+
+  /// Single receipt convenience wrapper
+  static Future<ParsedReceiptResult?> analyzeReceiptPdf(File pdfFile) async {
+    final list = await analyzeReceiptPdfMulti(pdfFile);
+    return list.isNotEmpty ? list.first : null;
   }
 
   /// Mathematical Triplet Search:
@@ -310,7 +342,6 @@ class ReceiptOcrService {
         RegExp(r'(\d+(?:[.,]\d{1,3})?)\s*(?:ליטרים|ליטר|ל\b)(?!\s*(?:ש"?ח|שח|₪))', caseSensitive: false),
         RegExp(r'(\d+(?:[.,]\d{1,3})?)\s*:\s*כמות', caseSensitive: false),
         RegExp(r'(?<!מחיר\s)(?<!ל)(?:ליטרים?|ל\b)\s*:\s*(\d+(?:[.,]\d{1,3})?)', caseSensitive: false),
-        RegExp(r'(?:בנזין|אוקטן)\s*95[^\d\n\r]*(\d+(?:[.,]\d{1,3})?)', caseSensitive: false),
       ];
 
       for (final p in litersPatterns) {

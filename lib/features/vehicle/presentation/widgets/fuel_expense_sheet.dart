@@ -8,6 +8,7 @@ import '../../../../core/services/receipt_ocr_service.dart';
 import '../../../../core/utils/arabic_date_helper.dart';
 import '../../../../core/utils/spendo_haptic_feedback.dart';
 import '../../models/vehicle_model.dart';
+import 'multi_fuel_import_sheet.dart';
 
 /// Modal bottom sheet for recording a fuel expense with receipt OCR scanning.
 /// Uses the calm, balanced dark design with watermarks and segmented cards.
@@ -176,11 +177,36 @@ class FuelExpenseSheet {
                         'جاري قراءة واستخراج بيانات ملف الـ PDF من Yellow...';
                   });
 
-                  final result =
-                      await ReceiptOcrService.analyzeReceiptPdf(pdfFile);
+                  final multiResults =
+                      await ReceiptOcrService.analyzeReceiptPdfMulti(
+                    pdfFile,
+                    onProgress: (current, total) {
+                      setSheetState(() {
+                        statusMessage =
+                            'جاري فحص فواتير الملف ($current من $total)...';
+                      });
+                    },
+                  );
 
                   setSheetState(() {
                     isScanning = false;
+                  });
+
+                  if (multiResults.length > 1) {
+                    if (ctx.mounted) {
+                      Navigator.pop(ctx);
+                      MultiFuelImportSheet.show(
+                        context,
+                        receipts: multiResults,
+                        sourceFileName: loadedPdfFileName,
+                        onSaved: onSaved,
+                      );
+                    }
+                    return;
+                  }
+
+                  final result = multiResults.firstOrNull;
+                  setSheetState(() {
                     if (result != null && (result.amount > 0 || (result.liters != null && result.liters! > 0))) {
                       updateFromParsed(result);
                     } else {

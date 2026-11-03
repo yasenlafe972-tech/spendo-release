@@ -118,6 +118,28 @@ class PdfTextExtractor {
     return null;
   }
 
+  /// Extracts all embedded JPEG images from a PDF (e.g. multi-receipt Yellow statements)
+  static List<Uint8List> extractAllEmbeddedJpegs(Uint8List bytes) {
+    final list = <Uint8List>[];
+    int i = 0;
+    while (i < bytes.length - 3) {
+      if (bytes[i] == 0xFF && bytes[i + 1] == 0xD8 && bytes[i + 2] == 0xFF) {
+        for (int j = i + 3; j < bytes.length - 1; j++) {
+          if (bytes[j] == 0xFF && bytes[j + 1] == 0xD9) {
+            final len = (j + 2) - i;
+            if (len > 2000) {
+              list.add(bytes.sublist(i, j + 2));
+              i = j + 2;
+              break;
+            }
+          }
+        }
+      }
+      i++;
+    }
+    return list;
+  }
+
   /// Extracts text from PDF text operators without backtracking: (text) Tj, [(t)(x)] TJ
   static String _extractTjText(String streamContent) {
     if (streamContent.isEmpty) return '';
