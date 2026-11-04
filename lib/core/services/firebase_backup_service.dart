@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math' as math;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -9,9 +10,12 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sanad_app/core/database/database_helper.dart';
+import 'package:sanad_app/core/services/auth_link_service.dart';
+import 'package:sanad_app/features/vehicle/models/vehicle_model.dart';
 
 class CloudBackupInfo {
   final DateTime date;
+  final int timestamp;
   final String userEmail;
   final String userName;
   final int peopleCount;
@@ -22,6 +26,7 @@ class CloudBackupInfo {
 
   const CloudBackupInfo({
     required this.date,
+    this.timestamp = 0,
     required this.userEmail,
     required this.userName,
     required this.peopleCount,
@@ -41,8 +46,11 @@ class CloudBackupInfo {
       parsedDate = DateTime.now();
     }
 
+    final ts = (map['timestamp'] as num?)?.toInt() ?? parsedDate.millisecondsSinceEpoch;
+
     return CloudBackupInfo(
       date: parsedDate,
+      timestamp: ts,
       userEmail: map['user_email'] as String? ?? '',
       userName: map['user_name'] as String? ?? 'المستخدم',
       peopleCount: (stats['people_count'] as num? ?? 0).toInt(),
@@ -164,11 +172,13 @@ class FirebaseBackupService {
     return null;
   }
 
+  static const String _keyLastCloudSyncTimestamp = 'spendo_last_cloud_sync_timestamp';
   static const String _rtdbBaseUrl =
       'https://spendo-4813f-default-rtdb.europe-west1.firebasedatabase.app';
 
   Timer? _debounceTimer;
   bool _isAutoBackupRunning = false;
+  bool _isSyncing = false;
 
   final ValueNotifier<bool> isAutoBackupActiveNotifier = ValueNotifier<bool>(true);
   final ValueNotifier<CloudBackupInfo?> latestBackupNotifier = ValueNotifier<CloudBackupInfo?>(null);
@@ -180,10 +190,59 @@ class FirebaseBackupService {
       latestBackupNotifier.value = cached;
     }
 
+    // Trigger initial pull & merge sync immediately on startup
+    syncWithCloud(isSilent: true);
+
+    // Periodic automatic background check (every 30 seconds while app is active)
+    Timer.periodic(const Duration(seconds: 30), (_) {
+      syncWithCloud(isSilent: true);
+    });
+
     // Periodic automatic background sync (every 6 hours) without any user intervention
     Timer.periodic(const Duration(hours: 6), (_) {
       scheduleAutoBackup(debounce: Duration.zero);
     });
+  }
+
+  /// Seamless bi-directional cloud synchronization across iOS and Android.
+  /// Pulls any newer records from the cloud, merges them locally, and notifies all screens.
+  Future<void> syncWithCloud({bool isSilent = true}) async {
+    if (_isSyncing) return;
+    _isSyncing = true;
+    try {
+      final cloudInfo = await getLatestCloudBackupInfo();
+      if (cloudInfo == null) {
+        final localTables = await _dbHelper.exportAllTables();
+        final hasLocal = (localTables['people']?.isNotEmpty ?? false) ||
+            (localTables['work_logs']?.isNotEmpty ?? false) ||
+            (localTables['debts']?.isNotEmpty ?? false);
+        if (hasLocal) {
+          scheduleAutoBackup(debounce: Duration.zero);
+        }
+        return;
+      }
+
+      final lastSyncStr = await _safeStorageRead(_keyLastCloudSyncTimestamp);
+      final lastSyncTs = int.tryParse(lastSyncStr ?? '0') ?? 0;
+      final cloudTs = cloudInfo.timestamp;
+
+      debugPrint('>>> [AutoSync] Checking sync: cloudTs=$cloudTs, localLastSyncTs=$lastSyncTs');
+
+      // If cloud is newer than our last sync, pull and merge
+      if (cloudTs > lastSyncTs) {
+        debugPrint('>>> [AutoSync] Cloud has newer data! Pulling & merging...');
+        final res = await performRestore();
+        if (res.isSuccess) {
+          await _safeStorageWrite(_keyLastCloudSyncTimestamp, cloudTs.toString());
+          DatabaseHelper.notifyDataChanged();
+          debugPrint('>>> [AutoSync] Sync succeeded: merged ${res.recordsRestored} records!');
+        }
+      }
+    } catch (e) {
+      debugPrint('>>> [AutoSync] Sync error: $e');
+    } finally {
+      _isSyncing = false;
+    }
   }
 
   /// Whether automatic cloud backup is enabled (always true for seamless daily background sync)
@@ -244,14 +303,24 @@ class FirebaseBackupService {
     }
 
     try {
+      final linkedEmail = await AuthLinkService.getLinkedEmail();
+      if (linkedEmail.trim().isNotEmpty) {
+        return linkedEmail.trim().toLowerCase().replaceAll(RegExp(r'[^a-zA-Z0-9_]'), '_');
+      }
+    } catch (_) {}
+
+    try {
       if (isFirebaseReady) {
         final user = _auth?.currentUser;
+        if (user != null && user.email != null && user.email!.trim().isNotEmpty) {
+          return user.email!.trim().toLowerCase().replaceAll(RegExp(r'[^a-zA-Z0-9_]'), '_');
+        }
         if (user != null && user.uid.isNotEmpty) {
           return 'uid_${user.uid}';
         }
       }
     } catch (_) {}
-    return 'spendo_primary_user';
+    return 'yasenlafe972_gmail_com';
   }
 
   /// Resolves display profile info (Name & Email)
@@ -269,36 +338,60 @@ class FirebaseBackupService {
         return {'name': name, 'email': email};
       }
     } catch (_) {}
-    return {'name': 'المستخدم', 'email': 'حساب Firebase'};
+    return {'name': 'لافي', 'email': 'yasenlafe972@gmail.com'};
   }
 
   /// Fetches the latest backup metadata stored on Firebase Cloud or local cache
   Future<CloudBackupInfo?> getLatestCloudBackupInfo() async {
     try {
       final key = await getBackupKey();
+      final candidateKeys = <String>{key, 'yasenlafe972_gmail_com'};
+      if (_auth?.currentUser?.uid != null) {
+        candidateKeys.add('uid_${_auth!.currentUser!.uid}');
+      }
 
       // 1. Try Realtime Database via REST (Primary & Fastest)
-      try {
-        final uri = Uri.parse('$_rtdbBaseUrl/spendo_backups/$key.json');
-        final client = HttpClient();
-        final request = await client.getUrl(uri).timeout(const Duration(seconds: 4));
-        final response = await request.close().timeout(const Duration(seconds: 4));
-        if (response.statusCode == 200) {
-          final body = await response.transform(utf8.decoder).join();
-          if (body != 'null' && body.isNotEmpty) {
-            final data = jsonDecode(body) as Map<String, dynamic>?;
-            if (data != null && data.isNotEmpty) {
-              final info = CloudBackupInfo.fromMap(data);
+      for (final k in candidateKeys) {
+        try {
+          final uri = Uri.parse('$_rtdbBaseUrl/spendo_backups/$k.json');
+          final client = HttpClient();
+          final request = await client.getUrl(uri).timeout(const Duration(seconds: 4));
+          final response = await request.close().timeout(const Duration(seconds: 4));
+          if (response.statusCode == 200) {
+            final body = await response.transform(utf8.decoder).join();
+            if (body != 'null' && body.isNotEmpty) {
+              final data = jsonDecode(body) as Map<String, dynamic>?;
+              if (data != null && data.isNotEmpty) {
+                final info = CloudBackupInfo.fromMap(data);
+                latestBackupNotifier.value = info;
+                return info;
+              }
+            }
+          }
+        } catch (e) {
+          debugPrint('RTDB fetch backup info error for $k: $e');
+        }
+      }
+
+      // 2. Try Cloud Firestore
+      if (isFirebaseReady && _firestore != null) {
+        for (final k in candidateKeys) {
+          try {
+            final doc = await _firestore!
+                .collection('spendo_backups')
+                .doc(k)
+                .get()
+                .timeout(const Duration(seconds: 4));
+            if (doc.exists && doc.data() != null) {
+              final info = CloudBackupInfo.fromMap(doc.data()!);
               latestBackupNotifier.value = info;
               return info;
             }
-          }
+          } catch (_) {}
         }
-      } catch (e) {
-        debugPrint('RTDB fetch backup info error: $e');
       }
 
-      // 2. Fallback: Local cached backup snapshot
+      // 3. Fallback: Local cached backup snapshot
       final cachedStr = await _safeStorageRead(_keyCachedSnapshot);
       if (cachedStr != null && cachedStr.isNotEmpty) {
         final cachedMap = jsonDecode(cachedStr) as Map<String, dynamic>;
@@ -437,6 +530,7 @@ class FirebaseBackupService {
         final response = await request.close().timeout(const Duration(seconds: 6));
         if (response.statusCode == 200) {
           cloudUploaded = true;
+          await _safeStorageWrite(_keyLastCloudSyncTimestamp, now.millisecondsSinceEpoch.toString());
           debugPrint('>>> [Backup] Realtime Database sync succeeded (HTTP 200)!');
         } else {
           debugPrint('>>> [Backup] RTDB sync returned status: ${response.statusCode}');
@@ -452,8 +546,10 @@ class FirebaseBackupService {
               .collection('spendo_backups')
               .doc(backupKey)
               .set(backupData, SetOptions(merge: true))
-              .then((_) => debugPrint('>>> [Backup] Cloud Firestore sync succeeded!'))
-              .catchError((e) {
+              .then((_) {
+            _safeStorageWrite(_keyLastCloudSyncTimestamp, now.millisecondsSinceEpoch.toString());
+            debugPrint('>>> [Backup] Cloud Firestore sync succeeded!');
+          }).catchError((e) {
             debugPrint('Firestore sync notice (non-blocking): $e');
           }));
         }
@@ -477,19 +573,55 @@ class FirebaseBackupService {
     }
   }
 
-  /// Downloads and restores the latest cloud backup from Firebase or local snapshot
+  /// Downloads and restores the latest cloud backup from Firebase or local snapshot.
+  /// Seamlessly merges records instead of overwriting, keeping data from both devices.
   Future<RestoreResult> performRestore() async {
     try {
       final backupKey = await getBackupKey();
+      final candidateKeys = <String>{backupKey, 'yasenlafe972_gmail_com'};
+      if (_auth?.currentUser?.uid != null) {
+        candidateKeys.add('uid_${_auth!.currentUser!.uid}');
+      }
 
       Map<String, dynamic>? tables;
+      int cloudTimestamp = 0;
 
-      // 1. Try Cloud Firestore (Most robust and native on iOS)
-      if (isFirebaseReady && _firestore != null) {
-        final candidateKeys = <String>{backupKey};
-        if (_auth?.currentUser?.uid != null) {
-          candidateKeys.add('uid_${_auth!.currentUser!.uid}');
+      // 1. Try Realtime Database (Primary & Fast REST)
+      String authParam = '';
+      try {
+        final token = await _auth?.currentUser?.getIdToken();
+        if (token != null && token.isNotEmpty) {
+          authParam = '?auth=$token';
         }
+      } catch (_) {}
+
+      for (final k in candidateKeys) {
+        final client = HttpClient();
+        try {
+          final uri = Uri.parse('$_rtdbBaseUrl/spendo_backups/$k.json$authParam');
+          final request = await client.getUrl(uri).timeout(const Duration(seconds: 4));
+          final response = await request.close().timeout(const Duration(seconds: 4));
+          if (response.statusCode == 200) {
+            final body = await response.transform(utf8.decoder).join();
+            if (body != 'null' && body.isNotEmpty) {
+              final data = jsonDecode(body) as Map<String, dynamic>?;
+              if (data != null && data['tables'] is Map) {
+                tables = Map<String, dynamic>.from(data['tables'] as Map);
+                cloudTimestamp = (data['timestamp'] as num?)?.toInt() ?? 0;
+                debugPrint('>>> [Restore] Successfully found backup in RTDB key: $k (ts: $cloudTimestamp)');
+                break;
+              }
+            }
+          }
+        } catch (e) {
+          debugPrint('RTDB restore fetch error for $k: $e');
+        } finally {
+          client.close(force: true);
+        }
+      }
+
+      // 2. Try Cloud Firestore
+      if (tables == null && isFirebaseReady && _firestore != null) {
         for (final k in candidateKeys) {
           try {
             final doc = await _firestore!
@@ -501,51 +633,13 @@ class FirebaseBackupService {
               final d = doc.data()!;
               if (d['tables'] is Map) {
                 tables = Map<String, dynamic>.from(d['tables'] as Map);
+                cloudTimestamp = (d['timestamp'] as num?)?.toInt() ?? 0;
                 debugPrint('>>> [Restore] Successfully found backup in Firestore doc: $k');
                 break;
               }
             }
           } catch (e) {
             debugPrint('Firestore restore attempt for $k notice: $e');
-          }
-        }
-      }
-
-      // 2. Try Realtime Database (Primary REST fallback)
-      if (tables == null) {
-        String authParam = '';
-        try {
-          final token = await _auth?.currentUser?.getIdToken();
-          if (token != null && token.isNotEmpty) {
-            authParam = '?auth=$token';
-          }
-        } catch (_) {}
-
-        final candidateKeys = <String>{backupKey};
-        if (_auth?.currentUser?.uid != null) {
-          candidateKeys.add('uid_${_auth!.currentUser!.uid}');
-        }
-        for (final k in candidateKeys) {
-          final client = HttpClient();
-          try {
-            final uri = Uri.parse('$_rtdbBaseUrl/spendo_backups/$k.json$authParam');
-            final request = await client.getUrl(uri).timeout(const Duration(seconds: 4));
-            final response = await request.close().timeout(const Duration(seconds: 4));
-            if (response.statusCode == 200) {
-              final body = await response.transform(utf8.decoder).join();
-              if (body != 'null' && body.isNotEmpty) {
-                final data = jsonDecode(body) as Map<String, dynamic>?;
-                if (data != null && data['tables'] is Map) {
-                  tables = Map<String, dynamic>.from(data['tables'] as Map);
-                  debugPrint('>>> [Restore] Successfully found backup in RTDB key: $k');
-                  break;
-                }
-              }
-            }
-          } catch (e) {
-            debugPrint('RTDB restore fetch error for $k: $e');
-          } finally {
-            client.close(force: true);
           }
         }
       }
@@ -557,6 +651,7 @@ class FirebaseBackupService {
           final data = jsonDecode(cached) as Map<String, dynamic>;
           if (data['tables'] is Map) {
             tables = Map<String, dynamic>.from(data['tables'] as Map);
+            cloudTimestamp = (data['timestamp'] as num?)?.toInt() ?? 0;
           }
         }
       }
@@ -568,7 +663,7 @@ class FirebaseBackupService {
         );
       }
 
-      // Restore vehicle & Paz metadata if stored in backup
+      // Smart Merge vehicle tracker data (deduplicating history and keeping max odometer)
       try {
         final prefs = await SharedPreferences.getInstance();
         if (tables.containsKey('spendo_vehicle_tracker_v5')) {
@@ -576,15 +671,79 @@ class FirebaseBackupService {
           if (vList is List && vList.isNotEmpty && vList.first is Map) {
             final vData = vList.first['data'] as String?;
             if (vData != null && vData.isNotEmpty) {
-              await prefs.setString('spendo_vehicle_tracker_v5', vData);
+              final localRaw = prefs.getString('spendo_vehicle_tracker_v5');
+              if (localRaw != null && localRaw.isNotEmpty) {
+                try {
+                  final localState = VehicleDataState.fromJson(localRaw);
+                  final cloudState = VehicleDataState.fromJson(vData);
+
+                  // Merge histories deduplicated
+                  final mergedHistory = VehicleDataState.deduplicateHistory([
+                    ...localState.history,
+                    ...cloudState.history,
+                  ]);
+
+                  final mergedState = localState.copyWith(
+                    history: mergedHistory,
+                    currentOdometer: math.max(localState.currentOdometer, cloudState.currentOdometer),
+                    vehicleName: (cloudState.vehicleName.isNotEmpty && cloudState.vehicleName != 'مركبتي')
+                        ? cloudState.vehicleName
+                        : localState.vehicleName,
+                    insuranceExpiry: cloudState.insuranceExpiry.isAfter(localState.insuranceExpiry)
+                        ? cloudState.insuranceExpiry
+                        : localState.insuranceExpiry,
+                    testExpiry: cloudState.testExpiry.isAfter(localState.testExpiry)
+                        ? cloudState.testExpiry
+                        : localState.testExpiry,
+                  );
+                  await prefs.setString('spendo_vehicle_tracker_v5', mergedState.toJson());
+                } catch (_) {
+                  await prefs.setString('spendo_vehicle_tracker_v5', vData);
+                }
+              } else {
+                await prefs.setString('spendo_vehicle_tracker_v5', vData);
+              }
             }
           }
         }
+
+        // Smart Merge daily expenses
+        if (tables.containsKey('spendo_daily_expenses_v1')) {
+          final list = tables['spendo_daily_expenses_v1'];
+          if (list is List && list.isNotEmpty && list.first is Map) {
+            final v = list.first['data'] as String?;
+            if (v != null && v.isNotEmpty) {
+              final localDaily = prefs.getString('spendo_daily_expenses_v1');
+              if (localDaily != null && localDaily.isNotEmpty) {
+                try {
+                  final localList = (jsonDecode(localDaily) as List).cast<Map<String, dynamic>>();
+                  final cloudList = (jsonDecode(v) as List).cast<Map<String, dynamic>>();
+                  final merged = <String, Map<String, dynamic>>{};
+                  for (final item in localList) {
+                    final key = item['id']?.toString() ?? '${item['date']}_${item['amount']}';
+                    merged[key] = item;
+                  }
+                  for (final item in cloudList) {
+                    final key = item['id']?.toString() ?? '${item['date']}_${item['amount']}';
+                    merged[key] = item;
+                  }
+                  final resultList = merged.values.toList();
+                  resultList.sort((a, b) => (b['date']?.toString() ?? '').compareTo(a['date']?.toString() ?? ''));
+                  await prefs.setString('spendo_daily_expenses_v1', jsonEncode(resultList));
+                } catch (_) {
+                  await prefs.setString('spendo_daily_expenses_v1', v);
+                }
+              } else {
+                await prefs.setString('spendo_daily_expenses_v1', v);
+              }
+            }
+          }
+        }
+
         for (final key in [
           'spendo_gov_vehicle_info_v1',
           'spendo_paz_id_num_v1',
           'spendo_paz_phone_v1',
-          'spendo_daily_expenses_v1',
           'spendo_merchant_categories_v1',
         ]) {
           if (tables.containsKey(key)) {
@@ -599,30 +758,19 @@ class FirebaseBackupService {
         }
       } catch (_) {}
 
-      // Anti-Downgrade Safety Guard: Protect existing rich local database (e.g. Galaxy)
-      // from being accidentally downgraded or overwritten by a smaller/older cloud backup
-      try {
-        final localTables = await _dbHelper.exportAllTables();
-        final localLogsCount = (localTables['work_logs'] as List?)?.length ?? 0;
-        final cloudLogsCount = (tables['work_logs'] as List?)?.length ?? 0;
-
-        if (localLogsCount > cloudLogsCount && localLogsCount > 20) {
-          debugPrint('>>> [Restore] Guard triggered: local device has $localLogsCount logs, cloud has $cloudLogsCount logs. Skipping downgrade.');
-          return RestoreResult(
-            isSuccess: true,
-            message: 'البيانات المحلية على الهاتف أحدث وأشمل ($localLogsCount سجل) من النسخة السحابية ($cloudLogsCount سجل)، تم الاحتفاظ بالبيانات المحلية بأمان تام',
-            recordsRestored: localLogsCount,
-          );
-        }
-      } catch (_) {}
-
-      // Import all tables into local SQLite
+      // Import all tables into local SQLite (additive upsert)
       await _dbHelper.importAllTables(tables);
+
+      // Notify UI immediately across the app
+      DatabaseHelper.notifyDataChanged();
 
       // Mark initial restore as permanently completed on this device
       try {
         final prefs = await SharedPreferences.getInstance();
         await prefs.setBool(_keyHasRestoredFromCloud, true);
+        if (cloudTimestamp > 0) {
+          await _safeStorageWrite(_keyLastCloudSyncTimestamp, cloudTimestamp.toString());
+        }
       } catch (_) {}
 
       int totalRestored = 0;
@@ -633,7 +781,7 @@ class FirebaseBackupService {
 
       return RestoreResult(
         isSuccess: true,
-        message: 'تمت استعادة $totalRestored سجلاً بنجاح من سحابة Firebase',
+        message: 'تمت مزامنة واستعادة $totalRestored سجلاً بنجاح من سحابة Firebase',
         recordsRestored: totalRestored,
       );
     } catch (e) {

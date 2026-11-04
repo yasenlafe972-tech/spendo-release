@@ -15,6 +15,7 @@ import '../../../vehicle/presentation/widgets/fuel_expense_sheet.dart';
 import '../../../settings/presentation/screens/app_settings_screen.dart';
 import '../../models/daily_expense_model.dart';
 import '../../../../core/database/database_helper.dart';
+import '../../../../core/services/firebase_backup_service.dart';
 
 /// Spendo Central Executive Dashboard.
 class HomeScreen extends StatefulWidget {
@@ -83,6 +84,8 @@ class _HomeScreenState extends State<HomeScreen> {
     try {
       // سحب أي دفعات Apple Pay جديدة وصلت بالخلفية عبر السحابة
       DailyExpenseService.pullCloudAutoExpenses();
+      // مزامنة سحابية ثنائية تلقائية
+      FirebaseBackupService.instance.syncWithCloud(isSilent: true);
 
       final peopleFuture = _peopleRepo.getAllPeople();
       final logsFuture = _workLogsRepo.getAllLogs();

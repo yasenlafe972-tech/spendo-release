@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:remixicon/remixicon.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../../../core/database/database_helper.dart';
 import '../../../../core/services/israel_gov_api_service.dart';
 import '../../../../core/services/receipt_ocr_service.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -46,11 +47,13 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
     super.initState();
     _odometerController =
         TextEditingController(text: _state.currentOdometer.toString());
+    DatabaseHelper.dataVersionNotifier.addListener(_loadState);
     _loadState();
   }
 
   @override
   void dispose() {
+    DatabaseHelper.dataVersionNotifier.removeListener(_loadState);
     _odometerController.dispose();
     super.dispose();
   }

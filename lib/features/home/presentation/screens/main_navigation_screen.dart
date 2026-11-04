@@ -47,11 +47,9 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> with Widget
 
     _initSharedFileListener();
 
-    // Automatic cloud sync on app launch (debounced by 3s to let UI settle)
+    // Automatic bi-directional cloud sync on app launch
     try {
-      if (Firebase.apps.isNotEmpty) {
-        FirebaseBackupService.instance.scheduleAutoBackup(debounce: const Duration(seconds: 3));
-      }
+      FirebaseBackupService.instance.syncWithCloud(isSilent: true);
     } catch (_) {}
   }
 
@@ -115,7 +113,12 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> with Widget
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) {
+    if (state == AppLifecycleState.resumed) {
+      // Whenever app returns to foreground, sync with cloud
+      try {
+        FirebaseBackupService.instance.syncWithCloud(isSilent: true);
+      } catch (_) {}
+    } else if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) {
       // Auto-save backup snapshot when app goes to background
       try {
         if (Firebase.apps.isNotEmpty) {
