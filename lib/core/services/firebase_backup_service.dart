@@ -345,7 +345,7 @@ class FirebaseBackupService {
   Future<CloudBackupInfo?> getLatestCloudBackupInfo() async {
     try {
       final key = await getBackupKey();
-      final candidateKeys = <String>{key, 'yasenlafe972_gmail_com'};
+      final candidateKeys = <String>{key, 'yasenlafe972_gmail_com', 'yasinlafi24_gmailcom'};
       if (_auth?.currentUser?.uid != null) {
         candidateKeys.add('uid_${_auth!.currentUser!.uid}');
       }
@@ -578,7 +578,7 @@ class FirebaseBackupService {
   Future<RestoreResult> performRestore() async {
     try {
       final backupKey = await getBackupKey();
-      final candidateKeys = <String>{backupKey, 'yasenlafe972_gmail_com'};
+      final candidateKeys = <String>{backupKey, 'yasenlafe972_gmail_com', 'yasinlafi24_gmailcom'};
       if (_auth?.currentUser?.uid != null) {
         candidateKeys.add('uid_${_auth!.currentUser!.uid}');
       }
