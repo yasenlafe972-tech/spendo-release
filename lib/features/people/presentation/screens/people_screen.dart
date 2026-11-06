@@ -186,10 +186,10 @@ class _PeopleScreenState extends State<PeopleScreen> {
                                         isEdit
                                             ? 'تعديل بيانات الشخص'
                                             : 'إضافة شخص جديد',
-                                        style: const TextStyle(
+                                        style: TextStyle(
                                           fontSize: 13,
                                           fontWeight: FontWeight.bold,
-                                          color: Colors.white,
+                                          color: textPrimary,
                                         ),
                                       ),
                                     ],

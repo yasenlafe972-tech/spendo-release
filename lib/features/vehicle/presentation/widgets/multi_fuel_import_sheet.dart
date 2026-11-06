@@ -57,12 +57,14 @@ class _MultiFuelImportSheetState extends State<MultiFuelImportSheet> {
   VehicleDataState _state = VehicleDataState.initial();
   double _officialFuelPrice = 7.25;
 
-  static final surfaceMain = AppTheme.isDarkMode ? const Color(0xFF121413) : const Color(0xFFFFFFFF);
-  static const surfaceField = Color(0xFF171A19);
-  static const surfaceBorder = Color(0xFF242927);
+  static bool get _isDark => AppTheme.isDarkMode;
+  static Color get surfaceMain => _isDark ? const Color(0xFF121413) : const Color(0xFFFFFFFF);
+  static Color get surfaceField => _isDark ? const Color(0xFF171A19) : const Color(0xFFF9FAFB);
+  static Color get surfaceBorder => _isDark ? const Color(0xFF242927) : const Color(0xFFE5E7EB);
   static const brandGreen = Color(0xFF00A86B);
   static const brandYellow = Color(0xFFEAB308);
-  static const textMuted = Color(0xFF9CA3AF);
+  static Color get textMuted => _isDark ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280);
+  static Color get textWhite => _isDark ? Colors.white : const Color(0xFF111827);
 
   @override
   void initState() {
@@ -238,8 +240,8 @@ class _MultiFuelImportSheetState extends State<MultiFuelImportSheet> {
               textDirection: TextDirection.rtl,
               child: Text(
                 'تم استيراد ${newRecords.length} فواتير بنجاح إلى سجل المركبة.',
-                style: const TextStyle(
-                  color: Colors.white,
+                style: TextStyle(
+                  color: textWhite,
                   fontWeight: FontWeight.bold,
                   fontSize: 14,
                 ),
@@ -315,10 +317,10 @@ class _MultiFuelImportSheetState extends State<MultiFuelImportSheet> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
+                          Text(
                             'استيراد فواتير متعددة',
                             style: TextStyle(
-                              color: Colors.white,
+                              color: textWhite,
                               fontSize: 17,
                               fontWeight: FontWeight.bold,
                             ),
@@ -334,7 +336,7 @@ class _MultiFuelImportSheetState extends State<MultiFuelImportSheet> {
                               }
                               return 'تم فحص $totalPages صفحات بالملف وعُثر على ${widget.receipts.length} فواتير وقود';
                             }(),
-                            style: const TextStyle(
+                            style: TextStyle(
                               color: textMuted,
                               fontSize: 12,
                             ),
@@ -345,7 +347,7 @@ class _MultiFuelImportSheetState extends State<MultiFuelImportSheet> {
                       ),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.close_rounded, color: textMuted),
+                      icon: Icon(Icons.close_rounded, color: textMuted),
                       onPressed: () => Navigator.pop(context),
                     ),
                   ],
@@ -368,20 +370,20 @@ class _MultiFuelImportSheetState extends State<MultiFuelImportSheet> {
                             children: [
                               Text(
                                 '${_selectedIndices.length} من ${widget.receipts.length} فاتورة محددة',
-                                style: const TextStyle(
-                                  color: Colors.white70,
+                                style: TextStyle(
+                                  color: textMuted,
                                   fontSize: 12,
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
                               if (_totalSelectedLiters > 0) ...[
-                                const Text(
+                                Text(
                                   ' • ',
                                   style: TextStyle(color: textMuted),
                                 ),
                                 Text(
                                   '${_totalSelectedLiters.toStringAsFixed(2)} لتر',
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     color: textMuted,
                                     fontSize: 12,
                                   ),
@@ -414,8 +416,8 @@ class _MultiFuelImportSheetState extends State<MultiFuelImportSheet> {
                           _selectedIndices.length == widget.receipts.length
                               ? 'إلغاء التحديد'
                               : 'تحديد الكل',
-                          style: const TextStyle(
-                            color: Colors.white,
+                          style: TextStyle(
+                            color: textWhite,
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
                           ),
@@ -531,8 +533,8 @@ class _MultiFuelImportSheetState extends State<MultiFuelImportSheet> {
                                               r.providerName.isNotEmpty
                                                   ? r.providerName
                                                   : 'تعبئة وقود פז',
-                                              style: const TextStyle(
-                                                color: Colors.white,
+                                              style: TextStyle(
+                                                color: textWhite,
                                                 fontWeight: FontWeight.bold,
                                                 fontSize: 14,
                                               ),
@@ -572,8 +574,8 @@ class _MultiFuelImportSheetState extends State<MultiFuelImportSheet> {
                                                 ),
                                                 child: Text(
                                                   'صفحة ${r.pageNumber}',
-                                                  style: const TextStyle(
-                                                    color: Colors.white70,
+                                                  style: TextStyle(
+                                                    color: textMuted,
                                                     fontSize: 10,
                                                     fontWeight: FontWeight.w600,
                                                   ),
@@ -610,31 +612,31 @@ class _MultiFuelImportSheetState extends State<MultiFuelImportSheet> {
                                           children: [
                                             Text(
                                               ArabicDateHelper.formatArabicDateWithWeekday(r.date),
-                                              style: const TextStyle(
+                                              style: TextStyle(
                                                 color: textMuted,
                                                 fontSize: 12,
                                               ),
                                             ),
                                             if (r.liters != null && r.liters! > 0) ...[
-                                              const Text(
+                                              Text(
                                                 '•',
                                                 style: TextStyle(color: textMuted, fontSize: 10),
                                               ),
                                               Text(
                                                 '${r.liters!.toStringAsFixed(2)} لتر',
-                                                style: const TextStyle(
+                                                style: TextStyle(
                                                   color: textMuted,
                                                   fontSize: 12,
                                                 ),
                                               ),
                                               if (r.pricePerLiter != null) ...[
-                                                const Text(
+                                                Text(
                                                   '•',
                                                   style: TextStyle(color: textMuted, fontSize: 10),
                                                 ),
                                                 Text(
                                                   '${r.pricePerLiter!.toStringAsFixed(2)} ₪/ل',
-                                                  style: const TextStyle(
+                                                  style: TextStyle(
                                                     color: textMuted,
                                                     fontSize: 12,
                                                   ),

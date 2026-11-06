@@ -189,13 +189,13 @@ class _EmployerDetailsScreenState extends State<EmployerDetailsScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Row(
-                      children: const [
-                        Icon(Remix.toggle_line, color: EmployerDetailsScreen.brandYellow, size: 20),
+                      children: [
+                        const Icon(Remix.toggle_line, color: EmployerDetailsScreen.brandYellow, size: 20),
                         SizedBox(width: 8),
                         Text(
                           'حالة المشغّل',
                           style: TextStyle(
-                            color: Colors.white,
+                            color: EmployerDetailsScreen.textWhite,
                             fontSize: 14,
                             fontWeight: FontWeight.bold,
                           ),
@@ -383,13 +383,13 @@ class _EmployerDetailsScreenState extends State<EmployerDetailsScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Row(
-                      children: const [
-                        Icon(Remix.building_2_line, color: EmployerDetailsScreen.brandGreen, size: 18),
+                      children: [
+                        const Icon(Remix.building_2_line, color: EmployerDetailsScreen.brandGreen, size: 18),
                         SizedBox(width: 8),
                         Text(
                           'اختر المشغّل / صاحب العمل',
                           style: TextStyle(
-                            color: Colors.white,
+                            color: EmployerDetailsScreen.textWhite,
                             fontSize: 14,
                             fontWeight: FontWeight.bold,
                           ),
@@ -567,7 +567,7 @@ class _EmployerDetailsScreenState extends State<EmployerDetailsScreen> {
           borderRadius: BorderRadius.circular(16),
           side: BorderSide(color: EmployerDetailsScreen.surfaceBorder),
         ),
-        title: const Text('حذف يوم العمل', style: TextStyle(color: Colors.white, fontSize: 14)),
+        title: Text('حذف يوم العمل', style: TextStyle(color: EmployerDetailsScreen.textWhite, fontSize: 14)),
         content: Text(
           'هل تريد بالتأكيد حذف يومية $dayName (${log.date}) من السجل؟',
           style: TextStyle(color: EmployerDetailsScreen.textMuted, fontSize: 12),
@@ -627,7 +627,7 @@ class _EmployerDetailsScreenState extends State<EmployerDetailsScreen> {
           borderRadius: BorderRadius.circular(16),
           side: BorderSide(color: EmployerDetailsScreen.surfaceBorder),
         ),
-        title: const Text('حذف الدفعة المستلمة', style: TextStyle(color: Colors.white, fontSize: 14)),
+        title: Text('حذف الدفعة المستلمة', style: TextStyle(color: EmployerDetailsScreen.textWhite, fontSize: 14)),
         content: Text(
           'هل تريد بالتأكيد حذف الدفعة بقيمة ${payment.amount.toStringAsFixed(0)} ₪ بتاريخ ${payment.date}؟',
           style: TextStyle(color: EmployerDetailsScreen.textMuted, fontSize: 12),
@@ -682,7 +682,7 @@ class _EmployerDetailsScreenState extends State<EmployerDetailsScreen> {
           borderRadius: BorderRadius.circular(16),
           side: BorderSide(color: EmployerDetailsScreen.surfaceBorder),
         ),
-        title: const Text('حذف المشغّل', style: TextStyle(color: Colors.white, fontSize: 14)),
+        title: Text('حذف المشغّل', style: TextStyle(color: EmployerDetailsScreen.textWhite, fontSize: 14)),
         content: Text(
           'هل أنت متأكد من حذف المشغّل "${_workplace.name}"؟ ستبقى سجلات أيام العمل السابقة محفوظة في الأرشيف.',
           style: TextStyle(color: EmployerDetailsScreen.textMuted, fontSize: 12),
@@ -793,13 +793,13 @@ class _EmployerDetailsScreenState extends State<EmployerDetailsScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Row(
-                      children: const [
-                        Icon(Remix.share_forward_line, color: EmployerDetailsScreen.brandYellow, size: 20),
+                      children: [
+                        const Icon(Remix.share_forward_line, color: EmployerDetailsScreen.brandYellow, size: 20),
                         SizedBox(width: 8),
                         Text(
                           'مشاركة كشف حساب رسمي معتمد (PDF)',
                           style: TextStyle(
-                            color: Colors.white,
+                            color: EmployerDetailsScreen.textWhite,
                             fontSize: 13.5,
                             fontWeight: FontWeight.w800,
                           ),
@@ -967,8 +967,8 @@ class _EmployerDetailsScreenState extends State<EmployerDetailsScreen> {
                 children: [
                   Text(
                     title,
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style: TextStyle(
+                      color: EmployerDetailsScreen.textWhite,
                       fontSize: 12,
                       fontWeight: FontWeight.w700,
                     ),
@@ -1007,8 +1007,8 @@ class _EmployerDetailsScreenState extends State<EmployerDetailsScreen> {
             Expanded(
               child: Text(
                 msg,
-                style: const TextStyle(
-                  color: Colors.white,
+                style: TextStyle(
+                  color: EmployerDetailsScreen.textWhite,
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
                 ),
@@ -1063,8 +1063,8 @@ class _EmployerDetailsScreenState extends State<EmployerDetailsScreen> {
                           children: [
                             Text(
                               log.hasLocation ? 'مكان العمل الموثّق' : 'مكان العمل',
-                              style: const TextStyle(
-                                color: Colors.white,
+                              style: TextStyle(
+                                color: EmployerDetailsScreen.textWhite,
                                 fontSize: 13.5,
                                 fontWeight: FontWeight.bold,
                               ),
@@ -1136,8 +1136,8 @@ class _EmployerDetailsScreenState extends State<EmployerDetailsScreen> {
                           const SizedBox(width: 6),
                           Text(
                             locationName,
-                            style: const TextStyle(
-                              color: Colors.white,
+                            style: TextStyle(
+                              color: EmployerDetailsScreen.textWhite,
                               fontSize: 13,
                               fontWeight: FontWeight.bold,
                             ),
@@ -1290,7 +1290,7 @@ class _EmployerDetailsScreenState extends State<EmployerDetailsScreen> {
                         const SizedBox(width: 8),
                         Text(
                           'مرفقات يوم العمل (${log.attachments.length})',
-                          style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold),
+                          style: TextStyle(color: EmployerDetailsScreen.textWhite, fontSize: 13, fontWeight: FontWeight.bold),
                         ),
                       ],
                     ),
@@ -1370,7 +1370,7 @@ class _EmployerDetailsScreenState extends State<EmployerDetailsScreen> {
         child: _isLoading
             ? Center(child: CircularProgressIndicator(color: EmployerDetailsScreen.brandGreen))
             : RefreshIndicator(
-                color: Colors.white,
+                color: EmployerDetailsScreen.brandGreen,
                 backgroundColor: EmployerDetailsScreen.surfaceField,
                 onRefresh: _loadData,
                 child: ListView(
@@ -1423,18 +1423,18 @@ class _EmployerDetailsScreenState extends State<EmployerDetailsScreen> {
                   SpendoHaptics.light();
                   Navigator.pop(context);
                 },
-                child: const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-                  child: Icon(Remix.arrow_right_line, size: 18, color: Color(0xFFD1D5DB)),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+                  child: Icon(Remix.arrow_right_line, size: 18, color: EmployerDetailsScreen.textWhite),
                 ),
               ),
               const SizedBox(width: 4),
               const SpendoLogo(size: 20, borderRadius: 5),
               const SizedBox(width: 8),
-              const Text(
+              Text(
                 'كشف حساب المشغّل',
                 style: TextStyle(
-                  color: Colors.white,
+                  color: EmployerDetailsScreen.textWhite,
                   fontSize: 12,
                   fontWeight: FontWeight.w700,
                 ),
@@ -1531,8 +1531,8 @@ class _EmployerDetailsScreenState extends State<EmployerDetailsScreen> {
                                               _workplace.name,
                                               maxLines: 1,
                                               overflow: TextOverflow.ellipsis,
-                                              style: const TextStyle(
-                                                color: Colors.white,
+                                              style: TextStyle(
+                                                color: EmployerDetailsScreen.textWhite,
                                                 fontSize: 13.5,
                                                 fontWeight: FontWeight.w700,
                                               ),
@@ -1754,14 +1754,14 @@ class _EmployerDetailsScreenState extends State<EmployerDetailsScreen> {
                   label: 'أيام العمل',
                   value: '$_filteredDaysWorked',
                   unit: 'يوم',
-                  valueColor: Colors.white,
+                  valueColor: EmployerDetailsScreen.textWhite,
                 ),
                 _buildCellDivider(),
                 _buildFinancialCell(
                   label: 'المستحق الكلي',
                   value: _filteredTotalEarned.toStringAsFixed(0),
                   unit: '₪',
-                  valueColor: Colors.white,
+                  valueColor: EmployerDetailsScreen.textWhite,
                 ),
                 _buildCellDivider(),
                 _buildFinancialCell(
@@ -1777,7 +1777,7 @@ class _EmployerDetailsScreenState extends State<EmployerDetailsScreen> {
                   unit: '₪',
                   valueColor: EmployerDetailsScreen.brandYellow,
                   labelColor: EmployerDetailsScreen.brandYellow,
-                  bgColor: const Color(0x80121413),
+                  bgColor: EmployerDetailsScreen._isDark ? const Color(0x80121413) : const Color(0x18F59E0B),
                 ),
               ],
             ),
@@ -1895,15 +1895,15 @@ class _EmployerDetailsScreenState extends State<EmployerDetailsScreen> {
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(color: EmployerDetailsScreen.surfaceBorder),
               ),
-              child: const Row(
+              child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Remix.calendar_check_line, color: EmployerDetailsScreen.brandYellow, size: 16),
+                  const Icon(Remix.calendar_check_line, color: EmployerDetailsScreen.brandYellow, size: 16),
                   SizedBox(width: 6),
                   Text(
                     'تسجيل يوم عمل',
                     style: TextStyle(
-                      color: Colors.white,
+                      color: EmployerDetailsScreen.textWhite,
                       fontSize: 12,
                       fontWeight: FontWeight.w700,
                     ),
@@ -1980,10 +1980,10 @@ class _EmployerDetailsScreenState extends State<EmployerDetailsScreen> {
                         size: 15,
                       ),
                       const SizedBox(width: 8),
-                      const Text(
+                      Text(
                         'الدفعات المستلمة على الحساب',
                         style: TextStyle(
-                          color: Colors.white,
+                          color: EmployerDetailsScreen.textWhite,
                           fontSize: 12,
                           fontWeight: FontWeight.w700,
                         ),
@@ -2096,8 +2096,8 @@ class _EmployerDetailsScreenState extends State<EmployerDetailsScreen> {
               const SizedBox(width: 8),
               Text(
                 'دفعة ${payment.paymentMethod} مستلمة',
-                style: const TextStyle(
-                  color: Colors.white,
+                style: TextStyle(
+                  color: EmployerDetailsScreen.textWhite,
                   fontSize: 11.5,
                   fontWeight: FontWeight.w700,
                 ),
@@ -2258,9 +2258,9 @@ class _EmployerDetailsScreenState extends State<EmployerDetailsScreen> {
                     children: [
                       Icon(Remix.calendar_close_line, size: 28, color: EmployerDetailsScreen.textSubtle),
                       const SizedBox(height: 8),
-                      const Text(
+                      Text(
                         'لا توجد أيام عمل مسجلة لهذه الفترة',
-                        style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600),
+                        style: TextStyle(color: EmployerDetailsScreen.textWhite, fontSize: 12, fontWeight: FontWeight.w600),
                       ),
                       const SizedBox(height: 3),
                       Text(
@@ -2307,8 +2307,8 @@ class _EmployerDetailsScreenState extends State<EmployerDetailsScreen> {
                 children: [
                   Text(
                     dayName.isNotEmpty ? dayName : 'يوم عمل',
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style: TextStyle(
+                      color: EmployerDetailsScreen.textWhite,
                       fontSize: 11,
                       fontWeight: FontWeight.w700,
                     ),
@@ -2356,7 +2356,7 @@ class _EmployerDetailsScreenState extends State<EmployerDetailsScreen> {
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                   style: TextStyle(
-                                    color: log.hasLocation ? Colors.white : const Color(0xFFE5E7EB),
+                                    color: log.hasLocation ? EmployerDetailsScreen.textWhite : EmployerDetailsScreen.textMuted,
                                     fontSize: 11.5,
                                     fontWeight: FontWeight.w600,
                                   ),

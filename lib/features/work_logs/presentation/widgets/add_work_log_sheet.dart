@@ -401,13 +401,13 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Row(
-                        children: const [
-                          Icon(Remix.building_2_line, color: brandGreen, size: 18),
+                        children: [
+                          const Icon(Remix.building_2_line, color: brandGreen, size: 18),
                           SizedBox(width: 8),
                           Text(
                             'اختر المشغّل / صاحب العمل',
                             style: TextStyle(
-                              color: Colors.white,
+                              color: textWhite,
                               fontSize: 14,
                               fontWeight: FontWeight.bold,
                             ),
@@ -1101,10 +1101,10 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
                               children: [
                                 Text(
                                   dayName,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontSize: 12,
                                     fontWeight: FontWeight.bold,
-                                    color: Colors.white,
+                                    color: textWhite,
                                   ),
                                 ),
                                 const SizedBox(width: 6),
@@ -1155,8 +1155,8 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
-                          children: const [
-                            Icon(
+                          children: [
+                            const Icon(
                               Remix.calendar_event_line,
                               size: 12,
                               color: brandYellow,
@@ -1167,7 +1167,7 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
                               style: TextStyle(
                                 fontSize: 10,
                                 fontWeight: FontWeight.w600,
-                                color: Color(0xFFD1D5DB),
+                                color: textMuted,
                               ),
                             ),
                           ],
@@ -1243,10 +1243,10 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
                           const SizedBox(width: 2),
                           Text(
                             _currentRate.toStringAsFixed(1),
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w800,
-                              color: Colors.white,
+                              color: textWhite,
                               fontFamily: 'monospace',
                             ),
                           ),
@@ -1367,10 +1367,10 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
                     children: [
                       Text(
                         hasLoc ? 'تم تثبيت مكان العمل' : 'موقع العمل على الخريطة',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                          color: textWhite,
                         ),
                       ),
                       const SizedBox(height: 1),
@@ -1428,17 +1428,17 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(color: brandGreen.withValues(alpha: 0.5)),
                       ),
-                      child: const Row(
+                      child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Remix.map_2_line, size: 13, color: brandGreen),
-                          SizedBox(width: 5),
+                          const Icon(Remix.map_2_line, size: 13, color: brandGreen),
+                          const SizedBox(width: 5),
                           Text(
                             'تحديد من الخريطة',
                             style: TextStyle(
                               fontSize: 10.5,
                               fontWeight: FontWeight.bold,
-                              color: Colors.white,
+                              color: textWhite,
                             ),
                           ),
                         ],
@@ -1458,17 +1458,17 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(color: surfaceBorder),
                       ),
-                      child: const Row(
+                      child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Remix.crosshair_2_line, size: 13, color: brandYellow),
-                          SizedBox(width: 5),
+                          const Icon(Remix.crosshair_2_line, size: 13, color: brandYellow),
+                          const SizedBox(width: 5),
                           Text(
                             'موقعي الحالي',
                             style: TextStyle(
                               fontSize: 10.5,
                               fontWeight: FontWeight.bold,
-                              color: Color(0xFFD1D5DB),
+                              color: textWhite,
                             ),
                           ),
                         ],
@@ -1492,17 +1492,17 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(color: surfaceBorder),
                       ),
-                      child: const Row(
+                      child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Remix.edit_line, size: 12, color: brandYellow),
-                          SizedBox(width: 4),
+                          const Icon(Remix.edit_line, size: 12, color: brandYellow),
+                          const SizedBox(width: 4),
                           Text(
                             'تعديل المكان من الخريطة',
                             style: TextStyle(
                               fontSize: 10,
                               fontWeight: FontWeight.bold,
-                              color: Colors.white,
+                              color: textWhite,
                             ),
                           ),
                         ],
@@ -1627,17 +1627,17 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(color: surfaceBorder),
                     ),
-                    child: const Row(
+                    child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Remix.camera_line, size: 13, color: brandYellow),
-                        SizedBox(width: 4),
+                        const Icon(Remix.camera_line, size: 13, color: brandYellow),
+                        const SizedBox(width: 4),
                         Text(
                           'تصوير كاميرا',
                           style: TextStyle(
                             fontSize: 10.5,
                             fontWeight: FontWeight.bold,
-                            color: Colors.white,
+                            color: textWhite,
                           ),
                         ),
                       ],
@@ -1657,17 +1657,17 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(color: surfaceBorder),
                     ),
-                    child: const Row(
+                    child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Remix.image_line, size: 13, color: Color(0xFF38BDF8)),
-                        SizedBox(width: 4),
+                        const Icon(Remix.image_line, size: 13, color: Color(0xFF38BDF8)),
+                        const SizedBox(width: 4),
                         Text(
                           'من المعرض',
                           style: TextStyle(
                             fontSize: 10.5,
                             fontWeight: FontWeight.bold,
-                            color: Colors.white,
+                            color: textWhite,
                           ),
                         ),
                       ],
@@ -1687,17 +1687,17 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(color: surfaceBorder),
                     ),
-                    child: const Row(
+                    child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Remix.file_pdf_2_line, size: 13, color: Color(0xFFEF4444)),
-                        SizedBox(width: 4),
+                        const Icon(Remix.file_pdf_2_line, size: 13, color: Color(0xFFEF4444)),
+                        const SizedBox(width: 4),
                         Text(
                           'ملف / PDF',
                           style: TextStyle(
                             fontSize: 10.5,
                             fontWeight: FontWeight.bold,
-                            color: Colors.white,
+                            color: textWhite,
                           ),
                         ),
                       ],

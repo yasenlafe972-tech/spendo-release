@@ -298,9 +298,9 @@ class _AddDebtSheetState extends State<AddDebtSheet> {
                             children: [
                               Text(
                                 isEditing ? 'تعديل سلفة / معاملة مالية' : 'تسجيل سلفة / دين مالي',
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontFamily: 'Cairo',
-                                  color: Colors.white,
+                                  color: textWhite,
                                   fontSize: 14,
                                   fontWeight: FontWeight.bold,
                                   height: 1.2,
@@ -366,15 +366,15 @@ class _AddDebtSheetState extends State<AddDebtSheet> {
                               border: Border.all(color: brandYellow.withValues(alpha: 0.3)),
                             ),
                             child: Row(
-                              children: const [
-                                Icon(Remix.time_line, color: brandYellow, size: 15),
+                              children: [
+                                const Icon(Remix.time_line, color: brandYellow, size: 15),
                                 SizedBox(width: 8),
                                 Expanded(
                                   child: Text(
                                     'دفعة مؤجلة عالحساب — يتم اختيار طريقة الدفع (كاش / Bit / بنكي) عند الضغط على "تم الدفع" لاحقاً.',
                                     style: TextStyle(
                                       fontFamily: 'Cairo',
-                                      color: Color(0xFFD4D4D8),
+                                      color: textMuted,
                                       fontSize: 10.5,
                                       height: 1.3,
                                     ),
@@ -640,9 +640,9 @@ class _AddDebtSheetState extends State<AddDebtSheet> {
                             dense: true,
                             title: Text(
                               p.name,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontFamily: 'Cairo',
-                                color: Colors.white,
+                                color: textWhite,
                                 fontSize: 12,
                               ),
                             ),
@@ -826,9 +826,9 @@ class _AddDebtSheetState extends State<AddDebtSheet> {
                       const SizedBox(height: 2),
                       Text(
                         ArabicDateHelper.formatArabicDateWithWeekday(_transactionDate),
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontFamily: 'Cairo',
-                          color: Colors.white,
+                          color: textWhite,
                           fontSize: 11,
                           fontWeight: FontWeight.bold,
                         ),
@@ -918,9 +918,9 @@ class _AddDebtSheetState extends State<AddDebtSheet> {
           Expanded(
             child: TextFormField(
               controller: _notesCtrl,
-              style: const TextStyle(
+              style: TextStyle(
                 fontFamily: 'Cairo',
-                color: Colors.white,
+                color: textWhite,
                 fontSize: 12,
               ),
               decoration: InputDecoration(

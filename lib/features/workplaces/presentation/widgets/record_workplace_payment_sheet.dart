@@ -158,13 +158,13 @@ class _RecordWorkplacePaymentSheetState extends State<RecordWorkplacePaymentShee
             borderRadius: BorderRadius.circular(12),
             side: const BorderSide(color: Colors.redAccent),
           ),
-          content: const Row(
+          content: Row(
             children: [
-              Icon(Remix.error_warning_line, color: Colors.redAccent, size: 16),
+              const Icon(Remix.error_warning_line, color: Colors.redAccent, size: 16),
               SizedBox(width: 8),
               Text(
                 'الرجاء إدخال مبلغ الدفعة أولاً',
-                style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600),
+                style: TextStyle(color: RecordWorkplacePaymentSheet.textWhite, fontSize: 12, fontWeight: FontWeight.w600),
               ),
             ],
           ),
@@ -250,8 +250,8 @@ class _RecordWorkplacePaymentSheetState extends State<RecordWorkplacePaymentShee
                               widget.existingPayment != null
                                   ? 'تعديل دفعة مستلمة'
                                   : 'قبض دفعة على الحساب',
-                              style: const TextStyle(
-                                color: Colors.white,
+                              style: TextStyle(
+                                color: RecordWorkplacePaymentSheet.textWhite,
                                 fontSize: 13,
                                 fontWeight: FontWeight.w800,
                               ),
@@ -346,8 +346,8 @@ class _RecordWorkplacePaymentSheetState extends State<RecordWorkplacePaymentShee
                               child: TextFormField(
                                 controller: _amountController,
                                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                                style: const TextStyle(
-                                  color: Colors.white,
+                                style: TextStyle(
+                                  color: RecordWorkplacePaymentSheet.textWhite,
                                   fontSize: 22,
                                   fontWeight: FontWeight.w900,
                                   letterSpacing: -0.5,
@@ -435,8 +435,8 @@ class _RecordWorkplacePaymentSheetState extends State<RecordWorkplacePaymentShee
                         ),
                         Text(
                           dateFormatted,
-                          style: const TextStyle(
-                            color: Colors.white,
+                          style: TextStyle(
+                            color: RecordWorkplacePaymentSheet.textWhite,
                             fontSize: 11.5,
                             fontWeight: FontWeight.w700,
                           ),

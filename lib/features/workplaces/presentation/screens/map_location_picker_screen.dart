@@ -366,9 +366,9 @@ class _MapLocationPickerScreenState extends State<MapLocationPickerScreen> {
                       children: [
                         const Icon(Remix.navigation_line, size: 13, color: brandYellow),
                         const SizedBox(width: 6),
-                        const Text(
+                        Text(
                           'انتقال سريع للبلد / المنطقة:',
-                          style: TextStyle(color: Colors.white, fontSize: 10.5, fontWeight: FontWeight.bold),
+                          style: TextStyle(color: textWhite, fontSize: 10.5, fontWeight: FontWeight.bold),
                         ),
                         const Spacer(),
                         Text(
@@ -413,7 +413,7 @@ class _MapLocationPickerScreenState extends State<MapLocationPickerScreen> {
                                 ),
                                 child: Text(
                                   town,
-                                  style: const TextStyle(color: Color(0xFFE5E7EB), fontSize: 10, fontWeight: FontWeight.w600),
+                                  style: TextStyle(color: textWhite, fontSize: 10, fontWeight: FontWeight.w600),
                                 ),
                               ),
                             ),

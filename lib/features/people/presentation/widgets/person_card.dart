@@ -23,9 +23,9 @@ class PersonCard extends StatelessWidget {
   static const brandGreen = Color(0xFF00A86B);
   static const brandYellow = Color(0xFFEAB308);
   static Color get textPrimary => _isDark ? const Color(0xFFF3F4F6) : const Color(0xFF111827);
-  static Color get textMuted => _isDark ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280);
-  static Color get textSubtle => _isDark ? const Color(0xFF6B7280) : const Color(0xFF9CA3AF);
-  static Color get textDim => _isDark ? const Color(0xFF52525B) : const Color(0xFF9CA3AF);
+  static Color get textMuted => _isDark ? const Color(0xFF9CA3AF) : const Color(0xFF4B5563);
+  static Color get textSubtle => _isDark ? const Color(0xFF6B7280) : const Color(0xFF4B5563);
+  static Color get textDim => _isDark ? const Color(0xFF52525B) : const Color(0xFF6B7280);
 
   const PersonCard({
     super.key,

@@ -247,10 +247,10 @@ class _PersonDetailsModalSheetState extends State<PersonDetailsModalSheet> {
                                   const SizedBox(width: 5),
                                   Text(
                                     p.name.isNotEmpty ? p.name : 'My profile',
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontSize: 12,
                                       fontWeight: FontWeight.bold,
-                                      color: Colors.white,
+                                      color: textWhite,
                                     ),
                                   ),
                                   const SizedBox(width: 5),
@@ -293,17 +293,17 @@ class _PersonDetailsModalSheetState extends State<PersonDetailsModalSheet> {
                                 borderRadius: BorderRadius.circular(8),
                                 border: Border.all(color: surfaceBorder),
                               ),
-                              child: const Row(
+                              child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Icon(Remix.file_copy_2_line, size: 11, color: brandGreen),
+                                  const Icon(Remix.file_copy_2_line, size: 11, color: brandGreen),
                                   SizedBox(width: 4),
                                   Text(
                                     'نسخ الكل',
                                     style: TextStyle(
                                       fontSize: 10,
                                       fontWeight: FontWeight.bold,
-                                      color: Colors.white,
+                                      color: textWhite,
                                     ),
                                   ),
                                 ],
@@ -429,12 +429,12 @@ class _PersonDetailsModalSheetState extends State<PersonDetailsModalSheet> {
                                           ),
                                         ),
                                         const SizedBox(width: 5),
-                                        const Text(
+                                        Text(
                                           'قسم الإيميلات والحسابات',
                                           style: TextStyle(
                                             fontSize: 11.5,
                                             fontWeight: FontWeight.bold,
-                                            color: Colors.white,
+                                            color: textWhite,
                                           ),
                                         ),
                                       ],
@@ -529,7 +529,7 @@ class _PersonDetailsModalSheetState extends State<PersonDetailsModalSheet> {
                         fontSize: isMonospace ? 11 : 11,
                         fontFamily: isMonospace ? 'monospace' : null,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                        color: textWhite,
                       ),
                     ),
                   ],

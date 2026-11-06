@@ -398,12 +398,12 @@ class FuelExpenseSheet {
                                               ),
                                             ),
                                             const SizedBox(width: 6),
-                                            const Text(
+                                            Text(
                                               'تسجيل تعبئة وقود',
                                               style: TextStyle(
                                                 fontSize: 13.5,
                                                 fontWeight: FontWeight.bold,
-                                                color: Colors.white,
+                                                color: textWhite,
                                               ),
                                             ),
                                           ],
@@ -517,7 +517,7 @@ class FuelExpenseSheet {
                                                   MainAxisAlignment
                                                       .spaceBetween,
                                               children: [
-                                                const Column(
+                                                Column(
                                                   crossAxisAlignment:
                                                       CrossAxisAlignment.start,
                                                   children: [
@@ -527,7 +527,7 @@ class FuelExpenseSheet {
                                                         fontSize: 11.5,
                                                         fontWeight:
                                                             FontWeight.bold,
-                                                        color: Colors.white,
+                                                        color: textWhite,
                                                       ),
                                                     ),
                                                     SizedBox(height: 2),
@@ -602,7 +602,7 @@ class FuelExpenseSheet {
                                                   MainAxisAlignment
                                                       .spaceBetween,
                                               children: [
-                                                const Column(
+                                                Column(
                                                   crossAxisAlignment:
                                                       CrossAxisAlignment.start,
                                                   children: [
@@ -612,7 +612,7 @@ class FuelExpenseSheet {
                                                         fontSize: 11.5,
                                                         fontWeight:
                                                             FontWeight.bold,
-                                                        color: Colors.white,
+                                                        color: textWhite,
                                                       ),
                                                     ),
                                                     SizedBox(height: 2),
@@ -684,7 +684,7 @@ class FuelExpenseSheet {
                                                   MainAxisAlignment
                                                       .spaceBetween,
                                               children: [
-                                                const Column(
+                                                Column(
                                                   crossAxisAlignment:
                                                       CrossAxisAlignment.start,
                                                   children: [
@@ -694,7 +694,7 @@ class FuelExpenseSheet {
                                                         fontSize: 11.5,
                                                         fontWeight:
                                                             FontWeight.bold,
-                                                        color: Colors.white,
+                                                        color: textWhite,
                                                       ),
                                                     ),
                                                     SizedBox(height: 2),
@@ -752,10 +752,10 @@ class FuelExpenseSheet {
                                   'تم استيراد ملف PDF: $loadedPdfFileName',
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontSize: 10.5,
                                     fontWeight: FontWeight.bold,
-                                    color: Colors.white,
+                                    color: textWhite,
                                   ),
                                 ),
                               ),
@@ -792,12 +792,12 @@ class FuelExpenseSheet {
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
-                                      const Text(
+                                      Text(
                                         'تم مسح فاتورة الوقود',
                                         style: TextStyle(
                                           fontSize: 10.5,
                                           fontWeight: FontWeight.bold,
-                                          color: Colors.white,
+                                          color: textWhite,
                                         ),
                                       ),
                                       Text(
@@ -891,8 +891,8 @@ class FuelExpenseSheet {
                                           builder: (dCtx) => AlertDialog(
                                             backgroundColor: surfaceField,
                                             title: Text(duplicateRecord!.title,
-                                                style: const TextStyle(
-                                                    color: Colors.white,
+                                                style: TextStyle(
+                                                    color: textWhite,
                                                     fontSize: 14)),
                                             content: Text(
                                                 'المبلغ: ₪${duplicateRecord!.amount.toStringAsFixed(2)}\nالتاريخ: ${duplicateRecord!.date.day}/${duplicateRecord!.date.month}/${duplicateRecord!.date.year}',
@@ -1029,10 +1029,10 @@ class FuelExpenseSheet {
                                             keyboardType:
                                                 const TextInputType.numberWithOptions(
                                                     decimal: true),
-                                            style: const TextStyle(
+                                            style: TextStyle(
                                               fontSize: 18,
                                               fontWeight: FontWeight.bold,
-                                              color: Colors.white,
+                                              color: textWhite,
                                             ),
                                             cursorColor: brandGreen,
                                             textAlign: TextAlign.right,
@@ -1257,7 +1257,7 @@ class FuelExpenseSheet {
                                   style: TextStyle(
                                     fontSize: 13.5,
                                     fontWeight: FontWeight.w800,
-                                    color: Colors.white,
+                                    color: textWhite,
                                   ),
                                 ),
                                 content: Text(

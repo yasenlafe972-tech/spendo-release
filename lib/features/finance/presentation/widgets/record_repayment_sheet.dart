@@ -186,9 +186,9 @@ class _RecordRepaymentSheetState extends State<RecordRepaymentSheet> {
                                     : (d.isPayLater
                                         ? 'دفع الحساب المؤجل لـ ${widget.person.name}'
                                         : 'سداد دفعة لـ ${widget.person.name}'),
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontFamily: 'Cairo',
-                                  color: Colors.white,
+                                  color: textWhite,
                                   fontSize: 14,
                                   fontWeight: FontWeight.bold,
                                   height: 1.2,
@@ -293,9 +293,9 @@ class _RecordRepaymentSheetState extends State<RecordRepaymentSheet> {
                               child: TextField(
                                 controller: _amountCtrl,
                                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontFamily: 'Cairo',
-                                  color: Colors.white,
+                                  color: textWhite,
                                   fontSize: 14,
                                   fontWeight: FontWeight.bold,
                                 ),

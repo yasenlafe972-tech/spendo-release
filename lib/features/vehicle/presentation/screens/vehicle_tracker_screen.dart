@@ -513,10 +513,10 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                         controller: _odometerController,
                         keyboardType: TextInputType.number,
                         inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 12,
-                          color: Colors.white,
-                          fontFeatures: [FontFeature.tabularFigures()],
+                          color: textWhite,
+                          fontFeatures: const [FontFeature.tabularFigures()],
                         ),
                         decoration: InputDecoration(
                           hintText: 'أدخل العداد الجديد...',
@@ -613,10 +613,10 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                                 : 'بيانات وزارة المواصلات (data.gov.il) • اضغط للمزامنة برقم النمرة',
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 9.5,
                               fontWeight: FontWeight.w600,
-                              color: Color(0xFFD1D5DB),
+                              color: textMuted,
                             ),
                           ),
                         ),
@@ -707,9 +707,9 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            const Row(
+                            Row(
                               children: [
-                                Icon(Remix.government_line,
+                                const Icon(Remix.government_line,
                                     color: brandGreen, size: 19),
                                 SizedBox(width: 8),
                                 Column(
@@ -720,7 +720,7 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                                       style: TextStyle(
                                         fontSize: 13,
                                         fontWeight: FontWeight.bold,
-                                        color: Colors.white,
+                                        color: textWhite,
                                       ),
                                     ),
                                     Text(
@@ -775,11 +775,11 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                                         keyboardType: TextInputType.number,
                                         textDirection: TextDirection.ltr,
                                         textAlign: TextAlign.center,
-                                        style: const TextStyle(
+                                        style: TextStyle(
                                           fontSize: 14,
                                           fontWeight: FontWeight.w900,
                                           letterSpacing: 1.2,
-                                          color: Colors.white,
+                                          color: textWhite,
                                         ),
                                         decoration: const InputDecoration(
                                           hintText: 'رقم النمرة (7 أو 8 أرقام)',
@@ -924,9 +924,9 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Row(
+                              Row(
                                 children: [
-                                  Icon(Remix.database_2_line,
+                                  const Icon(Remix.database_2_line,
                                       size: 14, color: brandGreen),
                                   SizedBox(width: 6),
                                   Text(
@@ -934,7 +934,7 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                                     style: TextStyle(
                                       fontSize: 11,
                                       fontWeight: FontWeight.bold,
-                                      color: Colors.white,
+                                      color: textWhite,
                                     ),
                                   ),
                                 ],
@@ -1099,11 +1099,11 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                 Text(
                   formattedDate,
                   textDirection: TextDirection.ltr,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 10,
                     fontFamily: 'monospace',
                     fontWeight: FontWeight.w600,
-                    color: Color(0xFFD1D5DB),
+                    color: textMuted,
                   ),
                 ),
                 Container(
@@ -1269,9 +1269,9 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       textDirection: TextDirection.rtl,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 9,
-                        color: Color(0xFF9CA3AF),
+                        color: textMuted,
                       ),
                     ),
                   ],
@@ -1636,12 +1636,12 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         textDirection: TextDirection.ltr,
                         children: [
-                          const Text(
+                          Text(
                             '₪',
                             style: TextStyle(
                               fontSize: 10,
                               fontWeight: FontWeight.bold,
-                              color: Color(0xFFD1D5DB),
+                              color: textMuted,
                             ),
                           ),
                           const SizedBox(width: 2),

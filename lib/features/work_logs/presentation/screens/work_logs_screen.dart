@@ -720,7 +720,7 @@ class _WorkLogsScreenState extends State<WorkLogsScreen> {
                         ),
                       )
                     : RefreshIndicator(
-                        color: Colors.white,
+                        color: brandGreen,
                         backgroundColor: surfaceField,
                         onRefresh: _loadData,
                         child: ListView(
@@ -913,12 +913,12 @@ class _WorkLogsScreenState extends State<WorkLogsScreen> {
                                 ),
                               ),
                               const SizedBox(width: 4),
-                              const Text(
+                              Text(
                                 'يوم',
                                 style: TextStyle(
                                   fontSize: 10,
                                   fontWeight: FontWeight.w600,
-                                  color: Color(0xFFD1D5DB),
+                                  color: textMuted,
                                 ),
                               ),
                             ],
@@ -1136,10 +1136,10 @@ class _WorkLogsScreenState extends State<WorkLogsScreen> {
                                 const SizedBox(width: 4),
                                 Text(
                                   '$shiftCount يوم عمل',
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontSize: 11,
                                     fontWeight: FontWeight.w600,
-                                    color: Color(0xFFD1D5DB),
+                                    color: textMuted,
                                   ),
                                 ),
                               ],

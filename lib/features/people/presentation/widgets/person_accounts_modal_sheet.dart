@@ -94,6 +94,7 @@ class _PersonAccountsModalSheetState extends State<PersonAccountsModalSheet> {
   static const Color brandYellow = Color(0xFFEAB308);
   static const Color brandRed = Color(0xFFEF4444);
   static Color get textWhite => _isDark ? Colors.white : const Color(0xFF111827);
+  static Color get textMuted => _isDark ? const Color(0xFF9CA3AF) : const Color(0xFF4B5563);
 
   final PeopleRepository _repository = PeopleRepository();
   List<PersonAccountModel> _accounts = [];
@@ -202,13 +203,13 @@ class _PersonAccountsModalSheetState extends State<PersonAccountsModalSheet> {
           borderRadius: BorderRadius.circular(16),
           side: BorderSide(color: surfaceBorder),
         ),
-        title: const Text(
+        title: Text(
           'حذف الحساب',
-          style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold),
+          style: TextStyle(color: textWhite, fontSize: 14, fontWeight: FontWeight.bold),
         ),
         content: Text(
           'هل أنت متأكد من حذف حساب (${account.service}) نهائياً؟',
-          style: const TextStyle(color: Color(0xFFD1D5DB), fontSize: 12.5),
+          style: TextStyle(color: textMuted, fontSize: 12.5),
         ),
         actions: [
           TextButton(
@@ -343,12 +344,12 @@ class _PersonAccountsModalSheetState extends State<PersonAccountsModalSheet> {
                     const SizedBox(width: 8),
 
                     // Title
-                    const Text(
+                    Text(
                       'Accounts & passwords',
                       style: TextStyle(
                         fontSize: 13.5,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                        color: textWhite,
                         letterSpacing: -0.2,
                       ),
                     ),
@@ -509,12 +510,12 @@ class _PersonAccountsModalSheetState extends State<PersonAccountsModalSheet> {
                             ),
                           ),
                           const SizedBox(width: 4),
-                          const Text(
+                          Text(
                             'حسابات',
                             style: TextStyle(
                               fontSize: 9.5,
                               fontWeight: FontWeight.w600,
-                              color: Color(0xFFD1D5DB),
+                              color: textMuted,
                             ),
                           ),
                         ],
@@ -528,17 +529,17 @@ class _PersonAccountsModalSheetState extends State<PersonAccountsModalSheet> {
                       flex: 4,
                       child: InkWell(
                         onTap: () => _copy(primaryEmail, 'تم نسخ الإيميل الأساسي'),
-                        child: const Row(
+                        child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Remix.at_line, color: brandGreen, size: 11),
+                            const Icon(Remix.at_line, color: brandGreen, size: 11),
                             SizedBox(width: 4),
                             Text(
                               'نسخ إيميلي',
                               style: TextStyle(
                                 fontSize: 9.5,
                                 fontWeight: FontWeight.w600,
-                                color: Color(0xFFD1D5DB),
+                                color: textMuted,
                               ),
                             ),
                           ],
@@ -564,10 +565,10 @@ class _PersonAccountsModalSheetState extends State<PersonAccountsModalSheet> {
                             const SizedBox(width: 4),
                             Text(
                               _allPasswordsVisible ? 'إخفاء الكل' : 'إظهار الكل',
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 9.5,
                                 fontWeight: FontWeight.w600,
-                                color: Color(0xFFD1D5DB),
+                                color: textMuted,
                               ),
                             ),
                           ],
@@ -740,10 +741,10 @@ class _PersonAccountsModalSheetState extends State<PersonAccountsModalSheet> {
                       account.service,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                        color: textWhite,
                       ),
                     ),
                   ),
@@ -801,10 +802,10 @@ class _PersonAccountsModalSheetState extends State<PersonAccountsModalSheet> {
                                 account.email,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 10,
                                   fontFamily: 'monospace',
-                                  color: Color(0xFFE5E7EB),
+                                  color: textWhite,
                                 ),
                               ),
                             ),
@@ -898,7 +899,7 @@ class _PersonAccountsModalSheetState extends State<PersonAccountsModalSheet> {
                           child: Container(
                             width: 26,
                             alignment: Alignment.center,
-                            child: const Icon(Remix.file_copy_line, size: 11, color: Color(0xFFD1D5DB)),
+                            child: Icon(Remix.file_copy_line, size: 11, color: textMuted),
                           ),
                         ),
                       ],
@@ -936,6 +937,7 @@ class _AddEditAccountSheetState extends State<_AddEditAccountSheet> {
   static const Color brandGreen = Color(0xFF00A86B);
   static const Color brandYellow = Color(0xFFEAB308);
   static Color get textWhite => _isDark ? Colors.white : const Color(0xFF111827);
+//   static Color get textMuted => _isDark ? const Color(0xFF9CA3AF) : const Color(0xFF4B5563);
 
   final PeopleRepository _repository = PeopleRepository();
   final _formKey = GlobalKey<FormState>();
@@ -1069,10 +1071,10 @@ class _AddEditAccountSheetState extends State<_AddEditAccountSheet> {
                         const SizedBox(width: 8),
                         Text(
                           isEdit ? 'تعديل حساب ${widget.account!.service}' : 'إضافة حساب جديد للخزنة',
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.bold,
-                            color: Colors.white,
+                            color: textWhite,
                           ),
                         ),
                       ],
@@ -1212,10 +1214,10 @@ class _AddEditAccountSheetState extends State<_AddEditAccountSheet> {
                                   Expanded(
                                     child: TextFormField(
                                       controller: _emailController,
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                         fontSize: 11.5,
                                         fontFamily: 'monospace',
-                                        color: Colors.white,
+                                        color: textWhite,
                                       ),
                                       decoration: const InputDecoration(
                                         hintText: 'yasenlafi972@gmail.com',
@@ -1313,14 +1315,14 @@ class _AddEditAccountSheetState extends State<_AddEditAccountSheet> {
                               child: TextFormField(
                                 controller: _passwordController,
                                 obscureText: _obscurePassword,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 12,
                                   fontFamily: 'monospace',
                                   fontWeight: FontWeight.bold,
-                                  color: Colors.white,
+                                  color: textWhite,
                                 ),
                                 decoration: const InputDecoration(
-                                  hintText: 'Enter password...',
+hintText: 'Enter password...',
                                   hintStyle: TextStyle(fontSize: 11, color: Color(0xFF52525B)),
                                   border: InputBorder.none,
                                   isDense: true,

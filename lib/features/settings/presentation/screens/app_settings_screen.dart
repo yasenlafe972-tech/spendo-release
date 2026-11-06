@@ -1,4 +1,4 @@
-﻿import 'dart:io';
+import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -134,7 +134,7 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
             const SizedBox(width: 8),
             Text(
               message,
-              style: const TextStyle(color: Colors.white, fontSize: 11.5, fontWeight: FontWeight.w600),
+              style: TextStyle(color: textWhite, fontSize: 11.5, fontWeight: FontWeight.w600),
             ),
           ],
         ),
@@ -678,14 +678,14 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            const Row(
+                            Row(
                               children: [
-                                Icon(Remix.lock_password_line, color: brandYellow, size: 18),
+                                const Icon(Remix.lock_password_line, color: brandYellow, size: 18),
                                 SizedBox(width: 8),
                                 Text(
                                   'تغيير كلمة المرور',
                                   style: TextStyle(
-                                    color: Colors.white,
+                                    color: textWhite,
                                     fontSize: 14,
                                     fontWeight: FontWeight.bold,
                                   ),
@@ -1180,10 +1180,10 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                                 const SizedBox(width: 5),
                                 Text(
                                   isLoggedIn ? 'سحابي متصل' : 'حساب محلي',
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontSize: 9.5,
                                     fontWeight: FontWeight.bold,
-                                    color: Color(0xFFD1D5DB),
+                                    color: textWhite,
                                   ),
                                 ),
                               ],
@@ -1464,7 +1464,7 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                                                 style: TextStyle(
                                                   fontSize: 11.5,
                                                   fontWeight: FontWeight.bold,
-                                                  color: Colors.white,
+                                                  color: textWhite,
                                                 ),
                                               ),
                                               SizedBox(height: 1),
@@ -1669,7 +1669,7 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                                                     style: TextStyle(
                                                       fontSize: 11,
                                                       fontWeight: FontWeight.bold,
-                                                      color: Colors.white,
+                                                      color: textWhite,
                                                     ),
                                                   ),
                                                   SizedBox(height: 1),
@@ -1714,7 +1714,7 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                                                     style: TextStyle(
                                                       fontSize: 11,
                                                       fontWeight: FontWeight.bold,
-                                                      color: Colors.white,
+                                                      color: textWhite,
                                                     ),
                                                   ),
                                                   SizedBox(height: 1),
@@ -1824,10 +1824,10 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                                   Text(
                                     currentEmail,
                                     textDirection: TextDirection.ltr,
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontSize: 9.5,
                                       fontFamily: 'monospace',
-                                      color: Color(0xFFD1D5DB),
+                                      color: textMuted,
                                     ),
                                   ),
                                 ],
