@@ -160,13 +160,13 @@ class IsraelGovApiService {
   static const String _exciseTaxResourceId =
       'bdce45e7-9fe9-473e-bd51-cef1d787a951';
 
-  /// محطة الوقود الرسمية الافتراضية للمستخدم من سجل وزارة الطاقة (פז בית הכרם)
+  /// محطة الوقود الرسمية الافتراضية للمستخدم من سجل وزارة الطاقة (פז בעינה 365)
   static const GovGasStationInfo defaultUserPazStation = GovGasStationInfo(
-    stationCode: 2179,
+    stationCode: 365,
     company: 'פז (Yellow)',
-    name: 'פז בית הכרם (417)',
-    address: 'כביש 85 עכו-צפת, מג\'דל כרום',
-    city: 'מג\'דל כרום / בקעת בית הכרם',
+    name: 'פז בעינה (365)',
+    address: 'כביש 85 צומת בעינה-דיר אל אסד',
+    city: 'בעינה / דיר אל אסד',
   );
 
   /// الكراج المعتمد الافتراضي للمستخدم من سجل وزارة المواصلات (אור אמנוני כרמיאל)

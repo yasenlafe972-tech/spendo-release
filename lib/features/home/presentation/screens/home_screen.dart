@@ -1548,6 +1548,128 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  void _showEditFuelDialog(VehicleExpenseRecord record) {
+    final titleCtrl = TextEditingController(text: record.title);
+    final providerCtrl = TextEditingController(text: record.provider ?? '');
+    final amountCtrl = TextEditingController(text: record.amount.toStringAsFixed(2));
+    final litersCtrl = TextEditingController(text: record.liters?.toString() ?? '');
+
+    showDialog(
+      context: context,
+      builder: (editCtx) => Directionality(
+        textDirection: TextDirection.rtl,
+        child: AlertDialog(
+          backgroundColor: surfaceField,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+            side: BorderSide(color: surfaceBorder),
+          ),
+          insetPadding: const EdgeInsets.symmetric(horizontal: 40, vertical: 24),
+          titlePadding: const EdgeInsets.fromLTRB(16, 14, 16, 8),
+          contentPadding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+          actionsPadding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
+          title: Text(
+            'تعديل الفاتورة والمحطة',
+            style: TextStyle(color: textWhite, fontSize: 13, fontWeight: FontWeight.bold),
+          ),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: providerCtrl,
+                  style: TextStyle(color: textWhite, fontSize: 12),
+                  decoration: InputDecoration(
+                    labelText: 'اسم المحطة / المزود (الموقع)',
+                    labelStyle: TextStyle(color: textMuted, fontSize: 11),
+                    isDense: true,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                TextField(
+                  controller: titleCtrl,
+                  style: TextStyle(color: textWhite, fontSize: 12),
+                  decoration: InputDecoration(
+                    labelText: 'بيان الفاتورة',
+                    labelStyle: TextStyle(color: textMuted, fontSize: 11),
+                    isDense: true,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: amountCtrl,
+                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                        style: const TextStyle(color: brandYellow, fontSize: 12, fontWeight: FontWeight.bold),
+                        decoration: InputDecoration(
+                          labelText: 'المبلغ (₪)',
+                          labelStyle: TextStyle(color: textMuted, fontSize: 11),
+                          isDense: true,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: TextField(
+                        controller: litersCtrl,
+                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                        style: TextStyle(color: textWhite, fontSize: 12),
+                        decoration: InputDecoration(
+                          labelText: 'اللترات',
+                          labelStyle: TextStyle(color: textMuted, fontSize: 11),
+                          isDense: true,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              style: TextButton.styleFrom(visualDensity: VisualDensity.compact),
+              onPressed: () => Navigator.pop(editCtx),
+              child: Text('إلغاء', style: TextStyle(color: textMuted, fontSize: 11.5)),
+            ),
+            TextButton(
+              style: TextButton.styleFrom(visualDensity: VisualDensity.compact),
+              onPressed: () async {
+                final newAmt = double.tryParse(amountCtrl.text.trim()) ?? record.amount;
+                final newLiters = double.tryParse(litersCtrl.text.trim());
+                final newProv = providerCtrl.text.trim();
+                final newTitle = titleCtrl.text.trim();
+
+                final updatedRec = record.copyWith(
+                  title: newTitle.isNotEmpty ? newTitle : record.title,
+                  provider: newProv.isNotEmpty ? newProv : record.provider,
+                  amount: newAmt,
+                  liters: newLiters,
+                );
+
+                Navigator.pop(editCtx);
+                final prefs = await SharedPreferences.getInstance();
+                final raw = prefs.getString('spendo_vehicle_tracker_v5');
+                if (raw != null) {
+                  final state = VehicleDataState.fromJson(raw);
+                  final updatedHistory = state.history.map((x) => x.id == record.id ? updatedRec : x).toList();
+                  await prefs.setString(
+                    'spendo_vehicle_tracker_v5',
+                    state.copyWith(history: updatedHistory).toJson(),
+                  );
+                }
+                _loadData();
+              },
+              child: const Text('حفظ', style: TextStyle(color: brandGreen, fontSize: 11.5, fontWeight: FontWeight.bold)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   void _showFuelDetailsModal(VehicleExpenseRecord record) {
     showDialog(
       context: context,
@@ -1631,6 +1753,24 @@ class _HomeScreenState extends State<HomeScreen> {
                 'حذف',
                 style: TextStyle(
                   color: brandRed,
+                  fontSize: 11.5,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            TextButton(
+              style: TextButton.styleFrom(
+                visualDensity: VisualDensity.compact,
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+              ),
+              onPressed: () {
+                Navigator.pop(dCtx);
+                _showEditFuelDialog(record);
+              },
+              child: const Text(
+                'تعديل',
+                style: TextStyle(
+                  color: brandYellow,
                   fontSize: 11.5,
                   fontWeight: FontWeight.bold,
                 ),

@@ -258,13 +258,13 @@ class VehicleDataState {
       history: [
         VehicleExpenseRecord(
           id: 'fuel_paz_2026_10_21',
-          title: 'תדלוק Yellow פז בית הכרם (6 ליטר אוקטן 95)',
+          title: 'תדלוק Yellow פז בעינה 365 (6 ליטר אוקטן 95)',
           amount: 46.62,
           odometer: 0,
           date: DateTime(2026, 10, 21, 8, 43),
           category: ExpenseCategory.fuel,
           invoiceNumber: '041709901387254',
-          provider: 'פז בית הכרם 417',
+          provider: 'פז בעינה 365',
           liters: 6.0,
           pricePerLiter: 7.77,
           notes: 'תדלוק מהיר באפליקציית Yellow משאבה 05 - רכב 55-505-403',
