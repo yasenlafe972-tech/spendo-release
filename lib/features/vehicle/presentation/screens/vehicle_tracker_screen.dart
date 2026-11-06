@@ -3145,7 +3145,111 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
     );
   }
 
+  void _showFuelDetailsModal(VehicleExpenseRecord record) {
+    showDialog(
+      context: context,
+      builder: (dCtx) => Directionality(
+        textDirection: TextDirection.rtl,
+        child: AlertDialog(
+          backgroundColor: surfaceField,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+            side: BorderSide(color: surfaceBorder),
+          ),
+          insetPadding:
+              const EdgeInsets.symmetric(horizontal: 56, vertical: 24),
+          titlePadding: const EdgeInsets.fromLTRB(16, 14, 16, 4),
+          contentPadding: const EdgeInsets.fromLTRB(16, 4, 16, 4),
+          actionsPadding: const EdgeInsets.fromLTRB(10, 0, 10, 6),
+          title: Text(
+            record.title,
+            style: TextStyle(
+              color: textWhite,
+              fontSize: 12.5,
+              fontWeight: FontWeight.bold,
+              height: 1.3,
+            ),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'المبلغ: ₪${record.amount.toStringAsFixed(2)}',
+                style: const TextStyle(
+                  color: brandYellow,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 12,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'التاريخ: ${ArabicDateHelper.formatArabicDateWithWeekday(record.date)}',
+                style: TextStyle(color: textMuted, fontSize: 10.5),
+              ),
+              if (record.provider != null && record.provider!.isNotEmpty) ...[
+                const SizedBox(height: 3),
+                Text(
+                  'المزود: ${record.provider}',
+                  style: TextStyle(color: textMuted, fontSize: 10.5),
+                ),
+              ],
+              if (record.liters != null) ...[
+                const SizedBox(height: 3),
+                Text(
+                  'اللترات: ${record.liters} لتر',
+                  style: TextStyle(color: textMuted, fontSize: 10.5),
+                ),
+              ],
+            ],
+          ),
+          actions: [
+            TextButton(
+              style: TextButton.styleFrom(
+                visualDensity: VisualDensity.compact,
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+              ),
+              onPressed: () {
+                Navigator.pop(dCtx);
+                final updated =
+                    _state.history.where((x) => x.id != record.id).toList();
+                _saveState(_state.copyWith(history: updated));
+              },
+              child: const Text(
+                'حذف',
+                style: TextStyle(
+                  color: brandRed,
+                  fontSize: 11.5,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            TextButton(
+              style: TextButton.styleFrom(
+                visualDensity: VisualDensity.compact,
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+              ),
+              onPressed: () => Navigator.pop(dCtx),
+              child: const Text(
+                'إغلاق',
+                style: TextStyle(
+                  color: brandGreen,
+                  fontSize: 11.5,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   void _showTransactionDetailsSheet(VehicleExpenseRecord record) {
+    if (record.category == ExpenseCategory.fuel) {
+      _showFuelDetailsModal(record);
+      return;
+    }
     final isFuel = record.category == ExpenseCategory.fuel;
     final kmSince = (_state.currentOdometer - record.odometer).clamp(0, 999999);
 
