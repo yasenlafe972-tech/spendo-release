@@ -288,7 +288,7 @@ class _MultiFuelImportSheetState extends State<MultiFuelImportSheet> {
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: Colors.white24,
+                  color: _isDark ? Colors.white24 : const Color(0xFFD1D5DB),
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -565,10 +565,10 @@ class _MultiFuelImportSheetState extends State<MultiFuelImportSheet> {
                                                 padding: const EdgeInsets.symmetric(
                                                     horizontal: 6, vertical: 2),
                                                 decoration: BoxDecoration(
-                                                  color: Colors.white.withAlpha(15),
+                                                  color: _isDark ? Colors.white.withAlpha(15) : const Color(0xFFE5E7EB),
                                                   borderRadius: BorderRadius.circular(4),
                                                   border: Border.all(
-                                                    color: Colors.white24,
+                                                    color: _isDark ? Colors.white24 : const Color(0xFFD1D5DB),
                                                     width: 0.8,
                                                   ),
                                                 ),

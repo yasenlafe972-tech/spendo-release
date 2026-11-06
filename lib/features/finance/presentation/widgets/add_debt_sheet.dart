@@ -774,7 +774,7 @@ class _AddDebtSheetState extends State<AddDebtSheet> {
                           m['title'],
                           style: TextStyle(
                             fontFamily: 'Cairo',
-                            color: isSelected ? Colors.white : const Color(0xFF9CA3AF),
+                            color: isSelected ? textWhite : textMuted,
                             fontSize: 10,
                             fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
                           ),
@@ -880,7 +880,7 @@ class _AddDebtSheetState extends State<AddDebtSheet> {
                                   : 'غير محدد (اختياري)',
                               style: TextStyle(
                                 fontFamily: 'Cairo',
-                                color: _dueDate != null ? Colors.white : const Color(0xFF9CA3AF),
+                                color: _dueDate != null ? textWhite : textMuted,
                                 fontSize: 11,
                                 fontWeight: _dueDate != null ? FontWeight.bold : FontWeight.normal,
                               ),

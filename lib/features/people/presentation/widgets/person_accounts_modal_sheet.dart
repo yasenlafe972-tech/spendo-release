@@ -937,7 +937,7 @@ class _AddEditAccountSheetState extends State<_AddEditAccountSheet> {
   static const Color brandGreen = Color(0xFF00A86B);
   static const Color brandYellow = Color(0xFFEAB308);
   static Color get textWhite => _isDark ? Colors.white : const Color(0xFF111827);
-//   static Color get textMuted => _isDark ? const Color(0xFF9CA3AF) : const Color(0xFF4B5563);
+  static Color get textMuted => _isDark ? const Color(0xFF9CA3AF) : const Color(0xFF4B5563);
 
   final PeopleRepository _repository = PeopleRepository();
   final _formKey = GlobalKey<FormState>();
@@ -1118,7 +1118,7 @@ class _AddEditAccountSheetState extends State<_AddEditAccountSheet> {
                                 style: TextStyle(
                                   fontSize: 10.5,
                                   fontWeight: FontWeight.w600,
-                                  color: isSelected ? brandGreen : const Color(0xFFD1D5DB),
+                                  color: isSelected ? brandGreen : textMuted,
                                 ),
                               ),
                             ),

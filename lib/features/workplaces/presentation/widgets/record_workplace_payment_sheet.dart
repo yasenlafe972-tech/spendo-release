@@ -486,7 +486,7 @@ class _RecordWorkplacePaymentSheetState extends State<RecordWorkplacePaymentShee
                                 Text(
                                   m['name'] as String,
                                   style: TextStyle(
-                                    color: isSelected ? Colors.white : const Color(0xFF9CA3AF),
+                                    color: isSelected ? RecordWorkplacePaymentSheet.textWhite : const Color(0xFF9CA3AF),
                                     fontSize: 11,
                                     fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
                                   ),
@@ -583,7 +583,7 @@ class _RecordWorkplacePaymentSheetState extends State<RecordWorkplacePaymentShee
     bool isYellow = false,
     bool isRed = false,
   }) {
-    Color textColor = const Color(0xFFD1D5DB);
+    Color textColor = RecordWorkplacePaymentSheet.textWhite;
     if (isYellow) textColor = RecordWorkplacePaymentSheet.brandYellow;
     if (isRed) textColor = const Color(0xFFF87171);
 

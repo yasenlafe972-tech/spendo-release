@@ -468,7 +468,7 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
                                     Text(
                                       wp.name,
                                       style: TextStyle(
-                                        color: isSelected ? Colors.white : const Color(0xFFD1D5DB),
+                                        color: isSelected ? textWhite : textMuted,
                                         fontSize: 13,
                                         fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
                                       ),
@@ -787,8 +787,8 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
                                             ? FontWeight.bold
                                             : FontWeight.w600,
                                         color: isSelected
-                                            ? Colors.white
-                                            : const Color(0xFFD1D5DB),
+                                            ? textWhite
+                                            : textMuted,
                                       ),
                                     ),
                                     if (!wp.isActive) ...[
@@ -831,7 +831,7 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
                                             fontSize: 9.5,
                                             fontWeight: FontWeight.bold,
                                             color: isSelected
-                                                ? Colors.white
+                                                ? textWhite
                                                 : brandYellow,
                                           ),
                                         ),
@@ -1054,7 +1054,7 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
                                     fontWeight: FontWeight.w600,
                                     color: isSelected
                                         ? brandYellow
-                                        : const Color(0xFFD1D5DB),
+                                        : textMuted,
                                   ),
                                 ),
                               ),

@@ -2026,31 +2026,31 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const Text(
+              Text(
                 'تعديل اسم أو موديل المركبة',
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w800,
-                  color: AppColors.textPrimary,
+                  color: textWhite,
                 ),
               ),
               const SizedBox(height: 14),
               TextField(
                 controller: controller,
                 autofocus: true,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimary,
+                  color: textWhite,
                 ),
                 decoration: InputDecoration(
                   hintText: 'مثال: SYM Joyride 200 أو سكوتر العمل...',
-                  hintStyle: const TextStyle(color: AppColors.textMuted),
+                  hintStyle: TextStyle(color: AppColors.textMuted),
                   filled: true,
                   fillColor: surfaceField,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(16),
-                    borderSide: const BorderSide(color: AppColors.surfaceCardBorder),
+                    borderSide: BorderSide(color: surfaceBorder),
                   ),
                 ),
               ),
@@ -2121,12 +2121,12 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const Text(
+              Text(
                 'تحديث قراءة العداد الحالية',
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w800,
-                  color: AppColors.textPrimary,
+                  color: textWhite,
                 ),
               ),
               const SizedBox(height: 14),
@@ -2135,10 +2135,10 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                 autofocus: true,
                 keyboardType: TextInputType.number,
                 textAlign: TextAlign.center,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.w900,
-                  color: AppColors.textPrimary,
+                  color: textWhite,
                 ),
                 decoration: InputDecoration(
                   suffixText: 'كم',
@@ -2146,7 +2146,7 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                   fillColor: surfaceField,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(16),
-                    borderSide: const BorderSide(color: AppColors.surfaceCardBorder),
+                    borderSide: BorderSide(color: surfaceBorder),
                   ),
                 ),
               ),
@@ -2221,26 +2221,26 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
             children: [
               Text(
                 'هل قمت بصيانة/تغيير ${part.title} الآن؟',
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w800,
-                  color: AppColors.textPrimary,
+                  color: textWhite,
                 ),
               ),
               const SizedBox(height: 14),
               TextField(
                 controller: costCtrl,
                 keyboardType: TextInputType.number,
-                style: const TextStyle(color: AppColors.textPrimary),
+                style: TextStyle(color: textWhite),
                 decoration: InputDecoration(
                   labelText: 'التكلفة بالشيكل (اختياري)',
-                  labelStyle: const TextStyle(color: AppColors.textMuted),
+                  labelStyle: TextStyle(color: AppColors.textMuted),
                   suffixText: '₪',
                   filled: true,
                   fillColor: surfaceField,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(16),
-                    borderSide: const BorderSide(color: AppColors.surfaceCardBorder),
+                    borderSide: BorderSide(color: surfaceBorder),
                   ),
                 ),
               ),
@@ -2248,16 +2248,16 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
               TextField(
                 controller: odoCtrl,
                 keyboardType: TextInputType.number,
-                style: const TextStyle(color: AppColors.textPrimary),
+                style: TextStyle(color: textWhite),
                 decoration: InputDecoration(
                   labelText: 'قراءة العداد عند التغيير',
-                  labelStyle: const TextStyle(color: AppColors.textMuted),
+                  labelStyle: TextStyle(color: AppColors.textMuted),
                   suffixText: 'كم',
                   filled: true,
                   fillColor: surfaceField,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(16),
-                    borderSide: const BorderSide(color: AppColors.surfaceCardBorder),
+                    borderSide: BorderSide(color: surfaceBorder),
                   ),
                 ),
               ),
@@ -2371,9 +2371,9 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const Row(
+              Row(
                 children: [
-                  Icon(
+                  const Icon(
                     Remix.tools_line,
                     color: brandYellow,
                     size: 20,
@@ -2384,7 +2384,7 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                     style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w800,
-                      color: AppColors.textPrimary,
+                      color: textWhite,
                     ),
                   ),
                 ],
@@ -2394,37 +2394,37 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                 controller: amountCtrl,
                 autofocus: true,
                 keyboardType: TextInputType.number,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.w800,
-                  color: AppColors.textPrimary,
+                  color: textWhite,
                 ),
                 decoration: InputDecoration(
                   labelText: 'المبلغ المدفوع (₪)',
-                  labelStyle: const TextStyle(color: AppColors.textMuted),
+                  labelStyle: TextStyle(color: AppColors.textMuted),
                   suffixText: '₪',
                   filled: true,
                   fillColor: surfaceField,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(16),
                     borderSide:
-                        const BorderSide(color: AppColors.surfaceCardBorder),
+                        BorderSide(color: surfaceBorder),
                   ),
                 ),
               ),
               const SizedBox(height: 12),
               TextField(
                 controller: noteCtrl,
-                style: const TextStyle(color: AppColors.textPrimary),
+                style: TextStyle(color: textWhite),
                 decoration: InputDecoration(
                   labelText: 'שם הטיפול או החלפים המוחלפים (עברית)',
-                  labelStyle: const TextStyle(color: AppColors.textMuted),
+                  labelStyle: TextStyle(color: AppColors.textMuted),
                   filled: true,
                   fillColor: surfaceField,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(16),
                     borderSide:
-                        const BorderSide(color: AppColors.surfaceCardBorder),
+                        BorderSide(color: surfaceBorder),
                   ),
                 ),
               ),
@@ -2432,17 +2432,17 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
               TextField(
                 controller: odoCtrl,
                 keyboardType: TextInputType.number,
-                style: const TextStyle(color: AppColors.textPrimary),
+                style: TextStyle(color: textWhite),
                 decoration: InputDecoration(
                   labelText: 'קריאת מד אוץ בעת הטיפול (ק"מ)',
-                  labelStyle: const TextStyle(color: AppColors.textMuted),
+                  labelStyle: TextStyle(color: AppColors.textMuted),
                   suffixText: 'ק"מ',
                   filled: true,
                   fillColor: surfaceField,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(16),
                     borderSide:
-                        const BorderSide(color: AppColors.surfaceCardBorder),
+                        BorderSide(color: surfaceBorder),
                   ),
                 ),
               ),
@@ -2657,7 +2657,7 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                           width: 42,
                           height: 4,
                           decoration: BoxDecoration(
-                            color: Colors.white24,
+                            color: _isDark ? Colors.white24 : const Color(0xFFD1D5DB),
                             borderRadius: BorderRadius.circular(99),
                           ),
                         ),
@@ -2679,7 +2679,7 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                             ),
                           ),
                           const SizedBox(width: 12),
-                          const Column(
+                          Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
@@ -2687,7 +2687,7 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                                 style: TextStyle(
                                   fontSize: 15,
                                   fontWeight: FontWeight.w800,
-                                  color: AppColors.textPrimary,
+                                  color: textWhite,
                                 ),
                               ),
                               Text(
@@ -2775,19 +2775,19 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    const Text(
+                                    Text(
                                       'تم تحميل صورة الفاتورة',
                                       style: TextStyle(
                                         fontSize: 12.5,
                                         fontWeight: FontWeight.w700,
-                                        color: AppColors.textPrimary,
+                                        color: textWhite,
                                       ),
                                     ),
                                     Text(
                                       'المسار: ${selectedImageFile!.path.split(Platform.pathSeparator).last}',
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                         fontSize: 10.5,
                                         color: AppColors.textMuted,
                                       ),
@@ -2801,7 +2801,7 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                       ],
                       if (isScanning) ...[
                         const SizedBox(height: 20),
-                        const Center(
+                        Center(
                           child: Column(
                             children: [
                               CircularProgressIndicator(
@@ -2815,7 +2815,7 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                                 style: TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w600,
-                                  color: AppColors.textSecondary,
+                                  color: textMuted,
                                 ),
                               ),
                             ],
@@ -2831,7 +2831,7 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                             fontWeight: FontWeight.w600,
                             color: duplicateRecord != null
                                 ? const Color(0xFFEF4444)
-                                : AppColors.textSecondary,
+                                : textMuted,
                           ),
                         ),
                       ],
@@ -2885,16 +2885,16 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                                   children: [
                                     Text(
                                       duplicateRecord!.title,
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                         fontSize: 12.5,
                                         fontWeight: FontWeight.w700,
-                                        color: AppColors.textPrimary,
+                                        color: textWhite,
                                       ),
                                     ),
                                     const SizedBox(height: 4),
                                     Text(
                                       'التاريخ: ${duplicateRecord!.date.day}/${duplicateRecord!.date.month}/${duplicateRecord!.date.year} • المبلغ: ₪${duplicateRecord!.amount.toStringAsFixed(2)}${duplicateRecord!.invoiceNumber != null ? ' • رقم #${duplicateRecord!.invoiceNumber}' : ''}',
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                         fontSize: 11,
                                         color: AppColors.textMuted,
                                       ),
@@ -2944,7 +2944,7 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                                       },
                                       icon: const Icon(Icons.close_rounded,
                                           size: 15),
-                                      label: const Text(
+                                      label: Text(
                                         'إلغاء التكرار',
                                         style: TextStyle(
                                             fontSize: 11,
@@ -2952,7 +2952,7 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                                       ),
                                       style: ElevatedButton.styleFrom(
                                         backgroundColor: surfaceField,
-                                        foregroundColor: AppColors.textPrimary,
+                                        foregroundColor: textWhite,
                                         padding: const EdgeInsets.symmetric(
                                             vertical: 8),
                                         shape: RoundedRectangleBorder(
@@ -3013,10 +3013,10 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                               const SizedBox(height: 10),
                               TextField(
                                 controller: titleCtrl,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 13,
                                   fontWeight: FontWeight.w700,
-                                  color: AppColors.textPrimary,
+                                  color: textWhite,
                                 ),
                                 decoration: const InputDecoration(
                                   labelText: 'اسم الفاتورة والبيانات الفنية',
@@ -3029,7 +3029,7 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                               TextField(
                                 controller: amountCtrl,
                                 keyboardType: TextInputType.number,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.w800,
                                   color: AppColors.spendoGreen,
@@ -3045,7 +3045,7 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                               const SizedBox(height: 6),
                               Text(
                                 'التاريخ: ${parsedResult!.date.day}/${parsedResult!.date.month}/${parsedResult!.date.year} • الفئة: ${parsedResult!.isFuel ? 'وقود' : 'صيانة וחלפים'}',
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 11,
                                   color: AppColors.textMuted,
                                 ),
@@ -3064,19 +3064,19 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(20),
                                   ),
-                                  title: const Text(
+                                  title: Text(
                                     'تأكيد إضافة فاتورة مكررة',
                                     style: TextStyle(
                                       fontSize: 15,
                                       fontWeight: FontWeight.w800,
-                                      color: AppColors.textPrimary,
+                                      color: textWhite,
                                     ),
                                   ),
-                                  content: const Text(
+                                  content: Text(
                                     'توجد بالفعل فاتورة مطابقة في السجل. هل تود بالتأكيد إضافة هذه النسخة المكررة؟',
                                     style: TextStyle(
                                       fontSize: 12.5,
-                                      color: AppColors.textSecondary,
+                                      color: textMuted,
                                     ),
                                   ),
                                   actions: [
@@ -3185,7 +3185,7 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                       width: 42,
                       height: 4,
                       decoration: BoxDecoration(
-                        color: Colors.white24,
+                        color: _isDark ? Colors.white24 : const Color(0xFFD1D5DB),
                         borderRadius: BorderRadius.circular(99),
                       ),
                     ),
@@ -3229,16 +3229,16 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                                 isFuel
                                     ? 'تعبئة وقود (Yellow)'
                                     : 'صيانة وتغيير قطع غيار',
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w800,
-                                  color: AppColors.textPrimary,
+                                  color: textWhite,
                                 ),
                               ),
                               Text(
                                 ArabicDateHelper.formatArabicDateWithWeekday(
                                     record.date),
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 11.5,
                                   color: AppColors.textMuted,
                                 ),
@@ -3253,7 +3253,7 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                         decoration: BoxDecoration(
                           color: (isFuel
                                   ? AppColors.spendoGreen
-                                  : AppColors.textPrimary)
+                                  : textWhite)
                               .withValues(alpha: 0.12),
                           borderRadius: BorderRadius.circular(12),
                         ),
@@ -3264,7 +3264,7 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                             fontWeight: FontWeight.w900,
                             color: isFuel
                                 ? AppColors.spendoGreen
-                                : AppColors.textPrimary,
+                                : textWhite,
                             fontFeatures: const [FontFeature.tabularFigures()],
                           ),
                         ),
@@ -3278,7 +3278,7 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                     decoration: BoxDecoration(
                       color: surfaceField,
                       borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: AppColors.surfaceCardBorder),
+                      border: Border.all(color: surfaceBorder),
                     ),
                     child: Column(
                       children: [
@@ -3378,7 +3378,7 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                       decoration: BoxDecoration(
                         color: surfaceField,
                         borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: AppColors.surfaceCardBorder),
+                        border: Border.all(color: surfaceBorder),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -3393,12 +3393,12 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                                     : brandYellow,
                               ),
                               const SizedBox(width: 8),
-                              const Text(
+                              Text(
                                 'القطع والأعمال المشمولة في الفاتورة:',
                                 style: TextStyle(
                                   fontSize: 12.5,
                                   fontWeight: FontWeight.w800,
-                                  color: AppColors.textPrimary,
+                                  color: textWhite,
                                 ),
                               ),
                             ],
@@ -3428,10 +3428,10 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                                     const SizedBox(width: 6),
                                     Text(
                                       it,
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                         fontSize: 11.5,
                                         fontWeight: FontWeight.w600,
-                                        color: AppColors.textPrimary,
+                                        color: textWhite,
                                       ),
                                     ),
                                   ],
@@ -3472,9 +3472,9 @@ ${record.provider != null ? '- المزود: ${record.provider}' : ''}
                             );
                           },
                           icon: const Icon(Remix.file_copy_line, size: 16),
-                          label: const Text('نسخ التفاصيل'),
+                          label: Text('نسخ التفاصيل'),
                           style: OutlinedButton.styleFrom(
-                            foregroundColor: AppColors.textPrimary,
+                            foregroundColor: textWhite,
                             side: const BorderSide(
                                 color: AppColors.surfaceCardBorder),
                             padding: const EdgeInsets.symmetric(vertical: 12),
@@ -3496,19 +3496,19 @@ ${record.provider != null ? '- المزود: ${record.provider}' : ''}
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(20),
                                 ),
-                                title: const Text(
+                                title: Text(
                                   'حذف المعاملة؟',
                                   style: TextStyle(
                                     fontSize: 15,
                                     fontWeight: FontWeight.w800,
-                                    color: AppColors.textPrimary,
+                                    color: textWhite,
                                   ),
                                 ),
                                 content: Text(
                                   'هل أنت متأكد من حذف فاتورة "${record.title}" نهائياً من السجل؟',
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontSize: 12.5,
-                                    color: AppColors.textSecondary,
+                                    color: textMuted,
                                   ),
                                 ),
                                 actions: [
@@ -3581,7 +3581,7 @@ ${record.provider != null ? '- المزود: ${record.provider}' : ''}
         const SizedBox(width: 10),
         Text(
           label,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 12,
             color: AppColors.textMuted,
           ),
@@ -3596,7 +3596,7 @@ ${record.provider != null ? '- المزود: ${record.provider}' : ''}
               fontSize: 12,
               fontWeight: isHighlight ? FontWeight.w800 : FontWeight.w600,
               color:
-                  isHighlight ? AppColors.spendoGreen : AppColors.textPrimary,
+                  isHighlight ? AppColors.spendoGreen : textWhite,
             ),
           ),
         ),
@@ -3617,7 +3617,7 @@ ${record.provider != null ? '- المزود: ${record.provider}' : ''}
         decoration: BoxDecoration(
           color: surfaceField,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.surfaceCardBorder),
+          border: Border.all(color: surfaceBorder),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -3626,10 +3626,10 @@ ${record.provider != null ? '- المزود: ${record.provider}' : ''}
             const SizedBox(width: 8),
             Text(
               label,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w700,
-                color: AppColors.textPrimary,
+                color: textWhite,
               ),
             ),
           ],

@@ -1,3 +1,4 @@
+import '../../../../core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/spendo_haptic_feedback.dart';
@@ -32,6 +33,11 @@ class EditProfileSheet extends StatefulWidget {
 }
 
 class _EditProfileSheetState extends State<EditProfileSheet> {
+  static bool get _isDark => AppTheme.isDarkMode;
+  static Color get surfaceMain => _isDark ? const Color(0xFF141418) : const Color(0xFFFFFFFF);
+  static Color get surfaceField => _isDark ? const Color(0xFF1B1B22) : const Color(0xFFF9FAFB);
+  static Color get surfaceBorder => _isDark ? const Color(0xFF282834) : const Color(0xFFE5E7EB);
+  static Color get textWhite => _isDark ? Colors.white : const Color(0xFF111827);
   final PeopleRepository _peopleRepo = PeopleRepository();
   final _formKey = GlobalKey<FormState>();
 
@@ -128,8 +134,8 @@ class _EditProfileSheetState extends State<EditProfileSheet> {
         right: 20,
         bottom: bottomInset + 20,
       ),
-      decoration: const BoxDecoration(
-        color: Color(0xFF141418),
+      decoration: BoxDecoration(
+        color: surfaceMain,
         borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
       ),
       child: Form(
@@ -145,7 +151,7 @@ class _EditProfileSheetState extends State<EditProfileSheet> {
                   width: 44,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: Colors.white24,
+                    color: _isDark ? Colors.white24 : const Color(0xFFD1D5DB),
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -168,14 +174,14 @@ class _EditProfileSheetState extends State<EditProfileSheet> {
                     ),
                   ),
                   const SizedBox(width: 12),
-                  const Expanded(
+                  Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
                           'تعديل الملف الشخصي',
                           style: TextStyle(
-                            color: AppColors.textPrimary,
+                            color: textWhite,
                             fontSize: 18,
                             fontWeight: FontWeight.w800,
                           ),
@@ -304,31 +310,31 @@ class _EditProfileSheetState extends State<EditProfileSheet> {
           controller: controller,
           keyboardType: keyboardType,
           validator: validator,
-          style: const TextStyle(
-            color: AppColors.textPrimary,
+          style: TextStyle(
+            color: textWhite,
             fontSize: 14.5,
             fontWeight: FontWeight.w600,
           ),
           decoration: InputDecoration(
             hintText: hint,
-            hintStyle: const TextStyle(color: AppColors.textMuted, fontSize: 13),
+            hintStyle: TextStyle(color: AppColors.textMuted, fontSize: 13),
             prefixIcon: Icon(icon, color: AppColors.textMuted, size: 20),
             suffixText: suffixText,
-            suffixStyle: const TextStyle(
+            suffixStyle: TextStyle(
               color: AppColors.spendoMint,
               fontWeight: FontWeight.w700,
               fontSize: 13,
             ),
             filled: true,
-            fillColor: const Color(0xFF1B1B22),
+            fillColor: surfaceField,
             contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
-              borderSide: const BorderSide(color: Color(0xFF282834)),
+              borderSide: BorderSide(color: surfaceBorder),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
-              borderSide: const BorderSide(color: Color(0xFF282834)),
+              borderSide: BorderSide(color: surfaceBorder),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),

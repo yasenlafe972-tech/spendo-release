@@ -469,7 +469,7 @@ class _EmployerDetailsScreenState extends State<EmployerDetailsScreen> {
                                 Text(
                                   wp.name,
                                   style: TextStyle(
-                                    color: isSelected ? Colors.white : const Color(0xFFD1D5DB),
+                                    color: isSelected ? EmployerDetailsScreen.textWhite : EmployerDetailsScreen.textMuted,
                                     fontSize: 13,
                                     fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
                                   ),
@@ -867,7 +867,7 @@ class _EmployerDetailsScreenState extends State<EmployerDetailsScreen> {
                               Text(
                                 wp.name,
                                 style: TextStyle(
-                                  color: isSel ? Colors.white : const Color(0xFFD1D5DB),
+                                  color: isSel ? EmployerDetailsScreen.textWhite : EmployerDetailsScreen.textMuted,
                                   fontSize: 11,
                                   fontWeight: isSel ? FontWeight.bold : FontWeight.w500,
                                 ),
@@ -1607,7 +1607,7 @@ class _EmployerDetailsScreenState extends State<EmployerDetailsScreen> {
                                                   style: TextStyle(
                                                     color: _workplace.isActive
                                                         ? EmployerDetailsScreen.brandGreen
-                                                        : const Color(0xFFD1D5DB),
+                                                        : EmployerDetailsScreen.textMuted,
                                                     fontSize: 10,
                                                     fontWeight: FontWeight.w700,
                                                   ),

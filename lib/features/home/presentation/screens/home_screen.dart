@@ -663,14 +663,14 @@ class _HomeScreenState extends State<HomeScreen> {
     bool isHighlighted = false,
   }) {
     return Container(
-      height: 54,
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      height: 42,
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
         color: isHighlighted ? surfaceElevated : surfaceField,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(10),
         border: Border.all(
           color: isHighlighted ? iconColor.withValues(alpha: 0.6) : surfaceBorder,
-          width: isHighlighted ? 1.5 : 1,
+          width: isHighlighted ? 1.2 : 1,
         ),
       ),
       child: Row(
@@ -686,18 +686,18 @@ class _HomeScreenState extends State<HomeScreen> {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                    fontSize: 10,
+                    fontSize: 9,
                     color: textMuted,
                     height: 1.1,
                   ),
                 ),
-                const SizedBox(height: 3),
+                const SizedBox(height: 1),
                 Text(
                   value,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                    fontSize: 13,
+                    fontSize: 11.5,
                     fontWeight: FontWeight.bold,
                     color: textWhite,
                     height: 1.15,
@@ -708,13 +708,13 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
           Container(
-            padding: const EdgeInsets.all(5),
+            padding: const EdgeInsets.all(4),
             decoration: BoxDecoration(
               color: surfaceMain,
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(6),
               border: Border.all(color: surfaceBorder.withValues(alpha: 0.5)),
             ),
-            child: Icon(icon, size: 16, color: iconColor),
+            child: Icon(icon, size: 13, color: iconColor),
           ),
         ],
       ),
@@ -729,7 +729,7 @@ class _HomeScreenState extends State<HomeScreen> {
         Expanded(
           child: Material(
             color: brandGreen,
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(8),
             child: InkWell(
               onTap: () async {
                 SpendoHaptics.light();
@@ -738,20 +738,20 @@ class _HomeScreenState extends State<HomeScreen> {
                   _loadData();
                 }
               },
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(8),
               child: Container(
-                height: 36,
+                height: 28,
                 alignment: Alignment.center,
                 child: const Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Icon(Remix.briefcase_4_line,
-                        size: 14, color: Colors.white),
-                    SizedBox(width: 5),
+                        size: 12, color: Colors.white),
+                    SizedBox(width: 4),
                     Text(
                       'تسجيل يوم عمل',
                       style: TextStyle(
-                        fontSize: 11.5,
+                        fontSize: 10.5,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
                       ),
@@ -768,7 +768,7 @@ class _HomeScreenState extends State<HomeScreen> {
         Expanded(
           child: Material(
             color: surfaceField,
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(8),
             child: InkWell(
               onTap: () {
                 SpendoHaptics.light();
@@ -777,11 +777,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   onSaved: _loadData,
                 );
               },
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(8),
               child: Container(
-                height: 36,
+                height: 28,
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(8),
                   border: Border.all(color: surfaceBorder),
                 ),
                 alignment: Alignment.center,
@@ -789,12 +789,12 @@ class _HomeScreenState extends State<HomeScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     const Icon(Remix.gas_station_line,
-                        size: 14, color: brandYellow),
-                    const SizedBox(width: 5),
+                        size: 12, color: brandYellow),
+                    const SizedBox(width: 4),
                     Text(
                       'تعبئة وقود',
                       style: TextStyle(
-                        fontSize: 11.5,
+                        fontSize: 10.5,
                         fontWeight: FontWeight.bold,
                         color: textWhite,
                       ),

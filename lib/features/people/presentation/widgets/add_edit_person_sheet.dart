@@ -1,3 +1,4 @@
+import 'package:sanad_app/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:uuid/uuid.dart';
@@ -19,6 +20,12 @@ class AddEditPersonSheet extends StatefulWidget {
 }
 
 class _AddEditPersonSheetState extends State<AddEditPersonSheet> {
+  static bool get _isDark => AppTheme.isDarkMode;
+  static Color get surfaceMain => _isDark ? const Color(0xFF121215) : const Color(0xFFFFFFFF);
+  static Color get surfaceField => _isDark ? const Color(0xFF16161A) : const Color(0xFFF9FAFB);
+  static Color get surfaceBorder => _isDark ? const Color(0xFF222229) : const Color(0xFFE5E7EB);
+  static Color get textWhite => _isDark ? Colors.white : const Color(0xFF111827);
+  static Color get textMuted => _isDark ? const Color(0xFF71717A) : const Color(0xFF6B7280);
   final _formKey = GlobalKey<FormState>();
 
   late TextEditingController _nameController;
@@ -117,13 +124,13 @@ class _AddEditPersonSheetState extends State<AddEditPersonSheet> {
       constraints: BoxConstraints(
         maxHeight: MediaQuery.of(context).size.height * 0.90,
       ),
-      decoration: const BoxDecoration(
-        color: AppColors.surfaceCard,
+      decoration: BoxDecoration(
+        color: surfaceMain,
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
         border: Border(
-          top: BorderSide(color: Color(0xFF222229), width: 1.2),
-          left: BorderSide(color: Color(0xFF222229), width: 1.2),
-          right: BorderSide(color: Color(0xFF222229), width: 1.2),
+          top: BorderSide(color: surfaceBorder, width: 1.2),
+          left: BorderSide(color: surfaceBorder, width: 1.2),
+          right: BorderSide(color: surfaceBorder, width: 1.2),
         ),
       ),
       child: SafeArea(
@@ -141,7 +148,7 @@ class _AddEditPersonSheetState extends State<AddEditPersonSheet> {
                   height: 4,
                   margin: const EdgeInsets.only(top: 10, bottom: 8),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF272730),
+                    color: _isDark ? const Color(0xFF272730) : const Color(0xFFD1D5DB),
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -159,14 +166,14 @@ class _AddEditPersonSheetState extends State<AddEditPersonSheet> {
                         width: 32,
                         height: 32,
                         decoration: BoxDecoration(
-                          color: const Color(0xFF18181D),
+                          color: surfaceField,
                           shape: BoxShape.circle,
                           border: Border.all(color: const Color(0xFF272730)),
                         ),
                         alignment: Alignment.center,
-                        child: const Icon(
+                        child: Icon(
                           Icons.close_rounded,
-                          color: Color(0xFFA1A1AA),
+                          color: textMuted,
                           size: 16,
                         ),
                       ),
@@ -174,10 +181,10 @@ class _AddEditPersonSheetState extends State<AddEditPersonSheet> {
                     Expanded(
                       child: Text(
                         widget.person == null ? 'إضافة شخص جديد' : 'تعديل بيانات الشخص',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 16.5,
                           fontWeight: FontWeight.w800,
-                          color: AppColors.textPrimary,
+                          color: textWhite,
                           letterSpacing: -0.2,
                         ),
                         textAlign: TextAlign.center,
@@ -256,9 +263,9 @@ class _AddEditPersonSheetState extends State<AddEditPersonSheet> {
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF16161A),
+                        color: surfaceField,
                         borderRadius: BorderRadius.circular(14),
-                        border: Border.all(color: const Color(0xFF222229)),
+                        border: Border.all(color: surfaceBorder),
                       ),
                       child: Row(
                         children: [
@@ -268,9 +275,9 @@ class _AddEditPersonSheetState extends State<AddEditPersonSheet> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text(
+                                Text(
                                   'تاريخ الميلاد',
-                                  style: TextStyle(fontSize: 10, color: Color(0xFF71717A), fontWeight: FontWeight.bold),
+                                  style: TextStyle(fontSize: 10, color: textMuted, fontWeight: FontWeight.bold),
                                 ),
                                 const SizedBox(height: 2),
                                 Text(
@@ -311,9 +318,9 @@ class _AddEditPersonSheetState extends State<AddEditPersonSheet> {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF16161A),
+                      color: surfaceField,
                       borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: const Color(0xFF222229)),
+                      border: Border.all(color: surfaceBorder),
                     ),
                     child: SwitchListTile(
                       contentPadding: EdgeInsets.zero,
@@ -373,23 +380,23 @@ class _AddEditPersonSheetState extends State<AddEditPersonSheet> {
       keyboardType: keyboardType,
       maxLines: maxLines,
       validator: validator,
-      style: const TextStyle(color: AppColors.textPrimary, fontSize: 13.5),
+      style: TextStyle(color: textWhite, fontSize: 13.5),
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: const TextStyle(color: Color(0xFF71717A), fontSize: 12, fontWeight: FontWeight.w700),
+        labelStyle: TextStyle(color: textMuted, fontSize: 12, fontWeight: FontWeight.w700),
         hintText: hint,
-        hintStyle: const TextStyle(color: Color(0xFF52525B), fontSize: 12),
+        hintStyle: TextStyle(color: textMuted, fontSize: 12),
         prefixIcon: Icon(icon, color: AppColors.monoIcon, size: 18),
         filled: true,
-        fillColor: const Color(0xFF16161A),
+        fillColor: surfaceField,
         contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: Color(0xFF222229)),
+          borderSide: BorderSide(color: surfaceBorder),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: Color(0xFF222229)),
+          borderSide: BorderSide(color: surfaceBorder),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),

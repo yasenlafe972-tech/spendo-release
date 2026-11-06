@@ -1,3 +1,4 @@
+import 'package:sanad_app/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 import 'package:sanad_app/core/theme/app_colors.dart';
@@ -50,6 +51,12 @@ class AddEditWorkplaceSheet extends StatefulWidget {
 }
 
 class _AddEditWorkplaceSheetState extends State<AddEditWorkplaceSheet> {
+  static bool get _isDark => AppTheme.isDarkMode;
+  static Color get surfaceMain => _isDark ? const Color(0xFF141417) : const Color(0xFFFFFFFF);
+  static Color get surfaceField => _isDark ? const Color(0xFF101014) : const Color(0xFFF9FAFB);
+  static Color get surfaceBorder => _isDark ? const Color(0xFF202026) : const Color(0xFFE5E7EB);
+  static Color get textWhite => _isDark ? const Color(0xFFF4F4F5) : const Color(0xFF111827);
+  static Color get textMuted => _isDark ? const Color(0xFF71717A) : const Color(0xFF6B7280);
   final _formKey = GlobalKey<FormState>();
   final PeopleRepository _peopleRepo = PeopleRepository();
 
@@ -162,10 +169,10 @@ class _AddEditWorkplaceSheetState extends State<AddEditWorkplaceSheet> {
         maxHeight: MediaQuery.of(context).size.height * 0.92,
       ),
       decoration: BoxDecoration(
-        color: const Color(0xFF141417),
+        color: surfaceMain,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
         border: Border.all(
-          color: const Color(0xFF202026),
+          color: surfaceBorder,
           width: 1,
         ),
       ),
@@ -189,7 +196,7 @@ class _AddEditWorkplaceSheetState extends State<AddEditWorkplaceSheet> {
                   height: 4,
                   margin: const EdgeInsets.only(top: 10, bottom: 8),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF272730),
+                    color: _isDark ? const Color(0xFF272730) : const Color(0xFFD1D5DB),
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -207,14 +214,14 @@ class _AddEditWorkplaceSheetState extends State<AddEditWorkplaceSheet> {
                         width: 32,
                         height: 32,
                         decoration: BoxDecoration(
-                          color: const Color(0xFF18181D),
+                          color: surfaceField,
                           shape: BoxShape.circle,
-                          border: Border.all(color: const Color(0xFF272730)),
+                          border: Border.all(color: surfaceBorder),
                         ),
                         alignment: Alignment.center,
-                        child: const Icon(
+                        child: Icon(
                           Icons.close_rounded,
-                          color: Color(0xFFA1A1AA),
+                          color: textMuted,
                           size: 16,
                         ),
                       ),
@@ -225,8 +232,8 @@ class _AddEditWorkplaceSheetState extends State<AddEditWorkplaceSheet> {
                         children: [
                           Text(
                             isEditing ? 'تعديل بيانات المشغّل (מעסיק)' : 'إضافة مشغّل جديد (מעסיק)',
-                            style: const TextStyle(
-                              color: Color(0xFFF4F4F5),
+                            style: TextStyle(
+                              color: textWhite,
                               fontSize: 17,
                               fontWeight: FontWeight.w800,
                               letterSpacing: -0.2,
@@ -234,10 +241,10 @@ class _AddEditWorkplaceSheetState extends State<AddEditWorkplaceSheet> {
                             textAlign: TextAlign.center,
                           ),
                           const SizedBox(height: 2),
-                          const Text(
+                          Text(
                             'توثيق بيانات المشغّل واليومية المتفق عليها',
                             style: TextStyle(
-                              color: Color(0xFF71717A),
+                              color: textMuted,
                               fontSize: 11,
                             ),
                             textAlign: TextAlign.center,
@@ -280,7 +287,7 @@ class _AddEditWorkplaceSheetState extends State<AddEditWorkplaceSheet> {
                             controller: _nameController,
                     scrollPadding: const EdgeInsets.only(bottom: 120),
                     textInputAction: TextInputAction.next,
-                    style: const TextStyle(color: AppColors.textPrimary, fontSize: 14.5),
+                    style: TextStyle(color: textWhite, fontSize: 14.5),
                     decoration: _inputDecoration(
                       label: 'اسم المشغّل أو الشركة (מעסיק) *',
                       icon: Icons.domain_rounded,
@@ -300,7 +307,7 @@ class _AddEditWorkplaceSheetState extends State<AddEditWorkplaceSheet> {
                     controller: _cityController,
                     scrollPadding: const EdgeInsets.only(bottom: 120),
                     textInputAction: TextInputAction.next,
-                    style: const TextStyle(color: AppColors.textPrimary, fontSize: 14.5),
+                    style: TextStyle(color: textWhite, fontSize: 14.5),
                     decoration: _inputDecoration(
                       label: 'البلد / المقر الرئيسي (اختياري)',
                       icon: Icons.location_on_outlined,
@@ -327,11 +334,11 @@ class _AddEditWorkplaceSheetState extends State<AddEditWorkplaceSheet> {
                             ),
                             backgroundColor: isSelected
                                 ? const Color(0xFF1E1E26)
-                                : const Color(0xFF101014),
+                                : surfaceField,
                             side: BorderSide(
                               color: isSelected
                                   ? const Color(0xFF2C2C38)
-                                  : const Color(0xFF1E1E24),
+                                  : surfaceBorder,
                             ),
                             padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
                             onPressed: () {
@@ -352,8 +359,8 @@ class _AddEditWorkplaceSheetState extends State<AddEditWorkplaceSheet> {
                     scrollPadding: const EdgeInsets.only(bottom: 120),
                     keyboardType: const TextInputType.numberWithOptions(decimal: true),
                     textInputAction: TextInputAction.next,
-                    style: const TextStyle(
-                      color: AppColors.textPrimary,
+                    style: TextStyle(
+                      color: textWhite,
                       fontWeight: FontWeight.bold,
                       fontSize: 14.5,
                     ),
@@ -381,15 +388,15 @@ class _AddEditWorkplaceSheetState extends State<AddEditWorkplaceSheet> {
                     Container(
                       height: 52,
                       decoration: BoxDecoration(
-                        color: AppColors.surfaceCard,
+                        color: surfaceField,
                         borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: AppColors.surfaceCardBorder),
+                        border: Border.all(color: surfaceBorder),
                       ),
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       alignment: Alignment.centerRight,
-                      child: const Row(
+                      child: Row(
                         children: [
-                          SizedBox(
+                          const SizedBox(
                             width: 16,
                             height: 16,
                             child: CircularProgressIndicator(
@@ -397,10 +404,10 @@ class _AddEditWorkplaceSheetState extends State<AddEditWorkplaceSheet> {
                               color: AppColors.spendoGreen,
                             ),
                           ),
-                          SizedBox(width: 12),
+                          const SizedBox(width: 12),
                           Text(
                             'جاري تحميل قائمة المشغلين...',
-                            style: TextStyle(color: AppColors.textMuted, fontSize: 13),
+                            style: TextStyle(color: textMuted, fontSize: 13),
                           ),
                         ],
                       ),
@@ -409,8 +416,8 @@ class _AddEditWorkplaceSheetState extends State<AddEditWorkplaceSheet> {
                     DropdownButtonFormField<PersonModel?>(
                       key: ValueKey(_selectedContractor?.id ?? 'none'),
                       initialValue: _selectedContractor,
-                      dropdownColor: AppColors.surfaceElevated,
-                      style: const TextStyle(color: AppColors.textPrimary, fontSize: 14),
+                      dropdownColor: surfaceMain,
+                      style: TextStyle(color: textWhite, fontSize: 14),
                       decoration: _inputDecoration(
                         label: 'المشغل / المقاول المسؤول',
                         icon: Icons.engineering_outlined,
@@ -418,11 +425,11 @@ class _AddEditWorkplaceSheetState extends State<AddEditWorkplaceSheet> {
                       ),
                       icon: const Icon(Icons.arrow_drop_down_rounded, color: AppColors.iconMuted),
                       items: [
-                        const DropdownMenuItem<PersonModel?>(
+                        DropdownMenuItem<PersonModel?>(
                           value: null,
                           child: Text(
                             'بدون تحديد (اختياري)',
-                            style: TextStyle(color: AppColors.textMuted, fontSize: 13.5),
+                            style: TextStyle(color: textMuted, fontSize: 13.5),
                           ),
                         ),
                         ..._peopleList.map((person) {
@@ -445,8 +452,8 @@ class _AddEditWorkplaceSheetState extends State<AddEditWorkplaceSheet> {
                                 const SizedBox(width: 8),
                                 Text(
                                   person.name,
-                                  style: const TextStyle(
-                                    color: AppColors.textPrimary,
+                                  style: TextStyle(
+                                    color: textWhite,
                                     fontSize: 13.5,
                                   ),
                                 ),
@@ -467,16 +474,16 @@ class _AddEditWorkplaceSheetState extends State<AddEditWorkplaceSheet> {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF1A1A1F),
+                      color: surfaceField,
                       borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: const Color(0xFF272730)),
+                      border: Border.all(color: surfaceBorder),
                     ),
                     child: Row(
                       children: [
-                        const Text(
+                        Text(
                           'حالة العمل مع المشغّل',
                           style: TextStyle(
-                            color: AppColors.textSecondary,
+                            color: textWhite,
                             fontSize: 11.5,
                             fontWeight: FontWeight.w600,
                           ),
@@ -489,7 +496,7 @@ class _AddEditWorkplaceSheetState extends State<AddEditWorkplaceSheet> {
                             decoration: BoxDecoration(
                               color: _status == 'active'
                                   ? AppColors.spendoGreen.withValues(alpha: 0.15)
-                                  : const Color(0xFF131518),
+                                  : surfaceField,
                               borderRadius: BorderRadius.circular(6),
                               border: Border.all(
                                 color: _status == 'active'
@@ -531,7 +538,7 @@ class _AddEditWorkplaceSheetState extends State<AddEditWorkplaceSheet> {
                             decoration: BoxDecoration(
                               color: _status == 'completed'
                                   ? Colors.white.withValues(alpha: 0.1)
-                                  : const Color(0xFF131518),
+                                  : surfaceField,
                               borderRadius: BorderRadius.circular(6),
                               border: Border.all(
                                 color: _status == 'completed'
@@ -545,9 +552,9 @@ class _AddEditWorkplaceSheetState extends State<AddEditWorkplaceSheet> {
                                 Container(
                                   width: 5,
                                   height: 5,
-                                  decoration: const BoxDecoration(
+                                  decoration: BoxDecoration(
                                     shape: BoxShape.circle,
-                                    color: AppColors.textSecondary,
+                                    color: textWhite,
                                   ),
                                 ),
                                 const SizedBox(width: 5),
@@ -576,7 +583,7 @@ class _AddEditWorkplaceSheetState extends State<AddEditWorkplaceSheet> {
                     scrollPadding: const EdgeInsets.only(bottom: 120),
                     maxLines: 3,
                     textInputAction: TextInputAction.newline,
-                    style: const TextStyle(color: AppColors.textPrimary, fontSize: 14),
+                    style: TextStyle(color: textWhite, fontSize: 14),
                     decoration: _inputDecoration(
                       label: 'ملاحظات',
                       icon: Icons.edit_note_rounded,
@@ -633,33 +640,33 @@ class _AddEditWorkplaceSheetState extends State<AddEditWorkplaceSheet> {
   }) {
     return InputDecoration(
       labelText: label,
-      labelStyle: const TextStyle(color: Color(0xFF71717A), fontSize: 13),
+      labelStyle: TextStyle(color: textMuted, fontSize: 13),
       hintText: hint,
-      hintStyle: const TextStyle(
-        color: Color(0xFF52525B),
+      hintStyle: TextStyle(
+        color: textMuted,
         fontSize: 12,
       ),
       suffixText: suffixText,
-      suffixStyle: const TextStyle(
-        color: Color(0xFFA1A1AA),
+      suffixStyle: TextStyle(
+        color: textMuted,
         fontSize: 12,
         fontWeight: FontWeight.w600,
       ),
-      prefixIcon: Icon(icon, color: const Color(0xFF71717A), size: 19),
+      prefixIcon: Icon(icon, color: textMuted, size: 19),
       filled: true,
-      fillColor: const Color(0xFF101014),
+      fillColor: surfaceField,
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
-        borderSide: const BorderSide(color: Color(0xFF202026)),
+        borderSide: BorderSide(color: surfaceBorder),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
-        borderSide: const BorderSide(color: Color(0xFF202026)),
+        borderSide: BorderSide(color: surfaceBorder),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
-        borderSide: const BorderSide(color: Color(0xFF2C2C38), width: 1.5),
+        borderSide: BorderSide(color: surfaceBorder, width: 1.5),
       ),
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),

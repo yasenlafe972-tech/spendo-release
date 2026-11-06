@@ -39,6 +39,7 @@ class _RecordRepaymentSheetState extends State<RecordRepaymentSheet> {
   static const Color brandGreen = Color(0xFF00A86B);
   static const Color brandYellow = Color(0xFFEAB308);
   static Color get textWhite => _isDark ? Colors.white : const Color(0xFF111827);
+  static Color get textMuted => _isDark ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280);
 
   static const List<Map<String, dynamic>> _methods = [
     {'key': 'bit', 'title': 'تطبيق Bit', 'icon': Remix.smartphone_line, 'color': brandYellow},
@@ -403,7 +404,7 @@ class _RecordRepaymentSheetState extends State<RecordRepaymentSheet> {
                                         m['title'] as String,
                                         style: TextStyle(
                                           fontFamily: 'Cairo',
-                                          color: isSelected ? Colors.white : const Color(0xFF9CA3AF),
+                                          color: isSelected ? textWhite : textMuted,
                                           fontSize: 10,
                                           fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
                                         ),
