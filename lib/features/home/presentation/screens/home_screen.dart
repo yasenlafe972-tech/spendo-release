@@ -399,15 +399,12 @@ class _HomeScreenState extends State<HomeScreen> {
 
     if (_selectedLogsFilter == 'all' || _selectedLogsFilter == 'fuel') {
       for (final f in _filteredFuelRecords) {
-        final invTag = (f.invoiceNumber != null && f.invoiceNumber!.isNotEmpty)
-            ? ' • #${f.invoiceNumber}'
-            : '';
         items.add(_TimelineItem(
           category: 'fuel',
           date: f.date,
           title: f.title.isNotEmpty ? f.title : 'تعبئة وقود • Yellow פז',
           subtitle:
-              '${ArabicDateHelper.getRelativeDayDescription(f.date)} • وقود المركبة$invTag',
+              '${ArabicDateHelper.getRelativeDayDescription(f.date)} • وقود المركبة',
           amount: f.amount,
           fuelRecord: f,
         ));
@@ -434,16 +431,13 @@ class _HomeScreenState extends State<HomeScreen> {
       if (_selectedLogsFilter != 'all' && _selectedLogsFilter != categoryKey) {
         continue;
       }
-      final invTag = (m.invoiceNumber != null && m.invoiceNumber!.isNotEmpty)
-          ? ' • #${m.invoiceNumber}'
-          : '';
       items.add(_TimelineItem(
         category: categoryKey,
         date: m.date,
         title: m.title.isNotEmpty ? m.title : (isStore ? 'Yellow חנות נוחות' : 'صيانة مركبة'),
         subtitle: isStore
-            ? '${ArabicDateHelper.getRelativeDayDescription(m.date)} • مشتريات Yellow$invTag'
-            : '${ArabicDateHelper.getRelativeDayDescription(m.date)} • صيانة المركبة$invTag',
+            ? '${ArabicDateHelper.getRelativeDayDescription(m.date)} • مشتريات Yellow'
+            : '${ArabicDateHelper.getRelativeDayDescription(m.date)} • صيانة المركبة',
         amount: m.amount,
         fuelRecord: m,
       ));

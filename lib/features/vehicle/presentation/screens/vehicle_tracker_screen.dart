@@ -1870,8 +1870,8 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                                 const SizedBox(height: 2),
                                 Text(
                                   isFuel
-                                      ? '${item.date.day}/${item.date.month}/${item.date.year}${item.invoiceNumber != null && item.invoiceNumber!.isNotEmpty ? ' • #${item.invoiceNumber}' : ''}${item.provider != null && item.provider!.isNotEmpty ? ' • ${item.provider}' : ''}${item.liters != null && item.liters! > 0 ? ' • ${item.liters!.toStringAsFixed(2)} ליטר' : ''}'
-                                      : '${item.date.day}/${item.date.month}/${item.date.year}${item.invoiceNumber != null && item.invoiceNumber!.isNotEmpty ? ' • #${item.invoiceNumber}' : ''} • ${_formatNumber(item.odometer)} ק"מ',
+                                      ? '${item.date.day}/${item.date.month}/${item.date.year}${item.provider != null && item.provider!.isNotEmpty ? ' • ${item.provider}' : ''}${item.liters != null && item.liters! > 0 ? ' • ${item.liters!.toStringAsFixed(2)} ליטר' : ''}'
+                                      : '${item.date.day}/${item.date.month}/${item.date.year}${item.odometer > 0 ? ' • ${_formatNumber(item.odometer)} ק"מ' : ''}',
                                   textDirection: TextDirection.rtl,
                                   style: const TextStyle(
                                     fontSize: 9,
