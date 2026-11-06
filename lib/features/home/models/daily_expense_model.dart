@@ -8,6 +8,7 @@ class DailyExpenseModel {
   final String source; // 'apple_pay', 'cal_card'
   final DateTime date;
   final String? notes;
+  final String? location;
 
   const DailyExpenseModel({
     required this.id,
@@ -17,6 +18,7 @@ class DailyExpenseModel {
     this.source = 'apple_pay',
     required this.date,
     this.notes,
+    this.location,
   });
 
   DailyExpenseModel copyWith({
@@ -27,6 +29,7 @@ class DailyExpenseModel {
     String? source,
     DateTime? date,
     String? notes,
+    String? location,
   }) {
     return DailyExpenseModel(
       id: id ?? this.id,
@@ -36,6 +39,7 @@ class DailyExpenseModel {
       source: source ?? this.source,
       date: date ?? this.date,
       notes: notes ?? this.notes,
+      location: location ?? this.location,
     );
   }
 
@@ -69,6 +73,7 @@ class DailyExpenseModel {
         'source': source,
         'date': date.toIso8601String(),
         'notes': notes,
+        'location': location,
       };
 
   factory DailyExpenseModel.fromMap(Map<String, dynamic> map) {
@@ -80,6 +85,7 @@ class DailyExpenseModel {
       source: map['source'] as String? ?? 'apple_pay',
       date: DateTime.tryParse(map['date'] as String? ?? '') ?? DateTime.now(),
       notes: map['notes'] as String?,
+      location: map['location'] as String?,
     );
   }
 }

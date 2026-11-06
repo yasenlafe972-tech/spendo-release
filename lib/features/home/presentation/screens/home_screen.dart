@@ -938,7 +938,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     onTap: () {
                       SpendoHaptics.light();
                       if (item.dailyExpense != null) {
-                        _showMerchantCategorySheet(item.dailyExpense!);
+                        _showExpenseDetailsSheet(item.dailyExpense!);
                       } else if (item.fuelRecord != null) {
                         _showFuelDetailsModal(item.fuelRecord!);
                       }
@@ -1358,13 +1358,16 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  /// نافذة سريعة عند الضغط على أي حركة في "آخر السجلات" لتغيير صنف المحل وحفظه للأبد
-  void _showMerchantCategorySheet(DailyExpenseModel expense) {
+  /// نافذة تفاصيل العملية (المبلغ، التاريخ، الساعة، وسيلة الدفع، والموقع)
+  void _showExpenseDetailsSheet(DailyExpenseModel expense) {
+    final timeStr =
+        '${expense.date.hour.toString().padLeft(2, '0')}:${expense.date.minute.toString().padLeft(2, '0')}';
+
     showModalBottomSheet(
       context: context,
       backgroundColor: surfaceMain,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (ctx) {
         final media = MediaQuery.of(ctx);
@@ -1380,12 +1383,12 @@ class _HomeScreenState extends State<HomeScreen> {
             bottom: true,
             child: Padding(
               padding: EdgeInsets.fromLTRB(
-                16,
+                18,
                 12,
-                16,
+                18,
                 bottomInset > 0
                     ? bottomInset + 12
-                    : (bottomPadding > 0 ? bottomPadding + 14 : 22),
+                    : (bottomPadding > 0 ? bottomPadding + 14 : 20),
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -1395,7 +1398,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: Container(
                       width: 36,
                       height: 4,
-                      margin: const EdgeInsets.only(bottom: 12),
+                      margin: const EdgeInsets.only(bottom: 14),
                       decoration: BoxDecoration(
                         color: surfaceBorder,
                         borderRadius: BorderRadius.circular(99),
@@ -1406,27 +1409,13 @@ class _HomeScreenState extends State<HomeScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              expense.merchantName,
-                              style: TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.bold,
-                                color: textWhite,
-                              ),
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              'المبلغ: ${expense.amount.toStringAsFixed(0)} ₪ • ${expense.sourceTitle}',
-                              style: TextStyle(
-                                fontSize: 11.5,
-                                fontWeight: FontWeight.w600,
-                                color: textMuted,
-                              ),
-                            ),
-                          ],
+                        child: Text(
+                          expense.merchantName,
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                            color: textWhite,
+                          ),
                         ),
                       ),
                       IconButton(
@@ -1441,51 +1430,111 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 12),
-                  Text(
-                    'حدد صنف هذا المحل (سيتذكره التطبيق تلقائياً في كل دفعة قادمة):',
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
-                      color: textMuted,
+                  const SizedBox(height: 6),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                    decoration: BoxDecoration(
+                      color: surfaceField,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: surfaceBorder),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'المبلغ:',
+                              style: TextStyle(color: textMuted, fontSize: 11.5),
+                            ),
+                            Text(
+                              '₪${expense.amount.toStringAsFixed(2)}',
+                              style: const TextStyle(
+                                color: brandYellow,
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                        Divider(color: surfaceBorder, height: 16),
+                        Row(
+                          children: [
+                            Icon(Remix.calendar_event_line,
+                                size: 13, color: brandGreen),
+                            const SizedBox(width: 6),
+                            Text(
+                              'التاريخ: ${ArabicDateHelper.formatArabicDateWithWeekday(expense.date)}',
+                              style: TextStyle(color: textMuted, fontSize: 11),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 6),
+                        Row(
+                          children: [
+                            Icon(Remix.time_line,
+                                size: 13, color: brandYellow),
+                            const SizedBox(width: 6),
+                            Text(
+                              'الساعة: $timeStr',
+                              style: TextStyle(color: textMuted, fontSize: 11),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 6),
+                        Row(
+                          children: [
+                            Icon(Remix.wallet_3_line,
+                                size: 13, color: textMuted),
+                            const SizedBox(width: 6),
+                            Text(
+                              'المصدر: ${expense.sourceTitle}',
+                              style: TextStyle(color: textMuted, fontSize: 11),
+                            ),
+                          ],
+                        ),
+                        if (expense.location != null &&
+                            expense.location!.isNotEmpty) ...[
+                          const SizedBox(height: 6),
+                          Row(
+                            children: [
+                              const Icon(Remix.map_pin_2_line,
+                                  size: 13, color: brandRed),
+                              const SizedBox(width: 6),
+                              Expanded(
+                                child: Text(
+                                  'الموقع: ${expense.location}',
+                                  style: TextStyle(color: textMuted, fontSize: 11),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ],
                     ),
                   ),
-                  const SizedBox(height: 10),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _buildCategorySelectButton(
-                          ctx: ctx,
-                          expense: expense,
-                          categoryKey: 'food',
-                          label: 'أكل',
-                          icon: Remix.restaurant_2_line,
-                          color: brandYellow,
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    height: 34,
+                    child: OutlinedButton(
+                      style: OutlinedButton.styleFrom(
+                        visualDensity: VisualDensity.compact,
+                        side: BorderSide(color: surfaceBorder),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
                         ),
                       ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: _buildCategorySelectButton(
-                          ctx: ctx,
-                          expense: expense,
-                          categoryKey: 'shopping',
-                          label: 'مشتريات',
-                          icon: Remix.shopping_bag_3_line,
+                      onPressed: () => Navigator.pop(ctx),
+                      child: Text(
+                        'إغلاق',
+                        style: TextStyle(
                           color: brandGreen,
+                          fontSize: 11.5,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: _buildCategorySelectButton(
-                          ctx: ctx,
-                          expense: expense,
-                          categoryKey: 'fuel',
-                          label: 'وقود',
-                          icon: Remix.gas_station_line,
-                          color: brandYellow,
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
                 ],
               ),
@@ -1493,52 +1542,6 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         );
       },
-    );
-  }
-
-  Widget _buildCategorySelectButton({
-    required BuildContext ctx,
-    required DailyExpenseModel expense,
-    required String categoryKey,
-    required String label,
-    required IconData icon,
-    required Color color,
-  }) {
-    final isCurrent = expense.category == categoryKey;
-    return InkWell(
-      onTap: () async {
-        SpendoHaptics.success();
-        await DailyExpenseService.updateExpenseCategory(
-          expenseId: expense.id,
-          merchantName: expense.merchantName,
-          newCategory: categoryKey,
-        );
-        if (ctx.mounted) Navigator.pop(ctx);
-        _loadData();
-      },
-      borderRadius: BorderRadius.circular(10),
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 10),
-        decoration: BoxDecoration(
-          color: isCurrent ? color.withValues(alpha: 0.16) : surfaceField,
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: isCurrent ? color : surfaceBorder),
-        ),
-        child: Column(
-          children: [
-            Icon(icon, color: color, size: 18),
-            const SizedBox(height: 4),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.bold,
-                color: isCurrent ? (_isDark ? Colors.white : color) : textMuted,
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 

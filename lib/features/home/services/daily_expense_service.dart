@@ -1,3 +1,4 @@
+import '../../../core/services/location_service.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
@@ -18,7 +19,7 @@ class DailyExpenseService {
 
   /// عنوان الرابط المباشر للـ Shortcuts في الآيفون والأندرويد (يقبل كل كروت Apple Pay بدون تحديد كرت)
   static const String shortcutDeepLinkTemplate =
-      'spendo://pay?amount={Amount}&merchant={Merchant}';
+      'spendo://pay?amount={Amount}&merchant={Merchant}&location={Location}';
 
   static bool _listenerInitialized = false;
   static final ValueNotifier<int> expensesChangedNotifier = ValueNotifier<int>(0);
@@ -80,6 +81,17 @@ class DailyExpenseService {
         merchant = params['name']!.trim();
       }
 
+      String? location;
+      if (params.containsKey('location') && params['location']!.trim().isNotEmpty) {
+        location = params['location']!.trim();
+      } else if (params.containsKey('city') && params['city']!.trim().isNotEmpty) {
+        location = params['city']!.trim();
+      } else if (params.containsKey('place') && params['place']!.trim().isNotEmpty) {
+        location = params['place']!.trim();
+      } else if (params.containsKey('address') && params['address']!.trim().isNotEmpty) {
+        location = params['address']!.trim();
+      }
+
       if (amount != null && amount > 0) {
         await addExpense(
           merchantName: (merchant != null && merchant.isNotEmpty)
@@ -87,6 +99,7 @@ class DailyExpenseService {
               : 'دفعة Apple Pay',
           amount: amount,
           source: source,
+          location: location,
         );
         expensesChangedNotifier.value++;
         return true;
@@ -135,6 +148,11 @@ class DailyExpenseService {
             merchant = val['merchant'].toString().trim();
           }
 
+          String? location = val['location']?.toString() ??
+              val['city']?.toString() ??
+              val['address']?.toString() ??
+              val['place']?.toString();
+
           if (amount != null && amount > 0) {
             await addExpense(
               merchantName: (merchant != null && merchant.isNotEmpty)
@@ -142,6 +160,7 @@ class DailyExpenseService {
                   : 'دفعة Apple Pay',
               amount: amount,
               source: source,
+              location: location,
             );
             importedCount++;
           }
@@ -199,7 +218,7 @@ class DailyExpenseService {
     await prefs.setString(_expensesKey, encoded);
   }
 
-  /// إضافة دفعة جديدة مع التعرف الذكي على الصنف حسب اسم المحل
+  /// إضافة دفعة جديدة مع التعرف الذكي على الصنف وحفظ الموقع الجغرافي تلقائياً
   static Future<DailyExpenseModel> addExpense({
     required String merchantName,
     required double amount,
@@ -207,9 +226,23 @@ class DailyExpenseService {
     String source = 'apple_pay',
     DateTime? date,
     String? notes,
+    String? location,
   }) async {
     final cleanMerchant = merchantName.trim();
     final targetDate = date ?? DateTime.now();
+
+    String? resolvedLocation = location;
+    if (resolvedLocation == null || resolvedLocation.isEmpty) {
+      try {
+        final locRes = await LocationService.instance
+            .getCurrentLocation()
+            .timeout(const Duration(seconds: 3), onTimeout: () => null);
+        if (locRes != null) {
+          resolvedLocation = locRes.address ??
+              '${locRes.latitude.toStringAsFixed(4)}, ${locRes.longitude.toStringAsFixed(4)}';
+        }
+      } catch (_) {}
+    }
 
     final current = await getAllExpenses();
     final existingIdx = current.indexWhere((e) =>
@@ -234,6 +267,7 @@ class DailyExpenseService {
       source: source,
       date: targetDate,
       notes: notes,
+      location: resolvedLocation,
     );
 
     current.insert(0, newItem);
