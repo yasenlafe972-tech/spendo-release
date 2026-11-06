@@ -7,18 +7,39 @@ import Vision
 @objc class AppDelegate: FlutterAppDelegate {
   static var sharedChannel: FlutterMethodChannel?
   static var initialSharedFilePath: String?
+  static var deepLinkChannel: FlutterMethodChannel?
+  static var initialDeepLink: String?
 
   override func application(
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
     if let url = launchOptions?[.url] as? URL {
-      Self.handleIncomingFileURL(url, notifyImmediately: false)
+      if url.scheme == "spendo" {
+        Self.initialDeepLink = url.absoluteString
+      } else {
+        Self.handleIncomingFileURL(url, notifyImmediately: false)
+      }
     }
 
     GeneratedPluginRegistrant.register(with: self)
 
     if let controller = window?.rootViewController as? FlutterViewController {
+      let deepLinkChannel = FlutterMethodChannel(
+        name: "com.finance.spendo/deeplink",
+        binaryMessenger: controller.binaryMessenger
+      )
+      deepLinkChannel.setMethodCallHandler { call, result in
+        if call.method == "getInitialLink" {
+          let link = Self.initialDeepLink
+          Self.initialDeepLink = nil
+          result(link)
+        } else {
+          result(FlutterMethodNotImplemented)
+        }
+      }
+      Self.deepLinkChannel = deepLinkChannel
+
       let shareChannel = FlutterMethodChannel(
         name: "com.finance.spendo/share",
         binaryMessenger: controller.binaryMessenger
@@ -70,6 +91,12 @@ import Vision
     open url: URL,
     options: [UIApplication.OpenURLOptionsKey: Any] = [:]
   ) -> Bool {
+    if url.scheme == "spendo" {
+      let link = url.absoluteString
+      Self.initialDeepLink = link
+      Self.deepLinkChannel?.invokeMethod("onDeepLink", arguments: link)
+      return true
+    }
     if Self.handleIncomingFileURL(url, notifyImmediately: true) {
       return true
     }
