@@ -113,6 +113,8 @@ void main() async {
     debugPrint('DatabaseHelper initialization notice: $e');
   }
 
+  await AppTheme.initThemeMode();
+
   final bool isLoggedIn = await AuthLinkService.isAccountLoggedIn();
 
   runApp(SanadApp(initialRouteIsLoggedIn: isLoggedIn));
@@ -128,35 +130,42 @@ class SanadApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Spendo - سبيندو',
-      debugShowCheckedModeBanner: false,
-      theme: AppTheme.darkTheme,
-      // Arabic RTL support by default for natural directionality
-      builder: (context, child) {
-        final isIOS = defaultTargetPlatform == TargetPlatform.iOS;
-        if (isIOS) {
-          final mediaQuery = MediaQuery.of(context);
-          return MediaQuery(
-            data: mediaQuery.copyWith(
-              textScaler: mediaQuery.textScaler.clamp(minScaleFactor: 1.0, maxScaleFactor: 1.10),
-            ),
-            child: Directionality(
+    return ValueListenableBuilder<ThemeMode>(
+      valueListenable: AppTheme.themeModeNotifier,
+      builder: (context, currentMode, _) {
+        return MaterialApp(
+          title: 'Spendo - سبيندو',
+          debugShowCheckedModeBanner: false,
+          theme: AppTheme.lightTheme,
+          darkTheme: AppTheme.darkTheme,
+          themeMode: currentMode,
+          // Arabic RTL support by default for natural directionality
+          builder: (context, child) {
+            final isIOS = defaultTargetPlatform == TargetPlatform.iOS;
+            if (isIOS) {
+              final mediaQuery = MediaQuery.of(context);
+              return MediaQuery(
+                data: mediaQuery.copyWith(
+                  textScaler: mediaQuery.textScaler.clamp(minScaleFactor: 1.0, maxScaleFactor: 1.10),
+                ),
+                child: Directionality(
+                  textDirection: TextDirection.rtl,
+                  child: child ?? const SizedBox.shrink(),
+                ),
+              );
+            }
+
+            // On Android / other platforms: strictly natural 100% scale without any override
+            return Directionality(
               textDirection: TextDirection.rtl,
               child: child ?? const SizedBox.shrink(),
-            ),
-          );
-        }
-
-        // On Android / other platforms: strictly natural 100% scale without any override
-        return Directionality(
-          textDirection: TextDirection.rtl,
-          child: child ?? const SizedBox.shrink(),
+            );
+          },
+          home: initialRouteIsLoggedIn
+              ? const MainNavigationScreen()
+              : const AuthScreen(),
         );
       },
-      home: initialRouteIsLoggedIn
-          ? const MainNavigationScreen()
-          : const AuthScreen(),
     );
   }
 }

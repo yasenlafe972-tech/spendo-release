@@ -16,6 +16,7 @@ import '../../../settings/presentation/screens/app_settings_screen.dart';
 import '../../models/daily_expense_model.dart';
 import '../../../../core/database/database_helper.dart';
 import '../../../../core/services/firebase_backup_service.dart';
+import '../../../../core/theme/app_theme.dart';
 
 /// Spendo Central Executive Dashboard.
 class HomeScreen extends StatefulWidget {
@@ -46,16 +47,20 @@ class _HomeScreenState extends State<HomeScreen> {
   late String _selectedMonthKey; // e.g. '2026-10' or 'all'
   String _selectedLogsFilter = 'all'; // 'all', 'food', 'shopping', 'fuel'
 
-  // Design tokens (Revolut 10 eye-friendly FinTech palette)
-  static const Color surfaceMain = Color(0xFF0A0A0C);
-  static const Color surfaceField = Color(0xFF121215);
-  static const Color surfaceElevated = Color(0xFF16161A);
-  static const Color surfaceBorder = Color(0xFF1E1E24);
+  bool get _isDark => Theme.of(context).brightness == Brightness.dark;
+
+  // Static brand accents
   static const Color brandGreen = Color(0xFF10B981);
   static const Color brandYellow = Color(0xFFF59E0B);
   static const Color brandRed = Color(0xFFEF4444);
-  static const Color textWhite = Color(0xFFFFFFFF);
-  static const Color textMuted = Color(0xFF71717A);
+
+  // Dynamic surface & text tokens based on active theme
+  Color get surfaceMain => _isDark ? const Color(0xFF0A0A0C) : const Color(0xFFF8F9FA);
+  Color get surfaceField => _isDark ? const Color(0xFF121215) : const Color(0xFFFFFFFF);
+  Color get surfaceElevated => _isDark ? const Color(0xFF16161A) : const Color(0xFFF1F3F5);
+  Color get surfaceBorder => _isDark ? const Color(0xFF1E1E24) : const Color(0xFFE5E7EB);
+  Color get textWhite => _isDark ? const Color(0xFFFFFFFF) : const Color(0xFF111827);
+  Color get textMuted => _isDark ? const Color(0xFF71717A) : const Color(0xFF6B7280);
 
   @override
   void initState() {
@@ -321,12 +326,12 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       ),
                     ),
-                    const Text(
+                    Text(
                       'اختر فترة العرض',
                       style: TextStyle(
                         fontSize: 14.5,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                        color: textWhite,
                       ),
                     ),
                     const SizedBox(height: 10),
@@ -340,9 +345,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       tileColor: _selectedMonthKey == 'all'
                           ? brandGreen.withValues(alpha: 0.15)
                           : surfaceField,
-                      title: const Text('كافة الفترات',
+                      title: Text('كافة الفترات',
                           style: TextStyle(
-                              color: Colors.white,
+                              color: textWhite,
                               fontSize: 13,
                               fontWeight: FontWeight.w700)),
                       trailing: _selectedMonthKey == 'all'
@@ -373,8 +378,8 @@ class _HomeScreenState extends State<HomeScreen> {
                               ? brandGreen.withValues(alpha: 0.15)
                               : surfaceField,
                           title: Text(label,
-                              style: const TextStyle(
-                                  color: Colors.white,
+                              style: TextStyle(
+                                  color: textWhite,
                                   fontSize: 13,
                                   fontWeight: FontWeight.w700)),
                           trailing: isSelected
@@ -509,7 +514,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           height: 3.5,
                           margin: const EdgeInsets.only(bottom: 12),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF404040),
+                            color: _isDark ? const Color(0xFF404040) : const Color(0xFFD1D5DB),
                             borderRadius: BorderRadius.circular(99),
                           ),
                         ),
@@ -547,36 +552,58 @@ class _HomeScreenState extends State<HomeScreen> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Row(
-              children: [
-                Icon(Remix.dashboard_line, color: brandGreen, size: 18),
-                SizedBox(width: 6),
-                Text(
-                  'لوحة التحكم',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  const Icon(Remix.dashboard_line, color: brandGreen, size: 18),
+                  const SizedBox(width: 6),
+                  Text(
+                    'لوحة التحكم',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: textWhite,
+                    ),
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 2),
-            Text(
-              'أهلاً $userName • ملخص العمل والمصاريف',
-              style: const TextStyle(
-                fontSize: 11,
-                color: textMuted,
+                ],
               ),
-            ),
-          ],
+              const SizedBox(height: 2),
+              Text(
+                'أهلاً $userName • ملخص العمل والمصاريف',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 11,
+                  color: textMuted,
+                ),
+              ),
+            ],
+          ),
         ),
+        const SizedBox(width: 6),
 
         Row(
+          mainAxisSize: MainAxisSize.min,
           children: [
+            IconButton(
+              icon: Icon(
+                _isDark ? Remix.sun_line : Remix.moon_line,
+                color: textWhite,
+                size: 18,
+              ),
+              tooltip: _isDark ? 'الوضع النهاري' : 'الوضع الليلي',
+              visualDensity: VisualDensity.compact,
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+              onPressed: () {
+                SpendoHaptics.light();
+                AppTheme.toggleTheme();
+              },
+            ),
+            const SizedBox(width: 4),
             GestureDetector(
               onTap: _showMonthPickerSheet,
               child: Container(
@@ -588,19 +615,19 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 child: Row(
                   children: [
-                    const Icon(Remix.calendar_2_line,
+                    Icon(Remix.calendar_2_line,
                         size: 11.5, color: brandYellow),
                     const SizedBox(width: 5),
                     Text(
                       _getMonthLabel(),
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                        color: textWhite,
                       ),
                     ),
                     const SizedBox(width: 3),
-                    const Icon(Remix.arrow_down_s_line,
+                    Icon(Remix.arrow_down_s_line,
                         size: 13, color: textMuted),
                   ],
                 ),
@@ -608,7 +635,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             const SizedBox(width: 6),
             IconButton(
-              icon: const Icon(Remix.settings_4_line,
+              icon: Icon(Remix.settings_4_line,
                   color: textWhite, size: 18),
               tooltip: 'الإعدادات',
               visualDensity: VisualDensity.compact,
@@ -643,10 +670,10 @@ class _HomeScreenState extends State<HomeScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Row(
+              Row(
                 children: [
-                  Icon(Remix.wallet_3_line, size: 14, color: brandGreen),
-                  SizedBox(width: 6),
+                  const Icon(Remix.wallet_3_line, size: 14, color: brandGreen),
+                  const SizedBox(width: 6),
                   Text(
                     'صافي الدخل الشهري',
                     style: TextStyle(
@@ -682,12 +709,12 @@ class _HomeScreenState extends State<HomeScreen> {
             children: [
               Text(
                 _formatAmount(_netMonthlyIncome),
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.w800,
-                  color: Colors.white,
+                  color: textWhite,
                   letterSpacing: -0.5,
-                  fontFeatures: [FontFeature.tabularFigures()],
+                  fontFeatures: const [FontFeature.tabularFigures()],
                 ),
               ),
               const SizedBox(width: 6),
@@ -705,7 +732,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
           Container(
             padding: const EdgeInsets.only(top: 10),
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               border: Border(top: BorderSide(color: surfaceBorder)),
             ),
             child: Row(
@@ -727,18 +754,18 @@ class _HomeScreenState extends State<HomeScreen> {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
+                          Text(
                             'إجمالي العمل',
                             style: TextStyle(fontSize: 10, color: textMuted),
                           ),
                           const SizedBox(height: 2),
                           Text(
                             '${_formatAmount(_totalWorkIncome)} ₪',
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 12.5,
                               fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                              fontFeatures: [FontFeature.tabularFigures()],
+                              color: textWhite,
+                              fontFeatures: const [FontFeature.tabularFigures()],
                             ),
                           ),
                         ],
@@ -771,18 +798,18 @@ class _HomeScreenState extends State<HomeScreen> {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
+                          Text(
                             'المصاريف والوقود',
                             style: TextStyle(fontSize: 10, color: textMuted),
                           ),
                           const SizedBox(height: 2),
                           Text(
                             '${_formatAmount(_totalAllExpenses)} ₪',
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 12.5,
                               fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                              fontFeatures: [FontFeature.tabularFigures()],
+                              color: textWhite,
+                              fontFeatures: const [FontFeature.tabularFigures()],
                             ),
                           ),
                         ],
@@ -871,7 +898,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   title,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 10,
                     color: textMuted,
                     height: 1.1,
@@ -882,12 +909,12 @@ class _HomeScreenState extends State<HomeScreen> {
                   value,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: textWhite,
                     height: 1.15,
-                    fontFeatures: [FontFeature.tabularFigures()],
+                    fontFeatures: const [FontFeature.tabularFigures()],
                   ),
                 ),
               ],
@@ -971,18 +998,18 @@ class _HomeScreenState extends State<HomeScreen> {
                   border: Border.all(color: surfaceBorder),
                 ),
                 alignment: Alignment.center,
-                child: const Row(
+                child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Remix.gas_station_line,
+                    const Icon(Remix.gas_station_line,
                         size: 16, color: brandYellow),
-                    SizedBox(width: 7),
+                    const SizedBox(width: 7),
                     Text(
                       'تعبئة وقود',
                       style: TextStyle(
                         fontSize: 12.5,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                        color: textWhite,
                       ),
                     ),
                   ],
@@ -1016,12 +1043,12 @@ class _HomeScreenState extends State<HomeScreen> {
                 children: [
                   const Icon(Remix.history_line, size: 15, color: brandGreen),
                   const SizedBox(width: 5),
-                  const Text(
+                  Text(
                     'آخر السجلات',
                     style: TextStyle(
                       fontSize: 12.5,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                      color: textWhite,
                     ),
                   ),
                   const SizedBox(width: 6),
@@ -1035,11 +1062,11 @@ class _HomeScreenState extends State<HomeScreen> {
                         borderRadius: BorderRadius.circular(6),
                         border: Border.all(color: surfaceBorder),
                       ),
-                      child: const Row(
+                      child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Remix.apple_line, size: 11, color: Colors.white),
-                          SizedBox(width: 3),
+                          Icon(Remix.apple_line, size: 11, color: textWhite),
+                          const SizedBox(width: 3),
                           Text(
                             'تلقائي',
                             style: TextStyle(
@@ -1070,7 +1097,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ],
           ),
           const SizedBox(height: 8),
-          const Divider(color: surfaceBorder, height: 1),
+          Divider(color: surfaceBorder, height: 1),
 
           if (timelineItems.isEmpty)
             Padding(
@@ -1081,12 +1108,12 @@ class _HomeScreenState extends State<HomeScreen> {
                     Icon(Remix.bank_card_2_line,
                         size: 24, color: textMuted.withValues(alpha: 0.5)),
                     const SizedBox(height: 6),
-                    const Text(
+                    Text(
                       'لا توجد دفعات مسجلة في هذا التصنيف',
                       style: TextStyle(fontSize: 11, color: textMuted),
                     ),
                     const SizedBox(height: 2),
-                    const Text(
+                    Text(
                       'اضغط على أي سجل لتحديد صنف المحل (أكل / مشتريات / وقود) وسيحفظه التطبيق تلقائياً',
                       textAlign: TextAlign.center,
                       style: TextStyle(fontSize: 9.5, color: textMuted),
@@ -1167,10 +1194,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                         item.title,
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
-                                        style: const TextStyle(
+                                        style: TextStyle(
                                           fontSize: 12,
                                           fontWeight: FontWeight.bold,
-                                          color: Colors.white,
+                                          color: textWhite,
                                         ),
                                       ),
                                       const SizedBox(height: 2),
@@ -1178,7 +1205,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                         item.subtitle,
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
-                                        style: const TextStyle(
+                                        style: TextStyle(
                                           fontSize: 9.5,
                                           color: textMuted,
                                         ),
@@ -1203,7 +1230,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ),
                               ),
                               const SizedBox(width: 4),
-                              const Icon(
+                              Icon(
                                 Remix.equalizer_line,
                                 size: 12,
                                 color: textMuted,
@@ -1281,7 +1308,9 @@ class _HomeScreenState extends State<HomeScreen> {
           style: TextStyle(
             fontSize: 10,
             fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
-            color: isSelected ? Colors.white : textMuted,
+            color: isSelected
+                ? (_isDark ? Colors.white : const Color(0xFF047857))
+                : textMuted,
           ),
         ),
       ),
@@ -1326,10 +1355,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Row(
+                      Row(
                         children: [
-                          Icon(Remix.apple_line, color: Colors.white, size: 19),
-                          SizedBox(width: 8),
+                          Icon(Remix.apple_line, color: textWhite, size: 19),
+                          const SizedBox(width: 8),
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -1338,7 +1367,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 style: TextStyle(
                                   fontSize: 13,
                                   fontWeight: FontWeight.bold,
-                                  color: Colors.white,
+                                  color: textWhite,
                                 ),
                               ),
                               Text(
@@ -1354,13 +1383,13 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                       InkWell(
                         onTap: () => Navigator.pop(ctx),
-                        child: const Icon(Remix.close_line,
+                        child: Icon(Remix.close_line,
                             color: textMuted, size: 19),
                       ),
                     ],
                   ),
                   const SizedBox(height: 10),
-                  const Divider(color: surfaceBorder, height: 1),
+                  Divider(color: surfaceBorder, height: 1),
                   const SizedBox(height: 10),
 
                   // شرح مبسط لطريقة العمل
@@ -1371,10 +1400,10 @@ class _HomeScreenState extends State<HomeScreen> {
                       borderRadius: BorderRadius.circular(10),
                       border: Border.all(color: surfaceBorder),
                     ),
-                    child: const Column(
+                    child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
+                        const Text(
                           'كيف يعمل تلقائياً مع كل كروتك؟',
                           style: TextStyle(
                             fontSize: 11,
@@ -1382,7 +1411,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             color: brandGreen,
                           ),
                         ),
-                        SizedBox(height: 4),
+                        const SizedBox(height: 4),
                         Text(
                           '1. في تطبيق Shortcuts بالآيفون: اختر Automation ثم Transaction وحدد جميع بطاقاتك دفعة واحدة.\n'
                           '2. يرسل الاختصار (المبلغ + اسم المحل) للتطبيق مباشرة دون الحاجة لتحديد نوع الكرت.\n'
@@ -1404,8 +1433,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       Expanded(
                         child: OutlinedButton.icon(
                           style: OutlinedButton.styleFrom(
-                            foregroundColor: Colors.white,
-                            side: const BorderSide(color: surfaceBorder),
+                            foregroundColor: textWhite,
+                            side: BorderSide(color: surfaceBorder),
                             backgroundColor: surfaceField,
                             padding: const EdgeInsets.symmetric(vertical: 9),
                             shape: RoundedRectangleBorder(
@@ -1438,8 +1467,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       Expanded(
                         child: OutlinedButton.icon(
                           style: OutlinedButton.styleFrom(
-                            foregroundColor: Colors.white,
-                            side: const BorderSide(color: surfaceBorder),
+                            foregroundColor: textWhite,
+                            side: BorderSide(color: surfaceBorder),
                             backgroundColor: surfaceField,
                             padding: const EdgeInsets.symmetric(vertical: 9),
                             shape: RoundedRectangleBorder(
@@ -1473,7 +1502,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   const SizedBox(height: 10),
 
                   // تجربة سريعة لوصول دفعة Apple Pay تلقائية
-                  const Text(
+                  Text(
                     'تجربة وصول دفعة Apple Pay تلقائية الآن:',
                     style: TextStyle(fontSize: 10, color: textMuted),
                   ),
@@ -1585,15 +1614,15 @@ class _HomeScreenState extends State<HomeScreen> {
                         children: [
                           Text(
                             expense.merchantName,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.bold,
-                              color: Colors.white,
+                              color: textWhite,
                             ),
                           ),
                           Text(
                             'المبلغ: ${expense.amount.toStringAsFixed(0)} ₪ • ${expense.sourceTitle}',
-                            style: const TextStyle(fontSize: 11, color: textMuted),
+                            style: TextStyle(fontSize: 11, color: textMuted),
                           ),
                         ],
                       ),
@@ -1611,7 +1640,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ],
                 ),
                 const SizedBox(height: 10),
-                const Text(
+                Text(
                   'حدد صنف هذا المحل (سيتذكره التطبيق تلقائياً في كل دفعة قادمة):',
                   style: TextStyle(fontSize: 10.5, color: textMuted),
                 ),
@@ -1697,7 +1726,7 @@ class _HomeScreenState extends State<HomeScreen> {
               style: TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.bold,
-                color: isCurrent ? Colors.white : textMuted,
+                color: isCurrent ? (_isDark ? Colors.white : color) : textMuted,
               ),
             ),
           ],
@@ -1714,8 +1743,8 @@ class _HomeScreenState extends State<HomeScreen> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         title: Text(
           record.title,
-          style: const TextStyle(
-              color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold),
+          style: TextStyle(
+              color: textWhite, fontSize: 14, fontWeight: FontWeight.bold),
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -1729,16 +1758,16 @@ class _HomeScreenState extends State<HomeScreen> {
             const SizedBox(height: 6),
             Text(
                 'التاريخ: ${ArabicDateHelper.formatArabicDateWithWeekday(record.date)}',
-                style: const TextStyle(color: textMuted, fontSize: 11)),
+                style: TextStyle(color: textMuted, fontSize: 11)),
             if (record.provider != null) ...[
               const SizedBox(height: 4),
               Text('المزود: ${record.provider}',
-                  style: const TextStyle(color: textMuted, fontSize: 11)),
+                  style: TextStyle(color: textMuted, fontSize: 11)),
             ],
             if (record.liters != null) ...[
               const SizedBox(height: 4),
               Text('اللترات: ${record.liters} لتر',
-                  style: const TextStyle(color: textMuted, fontSize: 11)),
+                  style: TextStyle(color: textMuted, fontSize: 11)),
             ],
           ],
         ),

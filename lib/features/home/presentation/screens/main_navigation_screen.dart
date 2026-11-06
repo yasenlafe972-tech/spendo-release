@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:remixicon/remixicon.dart';
-import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/spendo_haptic_feedback.dart';
 import '../../../../core/services/firebase_backup_service.dart';
 import 'home_screen.dart';
@@ -131,44 +130,55 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> with Widget
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: IndexedStack(
         index: _currentIndex,
         children: _screens,
       ),
       bottomNavigationBar: SafeArea(
         top: false,
-        child: Container(
-          margin: const EdgeInsets.fromLTRB(10, 0, 10, 8),
-          decoration: BoxDecoration(
-            color: const Color(0xFF121413),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: const Color(0xFF242927), width: 1.0),
-            boxShadow: const [
-              BoxShadow(
-                color: Color(0x66000000),
-                blurRadius: 16,
-                offset: Offset(0, 4),
-              ),
-            ],
-          ),
-          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-          child: Row(
-            children: [
-              _buildNavItem(0, 'الرئيسية', Remix.home_5_line, Remix.home_5_fill),
-              _buildNavItem(1, 'سجل العمل', Remix.briefcase_4_line, Remix.briefcase_4_fill),
-              _buildNavItem(2, 'المركبة', Remix.motorbike_line, Remix.motorbike_fill),
-              _buildNavItem(3, 'الأشخاص', Remix.group_line, Remix.group_fill),
-              _buildNavItem(4, 'المالية', Remix.wallet_3_line, Remix.wallet_3_fill),
-            ],
-          ),
-        ),
+        child: Builder(builder: (context) {
+          final isDark = Theme.of(context).brightness == Brightness.dark;
+          final navBg = isDark ? const Color(0xFF121215) : const Color(0xFFFFFFFF);
+          final navBorder = isDark ? const Color(0xFF1E1E24) : const Color(0xFFE5E7EB);
+          final shadowColor = isDark ? const Color(0x66000000) : const Color(0x12000000);
+
+          return Container(
+            margin: const EdgeInsets.fromLTRB(10, 0, 10, 8),
+            decoration: BoxDecoration(
+              color: navBg,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: navBorder, width: 1.0),
+              boxShadow: [
+                BoxShadow(
+                  color: shadowColor,
+                  blurRadius: 16,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+            child: Row(
+              children: [
+                _buildNavItem(context, 0, 'الرئيسية', Remix.home_5_line, Remix.home_5_fill),
+                _buildNavItem(context, 1, 'سجل العمل', Remix.briefcase_4_line, Remix.briefcase_4_fill),
+                _buildNavItem(context, 2, 'المركبة', Remix.motorbike_line, Remix.motorbike_fill),
+                _buildNavItem(context, 3, 'الأشخاص', Remix.group_line, Remix.group_fill),
+                _buildNavItem(context, 4, 'المالية', Remix.wallet_3_line, Remix.wallet_3_fill),
+              ],
+            ),
+          );
+        }),
       ),
     );
   }
 
-  Widget _buildNavItem(int index, String label, IconData lineIcon, IconData fillIcon) {
+  Widget _buildNavItem(BuildContext context, int index, String label, IconData lineIcon, IconData fillIcon) {
     final isSelected = _currentIndex == index;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final activeColor = const Color(0xFF10B981);
+    final inactiveColor = isDark ? const Color(0xFF71717A) : const Color(0xFF9CA3AF);
+    final activeTextColor = isDark ? Colors.white : const Color(0xFF111827);
 
     return Expanded(
       child: InkWell(
@@ -179,30 +189,30 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> with Widget
           }
         },
         borderRadius: BorderRadius.circular(12),
-        splashColor: const Color(0x1A00A86B),
+        splashColor: const Color(0x1A10B981),
         highlightColor: Colors.transparent,
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 4),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Active top indicator (yellow slim line)
+              // Active top indicator (emerald slim line)
               AnimatedContainer(
                 duration: const Duration(milliseconds: 180),
                 curve: Curves.easeOut,
                 width: 24,
                 height: 2,
                 decoration: BoxDecoration(
-                  color: isSelected ? const Color(0xFFEAB308) : Colors.transparent,
+                  color: isSelected ? activeColor : Colors.transparent,
                   borderRadius: BorderRadius.circular(99),
                 ),
               ),
               const SizedBox(height: 6),
-              // Clean Icon (no capsule / no background)
+              // Clean Icon
               Icon(
                 isSelected ? fillIcon : lineIcon,
                 size: 20,
-                color: isSelected ? const Color(0xFF00A86B) : const Color(0xFF9CA3AF),
+                color: isSelected ? activeColor : inactiveColor,
               ),
               const SizedBox(height: 4),
               // Label
@@ -214,7 +224,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> with Widget
                   fontFamily: 'Cairo',
                   fontSize: 10,
                   fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
-                  color: isSelected ? Colors.white : const Color(0xFF9CA3AF),
+                  color: isSelected ? activeTextColor : inactiveColor,
                   letterSpacing: -0.2,
                   height: 1.1,
                 ),
