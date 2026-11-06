@@ -1,4 +1,4 @@
-import 'dart:io';
+﻿import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -11,6 +11,7 @@ import '../../../../core/utils/spendo_haptic_feedback.dart';
 import '../../../auth/presentation/screens/auth_screen.dart';
 import '../../../people/models/person_model.dart';
 import '../../../people/repositories/people_repository.dart';
+import '../../../../core/theme/app_theme.dart';
 import '../../services/settings_service.dart';
 
 /// AppSettingsScreen (شاشة الإعدادات المدمجة).
@@ -27,15 +28,18 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
   final FirebaseBackupService _backupService = FirebaseBackupService.instance;
   final SettingsService _settingsService = SettingsService.instance;
 
-  // Design color tokens from specifications
-  static const Color surfaceBg = Color(0xFF0C0E0D);
-  static const Color surfaceMain = Color(0xFF121514);
-  static const Color surfaceCell = Color(0xFF161A18);
-  static const Color surfaceBorder = Color(0xFF232927);
-  static const Color brandGreen = Color(0xFF00A86B);
-  static const Color brandYellow = Color(0xFFEAB308);
+  bool get _isDark => Theme.of(context).brightness == Brightness.dark;
+
+  // Design color tokens - adaptive to active Theme
+  Color get surfaceBg => _isDark ? const Color(0xFF0A0A0C) : const Color(0xFFF8F9FA);
+  Color get surfaceMain => _isDark ? const Color(0xFF121215) : const Color(0xFFFFFFFF);
+  Color get surfaceCell => _isDark ? const Color(0xFF16161A) : const Color(0xFFF1F3F5);
+  Color get surfaceBorder => _isDark ? const Color(0xFF1E1E24) : const Color(0xFFE5E7EB);
+  static const Color brandGreen = Color(0xFF10B981);
+  static const Color brandYellow = Color(0xFFF59E0B);
   static const Color brandRed = Color(0xFFEF4444);
-  static const Color textMuted = Color(0xFFA1A1AA);
+  Color get textWhite => _isDark ? const Color(0xFFFFFFFF) : const Color(0xFF111827);
+  Color get textMuted => _isDark ? const Color(0xFF71717A) : const Color(0xFF6B7280);
 
   bool _isLoading = true;
   PersonModel? _userProfile;
@@ -230,9 +234,9 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
       builder: (ctx, child) {
         return Theme(
           data: ThemeData.dark().copyWith(
-            colorScheme: const ColorScheme.dark(
+            colorScheme: ColorScheme.dark(
               primary: brandGreen,
-              onPrimary: Color(0xFF0A0B0D),
+              onPrimary: const Color(0xFF0A0B0D),
               surface: surfaceCell,
               onSurface: Colors.white,
               secondary: brandYellow,
@@ -247,7 +251,7 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
               entryModeIconColor: brandYellow,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
-                side: const BorderSide(color: surfaceBorder),
+                side: BorderSide(color: surfaceBorder),
               ),
               cancelButtonStyle: TextButton.styleFrom(
                 foregroundColor: textMuted,
@@ -316,19 +320,19 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
       backgroundColor: Colors.transparent,
       builder: (ctx) => Container(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 22),
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           color: surfaceMain,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
           border: Border(top: BorderSide(color: surfaceBorder)),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const Text(
+            Text(
               'استعادة البيانات والنسخ الاحتياطي',
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white),
+              style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: textWhite),
             ),
             const SizedBox(height: 18),
             InkWell(
@@ -342,15 +346,15 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                   border: Border.all(color: surfaceBorder),
                 ),
                 child: Row(
-                  children: const [
-                    Icon(Remix.cloud_line, color: brandGreen, size: 20),
-                    SizedBox(width: 12),
+                  children: [
+                    const Icon(Remix.cloud_line, color: brandGreen, size: 20),
+                    const SizedBox(width: 12),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('استعادة من سحابة Firebase', style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold)),
-                          SizedBox(height: 2),
+                          Text('استعادة من سحابة Firebase', style: TextStyle(color: textWhite, fontSize: 13, fontWeight: FontWeight.bold)),
+                          const SizedBox(height: 2),
                           Text('جلب أحدث نسخة متزامنة تلقائياً من السحابة', style: TextStyle(color: textMuted, fontSize: 10)),
                         ],
                       ),
@@ -371,15 +375,15 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                   border: Border.all(color: surfaceBorder),
                 ),
                 child: Row(
-                  children: const [
-                    Icon(Remix.file_upload_line, color: brandYellow, size: 20),
-                    SizedBox(width: 12),
+                  children: [
+                    const Icon(Remix.file_upload_line, color: brandYellow, size: 20),
+                    const SizedBox(width: 12),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('استيراد ملف نسخة احتياطية (.json)', style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold)),
-                          SizedBox(height: 2),
+                          Text('استيراد ملف نسخة احتياطية (.json)', style: TextStyle(color: textWhite, fontSize: 13, fontWeight: FontWeight.bold)),
+                          const SizedBox(height: 2),
                           Text('اختيار ملف مستلم عبر تلغرام أو محفوظ في الملفات', style: TextStyle(color: textMuted, fontSize: 10)),
                         ],
                       ),
@@ -438,20 +442,20 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
         backgroundColor: surfaceMain,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
-          side: const BorderSide(color: surfaceBorder),
+          side: BorderSide(color: surfaceBorder),
         ),
-        title: const Text(
+        title: Text(
           'تسجيل الخروج',
-          style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold),
+          style: TextStyle(color: textWhite, fontSize: 14, fontWeight: FontWeight.bold),
         ),
         content: Text(
           'هل أنت متأكد من تسجيل الخروج من ($email)؟',
-          style: const TextStyle(color: Color(0xFFD1D5DB), fontSize: 12.5),
+          style: TextStyle(color: textMuted, fontSize: 12.5),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('إلغاء', style: TextStyle(color: textMuted)),
+            child: Text('إلغاء', style: TextStyle(color: textMuted)),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
@@ -485,9 +489,9 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
       backgroundColor: Colors.transparent,
       barrierColor: Colors.black.withValues(alpha: 0.8),
       builder: (ctx) => Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           color: surfaceMain,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
           border: Border(
             top: BorderSide(color: surfaceBorder),
             left: BorderSide(color: surfaceBorder),
@@ -519,18 +523,18 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                       const SizedBox(width: 8),
                       Text(
                         isName ? 'تعديل الاسم الشخصي' : 'تعديل البريد الإلكتروني',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                          color: textWhite,
                         ),
                       ),
                     ],
                   ),
                   InkWell(
                     onTap: () => Navigator.pop(ctx),
-                    child: const Padding(
-                      padding: EdgeInsets.all(4),
+                    child: Padding(
+                      padding: const EdgeInsets.all(4),
                       child: Icon(Remix.close_line, size: 18, color: textMuted),
                     ),
                   ),
@@ -549,7 +553,7 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                   children: [
                     Text(
                       isName ? 'الاسم الشخصي في البروفايل' : 'البريد الإلكتروني للحساب',
-                      style: const TextStyle(fontSize: 9.5, color: textMuted, fontWeight: FontWeight.w600),
+                      style: TextStyle(fontSize: 9.5, color: textMuted, fontWeight: FontWeight.w600),
                     ),
                     const SizedBox(height: 4),
                     TextField(
@@ -558,7 +562,7 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                        color: textWhite,
                         fontFamily: isName ? null : 'monospace',
                       ),
                       textDirection: isName ? null : TextDirection.ltr,
@@ -615,11 +619,11 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                     child: OutlinedButton(
                       onPressed: () => Navigator.pop(ctx),
                       style: OutlinedButton.styleFrom(
-                        side: const BorderSide(color: surfaceBorder),
+                        side: BorderSide(color: surfaceBorder),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                         padding: const EdgeInsets.symmetric(vertical: 10),
                       ),
-                      child: const Text(
+                      child: Text(
                         'إلغاء',
                         style: TextStyle(fontSize: 12, color: textMuted),
                       ),
@@ -690,8 +694,8 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                             ),
                             InkWell(
                               onTap: () => Navigator.pop(ctx),
-                              child: const Padding(
-                                padding: EdgeInsets.all(4),
+                              child: Padding(
+                                padding: const EdgeInsets.all(4),
                                 child: Icon(Remix.close_line, size: 18, color: textMuted),
                               ),
                             ),
@@ -700,7 +704,7 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                         const SizedBox(height: 6),
                         Text(
                           'الحساب المرتبط: ${_emailController.text.trim().isNotEmpty ? _emailController.text.trim() : _linkedAccountEmail}',
-                          style: const TextStyle(color: textMuted, fontSize: 10.5),
+                          style: TextStyle(color: textMuted, fontSize: 10.5),
                         ),
                         const SizedBox(height: 12),
 
@@ -729,7 +733,7 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                         ],
 
                         // Current Password
-                        const Text('كلمة المرور الحالية', style: TextStyle(fontSize: 10.5, color: textMuted)),
+                        Text('كلمة المرور الحالية', style: TextStyle(fontSize: 10.5, color: textMuted)),
                         const SizedBox(height: 4),
                         Container(
                           decoration: BoxDecoration(
@@ -740,7 +744,7 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                           child: TextField(
                             controller: currentPwCtrl,
                             obscureText: obscureCurrent,
-                            style: const TextStyle(color: Colors.white, fontSize: 12, fontFamily: 'monospace'),
+                            style: TextStyle(color: textWhite, fontSize: 12, fontFamily: 'monospace'),
                             decoration: InputDecoration(
                               isDense: true,
                               border: InputBorder.none,
@@ -761,7 +765,7 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                         const SizedBox(height: 10),
 
                         // New Password
-                        const Text('كلمة المرور الجديدة (6 خانات على الأقل)', style: TextStyle(fontSize: 10.5, color: textMuted)),
+                        Text('كلمة المرور الجديدة (6 خانات على الأقل)', style: TextStyle(fontSize: 10.5, color: textMuted)),
                         const SizedBox(height: 4),
                         Container(
                           decoration: BoxDecoration(
@@ -772,7 +776,7 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                           child: TextField(
                             controller: newPwCtrl,
                             obscureText: obscureNew,
-                            style: const TextStyle(color: Colors.white, fontSize: 12, fontFamily: 'monospace'),
+                            style: TextStyle(color: textWhite, fontSize: 12, fontFamily: 'monospace'),
                             decoration: InputDecoration(
                               isDense: true,
                               border: InputBorder.none,
@@ -793,7 +797,7 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                         const SizedBox(height: 10),
 
                         // Confirm Password
-                        const Text('تأكيد كلمة المرور الجديدة', style: TextStyle(fontSize: 10.5, color: textMuted)),
+                        Text('تأكيد كلمة المرور الجديدة', style: TextStyle(fontSize: 10.5, color: textMuted)),
                         const SizedBox(height: 4),
                         Container(
                           decoration: BoxDecoration(
@@ -804,7 +808,7 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                           child: TextField(
                             controller: confirmPwCtrl,
                             obscureText: obscureConfirm,
-                            style: const TextStyle(color: Colors.white, fontSize: 12, fontFamily: 'monospace'),
+                            style: TextStyle(color: textWhite, fontSize: 12, fontFamily: 'monospace'),
                             decoration: InputDecoration(
                               isDense: true,
                               border: InputBorder.none,
@@ -939,6 +943,138 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
     );
   }
 
+  Widget _buildThemeSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'المظهر والسمة',
+              style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: textMuted),
+            ),
+            ValueListenableBuilder<ThemeMode>(
+              valueListenable: AppTheme.themeModeNotifier,
+              builder: (context, mode, _) {
+                final label = mode == ThemeMode.light
+                    ? 'الوضع النهاري'
+                    : (mode == ThemeMode.system ? 'تلقائي (حسب النظام)' : 'الوضع الليلي');
+                return Text(
+                  label,
+                  style: const TextStyle(fontSize: 9.5, fontWeight: FontWeight.bold, color: brandGreen),
+                );
+              },
+            ),
+          ],
+        ),
+        const SizedBox(height: 6),
+        ValueListenableBuilder<ThemeMode>(
+          valueListenable: AppTheme.themeModeNotifier,
+          builder: (context, currentMode, _) {
+            return Container(
+              padding: const EdgeInsets.all(5),
+              decoration: BoxDecoration(
+                color: surfaceCell,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: surfaceBorder),
+              ),
+              child: Row(
+                children: [
+                  _buildThemeOption(
+                    title: 'ليلي',
+                    icon: Remix.moon_line,
+                    isSelected: currentMode == ThemeMode.dark,
+                    onTap: () {
+                      SpendoHaptics.selection();
+                      AppTheme.setThemeMode(ThemeMode.dark);
+                    },
+                  ),
+                  const SizedBox(width: 4),
+                  _buildThemeOption(
+                    title: 'نهاري',
+                    icon: Remix.sun_line,
+                    isSelected: currentMode == ThemeMode.light,
+                    onTap: () {
+                      SpendoHaptics.selection();
+                      AppTheme.setThemeMode(ThemeMode.light);
+                    },
+                  ),
+                  const SizedBox(width: 4),
+                  _buildThemeOption(
+                    title: 'تلقائي',
+                    icon: Remix.smartphone_line,
+                    isSelected: currentMode == ThemeMode.system,
+                    onTap: () {
+                      SpendoHaptics.selection();
+                      AppTheme.setThemeMode(ThemeMode.system);
+                    },
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
+        const SizedBox(height: 14),
+      ],
+    );
+  }
+
+  Widget _buildThemeOption({
+    required String title,
+    required IconData icon,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    return Expanded(
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(9),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? (_isDark ? const Color(0xFF1E1E24) : Colors.white)
+                : Colors.transparent,
+            borderRadius: BorderRadius.circular(9),
+            border: isSelected
+                ? Border.all(color: brandGreen, width: 1.2)
+                : Border.all(color: Colors.transparent),
+            boxShadow: isSelected && !_isDark
+                ? [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.04),
+                      blurRadius: 4,
+                      offset: const Offset(0, 2),
+                    ),
+                  ]
+                : null,
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                icon,
+                size: 14,
+                color: isSelected ? brandGreen : textMuted,
+              ),
+              const SizedBox(width: 6),
+              Text(
+                title,
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+                  color: isSelected ? textWhite : textMuted,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final fbUser = FirebaseAuth.instance.currentUser;
@@ -959,8 +1095,8 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                     // 1. Unified Compact Header
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                      decoration: const BoxDecoration(
-                        color: Color(0x99161A18),
+                      decoration: BoxDecoration(
+                        color: surfaceMain,
                         border: Border(bottom: BorderSide(color: surfaceBorder)),
                       ),
                       child: Row(
@@ -971,8 +1107,8 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                             children: [
                               InkWell(
                                 onTap: () => Navigator.pop(context),
-                                child: const Padding(
-                                  padding: EdgeInsets.all(3),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(3),
                                   child: Icon(Remix.arrow_right_line, size: 18, color: textMuted),
                                 ),
                               ),
@@ -986,12 +1122,12 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                                     children: [
                                       const Icon(Remix.settings_4_line, size: 14, color: brandGreen),
                                       const SizedBox(width: 6),
-                                      const Text(
+                                      Text(
                                         'الإعدادات',
                                         style: TextStyle(
                                           fontSize: 13,
                                           fontWeight: FontWeight.bold,
-                                          color: Colors.white,
+                                          color: textWhite,
                                         ),
                                       ),
                                       const SizedBox(width: 6),
@@ -1013,7 +1149,7 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                                     ],
                                   ),
                                   const SizedBox(height: 2),
-                                  const Text(
+                                  Text(
                                     'إدارة الحساب، التذكيرات، والنسخ الاحتياطي',
                                     style: TextStyle(fontSize: 9.5, color: textMuted),
                                   ),
@@ -1065,15 +1201,17 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
+                            _buildThemeSection(),
+
                             // ================= Section 1: البروفايل والأمان =================
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: const [
+                              children: [
                                 Text(
                                   'البروفايل والأمان',
                                   style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: textMuted),
                                 ),
-                                Text(
+                                const Text(
                                   'Spendo ID',
                                   style: TextStyle(fontSize: 9, fontFamily: 'monospace', color: Color(0xFF71717A)),
                                 ),
@@ -1098,7 +1236,7 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                                         // Column 1 (Right): Profile Name
                                         Expanded(
                                           child: Container(
-                                            decoration: const BoxDecoration(
+                                            decoration: BoxDecoration(
                                               border: Border(
                                                 bottom: BorderSide(color: surfaceBorder),
                                                 left: BorderSide(color: surfaceBorder),
@@ -1118,7 +1256,7 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                                                             crossAxisAlignment: CrossAxisAlignment.start,
                                                             mainAxisAlignment: MainAxisAlignment.center,
                                                             children: [
-                                                              const Text(
+                                                              Text(
                                                                 'الاسم الشخصي',
                                                                 style: TextStyle(fontSize: 8.5, color: textMuted),
                                                               ),
@@ -1129,10 +1267,10 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                                                                     : 'My profile',
                                                                 maxLines: 1,
                                                                 overflow: TextOverflow.ellipsis,
-                                                                style: const TextStyle(
+                                                                style: TextStyle(
                                                                   fontSize: 11.5,
                                                                   fontWeight: FontWeight.bold,
-                                                                  color: Colors.white,
+                                                                  color: textWhite,
                                                                 ),
                                                               ),
                                                             ],
@@ -1147,11 +1285,11 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                                                   child: Container(
                                                     width: 30,
                                                     alignment: Alignment.center,
-                                                    decoration: const BoxDecoration(
-                                                      color: Color(0x66121514),
+                                                    decoration: BoxDecoration(
+                                                      color: _isDark ? const Color(0x66121514) : const Color(0x22E5E7EB),
                                                       border: Border(right: BorderSide(color: surfaceBorder)),
                                                     ),
-                                                    child: const Icon(Remix.pencil_line, size: 12, color: textMuted),
+                                                    child: Icon(Remix.pencil_line, size: 12, color: textMuted),
                                                   ),
                                                 ),
                                               ],
@@ -1164,7 +1302,7 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                                           child: InkWell(
                                             onTap: _showChangePasswordDialog,
                                             child: Container(
-                                              decoration: const BoxDecoration(
+                                              decoration: BoxDecoration(
                                                 border: Border(bottom: BorderSide(color: surfaceBorder)),
                                               ),
                                               child: Row(
@@ -1180,12 +1318,12 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                                                             child: Column(
                                                               crossAxisAlignment: CrossAxisAlignment.start,
                                                               mainAxisAlignment: MainAxisAlignment.center,
-                                                              children: const [
+                                                              children: [
                                                                 Text(
                                                                   'تحديث كلمة السر',
                                                                   style: TextStyle(fontSize: 8.5, color: textMuted),
                                                                 ),
-                                                                SizedBox(height: 1),
+                                                                const SizedBox(height: 1),
                                                                 Text(
                                                                   'تغيير كلمة المرور',
                                                                   maxLines: 1,
@@ -1193,7 +1331,7 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                                                                   style: TextStyle(
                                                                     fontSize: 11.5,
                                                                     fontWeight: FontWeight.bold,
-                                                                    color: Colors.white,
+                                                                    color: textWhite,
                                                                   ),
                                                                 ),
                                                               ],
@@ -1206,11 +1344,11 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                                                   Container(
                                                     width: 26,
                                                     alignment: Alignment.center,
-                                                    decoration: const BoxDecoration(
-                                                      color: Color(0x66121514),
+                                                    decoration: BoxDecoration(
+                                                      color: _isDark ? const Color(0x66121514) : const Color(0x22E5E7EB),
                                                       border: Border(right: BorderSide(color: surfaceBorder)),
                                                     ),
-                                                    child: const Icon(Remix.arrow_left_s_line, size: 14, color: textMuted),
+                                                    child: Icon(Remix.arrow_left_s_line, size: 14, color: textMuted),
                                                   ),
                                                 ],
                                               ),
@@ -1235,7 +1373,7 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                                                 child: Column(
                                                   crossAxisAlignment: CrossAxisAlignment.start,
                                                   children: [
-                                                    const Text(
+                                                    Text(
                                                       'البريد الإلكتروني المسجل',
                                                       style: TextStyle(fontSize: 8.5, color: textMuted),
                                                     ),
@@ -1245,11 +1383,11 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                                                       maxLines: 1,
                                                       overflow: TextOverflow.ellipsis,
                                                       textDirection: TextDirection.ltr,
-                                                      style: const TextStyle(
+                                                      style: TextStyle(
                                                         fontSize: 11,
                                                         fontFamily: 'monospace',
                                                         fontWeight: FontWeight.w600,
-                                                        color: Colors.white,
+                                                        color: textWhite,
                                                       ),
                                                     ),
                                                   ],
@@ -1261,8 +1399,8 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                                       ),
                                       Container(
                                         height: 38,
-                                        decoration: const BoxDecoration(
-                                          color: Color(0x66121514),
+                                        decoration: BoxDecoration(
+                                          color: _isDark ? const Color(0x66121514) : const Color(0x22E5E7EB),
                                           border: Border(right: BorderSide(color: surfaceBorder)),
                                         ),
                                         child: Row(
@@ -1273,7 +1411,7 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                                               child: Container(
                                                 width: 30,
                                                 alignment: Alignment.center,
-                                                child: const Icon(Remix.file_copy_line, size: 12, color: textMuted),
+                                                child: Icon(Remix.file_copy_line, size: 12, color: textMuted),
                                               ),
                                             ),
                                             Container(width: 1, height: 38, color: surfaceBorder),
@@ -1282,7 +1420,7 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                                               child: Container(
                                                 width: 30,
                                                 alignment: Alignment.center,
-                                                child: const Icon(Remix.pencil_line, size: 12, color: textMuted),
+                                                child: Icon(Remix.pencil_line, size: 12, color: textMuted),
                                               ),
                                             ),
                                           ],
@@ -1296,7 +1434,7 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                             const SizedBox(height: 10),
 
                             // ================= Section 2: التذكيرات والتنبيهات =================
-                            const Text(
+                            Text(
                               'التذكيرات والتنبيهات',
                               style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: textMuted),
                             ),
@@ -1320,7 +1458,7 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                                         Expanded(
                                           child: Column(
                                             crossAxisAlignment: CrossAxisAlignment.start,
-                                            children: const [
+                                            children: [
                                               Text(
                                                 'تذكير تسجيل يوم العمل',
                                                 style: TextStyle(
@@ -1410,13 +1548,10 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                                   if (_showTimeSelector || _dailyReminderEnabled)
                                     Container(
                                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                                      decoration: const BoxDecoration(
-                                        color: Color(0x99121514),
-                                        border: Border(top: BorderSide(color: surfaceBorder)),
-                                      ),
+                                      decoration: BoxDecoration(color: _isDark ? const Color(0x99121514) : const Color(0x11000000), border: Border(top: BorderSide(color: surfaceBorder)),),
                                       child: Row(
                                         children: [
-                                          const Text(
+                                          Text(
                                             'وقت التذكير اليومي:',
                                             style: TextStyle(fontSize: 9.5, color: textMuted),
                                           ),
@@ -1465,7 +1600,7 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                                               ),
                                               child: Row(
                                                 mainAxisSize: MainAxisSize.min,
-                                                children: const [
+                                                children: [
                                                   Icon(Remix.time_line, size: 10, color: brandGreen),
                                                   SizedBox(width: 3),
                                                   Text(
@@ -1491,7 +1626,7 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                             // ================= Section 3: النسخ الاحتياطي والبيانات =================
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: const [
+                              children: [
                                 Text(
                                   'النسخ الاحتياطي والبيانات',
                                   style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: textMuted),
@@ -1528,7 +1663,7 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                                               child: Column(
                                                 crossAxisAlignment: CrossAxisAlignment.start,
                                                 mainAxisAlignment: MainAxisAlignment.center,
-                                                children: const [
+                                                children: [
                                                   Text(
                                                     'تصدير نسخة',
                                                     style: TextStyle(
@@ -1573,7 +1708,7 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                                               child: Column(
                                                 crossAxisAlignment: CrossAxisAlignment.start,
                                                 mainAxisAlignment: MainAxisAlignment.center,
-                                                children: const [
+                                                children: [
                                                   Text(
                                                     'استعادة نسخة',
                                                     style: TextStyle(
@@ -1682,7 +1817,7 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
-                                  const Text(
+                                  Text(
                                     'الجلسة المسجلة حالياً:',
                                     style: TextStyle(fontSize: 9.5, color: textMuted),
                                   ),

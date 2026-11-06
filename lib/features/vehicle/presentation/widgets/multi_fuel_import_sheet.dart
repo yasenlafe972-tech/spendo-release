@@ -1,3 +1,4 @@
+import '../../../../core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/services/israel_gov_api_service.dart';
@@ -27,7 +28,7 @@ class MultiFuelImportSheet extends StatefulWidget {
     String? sourceFileName,
     VoidCallback? onSaved,
   }) {
-    const surfaceMain = Color(0xFF121413);
+    final surfaceMain = AppTheme.isDarkMode ? const Color(0xFF121413) : const Color(0xFFFFFFFF);
     return showModalBottomSheet<bool>(
       context: context,
       isScrollControlled: true,
@@ -56,7 +57,7 @@ class _MultiFuelImportSheetState extends State<MultiFuelImportSheet> {
   VehicleDataState _state = VehicleDataState.initial();
   double _officialFuelPrice = 7.25;
 
-  static const surfaceMain = Color(0xFF121413);
+  static final surfaceMain = AppTheme.isDarkMode ? const Color(0xFF121413) : const Color(0xFFFFFFFF);
   static const surfaceField = Color(0xFF171A19);
   static const surfaceBorder = Color(0xFF242927);
   static const brandGreen = Color(0xFF00A86B);
@@ -269,9 +270,9 @@ class _MultiFuelImportSheetState extends State<MultiFuelImportSheet> {
         constraints: BoxConstraints(
           maxHeight: media.size.height * 0.88,
         ),
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           color: surfaceMain,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
         ),
         child: SafeArea(
           top: false,
@@ -351,7 +352,7 @@ class _MultiFuelImportSheetState extends State<MultiFuelImportSheet> {
                 ),
               ),
 
-              const Divider(color: surfaceBorder, height: 1),
+              Divider(color: surfaceBorder, height: 1),
 
               // Summary bar
               Container(
@@ -425,7 +426,7 @@ class _MultiFuelImportSheetState extends State<MultiFuelImportSheet> {
                 ),
               ),
 
-              const Divider(color: surfaceBorder, height: 1),
+              Divider(color: surfaceBorder, height: 1),
 
               // Invoices List
               Expanded(
@@ -672,7 +673,7 @@ class _MultiFuelImportSheetState extends State<MultiFuelImportSheet> {
               // Bottom buttons
               Container(
                 padding: EdgeInsets.fromLTRB(16, 12, 16, bottomNavPadding > 0 ? bottomNavPadding + 8 : 16),
-                decoration: const BoxDecoration(
+                decoration: BoxDecoration(
                   color: surfaceMain,
                   border: Border(top: BorderSide(color: surfaceBorder, width: 1)),
                 ),
@@ -722,7 +723,7 @@ class _MultiFuelImportSheetState extends State<MultiFuelImportSheet> {
                         onPressed: () => Navigator.pop(context),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: textMuted,
-                          side: const BorderSide(color: surfaceBorder),
+                          side: BorderSide(color: surfaceBorder),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(14),
                           ),

@@ -1,3 +1,4 @@
+import '../../../../core/theme/app_theme.dart';
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
@@ -35,12 +36,15 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
   double _officialFuelPrice = 7.68;
   bool _isGovSyncing = false;
 
-  static const Color surfaceMain = Color(0xFF121413);
-  static const Color surfaceField = Color(0xFF171A19);
-  static const Color surfaceBorder = Color(0xFF242927);
+  static bool get _isDark => AppTheme.isDarkMode;
+  static Color get surfaceMain => _isDark ? const Color(0xFF121413) : const Color(0xFFF8F9FA);
+  static Color get surfaceField => _isDark ? const Color(0xFF171A19) : const Color(0xFFFFFFFF);
+  static Color get surfaceBorder => _isDark ? const Color(0xFF242927) : const Color(0xFFE5E7EB);
   static const Color brandGreen = Color(0xFF00A86B);
   static const Color brandYellow = Color(0xFFEAB308);
   static const Color brandRed = Color(0xFFEF4444);
+  static Color get textWhite => _isDark ? Colors.white : const Color(0xFF111827);
+  static Color get textMuted => _isDark ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280);
 
   @override
   void initState() {
@@ -189,8 +193,8 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return const Scaffold(
-        backgroundColor: Color(0xFF0A0B0B),
+      return Scaffold(
+        backgroundColor: surfaceMain,
         body: Center(
           child: CircularProgressIndicator(color: brandGreen),
         ),
@@ -200,7 +204,7 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
-        backgroundColor: const Color(0xFF0A0B0B),
+        backgroundColor: surfaceMain,
         body: SafeArea(
           child: SingleChildScrollView(
             physics: const BouncingScrollPhysics(),
@@ -245,13 +249,13 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
               const SizedBox(width: 8),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: const [
+                children: [
                   Text(
                     'المركبة والصيانة',
                     style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                      color: textWhite,
                       height: 1.2,
                     ),
                   ),
@@ -358,10 +362,10 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                     textDirection: TextDirection.ltr,
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontSize: 12,
                                       fontWeight: FontWeight.bold,
-                                      color: Colors.white,
+                                      color: textWhite,
                                     ),
                                   ),
                                 ),
@@ -467,10 +471,10 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                     children: [
                       Text(
                         _formatNumber(_state.currentOdometer),
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.w900,
-                          color: Colors.white,
+                          color: textWhite,
                           fontFeatures: [FontFeature.tabularFigures()],
                         ),
                       ),
@@ -495,7 +499,7 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
             Container(
               margin: const EdgeInsets.only(top: 10),
               padding: const EdgeInsets.only(top: 8),
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 border: Border(
                   top: BorderSide(color: surfaceBorder),
                 ),
@@ -525,11 +529,11 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                               horizontal: 10, vertical: 7),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
-                            borderSide: const BorderSide(color: surfaceBorder),
+                            borderSide: BorderSide(color: surfaceBorder),
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
-                            borderSide: const BorderSide(color: surfaceBorder),
+                            borderSide: BorderSide(color: surfaceBorder),
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
@@ -738,7 +742,7 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                           ],
                         ),
                         const SizedBox(height: 10),
-                        const Divider(color: surfaceBorder, height: 1),
+                        Divider(color: surfaceBorder, height: 1),
                         const SizedBox(height: 10),
 
                         // حقل إدخال رقم اللوحة (النمرة) للبحث الفوري في data.gov.il
@@ -1073,10 +1077,10 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                     const SizedBox(width: 5),
                     Text(
                       title,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 10.5,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                        color: textWhite,
                       ),
                     ),
                   ],
@@ -1142,9 +1146,9 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
       builder: (context, child) {
         return Theme(
           data: Theme.of(context).copyWith(
-            colorScheme: const ColorScheme.dark(
+            colorScheme: ColorScheme.dark(
               primary: brandGreen,
-              onPrimary: Color(0xFF0A0B0B),
+              onPrimary: const Color(0xFF0A0B0B),
               surface: surfaceField,
               onSurface: Colors.white,
               secondary: brandYellow,
@@ -1153,7 +1157,7 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
               backgroundColor: surfaceMain,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
-                side: const BorderSide(color: surfaceBorder),
+                side: BorderSide(color: surfaceBorder),
               ),
             ),
           ),
@@ -1253,10 +1257,10 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       textDirection: TextDirection.rtl,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                        color: textWhite,
                       ),
                     ),
                     const SizedBox(height: 2),
@@ -1338,21 +1342,21 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                   color: brandGreen.withValues(alpha: 0.4),
                 ),
               ),
-              child: const Row(
+              child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(
+                  const Icon(
                     Remix.gas_station_line,
                     size: 15,
                     color: brandGreen,
                   ),
-                  SizedBox(width: 6),
+                  const SizedBox(width: 6),
                   Text(
                     'تعبئة وقود',
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                      color: textWhite,
                     ),
                   ),
                 ],
@@ -1378,21 +1382,21 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                   color: brandYellow.withValues(alpha: 0.4),
                 ),
               ),
-              child: const Row(
+              child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(
+                  const Icon(
                     Remix.tools_line,
                     size: 15,
                     color: brandYellow,
                   ),
-                  SizedBox(width: 6),
+                  const SizedBox(width: 6),
                   Text(
                     'تسجيل صيانة',
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                      color: textWhite,
                     ),
                   ),
                 ],
@@ -1465,20 +1469,20 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           // Filter title
-          const Row(
+          Row(
             children: [
-              Icon(
+              const Icon(
                 Remix.calendar_2_line,
                 size: 14,
                 color: brandGreen,
               ),
-              SizedBox(width: 6),
+              const SizedBox(width: 6),
               Text(
                 'تصفية المصاريف حسب الشهر',
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                  color: textWhite,
                 ),
               ),
             ],
@@ -1643,10 +1647,10 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                           const SizedBox(width: 2),
                           Text(
                             _formatNumber(totalSpent.round()),
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w900,
-                              color: Colors.white,
+                              color: textWhite,
                               fontFeatures: [FontFeature.tabularFigures()],
                             ),
                           ),
@@ -1671,16 +1675,16 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const Row(
+                  Row(
                     children: [
-                      Icon(Remix.gas_station_line, size: 13, color: brandGreen),
-                      SizedBox(width: 5),
+                      const Icon(Remix.gas_station_line, size: 13, color: brandGreen),
+                      const SizedBox(width: 5),
                       Text(
                         'سجل تكلفة الوقود الشهري (حسب الفواتير والفروع)',
                         style: TextStyle(
                           fontSize: 10.5,
                           fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                          color: textWhite,
                         ),
                       ),
                     ],
@@ -1720,10 +1724,10 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                                 children: [
                                   Text(
                                     ArabicDateHelper.formatMonthYearKey(mKey),
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontSize: 10.5,
                                       fontWeight: FontWeight.bold,
-                                      color: Colors.white,
+                                      color: textWhite,
                                     ),
                                   ),
                                   Text(
@@ -1763,12 +1767,12 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
+              Text(
                 'سجل العمليات والفواتير',
                 style: TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFFE5E7EB),
+                  color: textWhite,
                 ),
               ),
               Text(
@@ -1857,10 +1861,10 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                   textDirection: TextDirection.rtl,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontSize: 11,
                                     fontWeight: FontWeight.bold,
-                                    color: Colors.white,
+                                    color: textWhite,
                                   ),
                                 ),
                                 const SizedBox(height: 2),
@@ -1981,7 +1985,7 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
           style: TextStyle(
             fontSize: 10,
             fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
-            color: isSelected ? brandGreen : const Color(0xFFD1D5DB),
+            color: isSelected ? brandGreen : textMuted,
           ),
         ),
       ),
@@ -1994,7 +1998,7 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: AppColors.surface,
+      backgroundColor: surfaceField,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -2043,7 +2047,7 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                   hintText: 'مثال: SYM Joyride 200 أو سكوتر العمل...',
                   hintStyle: const TextStyle(color: AppColors.textMuted),
                   filled: true,
-                  fillColor: AppColors.surfaceCard,
+                  fillColor: surfaceField,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(16),
                     borderSide: const BorderSide(color: AppColors.surfaceCardBorder),
@@ -2089,7 +2093,7 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: AppColors.surface,
+      backgroundColor: surfaceField,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -2139,7 +2143,7 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                 decoration: InputDecoration(
                   suffixText: 'كم',
                   filled: true,
-                  fillColor: AppColors.surfaceCard,
+                  fillColor: surfaceField,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(16),
                     borderSide: const BorderSide(color: AppColors.surfaceCardBorder),
@@ -2187,7 +2191,7 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: AppColors.surface,
+      backgroundColor: surfaceField,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -2233,7 +2237,7 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                   labelStyle: const TextStyle(color: AppColors.textMuted),
                   suffixText: '₪',
                   filled: true,
-                  fillColor: AppColors.surfaceCard,
+                  fillColor: surfaceField,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(16),
                     borderSide: const BorderSide(color: AppColors.surfaceCardBorder),
@@ -2250,7 +2254,7 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                   labelStyle: const TextStyle(color: AppColors.textMuted),
                   suffixText: 'كم',
                   filled: true,
-                  fillColor: AppColors.surfaceCard,
+                  fillColor: surfaceField,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(16),
                     borderSide: const BorderSide(color: AppColors.surfaceCardBorder),
@@ -2339,7 +2343,7 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: AppColors.surface,
+      backgroundColor: surfaceField,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -2400,7 +2404,7 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                   labelStyle: const TextStyle(color: AppColors.textMuted),
                   suffixText: '₪',
                   filled: true,
-                  fillColor: AppColors.surfaceCard,
+                  fillColor: surfaceField,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(16),
                     borderSide:
@@ -2416,7 +2420,7 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                   labelText: 'שם הטיפול או החלפים המוחלפים (עברית)',
                   labelStyle: const TextStyle(color: AppColors.textMuted),
                   filled: true,
-                  fillColor: AppColors.surfaceCard,
+                  fillColor: surfaceField,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(16),
                     borderSide:
@@ -2434,7 +2438,7 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                   labelStyle: const TextStyle(color: AppColors.textMuted),
                   suffixText: 'ק"מ',
                   filled: true,
-                  fillColor: AppColors.surfaceCard,
+                  fillColor: surfaceField,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(16),
                     borderSide:
@@ -2513,7 +2517,7 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: AppColors.surface,
+      backgroundColor: surfaceField,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
       ),
@@ -2750,7 +2754,7 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                         Container(
                           padding: const EdgeInsets.all(10),
                           decoration: BoxDecoration(
-                            color: AppColors.surfaceCard,
+                            color: surfaceField,
                             borderRadius: BorderRadius.circular(16),
                             border: Border.all(
                                 color: AppColors.surfaceCardBorder),
@@ -2873,7 +2877,7 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                                 width: double.infinity,
                                 padding: const EdgeInsets.all(10),
                                 decoration: BoxDecoration(
-                                  color: AppColors.surface,
+                                  color: surfaceField,
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: Column(
@@ -2947,7 +2951,7 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                                             fontWeight: FontWeight.w700),
                                       ),
                                       style: ElevatedButton.styleFrom(
-                                        backgroundColor: AppColors.surfaceCard,
+                                        backgroundColor: surfaceField,
                                         foregroundColor: AppColors.textPrimary,
                                         padding: const EdgeInsets.symmetric(
                                             vertical: 8),
@@ -2969,7 +2973,7 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                         Container(
                           padding: const EdgeInsets.all(14),
                           decoration: BoxDecoration(
-                            color: AppColors.surfaceCard,
+                            color: surfaceField,
                             borderRadius: BorderRadius.circular(18),
                             border: Border.all(
                               color: duplicateRecord != null
@@ -3056,7 +3060,7 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                               showDialog(
                                 context: context,
                                 builder: (dialogCtx) => AlertDialog(
-                                  backgroundColor: AppColors.surface,
+                                  backgroundColor: surfaceField,
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(20),
                                   ),
@@ -3148,7 +3152,7 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: AppColors.surface,
+      backgroundColor: surfaceField,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
       ),
@@ -3272,7 +3276,7 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: AppColors.surfaceCard,
+                      color: surfaceField,
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(color: AppColors.surfaceCardBorder),
                     ),
@@ -3283,8 +3287,8 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                           label: 'المركبة المسجلة',
                           value: _state.vehicleName,
                         ),
-                        const Divider(
-                            color: AppColors.surfaceCardBorder, height: 18),
+                        Divider(
+                            color: surfaceBorder, height: 18),
                         _buildDetailRow(
                           icon: Remix.file_text_line,
                           label: 'البيان بالعبرية',
@@ -3292,15 +3296,15 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                           isHighlight: true,
                         ),
                         if (!isFuel && record.odometer > 0) ...[
-                          const Divider(
-                              color: AppColors.surfaceCardBorder, height: 18),
+                          Divider(
+                              color: surfaceBorder, height: 18),
                           _buildDetailRow(
                             icon: Remix.dashboard_3_line,
                             label: 'قراءة العداد عند العملية',
                             value: '${_formatNumber(record.odometer)} ק"מ',
                           ),
-                          const Divider(
-                              color: AppColors.surfaceCardBorder, height: 18),
+                          Divider(
+                              color: surfaceBorder, height: 18),
                           _buildDetailRow(
                             icon: Remix.route_line,
                             label: 'المسافة منذ هذه العملية',
@@ -3311,8 +3315,8 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                         ],
                         if (record.invoiceNumber != null &&
                             record.invoiceNumber!.isNotEmpty) ...[
-                          const Divider(
-                              color: AppColors.surfaceCardBorder, height: 18),
+                          Divider(
+                              color: surfaceBorder, height: 18),
                           _buildDetailRow(
                             icon: Remix.file_list_2_line,
                             label: 'رقم الفاتورة / הקבלה',
@@ -3321,8 +3325,8 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                         ],
                         if (record.provider != null &&
                             record.provider!.isNotEmpty) ...[
-                          const Divider(
-                              color: AppColors.surfaceCardBorder, height: 18),
+                          Divider(
+                              color: surfaceBorder, height: 18),
                           _buildDetailRow(
                             icon: Remix.store_2_line,
                             label: 'المزود / المحطة / الكراج',
@@ -3330,23 +3334,23 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                           ),
                         ],
                         if (isFuel) ...[
-                          const Divider(
-                              color: AppColors.surfaceCardBorder, height: 18),
+                          Divider(
+                              color: surfaceBorder, height: 18),
                           _buildDetailRow(
                             icon: Remix.drop_line,
                             label: 'كمية الوقود',
                             value:
                                 '${record.liters ?? (record.amount / 7.77).toStringAsFixed(2)} ליטרים',
                           ),
-                          const Divider(
-                              color: AppColors.surfaceCardBorder, height: 18),
+                          Divider(
+                              color: surfaceBorder, height: 18),
                           _buildDetailRow(
                             icon: Remix.gas_station_line,
                             label: 'نوع الوقود',
                             value: 'בנזין 95 אוקטן',
                           ),
-                          const Divider(
-                              color: AppColors.surfaceCardBorder, height: 18),
+                          Divider(
+                              color: surfaceBorder, height: 18),
                           _buildDetailRow(
                             icon: Remix.bank_card_line,
                             label: 'وسيلة الدفع',
@@ -3355,8 +3359,8 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                         ],
                         if (record.notes != null &&
                             record.notes!.isNotEmpty) ...[
-                          const Divider(
-                              color: AppColors.surfaceCardBorder, height: 18),
+                          Divider(
+                              color: surfaceBorder, height: 18),
                           _buildDetailRow(
                             icon: Remix.file_info_line,
                             label: 'ملاحظات وتوصيات',
@@ -3372,7 +3376,7 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                       width: double.infinity,
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: AppColors.surfaceCard,
+                        color: surfaceField,
                         borderRadius: BorderRadius.circular(20),
                         border: Border.all(color: AppColors.surfaceCardBorder),
                       ),
@@ -3408,7 +3412,7 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 10, vertical: 6),
                                 decoration: BoxDecoration(
-                                  color: AppColors.surface,
+                                  color: surfaceField,
                                   borderRadius: BorderRadius.circular(10),
                                   border: Border.all(
                                       color: AppColors.surfaceCardBorder),
@@ -3488,7 +3492,7 @@ ${record.provider != null ? '- المزود: ${record.provider}' : ''}
                             showDialog(
                               context: context,
                               builder: (dialogCtx) => AlertDialog(
-                                backgroundColor: AppColors.surface,
+                                backgroundColor: surfaceField,
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(20),
                                 ),
@@ -3611,7 +3615,7 @@ ${record.provider != null ? '- المزود: ${record.provider}' : ''}
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 10),
         decoration: BoxDecoration(
-          color: AppColors.surfaceCard,
+          color: surfaceField,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: AppColors.surfaceCardBorder),
         ),

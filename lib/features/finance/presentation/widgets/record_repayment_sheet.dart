@@ -1,3 +1,4 @@
+import '../../../../core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:remixicon/remixicon.dart';
@@ -31,11 +32,13 @@ class _RecordRepaymentSheetState extends State<RecordRepaymentSheet> {
   String _paymentMethod = 'bit';
   DateTime _paymentDate = DateTime.now();
 
-  static const Color surfaceMain = Color(0xFF121413);
-  static const Color surfaceField = Color(0xFF171A19);
-  static const Color surfaceBorder = Color(0xFF242927);
+  static bool get _isDark => AppTheme.isDarkMode;
+  static Color get surfaceMain => _isDark ? const Color(0xFF121413) : const Color(0xFFFFFFFF);
+  static Color get surfaceField => _isDark ? const Color(0xFF171A19) : const Color(0xFFF9FAFB);
+  static Color get surfaceBorder => _isDark ? const Color(0xFF242927) : const Color(0xFFE5E7EB);
   static const Color brandGreen = Color(0xFF00A86B);
   static const Color brandYellow = Color(0xFFEAB308);
+  static Color get textWhite => _isDark ? Colors.white : const Color(0xFF111827);
 
   static const List<Map<String, dynamic>> _methods = [
     {'key': 'bit', 'title': 'تطبيق Bit', 'icon': Remix.smartphone_line, 'color': brandYellow},
@@ -89,7 +92,7 @@ class _RecordRepaymentSheetState extends State<RecordRepaymentSheet> {
       builder: (context, child) {
         return Theme(
           data: ThemeData.dark().copyWith(
-            colorScheme: const ColorScheme.dark(
+            colorScheme: ColorScheme.dark(
               primary: brandGreen,
               onPrimary: Colors.black,
               surface: surfaceMain,
@@ -99,7 +102,7 @@ class _RecordRepaymentSheetState extends State<RecordRepaymentSheet> {
               backgroundColor: surfaceMain,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
-                side: const BorderSide(color: surfaceBorder),
+                side: BorderSide(color: surfaceBorder),
               ),
             ),
           ),
@@ -123,7 +126,7 @@ class _RecordRepaymentSheetState extends State<RecordRepaymentSheet> {
       constraints: BoxConstraints(
         maxHeight: MediaQuery.of(context).size.height * 0.92,
       ),
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: surfaceMain,
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
         border: Border(
@@ -164,7 +167,7 @@ class _RecordRepaymentSheetState extends State<RecordRepaymentSheet> {
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Container(
                   padding: const EdgeInsets.only(bottom: 10),
-                  decoration: const BoxDecoration(
+                  decoration: BoxDecoration(
                     border: Border(bottom: BorderSide(color: surfaceBorder, width: 1.0)),
                   ),
                   child: Row(
@@ -243,7 +246,7 @@ class _RecordRepaymentSheetState extends State<RecordRepaymentSheet> {
                                 const SizedBox(height: 2),
                                 Text(
                                   '${d.originalAmount.toStringAsFixed(0)} ₪',
-                                  style: const TextStyle(fontFamily: 'Cairo', color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
+                                  style: TextStyle(fontFamily: 'Cairo', color: textWhite, fontWeight: FontWeight.bold, fontSize: 13),
                                 ),
                               ],
                             ),
@@ -438,7 +441,7 @@ class _RecordRepaymentSheetState extends State<RecordRepaymentSheet> {
                                   const SizedBox(height: 2),
                                   Text(
                                     ArabicDateHelper.formatArabicDateWithWeekday(_paymentDate),
-                                    style: const TextStyle(fontFamily: 'Cairo', color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
+                                    style: TextStyle(fontFamily: 'Cairo', color: textWhite, fontSize: 11, fontWeight: FontWeight.bold),
                                   ),
                                 ],
                               ),
@@ -464,7 +467,7 @@ class _RecordRepaymentSheetState extends State<RecordRepaymentSheet> {
                             Expanded(
                               child: TextField(
                                 controller: _notesCtrl,
-                                style: const TextStyle(fontFamily: 'Cairo', color: Colors.white, fontSize: 12),
+                                style: TextStyle(fontFamily: 'Cairo', color: textWhite, fontSize: 12),
                                 decoration: const InputDecoration(
                                   hintText: 'ملاحظات وتفاصيل الدفعة (اختياري)',
                                   hintStyle: TextStyle(fontFamily: 'Cairo', color: Color(0xFF71717A), fontSize: 12),

@@ -1,3 +1,4 @@
+import '../../../../core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:remixicon/remixicon.dart';
@@ -21,12 +22,16 @@ class RecordWorkplacePaymentSheet extends StatefulWidget {
     required this.onSave,
   });
 
-  static const Color surfaceMain = Color(0xFF121413);
-  static const Color surfaceField = Color(0xFF171A19);
-  static const Color surfaceHover = Color(0xFF1D211F);
-  static const Color surfaceBorder = Color(0xFF242927);
+  static bool get _isDark => AppTheme.isDarkMode;
+  static Color get surfaceMain => _isDark ? const Color(0xFF121413) : const Color(0xFFFFFFFF);
+  static Color get surfaceField => _isDark ? const Color(0xFF171A19) : const Color(0xFFF9FAFB);
+  static Color get surfaceHover => _isDark ? const Color(0xFF1D211F) : const Color(0xFFF1F3F5);
+  static Color get surfaceBorder => _isDark ? const Color(0xFF242927) : const Color(0xFFE5E7EB);
   static const Color brandGreen = Color(0xFF00A86B);
   static const Color brandYellow = Color(0xFFEAB308);
+  static Color get textPrimary => _isDark ? const Color(0xFFF3F4F6) : const Color(0xFF111827);
+  static Color get textMuted => _isDark ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280);
+  static Color get textWhite => _isDark ? Colors.white : const Color(0xFF111827);
 
   static Future<void> show(
     BuildContext context, {
@@ -99,11 +104,11 @@ class _RecordWorkplacePaymentSheetState extends State<RecordWorkplacePaymentShee
       builder: (context, child) {
         return Theme(
           data: Theme.of(context).copyWith(
-            colorScheme: const ColorScheme.dark(
+            colorScheme: ColorScheme.dark(
               primary: RecordWorkplacePaymentSheet.brandGreen,
               onPrimary: Colors.black,
               surface: RecordWorkplacePaymentSheet.surfaceField,
-              onSurface: Color(0xFFF3F4F6),
+              onSurface: const Color(0xFFF3F4F6),
             ),
           ),
           child: child!,
@@ -195,9 +200,9 @@ class _RecordWorkplacePaymentSheetState extends State<RecordWorkplacePaymentShee
         : '0 ₪';
 
     return Container(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: RecordWorkplacePaymentSheet.surfaceMain,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
         border: Border(
           top: BorderSide(color: RecordWorkplacePaymentSheet.surfaceBorder, width: 1.2),
         ),
@@ -374,12 +379,12 @@ class _RecordWorkplacePaymentSheetState extends State<RecordWorkplacePaymentShee
 
                       // Quick action addition pills bar
                       Container(
-                        decoration: const BoxDecoration(
-                          color: Color(0x99121413),
+                        decoration: BoxDecoration(
+                          color: RecordWorkplacePaymentSheet.surfaceField,
                           border: Border(
                             top: BorderSide(color: RecordWorkplacePaymentSheet.surfaceBorder),
                           ),
-                          borderRadius: BorderRadius.vertical(bottom: Radius.circular(11)),
+                          borderRadius: const BorderRadius.vertical(bottom: Radius.circular(11)),
                         ),
                         child: Row(
                           children: [
@@ -515,7 +520,7 @@ class _RecordWorkplacePaymentSheetState extends State<RecordWorkplacePaymentShee
                       Expanded(
                         child: TextFormField(
                           controller: _notesController,
-                          style: const TextStyle(color: Colors.white, fontSize: 11.5),
+                          style: TextStyle(color: RecordWorkplacePaymentSheet.textWhite, fontSize: 11.5),
                           decoration: const InputDecoration(
                             hintText: 'ملاحظات أو بيان الدفعة (اختياري)...',
                             hintStyle: TextStyle(color: Color(0xFF6B7280), fontSize: 11),

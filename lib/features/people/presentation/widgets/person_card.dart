@@ -1,3 +1,4 @@
+import 'package:sanad_app/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart' hide TextDirection;
 import 'package:sanad_app/core/utils/spendo_haptic_feedback.dart';
@@ -16,14 +17,15 @@ class PersonCard extends StatelessWidget {
   final int accountCount;
 
   // Design Tokens matching HTML specification
-  static const surfaceField = Color(0xFF171A19);
-  static const surfaceBorder = Color(0xFF242927);
+  static bool get _isDark => AppTheme.isDarkMode;
+  static Color get surfaceField => _isDark ? const Color(0xFF171A19) : const Color(0xFFFFFFFF);
+  static Color get surfaceBorder => _isDark ? const Color(0xFF242927) : const Color(0xFFE5E7EB);
   static const brandGreen = Color(0xFF00A86B);
   static const brandYellow = Color(0xFFEAB308);
-  static const textPrimary = Color(0xFFF3F4F6);
-  static const textMuted = Color(0xFF9CA3AF);
-  static const textSubtle = Color(0xFF6B7280);
-  static const textDim = Color(0xFF52525B);
+  static Color get textPrimary => _isDark ? const Color(0xFFF3F4F6) : const Color(0xFF111827);
+  static Color get textMuted => _isDark ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280);
+  static Color get textSubtle => _isDark ? const Color(0xFF6B7280) : const Color(0xFF9CA3AF);
+  static Color get textDim => _isDark ? const Color(0xFF52525B) : const Color(0xFF9CA3AF);
 
   const PersonCard({
     super.key,
@@ -133,10 +135,10 @@ class PersonCard extends StatelessWidget {
                                             person.name,
                                             maxLines: 1,
                                             overflow: TextOverflow.ellipsis,
-                                            style: const TextStyle(
+                                            style: TextStyle(
                                               fontSize: 12,
                                               fontWeight: FontWeight.bold,
-                                              color: Colors.white,
+                                              color: textPrimary,
                                             ),
                                           ),
                                         ),
@@ -187,7 +189,7 @@ class PersonCard extends StatelessWidget {
                                             textDirection: TextDirection.ltr,
                                           )
                                         else
-                                          const Text(
+                                          Text(
                                             'بدون ميلاد',
                                             style: TextStyle(
                                               fontSize: 9,
@@ -211,8 +213,8 @@ class PersonCard extends StatelessWidget {
                                       onEdit();
                                     },
                                     borderRadius: BorderRadius.circular(4),
-                                    child: const Padding(
-                                      padding: EdgeInsets.all(2.5),
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(2.5),
                                       child: Icon(
                                         Icons.edit_outlined,
                                         size: 13,
@@ -227,8 +229,8 @@ class PersonCard extends StatelessWidget {
                                       onDelete();
                                     },
                                     borderRadius: BorderRadius.circular(4),
-                                    child: const Padding(
-                                      padding: EdgeInsets.all(2.5),
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(2.5),
                                       child: Icon(
                                         Icons.delete_outline_rounded,
                                         size: 13,
@@ -259,12 +261,12 @@ class PersonCard extends StatelessWidget {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              const Row(
+                              Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Icon(Icons.phone_outlined,
+                                  const Icon(Icons.phone_outlined,
                                       size: 11, color: brandGreen),
-                                  SizedBox(width: 4),
+                                  const SizedBox(width: 4),
                                   Text(
                                     'هاتف',
                                     style: TextStyle(
@@ -280,10 +282,10 @@ class PersonCard extends StatelessWidget {
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                   textDirection: TextDirection.ltr,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontSize: 10.5,
                                     fontWeight: FontWeight.bold,
-                                    color: Colors.white,
+                                    color: textPrimary,
                                   ),
                                 ),
                               ),
@@ -322,13 +324,13 @@ class PersonCard extends StatelessWidget {
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
                                         textDirection: TextDirection.ltr,
-                                        style: const TextStyle(
+                                        style: TextStyle(
                                           fontSize: 10,
                                           fontWeight: FontWeight.w600,
-                                          color: Color(0xFFE5E7EB),
+                                          color: textPrimary,
                                         ),
                                       )
-                                    : const Text(
+                                    : Text(
                                         'غير مسجل',
                                         style: TextStyle(
                                           fontSize: 9,
@@ -356,12 +358,12 @@ class PersonCard extends StatelessWidget {
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
                                         textDirection: TextDirection.ltr,
-                                        style: const TextStyle(
+                                        style: TextStyle(
                                           fontSize: 9.5,
-                                          color: Color(0xFFD1D5DB),
+                                          color: textPrimary,
                                         ),
                                       )
-                                    : const Text(
+                                    : Text(
                                         'بدون إيميل',
                                         style: TextStyle(
                                           fontSize: 9,

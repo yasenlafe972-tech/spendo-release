@@ -1,3 +1,4 @@
+import 'package:sanad_app/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
@@ -53,12 +54,14 @@ class _MapLocationPickerScreenState extends State<MapLocationPickerScreen> {
   bool _isLocatingUser = false;
 
   // Design Tokens
-  static const Color surfaceMain = Color(0xFF121413);
-  static const Color surfaceField = Color(0xFF171A19);
-  static const Color surfaceBorder = Color(0xFF242927);
+  static bool get _isDark => AppTheme.isDarkMode;
+  static Color get surfaceMain => _isDark ? const Color(0xFF121413) : const Color(0xFFFFFFFF);
+  static Color get surfaceField => _isDark ? const Color(0xFF171A19) : const Color(0xFFF9FAFB);
+  static Color get surfaceBorder => _isDark ? const Color(0xFF242927) : const Color(0xFFE5E7EB);
   static const Color brandGreen = Color(0xFF00A86B);
   static const Color brandYellow = Color(0xFFEAB308);
-  static const Color textMuted = Color(0xFF9CA3AF);
+  static Color get textMuted => _isDark ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280);
+  static Color get textWhite => _isDark ? Colors.white : const Color(0xFF111827);
 
   // Pre-configured coordinates for common towns & work sites
   static final Map<String, LatLng> _townCoordinates = {
@@ -228,15 +231,15 @@ class _MapLocationPickerScreenState extends State<MapLocationPickerScreen> {
           backgroundColor: surfaceMain,
           elevation: 0,
           leading: IconButton(
-            icon: const Icon(Remix.arrow_right_line, color: Colors.white),
+            icon: Icon(Remix.arrow_right_line, color: textWhite),
             onPressed: () => Navigator.pop(context),
           ),
-          title: const Column(
+          title: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 'تحديد موقع العمل على الخريطة',
-                style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white),
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: textWhite),
               ),
               Text(
                 'انقر على أي شارع أو بلد لتثبيت مكان العمل بدقة',
@@ -370,7 +373,7 @@ class _MapLocationPickerScreenState extends State<MapLocationPickerScreen> {
                         const Spacer(),
                         Text(
                           '${activePoint.latitude.toStringAsFixed(4)}, ${activePoint.longitude.toStringAsFixed(4)}',
-                          style: const TextStyle(color: textMuted, fontSize: 9.5, fontFamily: 'monospace'),
+                          style: TextStyle(color: textMuted, fontSize: 9.5, fontFamily: 'monospace'),
                         ),
                       ],
                     ),
@@ -436,7 +439,7 @@ class _MapLocationPickerScreenState extends State<MapLocationPickerScreen> {
                     elevation: 3,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
-                      side: const BorderSide(color: surfaceBorder),
+                      side: BorderSide(color: surfaceBorder),
                     ),
                     onPressed: _isLocatingUser ? null : _flyToCurrentGps,
                     child: _isLocatingUser
@@ -455,7 +458,7 @@ class _MapLocationPickerScreenState extends State<MapLocationPickerScreen> {
                     elevation: 3,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
-                      side: const BorderSide(color: surfaceBorder),
+                      side: BorderSide(color: surfaceBorder),
                     ),
                     onPressed: () {
                       final z = (_mapController.camera.zoom + 1).clamp(6.0, 18.0);
@@ -471,7 +474,7 @@ class _MapLocationPickerScreenState extends State<MapLocationPickerScreen> {
                     elevation: 3,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
-                      side: const BorderSide(color: surfaceBorder),
+                      side: BorderSide(color: surfaceBorder),
                     ),
                     onPressed: () {
                       final z = (_mapController.camera.zoom - 1).clamp(6.0, 18.0);
@@ -509,8 +512,8 @@ class _MapLocationPickerScreenState extends State<MapLocationPickerScreen> {
                           Expanded(
                             child: TextField(
                               controller: _addressController,
-                              style: const TextStyle(color: Colors.white, fontSize: 12.5, fontWeight: FontWeight.bold),
-                              decoration: const InputDecoration(
+                              style: TextStyle(color: textWhite, fontSize: 12.5, fontWeight: FontWeight.bold),
+                              decoration: InputDecoration(
                                 hintText: 'اكتب اسم الشارع أو تفصيل المكان (اختياري)',
                                 hintStyle: TextStyle(color: textMuted, fontSize: 11),
                                 border: InputBorder.none,
@@ -521,7 +524,7 @@ class _MapLocationPickerScreenState extends State<MapLocationPickerScreen> {
                           ),
                         ],
                       ),
-                      const Divider(color: surfaceBorder, height: 16),
+                      Divider(color: surfaceBorder, height: 16),
                       Row(
                         children: [
                           Expanded(

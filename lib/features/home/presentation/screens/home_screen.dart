@@ -16,7 +16,6 @@ import '../../../settings/presentation/screens/app_settings_screen.dart';
 import '../../models/daily_expense_model.dart';
 import '../../../../core/database/database_helper.dart';
 import '../../../../core/services/firebase_backup_service.dart';
-import '../../../../core/theme/app_theme.dart';
 
 /// Spendo Central Executive Dashboard.
 class HomeScreen extends StatefulWidget {
@@ -588,22 +587,6 @@ class _HomeScreenState extends State<HomeScreen> {
         Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            IconButton(
-              icon: Icon(
-                _isDark ? Remix.sun_line : Remix.moon_line,
-                color: textWhite,
-                size: 18,
-              ),
-              tooltip: _isDark ? 'الوضع النهاري' : 'الوضع الليلي',
-              visualDensity: VisualDensity.compact,
-              padding: EdgeInsets.zero,
-              constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
-              onPressed: () {
-                SpendoHaptics.light();
-                AppTheme.toggleTheme();
-              },
-            ),
-            const SizedBox(width: 4),
             GestureDetector(
               onTap: _showMonthPickerSheet,
               child: Container(

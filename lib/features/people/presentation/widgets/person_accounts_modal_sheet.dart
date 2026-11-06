@@ -1,3 +1,4 @@
+import '../../../../core/theme/app_theme.dart';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -85,12 +86,14 @@ class PersonAccountsModalSheet extends StatefulWidget {
 
 class _PersonAccountsModalSheetState extends State<PersonAccountsModalSheet> {
   // Theme Design Tokens
-  static const Color surfaceMain = Color(0xFF121417);
-  static const Color surfaceCell = Color(0xFF16191E);
-  static const Color surfaceBorder = Color(0xFF22262E);
+  static bool get _isDark => AppTheme.isDarkMode;
+  static Color get surfaceMain => _isDark ? const Color(0xFF121417) : const Color(0xFFFFFFFF);
+  static Color get surfaceCell => _isDark ? const Color(0xFF16191E) : const Color(0xFFF9FAFB);
+  static Color get surfaceBorder => _isDark ? const Color(0xFF22262E) : const Color(0xFFE5E7EB);
   static const Color brandGreen = Color(0xFF00A86B);
   static const Color brandYellow = Color(0xFFEAB308);
   static const Color brandRed = Color(0xFFEF4444);
+  static Color get textWhite => _isDark ? Colors.white : const Color(0xFF111827);
 
   final PeopleRepository _repository = PeopleRepository();
   List<PersonAccountModel> _accounts = [];
@@ -160,7 +163,7 @@ class _PersonAccountsModalSheetState extends State<PersonAccountsModalSheet> {
             const SizedBox(width: 8),
             Text(
               message,
-              style: const TextStyle(color: Colors.white, fontSize: 11.5, fontWeight: FontWeight.w600),
+              style: TextStyle(color: textWhite, fontSize: 11.5, fontWeight: FontWeight.w600),
             ),
           ],
         ),
@@ -197,7 +200,7 @@ class _PersonAccountsModalSheetState extends State<PersonAccountsModalSheet> {
         backgroundColor: surfaceMain,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
-          side: const BorderSide(color: surfaceBorder),
+          side: BorderSide(color: surfaceBorder),
         ),
         title: const Text(
           'حذف الحساب',
@@ -302,7 +305,7 @@ class _PersonAccountsModalSheetState extends State<PersonAccountsModalSheet> {
       constraints: BoxConstraints(
         maxHeight: MediaQuery.of(context).size.height * 0.92,
       ),
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: surfaceMain,
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
         border: Border(
@@ -322,8 +325,8 @@ class _PersonAccountsModalSheetState extends State<PersonAccountsModalSheet> {
               textDirection: TextDirection.ltr,
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                decoration: const BoxDecoration(
-                  color: Color(0x6616191E),
+                decoration: BoxDecoration(
+                  color: surfaceCell,
                   border: Border(bottom: BorderSide(color: surfaceBorder)),
                 ),
                 child: Row(
@@ -422,7 +425,7 @@ class _PersonAccountsModalSheetState extends State<PersonAccountsModalSheet> {
                               child: TextField(
                                 controller: _searchController,
                                 onChanged: (val) => setState(() => _searchQuery = val),
-                                style: const TextStyle(fontSize: 11.5, color: Colors.white),
+                                style: TextStyle(fontSize: 11.5, color: textWhite),
                                 decoration: const InputDecoration(
                                   hintText: 'Search service or email...',
                                   hintStyle: TextStyle(fontSize: 11, color: Color(0xFF71717A)),
@@ -518,7 +521,7 @@ class _PersonAccountsModalSheetState extends State<PersonAccountsModalSheet> {
                       ),
                     ),
 
-                    const VerticalDivider(width: 1, thickness: 1, color: surfaceBorder),
+                    VerticalDivider(width: 1, thickness: 1, color: surfaceBorder),
 
                     // Copy Email
                     Expanded(
@@ -543,7 +546,7 @@ class _PersonAccountsModalSheetState extends State<PersonAccountsModalSheet> {
                       ),
                     ),
 
-                    const VerticalDivider(width: 1, thickness: 1, color: surfaceBorder),
+                    VerticalDivider(width: 1, thickness: 1, color: surfaceBorder),
 
                     // Reveal All Passwords
                     Expanded(
@@ -572,7 +575,7 @@ class _PersonAccountsModalSheetState extends State<PersonAccountsModalSheet> {
                       ),
                     ),
 
-                    const VerticalDivider(width: 1, thickness: 1, color: surfaceBorder),
+                    VerticalDivider(width: 1, thickness: 1, color: surfaceBorder),
 
                     // Toggle Columns (2x2 vs 1x1)
                     Expanded(
@@ -641,7 +644,7 @@ class _PersonAccountsModalSheetState extends State<PersonAccountsModalSheet> {
                                     foregroundColor: Colors.white,
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(10),
-                                      side: const BorderSide(color: surfaceBorder),
+                                      side: BorderSide(color: surfaceBorder),
                                     ),
                                     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                                   ),
@@ -723,8 +726,8 @@ class _PersonAccountsModalSheetState extends State<PersonAccountsModalSheet> {
             // Row 1: Service Name + Action Cell (Pencil + Trash)
             Container(
               height: 30,
-              decoration: const BoxDecoration(
-                color: Color(0x66121417),
+              decoration: BoxDecoration(
+                color: surfaceCell,
                 border: Border(bottom: BorderSide(color: surfaceBorder)),
               ),
               child: Row(
@@ -746,9 +749,9 @@ class _PersonAccountsModalSheetState extends State<PersonAccountsModalSheet> {
                   ),
                   Container(
                     height: 30,
-                    decoration: const BoxDecoration(
+                    decoration: BoxDecoration(
                       border: Border(left: BorderSide(color: surfaceBorder)),
-                      color: Color(0xB3121417),
+                      color: surfaceCell,
                     ),
                     padding: const EdgeInsets.symmetric(horizontal: 4),
                     child: Row(
@@ -779,7 +782,7 @@ class _PersonAccountsModalSheetState extends State<PersonAccountsModalSheet> {
             // Row 2: Mail Icon + Email + '@' Copy Button
             Container(
               height: 29,
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 border: Border(bottom: BorderSide(color: surfaceBorder)),
               ),
               child: Row(
@@ -816,8 +819,8 @@ class _PersonAccountsModalSheetState extends State<PersonAccountsModalSheet> {
                       width: 28,
                       height: 29,
                       alignment: Alignment.center,
-                      decoration: const BoxDecoration(
-                        color: Color(0x4D121417),
+                      decoration: BoxDecoration(
+                        color: surfaceCell,
                         border: Border(left: BorderSide(color: surfaceBorder)),
                       ),
                       child: const Text(
@@ -870,8 +873,8 @@ class _PersonAccountsModalSheetState extends State<PersonAccountsModalSheet> {
                   ),
                   Container(
                     height: 29,
-                    decoration: const BoxDecoration(
-                      color: Color(0x4D121417),
+                    decoration: BoxDecoration(
+                      color: surfaceCell,
                       border: Border(left: BorderSide(color: surfaceBorder)),
                     ),
                     child: Row(
@@ -926,11 +929,13 @@ class _AddEditAccountSheet extends StatefulWidget {
 }
 
 class _AddEditAccountSheetState extends State<_AddEditAccountSheet> {
-  static const Color surfaceMain = Color(0xFF121417);
-  static const Color surfaceCell = Color(0xFF16191E);
-  static const Color surfaceBorder = Color(0xFF22262E);
+  static bool get _isDark => AppTheme.isDarkMode;
+  static Color get surfaceMain => _isDark ? const Color(0xFF121417) : const Color(0xFFFFFFFF);
+  static Color get surfaceCell => _isDark ? const Color(0xFF16191E) : const Color(0xFFF9FAFB);
+  static Color get surfaceBorder => _isDark ? const Color(0xFF22262E) : const Color(0xFFE5E7EB);
   static const Color brandGreen = Color(0xFF00A86B);
   static const Color brandYellow = Color(0xFFEAB308);
+  static Color get textWhite => _isDark ? Colors.white : const Color(0xFF111827);
 
   final PeopleRepository _repository = PeopleRepository();
   final _formKey = GlobalKey<FormState>();
@@ -1029,7 +1034,7 @@ class _AddEditAccountSheetState extends State<_AddEditAccountSheet> {
     final isEdit = widget.account != null;
 
     return Container(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: surfaceMain,
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
         border: Border(
@@ -1153,7 +1158,7 @@ class _AddEditAccountSheetState extends State<_AddEditAccountSheet> {
                             Expanded(
                               child: TextFormField(
                                 controller: _serviceController,
-                                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white),
+                                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: textWhite),
                                 decoration: const InputDecoration(
                                   hintText: 'e.g. Apple, PayPal, Netflix...',
                                   hintStyle: TextStyle(fontSize: 11, color: Color(0xFF52525B)),
@@ -1230,8 +1235,8 @@ class _AddEditAccountSheetState extends State<_AddEditAccountSheet> {
                         // Quick fill bar
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                          decoration: const BoxDecoration(
-                            color: Color(0x66121417),
+                          decoration: BoxDecoration(
+                            color: surfaceCell,
                             border: Border(top: BorderSide(color: surfaceBorder)),
                           ),
                           child: Row(

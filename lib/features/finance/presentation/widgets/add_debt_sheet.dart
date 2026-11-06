@@ -1,3 +1,4 @@
+import '../../../../core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:remixicon/remixicon.dart';
@@ -43,12 +44,15 @@ class _AddDebtSheetState extends State<AddDebtSheet> {
   DateTime? _dueDate;
   bool _isSaving = false;
 
-  static const Color surfaceMain = Color(0xFF121413);
-  static const Color surfaceField = Color(0xFF171A19);
-  static const Color surfaceBorder = Color(0xFF242927);
+  static bool get _isDark => AppTheme.isDarkMode;
+  static Color get surfaceMain => _isDark ? const Color(0xFF121413) : const Color(0xFFFFFFFF);
+  static Color get surfaceField => _isDark ? const Color(0xFF171A19) : const Color(0xFFF9FAFB);
+  static Color get surfaceBorder => _isDark ? const Color(0xFF242927) : const Color(0xFFE5E7EB);
   static const Color brandGreen = Color(0xFF00A86B);
   static const Color brandYellow = Color(0xFFEAB308);
   static const Color brandRed = Color(0xFFEF4444);
+  static Color get textMuted => _isDark ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280);
+  static Color get textWhite => _isDark ? Colors.white : const Color(0xFF111827);
 
   static const List<Map<String, dynamic>> _paymentMethods = [
     {'key': 'bit', 'title': 'تطبيق Bit', 'icon': Remix.smartphone_line, 'color': brandYellow},
@@ -105,7 +109,7 @@ class _AddDebtSheetState extends State<AddDebtSheet> {
       builder: (context, child) {
         return Theme(
           data: ThemeData.dark().copyWith(
-            colorScheme: const ColorScheme.dark(
+            colorScheme: ColorScheme.dark(
               primary: brandGreen,
               onPrimary: Colors.black,
               surface: surfaceMain,
@@ -115,7 +119,7 @@ class _AddDebtSheetState extends State<AddDebtSheet> {
               backgroundColor: surfaceMain,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
-                side: const BorderSide(color: surfaceBorder),
+                side: BorderSide(color: surfaceBorder),
               ),
             ),
           ),
@@ -238,9 +242,9 @@ class _AddDebtSheetState extends State<AddDebtSheet> {
       constraints: BoxConstraints(
         maxHeight: MediaQuery.of(context).size.height * 0.94,
       ),
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: surfaceMain,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
         border: Border(
           top: BorderSide(color: surfaceBorder, width: 1.0),
           left: BorderSide(color: surfaceBorder, width: 1.0),
@@ -279,7 +283,7 @@ class _AddDebtSheetState extends State<AddDebtSheet> {
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Container(
                   padding: const EdgeInsets.only(bottom: 10),
-                  decoration: const BoxDecoration(
+                  decoration: BoxDecoration(
                     border: Border(bottom: BorderSide(color: surfaceBorder, width: 1.0)),
                   ),
                   child: Row(
@@ -520,7 +524,7 @@ class _AddDebtSheetState extends State<AddDebtSheet> {
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       fontFamily: 'Cairo',
-                      color: isSelected ? Colors.white : const Color(0xFFD4D4D8),
+                      color: isSelected ? textWhite : textMuted,
                       fontSize: 11,
                       fontWeight: FontWeight.bold,
                     ),
@@ -587,9 +591,9 @@ class _AddDebtSheetState extends State<AddDebtSheet> {
                     _nameCtrl.text = val;
                     _selectedPersonId = null;
                   },
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontFamily: 'Cairo',
-                    color: Colors.white,
+                    color: textWhite,
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
                   ),
@@ -622,7 +626,7 @@ class _AddDebtSheetState extends State<AddDebtSheet> {
                     color: surfaceMain,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
-                      side: const BorderSide(color: surfaceBorder),
+                      side: BorderSide(color: surfaceBorder),
                     ),
                     child: ConstrainedBox(
                       constraints: const BoxConstraints(maxHeight: 180, maxWidth: 300),
@@ -674,9 +678,9 @@ class _AddDebtSheetState extends State<AddDebtSheet> {
             child: TextFormField(
               controller: _amountCtrl,
               keyboardType: const TextInputType.numberWithOptions(decimal: true),
-              style: const TextStyle(
+              style: TextStyle(
                 fontFamily: 'Cairo',
-                color: Colors.white,
+                color: textWhite,
                 fontSize: 13,
                 fontWeight: FontWeight.bold,
               ),

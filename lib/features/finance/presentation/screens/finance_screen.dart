@@ -31,12 +31,21 @@ class _FinanceScreenState extends State<FinanceScreen> {
   bool _isLoading = true;
   String _selectedFilter = 'all'; // 'all', 'they_owe', 'i_owe', 'received', 'settled', 'bit', 'cash', 'bank', 'check'
 
-  static const Color surfaceMain = Color(0xFF121413);
-  static const Color surfaceField = Color(0xFF171A19);
-  static const Color surfaceBorder = Color(0xFF242927);
-  static const Color brandGreen = Color(0xFF00A86B);
-  static const Color brandYellow = Color(0xFFEAB308);
+  bool get _isDark => Theme.of(context).brightness == Brightness.dark;
+
+  Color get surfaceMain => _isDark ? const Color(0xFF0A0A0C) : const Color(0xFFF8F9FA);
+  Color get surfaceField => _isDark ? const Color(0xFF121215) : const Color(0xFFFFFFFF);
+  Color get surfaceBorder => _isDark ? const Color(0xFF1E1E24) : const Color(0xFFE5E7EB);
+  static const Color brandGreen = Color(0xFF10B981);
+  static const Color brandYellow = Color(0xFFF59E0B);
   static const Color brandRed = Color(0xFFEF4444);
+  Color get textWhite => _isDark ? const Color(0xFFFFFFFF) : const Color(0xFF111827);
+  Color get textMuted => _isDark ? const Color(0xFF71717A) : const Color(0xFF6B7280);
+
+
+
+
+
 
   @override
   void initState() {
@@ -124,9 +133,9 @@ class _FinanceScreenState extends State<FinanceScreen> {
               Flexible(
                 child: Text(
                   message,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontFamily: 'Cairo',
-                    color: Colors.white,
+                    color: textWhite,
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
                   ),
@@ -268,11 +277,11 @@ class _FinanceScreenState extends State<FinanceScreen> {
         backgroundColor: surfaceMain,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
-          side: const BorderSide(color: surfaceBorder),
+          side: BorderSide(color: surfaceBorder),
         ),
-        title: const Text(
+        title: Text(
           'حذف المعاملة',
-          style: TextStyle(fontFamily: 'Cairo', color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15),
+          style: TextStyle(fontFamily: 'Cairo', color: textWhite, fontWeight: FontWeight.bold, fontSize: 15),
         ),
         content: const Text(
           'هل أنت متأكد من حذف هذا السجل المالي وسجل الدفعات المرتبطة به نهائياً؟',
@@ -345,7 +354,7 @@ class _FinanceScreenState extends State<FinanceScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0A0B0B),
+      backgroundColor: surfaceMain,
       body: SafeArea(
         child: _isLoading
             ? const Center(child: CircularProgressIndicator(color: brandGreen, strokeWidth: 2))
@@ -391,7 +400,7 @@ class _FinanceScreenState extends State<FinanceScreen> {
   Widget _buildHeader() {
     return Container(
       padding: const EdgeInsets.only(bottom: 10),
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         border: Border(bottom: BorderSide(color: surfaceBorder, width: 1.0)),
       ),
       child: Row(
@@ -403,12 +412,12 @@ class _FinanceScreenState extends State<FinanceScreen> {
               const SizedBox(width: 8),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: const [
+                children: [
                   Text(
                     'المالية والديون',
                     style: TextStyle(
                       fontFamily: 'Cairo',
-                      color: Colors.white,
+                      color: textWhite,
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
                       height: 1.2,
@@ -487,11 +496,11 @@ class _FinanceScreenState extends State<FinanceScreen> {
                 children: [
                   const Icon(Remix.scales_3_line, color: brandYellow, size: 16),
                   const SizedBox(width: 6),
-                  const Text(
+                  Text(
                     'صافي الحسابات:',
                     style: TextStyle(
                       fontFamily: 'Cairo',
-                      color: Color(0xFFD4D4D8),
+                      color: textWhite,
                       fontSize: 12,
                       fontWeight: FontWeight.w500,
                     ),
@@ -499,9 +508,9 @@ class _FinanceScreenState extends State<FinanceScreen> {
                   const SizedBox(width: 6),
                   Text(
                     '$netPrefix${_formatCurrency(absNet)} ',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontFamily: 'Cairo',
-                      color: Colors.white,
+                      color: textWhite,
                       fontSize: 15,
                       fontWeight: FontWeight.w900,
                     ),
@@ -545,7 +554,7 @@ class _FinanceScreenState extends State<FinanceScreen> {
           ),
 
           const SizedBox(height: 10),
-          const Divider(color: surfaceBorder, height: 1, thickness: 1),
+          Divider(color: surfaceBorder, height: 1, thickness: 1),
           const SizedBox(height: 10),
 
           // الصف السفلي: 3 أعمدة (سلف لي / ديون علي / مقبوضات)
@@ -557,7 +566,7 @@ class _FinanceScreenState extends State<FinanceScreen> {
                   children: [
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
-                      children: const [
+                      children: [
                         Icon(Remix.arrow_left_down_line, color: brandGreen, size: 14),
                         SizedBox(width: 4),
                         Text(
@@ -576,9 +585,9 @@ class _FinanceScreenState extends State<FinanceScreen> {
                       children: [
                         Text(
                           _formatCurrency(_totalTheyOweMe),
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontFamily: 'Cairo',
-                            color: Colors.white,
+                            color: textWhite,
                             fontSize: 13,
                             fontWeight: FontWeight.bold,
                           ),
@@ -606,7 +615,7 @@ class _FinanceScreenState extends State<FinanceScreen> {
                   children: [
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
-                      children: const [
+                      children: [
                         Icon(Remix.arrow_right_up_line, color: brandRed, size: 14),
                         SizedBox(width: 4),
                         Text(
@@ -625,9 +634,9 @@ class _FinanceScreenState extends State<FinanceScreen> {
                       children: [
                         Text(
                           _formatCurrency(_totalIOweThem),
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontFamily: 'Cairo',
-                            color: Colors.white,
+                            color: textWhite,
                             fontSize: 13,
                             fontWeight: FontWeight.bold,
                           ),
@@ -655,7 +664,7 @@ class _FinanceScreenState extends State<FinanceScreen> {
                   children: [
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
-                      children: const [
+                      children: [
                         Icon(Remix.checkbox_circle_line, color: brandYellow, size: 14),
                         SizedBox(width: 4),
                         Text(
@@ -709,11 +718,11 @@ class _FinanceScreenState extends State<FinanceScreen> {
       children: [
         Row(
           children: [
-            const Text(
+            Text(
               'سجل المعاملات',
               style: TextStyle(
                 fontFamily: 'Cairo',
-                color: Colors.white,
+                color: textWhite,
                 fontSize: 12,
                 fontWeight: FontWeight.bold,
               ),
@@ -748,7 +757,7 @@ class _FinanceScreenState extends State<FinanceScreen> {
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
-              children: const [
+              children: [
                 Icon(Remix.add_line, size: 14, color: Color(0xFF0A0B0B)),
                 SizedBox(width: 4),
                 Text(
@@ -817,7 +826,7 @@ class _FinanceScreenState extends State<FinanceScreen> {
         duration: const Duration(milliseconds: 160),
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
         decoration: BoxDecoration(
-          color: surfaceField,
+          color: isSelected ? brandGreen : surfaceField,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
             color: isSelected ? brandGreen : surfaceBorder,
@@ -828,14 +837,14 @@ class _FinanceScreenState extends State<FinanceScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             if (icon != null) ...[
-              Icon(icon, size: 12, color: iconColor ?? (isSelected ? Colors.white : const Color(0xFF9CA3AF))),
+              Icon(icon, size: 12, color: isSelected ? Colors.white : (iconColor ?? textMuted)),
               const SizedBox(width: 4),
             ],
             Text(
               label,
               style: TextStyle(
                 fontFamily: 'Cairo',
-                color: isSelected ? Colors.white : const Color(0xFF9CA3AF),
+                color: isSelected ? Colors.white : textMuted,
                 fontSize: 11,
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
               ),
@@ -905,9 +914,9 @@ class _FinanceScreenState extends State<FinanceScreen> {
                         Flexible(
                           child: Text(
                             person?.name ?? 'شخص غير مسجل',
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontFamily: 'Cairo',
-                              color: Colors.white,
+                              color: textWhite,
                               fontSize: 13.5,
                               fontWeight: FontWeight.bold,
                             ),
@@ -1046,7 +1055,7 @@ class _FinanceScreenState extends State<FinanceScreen> {
           ],
 
           const SizedBox(height: 8),
-          const Divider(color: surfaceBorder, height: 1, thickness: 1),
+          Divider(color: surfaceBorder, height: 1, thickness: 1),
           const SizedBox(height: 6),
 
           // خط أزرار الإجراءات النظيفة
@@ -1068,14 +1077,14 @@ class _FinanceScreenState extends State<FinanceScreen> {
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
-                        children: const [
+                        children: [
                           Icon(Remix.pencil_line, size: 12, color: brandYellow),
                           SizedBox(width: 4),
                           Text(
                             'تعديل',
                             style: TextStyle(
                               fontFamily: 'Cairo',
-                              color: Color(0xFFD4D4D8),
+                              color: textWhite,
                               fontSize: 11,
                               fontWeight: FontWeight.w600,
                             ),
@@ -1099,14 +1108,14 @@ class _FinanceScreenState extends State<FinanceScreen> {
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
-                        children: const [
+                        children: [
                           Icon(Remix.whatsapp_line, size: 12, color: brandGreen),
                           SizedBox(width: 4),
                           Text(
                             'واتساب',
                             style: TextStyle(
                               fontFamily: 'Cairo',
-                              color: Color(0xFFD4D4D8),
+                              color: textWhite,
                               fontSize: 11,
                               fontWeight: FontWeight.w600,
                             ),
@@ -1184,14 +1193,14 @@ class _FinanceScreenState extends State<FinanceScreen> {
       padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 20),
       alignment: Alignment.center,
       child: Column(
-        children: const [
+        children: [
           Icon(Remix.wallet_3_line, size: 36, color: Color(0xFF71717A)),
           SizedBox(height: 12),
           Text(
             'لا توجد معاملات مسجلة في هذا التصفية',
             style: TextStyle(
               fontFamily: 'Cairo',
-              color: Colors.white,
+              color: textWhite,
               fontSize: 14,
               fontWeight: FontWeight.bold,
             ),

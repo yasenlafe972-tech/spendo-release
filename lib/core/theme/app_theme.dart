@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'app_colors.dart';
@@ -34,6 +34,14 @@ class AppTheme {
       await prefs.setString(_prefThemeKey, val);
     } catch (_) {}
   }
+
+  static bool get isLightMode {
+    if (themeModeNotifier.value == ThemeMode.light) return true;
+    if (themeModeNotifier.value == ThemeMode.dark) return false;
+    return WidgetsBinding.instance.platformDispatcher.platformBrightness == Brightness.light;
+  }
+
+  static bool get isDarkMode => !isLightMode;
 
   static void toggleTheme() {
     if (themeModeNotifier.value == ThemeMode.light) {

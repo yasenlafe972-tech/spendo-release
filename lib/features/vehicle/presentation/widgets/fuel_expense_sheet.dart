@@ -1,3 +1,4 @@
+import '../../../../core/theme/app_theme.dart';
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
@@ -14,6 +15,15 @@ import 'multi_fuel_import_sheet.dart';
 /// Uses the calm, balanced dark design with watermarks and segmented cards.
 class FuelExpenseSheet {
   static const String storageKey = 'spendo_vehicle_tracker_v5';
+
+  static bool get _isDark => AppTheme.isDarkMode;
+  static Color get surfaceMain => _isDark ? const Color(0xFF121413) : const Color(0xFFFFFFFF);
+  static Color get surfaceField => _isDark ? const Color(0xFF171A19) : const Color(0xFFF9FAFB);
+  static Color get surfaceBorder => _isDark ? const Color(0xFF242927) : const Color(0xFFE5E7EB);
+  static const Color brandGreen = Color(0xFF00A86B);
+  static const Color brandYellow = Color(0xFFEAB308);
+  static Color get textMuted => _isDark ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280);
+  static Color get textWhite => _isDark ? Colors.white : const Color(0xFF111827);
 
   static Future<bool?> show(
     BuildContext context, {
@@ -46,13 +56,13 @@ class FuelExpenseSheet {
     bool didTriggerInitialPdf = false;
     bool didTriggerInitialImage = false;
 
-    // Design tokens from specifications
-    const surfaceMain = Color(0xFF121413);
-    const surfaceField = Color(0xFF171A19);
-    const surfaceBorder = Color(0xFF242927);
-    const brandGreen = Color(0xFF00A86B);
-    const brandYellow = Color(0xFFEAB308);
-    const textMuted = Color(0xFF9CA3AF);
+    final surfaceMain = FuelExpenseSheet.surfaceMain;
+    final surfaceField = FuelExpenseSheet.surfaceField;
+    final surfaceBorder = FuelExpenseSheet.surfaceBorder;
+    const brandGreen = FuelExpenseSheet.brandGreen;
+    const brandYellow = FuelExpenseSheet.brandYellow;
+    final textMuted = FuelExpenseSheet.textMuted;
+    final textWhite = FuelExpenseSheet.textWhite;
 
     if (!context.mounted) return null;
     return showModalBottomSheet<bool>(
@@ -403,7 +413,7 @@ class FuelExpenseSheet {
                                           padding:
                                               const EdgeInsets.only(right: 9),
                                           child: RichText(
-                                            text: const TextSpan(
+                                            text: TextSpan(
                                               text:
                                                   'أدخل المبلغ أو امسح فاتورة ',
                                               style: TextStyle(
@@ -446,7 +456,7 @@ class FuelExpenseSheet {
                               mainAxisAlignment:
                                   MainAxisAlignment.spaceBetween,
                               children: [
-                                const Text(
+                                Text(
                                   'مسح الفاتورة تلقائياً',
                                   style: TextStyle(
                                     fontSize: 10.5,
@@ -796,7 +806,7 @@ class FuelExpenseSheet {
                                             .last,
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
-                                        style: const TextStyle(
+                                        style: TextStyle(
                                           fontSize: 9,
                                           color: textMuted,
                                         ),
@@ -864,7 +874,7 @@ class FuelExpenseSheet {
                               const SizedBox(height: 3),
                               Text(
                                 'المعاملة: ${duplicateRecord!.title}\nالتاريخ: ${duplicateRecord!.date.day}/${duplicateRecord!.date.month}/${duplicateRecord!.date.year} • المبلغ: ₪${duplicateRecord!.amount.toStringAsFixed(2)}',
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 9.5,
                                   color: textMuted,
                                   height: 1.3,
@@ -886,7 +896,7 @@ class FuelExpenseSheet {
                                                     fontSize: 14)),
                                             content: Text(
                                                 'المبلغ: ₪${duplicateRecord!.amount.toStringAsFixed(2)}\nالتاريخ: ${duplicateRecord!.date.day}/${duplicateRecord!.date.month}/${duplicateRecord!.date.year}',
-                                                style: const TextStyle(
+                                                style: TextStyle(
                                                     color: textMuted)),
                                             actions: [
                                               TextButton(
@@ -981,7 +991,7 @@ class FuelExpenseSheet {
                                       mainAxisAlignment:
                                           MainAxisAlignment.spaceBetween,
                                       children: [
-                                        const Text(
+                                        Text(
                                           'المبلغ المدفوع للوقود',
                                           style: TextStyle(
                                             fontSize: 10.5,
@@ -1138,7 +1148,7 @@ class FuelExpenseSheet {
                                   children: [
                                     Row(
                                       children: [
-                                        const Text(
+                                        Text(
                                           'تاريخ التعبئة:',
                                           style: TextStyle(
                                             fontSize: 10.5,
@@ -1151,10 +1161,10 @@ class FuelExpenseSheet {
                                           ArabicDateHelper
                                               .formatArabicDateWithWeekday(
                                                   selectedDate),
-                                          style: const TextStyle(
+                                          style: TextStyle(
                                             fontSize: 11,
                                             fontWeight: FontWeight.bold,
-                                            color: Colors.white,
+                                            color: textWhite,
                                           ),
                                         ),
                                       ],
@@ -1171,10 +1181,10 @@ class FuelExpenseSheet {
                                             return Theme(
                                               data: ThemeData.dark().copyWith(
                                                 colorScheme:
-                                                    const ColorScheme.dark(
+                                                    ColorScheme.dark(
                                                   primary: brandGreen,
                                                   surface: surfaceField,
-                                                  onSurface: Colors.white,
+                                                  onSurface: textWhite,
                                                 ),
                                               ),
                                               child: child!,
@@ -1242,7 +1252,7 @@ class FuelExpenseSheet {
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(14),
                                 ),
-                                title: const Text(
+                                title: Text(
                                   'تأكيد إضافة فاتورة وقود مكررة',
                                   style: TextStyle(
                                     fontSize: 13.5,
@@ -1250,7 +1260,7 @@ class FuelExpenseSheet {
                                     color: Colors.white,
                                   ),
                                 ),
-                                content: const Text(
+                                content: Text(
                                   'توجد بالفعل تعبئة وقود مسجلة بهذا المبلغ والتاريخ. هل تود بالتأكيد إضافة هذه النسخة المكررة؟',
                                   style: TextStyle(
                                     fontSize: 11,
@@ -1260,7 +1270,7 @@ class FuelExpenseSheet {
                                 actions: [
                                   TextButton(
                                     onPressed: () => Navigator.pop(dialogCtx),
-                                    child: const Text('إلغاء',
+                                    child: Text('إلغاء',
                                         style: TextStyle(
                                             color: textMuted, fontSize: 11)),
                                   ),

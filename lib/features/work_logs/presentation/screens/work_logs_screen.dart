@@ -1,6 +1,6 @@
+import 'package:sanad_app/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:remixicon/remixicon.dart';
-import 'package:sanad_app/core/theme/app_colors.dart';
 import 'package:sanad_app/features/workplaces/models/workplace_model.dart';
 import 'package:sanad_app/features/workplaces/repositories/workplaces_repository.dart';
 import 'package:sanad_app/features/workplaces/presentation/screens/employer_details_screen.dart';
@@ -29,14 +29,16 @@ class _WorkLogsScreenState extends State<WorkLogsScreen> {
   bool _isLoading = true;
 
   // Design Tokens (Matching HTML exactly)
-  static const Color surfaceMain = Color(0xFF121413);
-  static const Color surfaceField = Color(0xFF171A19);
-  static const Color surfaceBorder = Color(0xFF242927);
+  static bool get _isDark => AppTheme.isDarkMode;
+  static Color get surfaceMain => _isDark ? const Color(0xFF121413) : const Color(0xFFF8F9FA);
+  static Color get surfaceField => _isDark ? const Color(0xFF171A19) : const Color(0xFFFFFFFF);
+  static Color get surfaceBorder => _isDark ? const Color(0xFF242927) : const Color(0xFFE5E7EB);
   static const Color brandGreen = Color(0xFF00A86B);
   static const Color brandYellow = Color(0xFFEAB308);
-  static const Color textPrimary = Color(0xFFF3F4F6);
-  static const Color textMuted = Color(0xFF9CA3AF);
-  static const Color textSubtle = Color(0xFF71717A);
+  static Color get textPrimary => _isDark ? const Color(0xFFF3F4F6) : const Color(0xFF111827);
+  static Color get textMuted => _isDark ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280);
+  static Color get textSubtle => _isDark ? const Color(0xFF71717A) : const Color(0xFF9CA3AF);
+  static Color get textWhite => _isDark ? Colors.white : const Color(0xFF111827);
 
   @override
   void initState() {
@@ -166,10 +168,10 @@ class _WorkLogsScreenState extends State<WorkLogsScreen> {
                                         isEdit
                                             ? 'تعديل بيانات المشغّل'
                                             : 'إضافة مشغّل جديد',
-                                        style: const TextStyle(
+                                        style: TextStyle(
                                           fontSize: 12,
                                           fontWeight: FontWeight.bold,
-                                          color: Colors.white,
+                                          color: textWhite,
                                         ),
                                       ),
                                     ],
@@ -177,8 +179,8 @@ class _WorkLogsScreenState extends State<WorkLogsScreen> {
                                   GestureDetector(
                                     onTap: () => Navigator.pop(ctx),
                                     behavior: HitTestBehavior.opaque,
-                                    child: const Padding(
-                                      padding: EdgeInsets.all(4),
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(4),
                                       child: Icon(
                                         Remix.close_line,
                                         size: 18,
@@ -191,7 +193,7 @@ class _WorkLogsScreenState extends State<WorkLogsScreen> {
                               const SizedBox(height: 12),
 
                               // اسم المشغّل / الشركة
-                              const Text(
+                              Text(
                                 'اسم المشغّل / الشركة',
                                 style: TextStyle(
                                   fontSize: 10,
@@ -207,9 +209,9 @@ class _WorkLogsScreenState extends State<WorkLogsScreen> {
                                 ),
                                 child: TextField(
                                   controller: nameCtrl,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                       color: textPrimary, fontSize: 12),
-                                  decoration: const InputDecoration(
+                                  decoration: InputDecoration(
                                     hintText: 'مثال: מזגני אלנור',
                                     hintStyle: TextStyle(
                                         color: textSubtle, fontSize: 12),
@@ -229,7 +231,7 @@ class _WorkLogsScreenState extends State<WorkLogsScreen> {
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
                                       children: [
-                                        const Text(
+                                        Text(
                                           'سعر اليومية (₪)',
                                           style: TextStyle(
                                             fontSize: 10,
@@ -250,10 +252,10 @@ class _WorkLogsScreenState extends State<WorkLogsScreen> {
                                             keyboardType: const TextInputType
                                                 .numberWithOptions(
                                                 decimal: true),
-                                            style: const TextStyle(
+                                            style: TextStyle(
                                                 color: textPrimary,
                                                 fontSize: 12),
-                                            decoration: const InputDecoration(
+                                            decoration: InputDecoration(
                                               hintText: '0',
                                               hintStyle: TextStyle(
                                                   color: textSubtle,
@@ -275,7 +277,7 @@ class _WorkLogsScreenState extends State<WorkLogsScreen> {
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
                                       children: [
-                                        const Text(
+                                        Text(
                                           'المدينة / ملاحظة (اختياري)',
                                           style: TextStyle(
                                             fontSize: 10,
@@ -293,10 +295,10 @@ class _WorkLogsScreenState extends State<WorkLogsScreen> {
                                           ),
                                           child: TextField(
                                             controller: cityCtrl,
-                                            style: const TextStyle(
+                                            style: TextStyle(
                                                 color: textPrimary,
                                                 fontSize: 12),
-                                            decoration: const InputDecoration(
+                                            decoration: InputDecoration(
                                               hintText: 'مثال: القدس',
                                               hintStyle: TextStyle(
                                                   color: textSubtle,
@@ -326,7 +328,7 @@ class _WorkLogsScreenState extends State<WorkLogsScreen> {
                                 ),
                                 child: Row(
                                   children: [
-                                    const Text(
+                                    Text(
                                       'حالة العمل مع المشغّل',
                                       style: TextStyle(
                                         fontSize: 10.5,
@@ -397,7 +399,7 @@ class _WorkLogsScreenState extends State<WorkLogsScreen> {
                                             Container(
                                               width: 5,
                                               height: 5,
-                                              decoration: const BoxDecoration(
+                                              decoration: BoxDecoration(
                                                 shape: BoxShape.circle,
                                                 color: textSubtle,
                                               ),
@@ -502,7 +504,7 @@ class _WorkLogsScreenState extends State<WorkLogsScreen> {
                                     style: OutlinedButton.styleFrom(
                                       foregroundColor: const Color(0xFFD1D5DB),
                                       backgroundColor: surfaceMain,
-                                      side: const BorderSide(
+                                      side: BorderSide(
                                           color: surfaceBorder),
                                       shape: RoundedRectangleBorder(
                                           borderRadius:
@@ -549,10 +551,10 @@ class _WorkLogsScreenState extends State<WorkLogsScreen> {
         backgroundColor: surfaceField,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(14),
-          side: const BorderSide(color: surfaceBorder),
+          side: BorderSide(color: surfaceBorder),
         ),
         title: Row(
-          children: const [
+          children: [
             Icon(Remix.delete_bin_6_line,
                 color: Color(0xFFEF4444), size: 18),
             SizedBox(width: 8),
@@ -570,12 +572,12 @@ class _WorkLogsScreenState extends State<WorkLogsScreen> {
           count > 0
               ? 'هل أنت متأكد من حذف المشغّل "${wp.name}"؟\nسيتم حذف المشغّل وجميع أيام وسجلات العمل التابعة له ($count يوم).'
               : 'هل أنت متأكد من حذف المشغّل "${wp.name}" نهائياً من السجل؟',
-          style: const TextStyle(color: textMuted, fontSize: 12, height: 1.4),
+          style: TextStyle(color: textMuted, fontSize: 12, height: 1.4),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('إلغاء',
+            child: Text('إلغاء',
                 style: TextStyle(color: textMuted, fontSize: 12)),
           ),
           ElevatedButton(
@@ -624,7 +626,7 @@ class _WorkLogsScreenState extends State<WorkLogsScreen> {
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
-        backgroundColor: AppColors.background,
+        backgroundColor: surfaceMain,
         body: SafeArea(
           bottom: false,
           child: Column(
@@ -659,11 +661,11 @@ class _WorkLogsScreenState extends State<WorkLogsScreen> {
                         const SizedBox(width: 8),
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
-                          children: const [
+                          children: [
                             Text(
                               'سجل العمل',
                               style: TextStyle(
-                                color: Colors.white,
+                                color: textWhite,
                                 fontSize: 15,
                                 fontWeight: FontWeight.bold,
                                 height: 1.1,
@@ -693,8 +695,8 @@ class _WorkLogsScreenState extends State<WorkLogsScreen> {
                         _loadData();
                       },
                       behavior: HitTestBehavior.opaque,
-                      child: const Padding(
-                        padding: EdgeInsets.all(4),
+                      child: Padding(
+                        padding: const EdgeInsets.all(4),
                         child: Icon(
                           Remix.settings_4_line,
                           color: textMuted,
@@ -774,16 +776,16 @@ class _WorkLogsScreenState extends State<WorkLogsScreen> {
               children: [
                 Row(
                   mainAxisSize: MainAxisSize.min,
-                  children: const [
-                    Icon(Remix.building_2_line, size: 14, color: brandGreen),
-                    SizedBox(width: 6),
+                  children: [
+                    const Icon(Remix.building_2_line, size: 14, color: brandGreen),
+                    const SizedBox(width: 6),
                     Text.rich(
                       TextSpan(
                         text: 'دليل المشغّلين وأصحاب العمل ',
                         style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.bold,
-                          color: Color(0xFFE5E7EB),
+                          color: textWhite,
                         ),
                         children: [
                           TextSpan(
@@ -845,7 +847,7 @@ class _WorkLogsScreenState extends State<WorkLogsScreen> {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
+                          Text(
                             'المشغّلين النشطين',
                             style: TextStyle(
                               fontSize: 10,
@@ -855,10 +857,10 @@ class _WorkLogsScreenState extends State<WorkLogsScreen> {
                           const SizedBox(height: 2),
                           Text(
                             '$totalEmployers',
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w800,
-                              color: Colors.white,
+                              color: textWhite,
                             ),
                           ),
                         ],
@@ -890,7 +892,7 @@ class _WorkLogsScreenState extends State<WorkLogsScreen> {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
+                          Text(
                             'إجمالي أيام العمل',
                             style: TextStyle(
                               fontSize: 10,
@@ -951,12 +953,12 @@ class _WorkLogsScreenState extends State<WorkLogsScreen> {
             children: [
               const Icon(Remix.list_check_2, size: 14, color: brandGreen),
               const SizedBox(width: 6),
-              const Text(
+              Text(
                 'قائمة المشغّلين',
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                  color: textWhite,
                 ),
               ),
               const SizedBox(width: 4),
@@ -983,16 +985,16 @@ class _WorkLogsScreenState extends State<WorkLogsScreen> {
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
-                children: const [
-                  Icon(Remix.add_line, size: 13, color: brandGreen),
-                  SizedBox(width: 4),
+                children: [
+                  const Icon(Remix.add_line, size: 13, color: brandGreen),
+                  const SizedBox(width: 4),
                   Text.rich(
                     TextSpan(
                       text: 'إضافة مشغّل ',
                       style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                        color: textWhite,
                       ),
                       children: [
                         TextSpan(
@@ -1066,10 +1068,10 @@ class _WorkLogsScreenState extends State<WorkLogsScreen> {
                                 Flexible(
                                   child: Text(
                                     wp.name,
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontSize: 12,
                                       fontWeight: FontWeight.bold,
-                                      color: Colors.white,
+                                      color: textWhite,
                                     ),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
@@ -1156,8 +1158,8 @@ class _WorkLogsScreenState extends State<WorkLogsScreen> {
                     GestureDetector(
                       onTap: () => _openEmployerModal(wp),
                       behavior: HitTestBehavior.opaque,
-                      child: const Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
                         child: Icon(
                           Remix.pencil_line,
                           size: 14,
@@ -1169,8 +1171,8 @@ class _WorkLogsScreenState extends State<WorkLogsScreen> {
                     GestureDetector(
                       onTap: () => _confirmDeleteWorkplace(wp),
                       behavior: HitTestBehavior.opaque,
-                      child: const Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
                         child: Icon(
                           Remix.delete_bin_6_line,
                           size: 14,
@@ -1182,8 +1184,8 @@ class _WorkLogsScreenState extends State<WorkLogsScreen> {
                     GestureDetector(
                       onTap: () => _openEmployerDetails(wp),
                       behavior: HitTestBehavior.opaque,
-                      child: const Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
                         child: Icon(
                           Remix.arrow_left_s_line,
                           size: 16,
@@ -1211,7 +1213,7 @@ class _WorkLogsScreenState extends State<WorkLogsScreen> {
         border: Border.all(color: surfaceBorder),
       ),
       alignment: Alignment.center,
-      child: const Text(
+      child: Text(
         'لا يوجد مشغّلين مسجلين حالياً',
         style: TextStyle(
           fontSize: 12,

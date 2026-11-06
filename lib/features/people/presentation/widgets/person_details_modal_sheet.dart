@@ -1,3 +1,4 @@
+import '../../../../core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:remixicon/remixicon.dart';
@@ -52,12 +53,14 @@ class PersonDetailsModalSheet extends StatefulWidget {
 
 class _PersonDetailsModalSheetState extends State<PersonDetailsModalSheet> {
   // Theme Design Tokens
-  static const Color surfaceMain = Color(0xFF121417);
-  static const Color surfaceCell = Color(0xFF16191E);
-  static const Color surfaceBorder = Color(0xFF22262E);
+  static bool get _isDark => AppTheme.isDarkMode;
+  static Color get surfaceMain => _isDark ? const Color(0xFF121417) : const Color(0xFFFFFFFF);
+  static Color get surfaceCell => _isDark ? const Color(0xFF16191E) : const Color(0xFFF9FAFB);
+  static Color get surfaceBorder => _isDark ? const Color(0xFF22262E) : const Color(0xFFE5E7EB);
   static const Color brandGreen = Color(0xFF00A86B);
   static const Color brandYellow = Color(0xFFEAB308);
   static const Color brandRed = Color(0xFFEF4444);
+  static Color get textWhite => _isDark ? Colors.white : const Color(0xFF111827);
 
   final PeopleRepository _repository = PeopleRepository();
   int _accountsCount = 0;
@@ -99,7 +102,7 @@ class _PersonDetailsModalSheetState extends State<PersonDetailsModalSheet> {
             const SizedBox(width: 8),
             Text(
               message,
-              style: const TextStyle(color: Colors.white, fontSize: 11.5, fontWeight: FontWeight.w600),
+              style: TextStyle(color: textWhite, fontSize: 11.5, fontWeight: FontWeight.w600),
             ),
           ],
         ),
@@ -166,7 +169,7 @@ class _PersonDetailsModalSheetState extends State<PersonDetailsModalSheet> {
         : 'Apple, DaVinci AI, Mapbox, PayPal, cloud.oracle...';
 
     return Container(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: surfaceMain,
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
         border: Border(
@@ -188,7 +191,7 @@ class _PersonDetailsModalSheetState extends State<PersonDetailsModalSheet> {
                 textDirection: TextDirection.ltr,
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                  decoration: const BoxDecoration(
+                  decoration: BoxDecoration(
                     color: surfaceCell,
                     border: Border(bottom: BorderSide(color: surfaceBorder)),
                   ),
@@ -492,8 +495,8 @@ class _PersonDetailsModalSheetState extends State<PersonDetailsModalSheet> {
                 width: 30,
                 height: 44,
                 alignment: Alignment.center,
-                decoration: const BoxDecoration(
-                  color: Color(0x66121417),
+                decoration: BoxDecoration(
+                  color: surfaceCell,
                   border: Border(left: BorderSide(color: surfaceBorder)),
                 ),
                 child: const Icon(Remix.file_copy_line, size: 12, color: Color(0xFFA1A1AA)),

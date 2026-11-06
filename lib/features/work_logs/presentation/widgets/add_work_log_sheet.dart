@@ -1,3 +1,4 @@
+import 'package:sanad_app/core/theme/app_theme.dart';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart' hide TextDirection;
@@ -91,15 +92,17 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
   bool _isFetchingLocation = false;
   List<String> _attachments = [];
 
-  // Design Tokens (Matching HTML exactly)
-  static const Color surfaceMain = Color(0xFF121413);
-  static const Color surfaceField = Color(0xFF171A19);
-  static const Color surfaceBorder = Color(0xFF242927);
+  // Design Tokens (Adaptive Light / Dark Mode)
+  static bool get _isDark => AppTheme.isDarkMode;
+  static Color get surfaceMain => _isDark ? const Color(0xFF121413) : const Color(0xFFFFFFFF);
+  static Color get surfaceField => _isDark ? const Color(0xFF171A19) : const Color(0xFFF9FAFB);
+  static Color get surfaceBorder => _isDark ? const Color(0xFF242927) : const Color(0xFFE5E7EB);
   static const Color brandGreen = Color(0xFF00A86B);
   static const Color brandYellow = Color(0xFFEAB308);
-  static const Color textPrimary = Color(0xFFF3F4F6);
-  static const Color textMuted = Color(0xFF9CA3AF);
-  static const Color textSubtle = Color(0xFF71717A);
+  static Color get textPrimary => _isDark ? const Color(0xFFF3F4F6) : const Color(0xFF111827);
+  static Color get textMuted => _isDark ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280);
+  static Color get textSubtle => _isDark ? const Color(0xFF71717A) : const Color(0xFF9CA3AF);
+  static Color get textWhite => _isDark ? Colors.white : const Color(0xFF111827);
 
   @override
   void initState() {
@@ -352,13 +355,13 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
       builder: (context, child) {
         return Theme(
           data: ThemeData.dark().copyWith(
-            colorScheme: const ColorScheme.dark(
+            colorScheme: ColorScheme.dark(
               primary: brandGreen,
               onPrimary: Colors.white,
               surface: surfaceField,
               onSurface: textPrimary,
             ),
-            dialogTheme: const DialogThemeData(backgroundColor: surfaceMain),
+            dialogTheme: DialogThemeData(backgroundColor: surfaceMain),
           ),
           child: child!,
         );
@@ -414,8 +417,8 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
                       InkWell(
                         onTap: () => Navigator.pop(ctx),
                         borderRadius: BorderRadius.circular(20),
-                        child: const Padding(
-                          padding: EdgeInsets.all(4),
+                        child: Padding(
+                          padding: const EdgeInsets.all(4),
                           child: Icon(Remix.close_line, size: 18, color: textMuted),
                         ),
                       ),
@@ -595,7 +598,7 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           color: surfaceMain,
           borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
           border: Border(
@@ -647,17 +650,17 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
                         const SizedBox(width: 8),
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
-                          children: const [
+                          children: [
                             Text(
                               'تسجيل يوم عمل جديد',
                               style: TextStyle(
-                                color: Colors.white,
+                                color: textWhite,
                                 fontSize: 15,
                                 fontWeight: FontWeight.bold,
                                 height: 1.1,
                               ),
                             ),
-                            SizedBox(height: 1),
+                            const SizedBox(height: 1),
                             Text(
                               'توثيق يوم العمل وإضافته لحساب الشهر تلقائياً',
                               style: TextStyle(
@@ -672,8 +675,8 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
                     GestureDetector(
                       onTap: () => Navigator.pop(context),
                       behavior: HitTestBehavior.opaque,
-                      child: const Padding(
-                        padding: EdgeInsets.all(4),
+                      child: Padding(
+                        padding: const EdgeInsets.all(4),
                         child: Icon(
                           Remix.close_line,
                           color: textMuted,
@@ -696,10 +699,10 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Row(
-                          children: const [
-                            Icon(Remix.building_2_line,
+                          children: [
+                            const Icon(Remix.building_2_line,
                                 size: 13, color: brandYellow),
-                            SizedBox(width: 5),
+                            const SizedBox(width: 5),
                             Text(
                               'اختر المشغّل لهذا اليوم:',
                               style: TextStyle(
@@ -800,7 +803,7 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
                                           border:
                                               Border.all(color: surfaceBorder),
                                         ),
-                                        child: const Text(
+                                        child: Text(
                                           'منتهي',
                                           style: TextStyle(
                                             fontSize: 8.5,
@@ -869,7 +872,7 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
                               Expanded(
                                 child: Row(
                                   children: [
-                                    const Text(
+                                    Text(
                                       'المشغّل المحدد: ',
                                       style: TextStyle(
                                         fontSize: 10.5,
@@ -879,10 +882,10 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
                                     Flexible(
                                       child: Text(
                                         employerName,
-                                        style: const TextStyle(
+                                        style: TextStyle(
                                           fontSize: 12.5,
                                           fontWeight: FontWeight.bold,
-                                          color: Colors.white,
+                                          color: textWhite,
                                         ),
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
@@ -916,7 +919,7 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
                                 ),
                               ),
                               const SizedBox(width: 2),
-                              const Text(
+                              Text(
                                 '/ يوم',
                                 style: TextStyle(
                                   fontSize: 10,
@@ -957,12 +960,12 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
                         Expanded(
                           child: TextField(
                             controller: _cityController,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
-                              color: Colors.white,
+                              color: textWhite,
                             ),
-                            decoration: const InputDecoration(
+                            decoration: InputDecoration(
                               hintText:
                                   'مكان العمل / البلد لهذا اليوم *',
                               hintStyle: TextStyle(
@@ -972,7 +975,7 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
                               border: InputBorder.none,
                               isDense: true,
                               contentPadding:
-                                  EdgeInsets.symmetric(vertical: 6),
+                                  const EdgeInsets.symmetric(vertical: 6),
                             ),
                             onChanged: (val) {
                               setState(() {
@@ -985,8 +988,8 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
                           GestureDetector(
                             onTap: _clearLocation,
                             behavior: HitTestBehavior.opaque,
-                            child: const Padding(
-                              padding: EdgeInsets.all(4),
+                            child: Padding(
+                              padding: const EdgeInsets.all(4),
                               child: Icon(
                                 Remix.close_circle_line,
                                 size: 14,
@@ -1008,13 +1011,13 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
                       children: [
                         Row(
                           mainAxisSize: MainAxisSize.min,
-                          children: const [
-                            Icon(
+                          children: [
+                            const Icon(
                               Remix.history_line,
                               size: 12,
                               color: brandGreen,
                             ),
-                            SizedBox(width: 4),
+                            const SizedBox(width: 4),
                             Text(
                               'أماكن سابقة:',
                               style: TextStyle(
@@ -1127,7 +1130,7 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
                             const SizedBox(height: 2),
                             Text(
                               dateFormatted,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 10,
                                 color: textMuted,
                                 fontFamily: 'monospace',
@@ -1199,16 +1202,16 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
                         const SizedBox(width: 8),
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
-                          children: const [
+                          children: [
                             Text(
                               'المبلغ المستحق لليوم',
                               style: TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.bold,
-                                color: Color(0xFFE5E7EB),
+                                color: textWhite,
                               ),
                             ),
-                            SizedBox(height: 1),
+                            const SizedBox(height: 1),
                             Text(
                               'يُرحّل تلقائياً إلى كشف الحساب الشهري',
                               style: TextStyle(
@@ -1267,7 +1270,7 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
                 ),
                 child: Row(
                   children: [
-                    const Icon(
+                    Icon(
                       Remix.file_list_3_line,
                       size: 16,
                       color: textMuted,
@@ -1276,11 +1279,11 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
                     Expanded(
                       child: TextField(
                         controller: _notesController,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 12,
-                          color: Colors.white,
+                          color: textWhite,
                         ),
-                        decoration: const InputDecoration(
+                        decoration: InputDecoration(
                           hintText: 'ملاحظات وتفاصيل العمل (اختياري)',
                           hintStyle: TextStyle(
                             color: textSubtle,
@@ -1288,7 +1291,7 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
                           ),
                           border: InputBorder.none,
                           isDense: true,
-                          contentPadding: EdgeInsets.symmetric(vertical: 6),
+                          contentPadding: const EdgeInsets.symmetric(vertical: 6),
                         ),
                       ),
                     ),
@@ -1377,7 +1380,7 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
                                 ? _locationAddress!
                                 : (_cityController.text.isNotEmpty ? _cityController.text : 'موقع موثّق على الخريطة ✓'))
                             : 'تحديد شارع أو بلد لتتذكر مكان الشغل لاحقاً',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 9.5,
                           color: textMuted,
                         ),
@@ -1566,16 +1569,16 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
                   const SizedBox(width: 8),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    children: const [
+                    children: [
                       Text(
                         'توثيق العمل بالصور والمرفقات',
                         style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                          color: textWhite,
                         ),
                       ),
-                      SizedBox(height: 1),
+                      const SizedBox(height: 1),
                       Text(
                         'صور المكيف، الفواتير، الكفالات، أو العقد',
                         style: TextStyle(
@@ -1737,7 +1740,7 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
                               ? Image.file(
                                   File(path),
                                   fit: BoxFit.cover,
-                                  errorBuilder: (_, __, ___) => const Icon(
+                                  errorBuilder: (_, __, ___) => Icon(
                                     Remix.image_line,
                                     color: textMuted,
                                     size: 20,
@@ -1760,7 +1763,7 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
                                       padding: const EdgeInsets.symmetric(horizontal: 2),
                                       child: Text(
                                         item.name,
-                                        style: const TextStyle(
+                                        style: TextStyle(
                                           fontSize: 8,
                                           color: textMuted,
                                         ),

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart' hide TextDirection;
-import 'package:sanad_app/core/theme/app_colors.dart';
 import 'package:sanad_app/core/utils/spendo_haptic_feedback.dart';
 import 'package:sanad_app/features/people/models/person_model.dart';
 import 'package:sanad_app/features/people/repositories/people_repository.dart';
@@ -25,15 +24,17 @@ class _PeopleScreenState extends State<PeopleScreen> {
   String _searchQuery = '';
   final TextEditingController _searchController = TextEditingController();
 
-  // Design Tokens matching HTML specification 1:1
-  static const surfaceMain = Color(0xFF121413);
-  static const surfaceField = Color(0xFF171A19);
-  static const surfaceBorder = Color(0xFF242927);
-  static const brandGreen = Color(0xFF00A86B);
-  static const brandYellow = Color(0xFFEAB308);
-  static const textPrimary = Color(0xFFF3F4F6);
-  static const textMuted = Color(0xFF9CA3AF);
-  static const textSubtle = Color(0xFF6B7280);
+  bool get _isDark => Theme.of(context).brightness == Brightness.dark;
+
+  // Design Tokens - Adaptive to active theme
+  Color get surfaceMain => _isDark ? const Color(0xFF0A0A0C) : const Color(0xFFF8F9FA);
+  Color get surfaceField => _isDark ? const Color(0xFF121215) : const Color(0xFFFFFFFF);
+  Color get surfaceBorder => _isDark ? const Color(0xFF1E1E24) : const Color(0xFFE5E7EB);
+  static const Color brandGreen = Color(0xFF10B981);
+  static const Color brandYellow = Color(0xFFF59E0B);
+  Color get textPrimary => _isDark ? const Color(0xFFFFFFFF) : const Color(0xFF111827);
+  Color get textMuted => _isDark ? const Color(0xFF71717A) : const Color(0xFF6B7280);
+  Color get textSubtle => _isDark ? const Color(0xFF52525B) : const Color(0xFF9CA3AF);
 
   @override
   void initState() {
@@ -196,8 +197,8 @@ class _PeopleScreenState extends State<PeopleScreen> {
                                   InkWell(
                                     onTap: () => Navigator.pop(ctx),
                                     borderRadius: BorderRadius.circular(6),
-                                    child: const Padding(
-                                      padding: EdgeInsets.all(3),
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(3),
                                       child: Icon(Icons.close_rounded,
                                           size: 18, color: textMuted),
                                     ),
@@ -259,7 +260,7 @@ class _PeopleScreenState extends State<PeopleScreen> {
                                                   Theme(
                                                 data: ThemeData.dark().copyWith(
                                                   colorScheme:
-                                                      const ColorScheme.dark(
+                                                      ColorScheme.dark(
                                                     primary: brandGreen,
                                                     surface: surfaceField,
                                                   ),
@@ -428,7 +429,7 @@ class _PeopleScreenState extends State<PeopleScreen> {
                                             Border.all(color: surfaceBorder),
                                       ),
                                       alignment: Alignment.center,
-                                      child: const Text(
+                                      child: Text(
                                         'إلغاء',
                                         style: TextStyle(
                                           color: textMuted,
@@ -459,7 +460,7 @@ class _PeopleScreenState extends State<PeopleScreen> {
       padding: const EdgeInsets.only(bottom: 4),
       child: Text(
         label,
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: 10,
           color: textMuted,
           fontWeight: FontWeight.w600,
@@ -488,10 +489,10 @@ class _PeopleScreenState extends State<PeopleScreen> {
         keyboardType: keyboardType,
         textDirection: isLtr ? TextDirection.ltr : TextDirection.rtl,
         textAlign: isLtr ? TextAlign.right : TextAlign.start,
-        style: const TextStyle(color: textPrimary, fontSize: 11.5),
+        style: TextStyle(color: textPrimary, fontSize: 11.5),
         decoration: InputDecoration(
           hintText: placeholder,
-          hintStyle: const TextStyle(color: textSubtle, fontSize: 11),
+          hintStyle: TextStyle(color: textSubtle, fontSize: 11),
           hintTextDirection: isLtr ? TextDirection.ltr : TextDirection.rtl,
           border: InputBorder.none,
           contentPadding:
@@ -515,9 +516,9 @@ class _PeopleScreenState extends State<PeopleScreen> {
         backgroundColor: surfaceField,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
-          side: const BorderSide(color: surfaceBorder),
+          side: BorderSide(color: surfaceBorder),
         ),
-        title: const Text(
+        title: Text(
           'تأكيد الحذف',
           style: TextStyle(
             color: textPrimary,
@@ -527,12 +528,12 @@ class _PeopleScreenState extends State<PeopleScreen> {
         ),
         content: Text(
           'هل أنت متأكد من حذف بطاقة "${person.name}" نهائياً من السجل؟',
-          style: const TextStyle(color: textMuted, fontSize: 12, height: 1.4),
+          style: TextStyle(color: textMuted, fontSize: 12, height: 1.4),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('إلغاء', style: TextStyle(color: textMuted)),
+            child: Text('إلغاء', style: TextStyle(color: textMuted)),
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(ctx, true),
@@ -565,7 +566,7 @@ class _PeopleScreenState extends State<PeopleScreen> {
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
-        backgroundColor: AppColors.background,
+        backgroundColor: surfaceMain,
         body: SafeArea(
           bottom: false,
           child: Column(
@@ -601,12 +602,12 @@ class _PeopleScreenState extends State<PeopleScreen> {
                               color: brandGreen,
                             ),
                             const SizedBox(width: 6),
-                            const Text(
+                            Text(
                               'الأشخاص المسجلين',
                               style: TextStyle(
                                 fontSize: 15,
                                 fontWeight: FontWeight.bold,
-                                color: Colors.white,
+                                color: textPrimary,
                               ),
                             ),
                             const SizedBox(width: 4),
@@ -621,7 +622,7 @@ class _PeopleScreenState extends State<PeopleScreen> {
                           ],
                         ),
                         const SizedBox(height: 2),
-                        const Text(
+                        Text(
                           'بطاقات مصغّرة • إدارة البيانات والهويات',
                           style: TextStyle(
                             fontSize: 10,
@@ -636,7 +637,7 @@ class _PeopleScreenState extends State<PeopleScreen> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         IconButton(
-                          icon: const Icon(Icons.settings_outlined,
+                          icon: Icon(Icons.settings_outlined,
                               color: textMuted, size: 20),
                           tooltip: 'الإعدادات',
                           padding: EdgeInsets.zero,
@@ -700,16 +701,16 @@ class _PeopleScreenState extends State<PeopleScreen> {
                     controller: _searchController,
                     onChanged: (val) => setState(() => _searchQuery = val),
                     style:
-                        const TextStyle(color: textPrimary, fontSize: 12),
+                        TextStyle(color: textPrimary, fontSize: 12),
                     decoration: InputDecoration(
                       hintText: 'بحث بالاسم، الهاتف، أو رقم الهوية...',
                       hintStyle:
-                          const TextStyle(color: textSubtle, fontSize: 11.5),
-                      prefixIcon: const Icon(Icons.search_rounded,
+                          TextStyle(color: textSubtle, fontSize: 11.5),
+                      prefixIcon: Icon(Icons.search_rounded,
                           size: 16, color: textMuted),
                       suffixIcon: _searchQuery.isNotEmpty
                           ? IconButton(
-                              icon: const Icon(Icons.close_rounded,
+                              icon: Icon(Icons.close_rounded,
                                   size: 15, color: textMuted),
                               onPressed: () {
                                 _searchController.clear();
@@ -729,10 +730,10 @@ class _PeopleScreenState extends State<PeopleScreen> {
               // 4. شبكة البطاقات المصغرة (بطاقتان في كل صف)
               Expanded(
                 child: _isLoading
-                    ? const Center(
+                    ? Center(
                         child: CircularProgressIndicator(color: brandGreen))
                     : filtered.isEmpty
-                        ? const Center(
+                        ? Center(
                             child: Padding(
                               padding: EdgeInsets.symmetric(vertical: 32),
                               child: Text(
