@@ -43,3 +43,13 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Database & local dumps
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+
+# Local scratch directory
+/scratch/
