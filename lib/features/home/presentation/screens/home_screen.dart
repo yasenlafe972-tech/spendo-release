@@ -216,10 +216,6 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   // Calculations
-  double get _totalWorkIncome {
-    return _filteredWorkLogs.fold(0.0, (sum, l) => sum + l.totalEarned);
-  }
-
   double get _totalFoodExpense {
     return _filteredDailyExpenses
         .where((e) => e.category == 'food')
@@ -243,26 +239,6 @@ class _HomeScreenState extends State<HomeScreen> {
         .fold(0.0, (sum, m) => sum + m.amount);
     return daily + vehicleStore;
   }
-
-  double get _totalFuelExpense {
-    final vehicleFuel = _filteredFuelRecords.fold(0.0, (sum, f) => sum + f.amount);
-    final cardFuel = _filteredDailyExpenses
-        .where((e) => e.category == 'fuel')
-        .fold(0.0, (sum, e) => sum + e.amount);
-    return vehicleFuel + cardFuel;
-  }
-
-  double get _totalMaintenanceExpense => _filteredMaintenanceRecords
-      .where((m) =>
-          !(m.notes?.contains('مشتريات') == true ||
-              m.title.contains('Yellow') ||
-              m.provider?.contains('Yellow') == true))
-      .fold(0.0, (sum, m) => sum + m.amount);
-
-  double get _totalAllExpenses =>
-      _totalFoodExpense + _totalShoppingExpense + _totalFuelExpense + _totalMaintenanceExpense;
-
-  double get _netMonthlyIncome => _totalWorkIncome - _totalAllExpenses;
 
   String _getMonthLabel() {
     if (_selectedMonthKey == 'all') return 'كافة الفترات';
@@ -523,19 +499,15 @@ class _HomeScreenState extends State<HomeScreen> {
                       _buildHeader(userName),
                       const SizedBox(height: 12),
 
-                      // 1. بطاقة الملخص المالي الرئيسي (صافي الدخل الشهري)
-                      _buildMainSummaryCard(),
+                      // 1. بطاقتين مدمجتين للمصاريف (أكل + مشتريات)
+                      _buildExpenseCategoriesRow(),
                       const SizedBox(height: 10),
 
-                      // 2. بطاقتين مدمجتين للمصاريف (أكل + مشتريات) - بدون أيام عمل ومعدل يومية ومقبوض
-                      _buildExpenseCategoriesRow(),
-                      const SizedBox(height: 12),
-
-                      // 3. أزرار الإجراءات السريعة (تسجيل يوم عمل + تسجيل دفعة Apple Pay / כאל)
+                      // 2. أزرار الإجراءات السريعة (تسجيل يوم عمل + تعبئة وقود)
                       _buildQuickActionButtons(),
                       const SizedBox(height: 12),
 
-                      // 4. سجل آخر السجلات (الكل | أكل | مشتريات | وقود)
+                      // 3. سجل آخر السجلات (الكل | أكل | مشتريات | وقود)
                       _buildRecentTransactionsSection(),
                       const SizedBox(height: 16),
                     ],
@@ -638,175 +610,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // 1. بطاقة الملخص المالي الرئيسي (تصميم هادئ ومريح للعين)
-  Widget _buildMainSummaryCard() {
-    return Container(
-      padding: const EdgeInsets.all(15),
-      decoration: BoxDecoration(
-        color: surfaceField,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: surfaceBorder),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                children: [
-                  const Icon(Remix.wallet_3_line, size: 14, color: brandGreen),
-                  const SizedBox(width: 6),
-                  Text(
-                    'صافي الدخل الشهري',
-                    style: TextStyle(
-                      fontSize: 11.5,
-                      fontWeight: FontWeight.w600,
-                      color: textMuted,
-                    ),
-                  ),
-                ],
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-                decoration: BoxDecoration(
-                  color: brandGreen.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: const Text(
-                  'محدث اليوم',
-                  style: TextStyle(
-                    fontSize: 9.5,
-                    fontWeight: FontWeight.w700,
-                    color: brandGreen,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
 
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.baseline,
-            textBaseline: TextBaseline.alphabetic,
-            children: [
-              Text(
-                _formatAmount(_netMonthlyIncome),
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.w800,
-                  color: textWhite,
-                  letterSpacing: -0.5,
-                  fontFeatures: const [FontFeature.tabularFigures()],
-                ),
-              ),
-              const SizedBox(width: 6),
-              const Text(
-                '₪',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: brandYellow,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-
-          Container(
-            padding: const EdgeInsets.only(top: 10),
-            decoration: BoxDecoration(
-              border: Border(top: BorderSide(color: surfaceBorder)),
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(5),
-                        decoration: BoxDecoration(
-                          color: surfaceElevated,
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: surfaceBorder.withValues(alpha: 0.6)),
-                        ),
-                        child: const Icon(Remix.arrow_up_circle_line,
-                            size: 15, color: brandGreen),
-                      ),
-                      const SizedBox(width: 8),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'إجمالي العمل',
-                            style: TextStyle(fontSize: 10, color: textMuted),
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            '${_formatAmount(_totalWorkIncome)} ₪',
-                            style: TextStyle(
-                              fontSize: 12.5,
-                              fontWeight: FontWeight.bold,
-                              color: textWhite,
-                              fontFeatures: const [FontFeature.tabularFigures()],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-
-                Container(
-                  width: 1,
-                  height: 28,
-                  color: surfaceBorder,
-                  margin: const EdgeInsets.symmetric(horizontal: 8),
-                ),
-
-                Expanded(
-                  child: Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(5),
-                        decoration: BoxDecoration(
-                          color: surfaceElevated,
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: surfaceBorder.withValues(alpha: 0.6)),
-                        ),
-                        child: const Icon(Remix.bank_card_line,
-                            size: 15, color: brandYellow),
-                      ),
-                      const SizedBox(width: 8),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'المصاريف والوقود',
-                            style: TextStyle(fontSize: 10, color: textMuted),
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            '${_formatAmount(_totalAllExpenses)} ₪',
-                            style: TextStyle(
-                              fontSize: 12.5,
-                              fontWeight: FontWeight.bold,
-                              color: textWhite,
-                              fontFeatures: const [FontFeature.tabularFigures()],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
   // 2. استغلال المساحة لملخص الأكل والمشتريات
   Widget _buildExpenseCategoriesRow() {
@@ -917,7 +721,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // 3. أزرار الإجراءات السريعة (تصميم مريح مع زوايا ناعمة)
+  // أزرار الإجراءات السريعة (تصميم مريح ومصغر)
   Widget _buildQuickActionButtons() {
     return Row(
       children: [
@@ -925,7 +729,7 @@ class _HomeScreenState extends State<HomeScreen> {
         Expanded(
           child: Material(
             color: brandGreen,
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(10),
             child: InkWell(
               onTap: () async {
                 SpendoHaptics.light();
@@ -934,20 +738,20 @@ class _HomeScreenState extends State<HomeScreen> {
                   _loadData();
                 }
               },
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: BorderRadius.circular(10),
               child: Container(
-                height: 44,
+                height: 36,
                 alignment: Alignment.center,
                 child: const Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Icon(Remix.briefcase_4_line,
-                        size: 16, color: Colors.white),
-                    SizedBox(width: 7),
+                        size: 14, color: Colors.white),
+                    SizedBox(width: 5),
                     Text(
                       'تسجيل يوم عمل',
                       style: TextStyle(
-                        fontSize: 12.5,
+                        fontSize: 11.5,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
                       ),
@@ -960,11 +764,11 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         const SizedBox(width: 8),
 
-        // زر تعبئة وقود (رمادي داكن ناعم بحواف محددة)
+        // زر تعبئة وقود (رمادي ناعم بحواف محددة)
         Expanded(
           child: Material(
             color: surfaceField,
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(10),
             child: InkWell(
               onTap: () {
                 SpendoHaptics.light();
@@ -973,11 +777,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   onSaved: _loadData,
                 );
               },
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: BorderRadius.circular(10),
               child: Container(
-                height: 44,
+                height: 36,
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(10),
                   border: Border.all(color: surfaceBorder),
                 ),
                 alignment: Alignment.center,
@@ -985,12 +789,12 @@ class _HomeScreenState extends State<HomeScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     const Icon(Remix.gas_station_line,
-                        size: 16, color: brandYellow),
-                    const SizedBox(width: 7),
+                        size: 14, color: brandYellow),
+                    const SizedBox(width: 5),
                     Text(
                       'تعبئة وقود',
                       style: TextStyle(
-                        fontSize: 12.5,
+                        fontSize: 11.5,
                         fontWeight: FontWeight.bold,
                         color: textWhite,
                       ),
