@@ -214,5 +214,41 @@ Yellow
       expect(emptyResult.liters, isNull);
       expect(emptyResult.isFuel, isFalse);
     });
+
+    test('fuel receipt must not contain fuel metrics in items list', () {
+      const sample = '''
+פז בית הכרם
+חשבונית מס קבלה 12345
+תאריך 05/11/2026 10:00
+בנזין 95 אוקטן
+כמות 15.00 ליטר
+מחיר לליטר 7.77 ש"ח
+סה"כ 116.55 ש"ח
+תשלום Yellow
+''';
+      final result = ReceiptOcrService.parseReceiptText(sample);
+      expect(result.isFuel, isTrue);
+      expect(result.amount, equals(116.55));
+      expect(result.liters, equals(15.0));
+      expect(result.pricePerLiter, equals(7.77));
+      // Fuel metrics must NEVER be in items (items represents maintenance parts/services)
+      expect(result.items, isEmpty);
+    });
+
+    test('maintenance receipt detects genuine parts and services in items', () {
+      const sample = '''
+מוסך מורשה כרמיאל
+חשבונית מס 45678
+החלפת דיסק בלם ורפידות קדמיות
+שמן מנוע 4T
+סה"כ לתשלום 650.00 ש"ח
+''';
+      final result = ReceiptOcrService.parseReceiptText(sample);
+      expect(result.isFuel, isFalse);
+      expect(result.amount, equals(650.0));
+      expect(result.items, contains('דיסק בלם (צלחת)'));
+      expect(result.items, contains('רפידות בלם'));
+      expect(result.items, contains('שמן מנוע 4T מקורי'));
+    });
   });
 }

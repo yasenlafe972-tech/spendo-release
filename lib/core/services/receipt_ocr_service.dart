@@ -652,58 +652,65 @@ class ReceiptOcrService {
 
     // 6. Extract Invoice / Receipt Number (Prioritize real fiscal invoice numbers)
     String? invoiceNumber;
-    final invRegex = RegExp(
-      r"""(?:חשבונית(?:\s*מס(?:'?|פר)?)?(?:[\s\/]*קבלה)?|חשבונית|קבלה|מספר\s*חשבונית)[\s\S]{0,40}?(\d{8,18})""",
+
+    // Priority 1: High-precision fiscal invoice number (8 to 18 digits) near invoice/receipt header
+    final fiscalInvRegex = RegExp(
+      r"""(?:חשבונית(?:\s*(?:מס(?:'?|פר)?|מספר))?(?:[\s\/]*קבלה)?|קבלה(?:\s*(?:מס(?:'?|פר)?|מספר))?|מספר\s*(?:חשבונית|קבלה))[\s\S]{0,40}?(\d{8,18})""",
       caseSensitive: false,
     );
-    final invMatch = invRegex.firstMatch(clean);
-    if (invMatch != null) {
-      invoiceNumber = invMatch.group(1);
+    final fiscalMatch = fiscalInvRegex.firstMatch(clean);
+    if (fiscalMatch != null) {
+      invoiceNumber = fiscalMatch.group(1);
     } else {
-      // Standalone numeric sequence of 12 to 18 digits starting with 0 (standard Israeli fiscal invoice number)
+      // Priority 2: Standalone numeric sequence of 12 to 18 digits starting with 0 (standard Israeli fiscal invoice format)
       final standaloneInvMatch = RegExp(r'(?<!\d)(0\d{11,17})(?!\d)').firstMatch(clean);
       if (standaloneInvMatch != null) {
         invoiceNumber = standaloneInvMatch.group(1);
       } else {
-        final fallbackMatch = RegExp(
-          r"""(?:אסמכתא|אישור|קוד)[^\d\n\r]{0,10}[:#]?\s*(\d{4,16})""",
+        // Priority 3: Standard short-to-medium invoice or receipt number (3 to 7 digits) on same line or within 30 chars
+        final shortInvRegex = RegExp(
+          r"""(?:חשבונית(?:\s*(?:מס(?:'?|פר)?|מספר))?(?:[\s\/]*קבלה)?|קבלה(?:\s*(?:מס(?:'?|פר)?|מספר))?|מספר\s*(?:חשבונית|קבלה))[^\d\n\r]{0,30}[:#]?\s*(\d{3,7})""",
           caseSensitive: false,
-        ).firstMatch(clean);
-        if (fallbackMatch != null) {
-          invoiceNumber = fallbackMatch.group(1);
+        );
+        final shortMatch = shortInvRegex.firstMatch(clean);
+        if (shortMatch != null) {
+          invoiceNumber = shortMatch.group(1);
+        } else {
+          // Priority 4: Reference / Approval codes (אסמכתא, אישור, קוד)
+          final fallbackMatch = RegExp(
+            r"""(?:אסמכתא|אישור|קוד)[^\d\n\r]{0,12}[:#]?\s*(\d{3,16})""",
+            caseSensitive: false,
+          ).firstMatch(clean);
+          if (fallbackMatch != null) {
+            invoiceNumber = fallbackMatch.group(1);
+          }
         }
       }
     }
 
     // 7. Extract Detected Items
+    // BUSINESS LOGIC RULE: Fuel metrics (liters, pricePerLiter, payment app, fuel grade)
+    // are TRANSACTION ATTRIBUTES and FUEL METRICS, NOT maintenance parts or labor services (القطع والأعمال).
+    // Therefore, detectedItems must NOT contain fuel metrics. Only genuine non-fuel parts/services
+    // or store purchase items belong in items.
     final detectedItems = <String>[];
-    if (receiptIsFuel) {
-      detectedItems.add('דלק 95 אוקטן');
-      if (providerName.isNotEmpty) {
-        detectedItems.add('תשלום $providerName');
-      }
-      if (liters != null) {
-        detectedItems.add('כמות: $liters ליטר');
-      }
-      if (pricePerLiter != null) {
-        detectedItems.add('מחיר לליטר: $pricePerLiter ₪');
-      }
-    } else {
+    if (!receiptIsFuel) {
       if (lower.contains('yellow')) {
         detectedItems.add('מشتريات متجر Yellow');
       }
-      if (clean.contains('דיסק')) detectedItems.add('דיסק בלם (צלחת)');
-      if (clean.contains('רפיד')) detectedItems.add('רפידות בלם');
-      if (clean.contains('טיימינג')) detectedItems.add('רצועת טיימינג');
-      if (clean.contains('צמיג')) detectedItems.add('צמיג קדמי 110/90-13');
-      if (clean.contains('שמן מנוע') || clean.contains('שמן 4T')) {
-        detectedItems.add('שמן מנוע 4T מקורי');
-      } else if (clean.contains('שמן')) {
-        detectedItems.add('שמן מנוע / גיר');
-      }
-      if (clean.contains('מסכת') || clean.contains('מגן')) {
-        detectedItems.add('פלסטיקה ומגן גחון');
-      }
+    }
+    // Genuine maintenance parts and labor services (never fuel metrics)
+    if (clean.contains('דיסק')) detectedItems.add('דיסק בלם (צלחת)');
+    if (clean.contains('רפיד')) detectedItems.add('רפידות בלם');
+    if (clean.contains('טיימינג')) detectedItems.add('רצועת טיימינג');
+    if (clean.contains('צמיג')) detectedItems.add('צמיג קדמי 110/90-13');
+    if (clean.contains('שמן מנוע') || clean.contains('שמן 4T')) {
+      detectedItems.add('שמן מנוע 4T מקורי');
+    } else if (!receiptIsFuel && clean.contains('שמן')) {
+      detectedItems.add('שמן מנוע / גיר');
+    }
+    if (clean.contains('מסכת') || clean.contains('מגן')) {
+      detectedItems.add('פלסטיקה ומגן גחון');
     }
 
     // 8. Build Title

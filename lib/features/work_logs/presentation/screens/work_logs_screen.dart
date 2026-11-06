@@ -384,12 +384,12 @@ class _WorkLogsScreenState extends State<WorkLogsScreen> {
                                         padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
                                         decoration: BoxDecoration(
                                           color: currentStatus == 'completed'
-                                              ? Colors.white.withValues(alpha: 0.1)
+                                              ? (_isDark ? Colors.white.withValues(alpha: 0.1) : const Color(0xFFE5E7EB))
                                               : surfaceField,
                                           borderRadius: BorderRadius.circular(6),
                                           border: Border.all(
                                             color: currentStatus == 'completed'
-                                                ? Colors.white.withValues(alpha: 0.6)
+                                                ? (_isDark ? Colors.white.withValues(alpha: 0.6) : const Color(0xFF9CA3AF))
                                                 : surfaceBorder,
                                           ),
                                         ),
@@ -411,7 +411,7 @@ class _WorkLogsScreenState extends State<WorkLogsScreen> {
                                                 fontSize: 10,
                                                 fontWeight: FontWeight.bold,
                                                 color: currentStatus == 'completed'
-                                                    ? Colors.white
+                                                    ? (_isDark ? Colors.white : const Color(0xFF1F2937))
                                                     : textMuted,
                                               ),
                                             ),
@@ -502,7 +502,7 @@ class _WorkLogsScreenState extends State<WorkLogsScreen> {
                                   const SizedBox(width: 8),
                                   OutlinedButton(
                                     style: OutlinedButton.styleFrom(
-                                      foregroundColor: const Color(0xFFD1D5DB),
+                                      foregroundColor: textMuted,
                                       backgroundColor: surfaceMain,
                                       side: BorderSide(
                                           color: surfaceBorder),

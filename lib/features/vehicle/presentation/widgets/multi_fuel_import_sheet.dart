@@ -185,10 +185,7 @@ class _MultiFuelImportSheetState extends State<MultiFuelImportSheet> {
           notes: r.isFuel ? 'استيراد وقود Yellow' : 'مشتريات متجر Yellow',
           items: r.items.isNotEmpty
               ? r.items
-              : [
-                  if (computedLiters != null) 'בנזין 95 אוקטן ($computedLiters ליטר)',
-                  r.isFuel ? 'תשלום Yellow פז' : 'مشتريات Yellow',
-                ],
+              : (r.isFuel ? null : const ['מشتريات متجر Yellow']),
         );
         newRecords.add(rec);
 

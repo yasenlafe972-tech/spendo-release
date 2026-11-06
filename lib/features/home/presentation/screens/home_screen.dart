@@ -1373,102 +1373,128 @@ class _HomeScreenState extends State<HomeScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
       ),
       builder: (ctx) {
+        final media = MediaQuery.of(ctx);
+        final bottomInset = media.viewInsets.bottom;
+        final bottomPadding = media.padding.bottom > 0
+            ? media.padding.bottom
+            : media.viewPadding.bottom;
+
         return Directionality(
           textDirection: TextDirection.rtl,
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 18),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Center(
-                  child: Container(
-                    width: 32,
-                    height: 3.5,
-                    margin: const EdgeInsets.only(bottom: 10),
-                    decoration: BoxDecoration(
-                      color: surfaceBorder,
-                      borderRadius: BorderRadius.circular(99),
+          child: SafeArea(
+            top: false,
+            bottom: true,
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(
+                16,
+                12,
+                16,
+                bottomInset > 0
+                    ? bottomInset + 12
+                    : (bottomPadding > 0 ? bottomPadding + 14 : 22),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 36,
+                      height: 4,
+                      margin: const EdgeInsets.only(bottom: 12),
+                      decoration: BoxDecoration(
+                        color: surfaceBorder,
+                        borderRadius: BorderRadius.circular(99),
+                      ),
                     ),
                   ),
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            expense.merchantName,
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
-                              color: textWhite,
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              expense.merchantName,
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
+                                color: textWhite,
+                              ),
                             ),
-                          ),
-                          Text(
-                            'المبلغ: ${expense.amount.toStringAsFixed(0)} ₪ • ${expense.sourceTitle}',
-                            style: TextStyle(fontSize: 11, color: textMuted),
-                          ),
-                        ],
+                            const SizedBox(height: 2),
+                            Text(
+                              'المبلغ: ${expense.amount.toStringAsFixed(0)} ₪ • ${expense.sourceTitle}',
+                              style: TextStyle(
+                                fontSize: 11.5,
+                                fontWeight: FontWeight.w600,
+                                color: textMuted,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                    IconButton(
-                      onPressed: () async {
-                        Navigator.pop(ctx);
-                        await DailyExpenseService.deleteExpense(expense.id);
-                        _loadData();
-                      },
-                      icon: const Icon(Remix.delete_bin_6_line,
-                          color: brandRed, size: 18),
-                      tooltip: 'حذف السجل',
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 10),
-                Text(
-                  'حدد صنف هذا المحل (سيتذكره التطبيق تلقائياً في كل دفعة قادمة):',
-                  style: TextStyle(fontSize: 10.5, color: textMuted),
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    Expanded(
-                      child: _buildCategorySelectButton(
-                        ctx: ctx,
-                        expense: expense,
-                        categoryKey: 'food',
-                        label: 'أكل',
-                        icon: Remix.restaurant_2_line,
-                        color: brandYellow,
+                      IconButton(
+                        onPressed: () async {
+                          Navigator.pop(ctx);
+                          await DailyExpenseService.deleteExpense(expense.id);
+                          _loadData();
+                        },
+                        icon: const Icon(Remix.delete_bin_6_line,
+                            color: brandRed, size: 18),
+                        tooltip: 'حذف السجل',
                       ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    'حدد صنف هذا المحل (سيتذكره التطبيق تلقائياً في كل دفعة قادمة):',
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color: textMuted,
                     ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: _buildCategorySelectButton(
-                        ctx: ctx,
-                        expense: expense,
-                        categoryKey: 'shopping',
-                        label: 'مشتريات',
-                        icon: Remix.shopping_bag_3_line,
-                        color: brandGreen,
+                  ),
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildCategorySelectButton(
+                          ctx: ctx,
+                          expense: expense,
+                          categoryKey: 'food',
+                          label: 'أكل',
+                          icon: Remix.restaurant_2_line,
+                          color: brandYellow,
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: _buildCategorySelectButton(
-                        ctx: ctx,
-                        expense: expense,
-                        categoryKey: 'fuel',
-                        label: 'وقود',
-                        icon: Remix.gas_station_line,
-                        color: brandYellow,
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: _buildCategorySelectButton(
+                          ctx: ctx,
+                          expense: expense,
+                          categoryKey: 'shopping',
+                          label: 'مشتريات',
+                          icon: Remix.shopping_bag_3_line,
+                          color: brandGreen,
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-              ],
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: _buildCategorySelectButton(
+                          ctx: ctx,
+                          expense: expense,
+                          categoryKey: 'fuel',
+                          label: 'وقود',
+                          icon: Remix.gas_station_line,
+                          color: brandYellow,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
         );

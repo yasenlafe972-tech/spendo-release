@@ -101,7 +101,7 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
   static const Color brandYellow = Color(0xFFEAB308);
   static Color get textPrimary => _isDark ? const Color(0xFFF3F4F6) : const Color(0xFF111827);
   static Color get textMuted => _isDark ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280);
-  static Color get textSubtle => _isDark ? const Color(0xFF71717A) : const Color(0xFF9CA3AF);
+  static Color get textSubtle => _isDark ? const Color(0xFF71717A) : const Color(0xFF6B7280);
   static Color get textWhite => _isDark ? Colors.white : const Color(0xFF111827);
 
   @override
@@ -1053,7 +1053,7 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
                                     fontSize: 10,
                                     fontWeight: FontWeight.w600,
                                     color: isSelected
-                                        ? brandYellow
+                                        ? (_isDark ? brandYellow : const Color(0xFFB45309))
                                         : textMuted,
                                   ),
                                 ),

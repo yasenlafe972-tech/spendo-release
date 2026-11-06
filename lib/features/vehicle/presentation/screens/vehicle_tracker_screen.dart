@@ -1998,7 +1998,7 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: surfaceField,
+      backgroundColor: surfaceMain,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -2093,7 +2093,7 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: surfaceField,
+      backgroundColor: surfaceMain,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -2191,7 +2191,7 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: surfaceField,
+      backgroundColor: surfaceMain,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -2343,7 +2343,7 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: surfaceField,
+      backgroundColor: surfaceMain,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -2517,7 +2517,7 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: surfaceField,
+      backgroundColor: surfaceMain,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
       ),
@@ -2694,7 +2694,7 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                                 'التقط صورة للفاتورة أو اخترها من الألبوم لاستخراج البيانات',
                                 style: TextStyle(
                                   fontSize: 11,
-                                  color: AppColors.textMuted,
+                                  color: textMuted,
                                 ),
                               ),
                             ],
@@ -2757,7 +2757,7 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                             color: surfaceField,
                             borderRadius: BorderRadius.circular(16),
                             border: Border.all(
-                                color: AppColors.surfaceCardBorder),
+                                color: surfaceBorder),
                           ),
                           child: Row(
                             children: [
@@ -2789,7 +2789,7 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                                       overflow: TextOverflow.ellipsis,
                                       style: TextStyle(
                                         fontSize: 10.5,
-                                        color: AppColors.textMuted,
+                                        color: textMuted,
                                       ),
                                     ),
                                   ],
@@ -2896,7 +2896,7 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                                       'التاريخ: ${duplicateRecord!.date.day}/${duplicateRecord!.date.month}/${duplicateRecord!.date.year} • المبلغ: ₪${duplicateRecord!.amount.toStringAsFixed(2)}${duplicateRecord!.invoiceNumber != null ? ' • رقم #${duplicateRecord!.invoiceNumber}' : ''}',
                                       style: TextStyle(
                                         fontSize: 11,
-                                        color: AppColors.textMuted,
+                                        color: textMuted,
                                       ),
                                     ),
                                   ],
@@ -3018,10 +3018,10 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                                   fontWeight: FontWeight.w700,
                                   color: textWhite,
                                 ),
-                                decoration: const InputDecoration(
+                                decoration: InputDecoration(
                                   labelText: 'اسم الفاتورة والبيانات الفنية',
                                   labelStyle: TextStyle(
-                                      color: AppColors.textMuted, fontSize: 11),
+                                      color: textMuted, fontSize: 11),
                                   isDense: true,
                                 ),
                               ),
@@ -3034,10 +3034,10 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                                   fontWeight: FontWeight.w800,
                                   color: AppColors.spendoGreen,
                                 ),
-                                decoration: const InputDecoration(
+                                decoration: InputDecoration(
                                   labelText: 'المبلغ الإجمالي المستخرج',
                                   labelStyle: TextStyle(
-                                      color: AppColors.textMuted, fontSize: 11),
+                                      color: textMuted, fontSize: 11),
                                   suffixText: '₪',
                                   isDense: true,
                                 ),
@@ -3047,7 +3047,7 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                                 'التاريخ: ${parsedResult!.date.day}/${parsedResult!.date.month}/${parsedResult!.date.year} • الفئة: ${parsedResult!.isFuel ? 'وقود' : 'صيانة וחלפים'}',
                                 style: TextStyle(
                                   fontSize: 11,
-                                  color: AppColors.textMuted,
+                                  color: textMuted,
                                 ),
                               ),
                             ],
@@ -3152,7 +3152,7 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: surfaceField,
+      backgroundColor: surfaceMain,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
       ),
@@ -3240,7 +3240,7 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                                     record.date),
                                 style: TextStyle(
                                   fontSize: 11.5,
-                                  color: AppColors.textMuted,
+                                  color: textMuted,
                                 ),
                               ),
                             ],
@@ -3370,7 +3370,7 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                       ],
                     ),
                   ),
-                  if (record.items != null && record.items!.isNotEmpty) ...[
+                  if (!isFuel && record.items != null && record.items!.isNotEmpty) ...[
                     const SizedBox(height: 16),
                     Container(
                       width: double.infinity,
@@ -3415,7 +3415,7 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                                   color: surfaceField,
                                   borderRadius: BorderRadius.circular(10),
                                   border: Border.all(
-                                      color: AppColors.surfaceCardBorder),
+                                      color: surfaceBorder),
                                 ),
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
@@ -3475,8 +3475,8 @@ ${record.provider != null ? '- المزود: ${record.provider}' : ''}
                           label: Text('نسخ التفاصيل'),
                           style: OutlinedButton.styleFrom(
                             foregroundColor: textWhite,
-                            side: const BorderSide(
-                                color: AppColors.surfaceCardBorder),
+                            side: BorderSide(
+                                color: surfaceBorder),
                             padding: const EdgeInsets.symmetric(vertical: 12),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(14),
@@ -3583,7 +3583,7 @@ ${record.provider != null ? '- المزود: ${record.provider}' : ''}
           label,
           style: TextStyle(
             fontSize: 12,
-            color: AppColors.textMuted,
+            color: textMuted,
           ),
         ),
         const Spacer(),
@@ -3596,7 +3596,7 @@ ${record.provider != null ? '- المزود: ${record.provider}' : ''}
               fontSize: 12,
               fontWeight: isHighlight ? FontWeight.w800 : FontWeight.w600,
               color:
-                  isHighlight ? AppColors.spendoGreen : textWhite,
+                  isHighlight ? brandGreen : textWhite,
             ),
           ),
         ),

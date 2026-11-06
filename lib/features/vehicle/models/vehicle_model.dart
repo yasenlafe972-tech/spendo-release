@@ -1,6 +1,12 @@
 import 'dart:convert';
 
-enum ExpenseCategory { fuel, maintenance }
+enum ExpenseCategory {
+  fuel,
+  maintenance;
+
+  bool get isFuel => this == ExpenseCategory.fuel;
+  bool get isMaintenance => this == ExpenseCategory.maintenance;
+}
 
 class MaintenancePart {
   final String id;
@@ -105,6 +111,9 @@ class VehicleExpenseRecord {
     this.notes,
     this.items,
   });
+
+  bool get isFuel => category == ExpenseCategory.fuel;
+  bool get isMaintenance => category == ExpenseCategory.maintenance;
 
   VehicleExpenseRecord copyWith({
     String? id,
@@ -259,7 +268,7 @@ class VehicleDataState {
           liters: 6.0,
           pricePerLiter: 7.77,
           notes: 'תדלוק מהיר באפליקציית Yellow משאבה 05 - רכב 55-505-403',
-          items: const ['דלק 95 אוקטן (6.0 ליטר)', 'תשלום Yellow פז'],
+          items: null,
         ),
         VehicleExpenseRecord(
           id: 'inv_user_2026_10',

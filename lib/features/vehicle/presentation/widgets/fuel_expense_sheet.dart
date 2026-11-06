@@ -299,11 +299,7 @@ class FuelExpenseSheet {
                     : 'תשלום אפליקציית Yellow',
                 items: parsedResult?.items.isNotEmpty == true
                     ? parsedResult!.items
-                    : [
-                        if (computedLiters != null)
-                          'בנזין 95 אוקטן ($computedLiters ליטר)',
-                        'תשלום Yellow פז',
-                      ],
+                    : null,
               );
 
               final updated = [newRecord, ...state.history];
