@@ -7,6 +7,7 @@ import 'package:sanad_app/core/theme/app_theme.dart';
 import 'package:sanad_app/core/security/security_service.dart';
 import 'package:sanad_app/core/database/database_helper.dart';
 import 'package:sanad_app/core/services/auth_link_service.dart';
+import 'package:sanad_app/core/services/deletion_sync_service.dart';
 import 'package:sanad_app/features/auth/presentation/screens/auth_screen.dart';
 import 'package:sanad_app/features/home/presentation/screens/main_navigation_screen.dart';
 
@@ -111,6 +112,13 @@ void main() async {
     await DatabaseHelper.instance.database;
   } catch (e) {
     debugPrint('DatabaseHelper initialization notice: $e');
+  }
+
+  // Initialize distributed deletion tombstone ledger
+  try {
+    await DeletionSyncService.init();
+  } catch (e) {
+    debugPrint('DeletionSyncService initialization notice: $e');
   }
 
   await AppTheme.initThemeMode();

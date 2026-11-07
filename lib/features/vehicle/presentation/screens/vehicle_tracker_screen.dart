@@ -8,12 +8,14 @@ import 'package:flutter/services.dart';
 import 'package:remixicon/remixicon.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/database/database_helper.dart';
+import '../../../../core/services/deletion_sync_service.dart';
 import '../../../../core/services/firebase_backup_service.dart';
 import '../../../../core/services/israel_gov_api_service.dart';
 import '../../../../core/services/receipt_ocr_service.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/arabic_date_helper.dart';
 import '../../../../core/utils/spendo_haptic_feedback.dart';
+import '../../../../core/widgets/spendo_confirm_delete_dialog.dart';
 import '../../models/vehicle_model.dart';
 import '../widgets/fuel_expense_sheet.dart';
 import '../widgets/multi_fuel_import_sheet.dart';
@@ -1883,6 +1885,7 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                         .where((x) => x.id != item.id)
                         .toList();
                     _saveState(_state.copyWith(history: updated));
+                    DeletionSyncService.recordDeletion(_storageKey, item.id);
                   },
                   background: Container(
                     alignment: Alignment.centerLeft,
@@ -3761,53 +3764,25 @@ ${record.provider != null ? '- المزود: ${record.provider}' : ''}
                       const SizedBox(width: 10),
                       Expanded(
                         child: ElevatedButton.icon(
-                          onPressed: () {
-                            SpendoHaptics.light();
-                            showDialog(
-                              context: context,
-                              builder: (dialogCtx) => AlertDialog(
-                                backgroundColor: surfaceField,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                                title: Text(
-                                  'حذف المعاملة؟',
-                                  style: TextStyle(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w800,
-                                    color: textWhite,
-                                  ),
-                                ),
-                                content: Text(
-                                  'هل أنت متأكد من حذف فاتورة "${record.title}" نهائياً من السجل؟',
-                                  style: TextStyle(
-                                    fontSize: 12.5,
-                                    color: textMuted,
-                                  ),
-                                ),
-                                actions: [
-                                  TextButton(
-                                    onPressed: () => Navigator.pop(dialogCtx),
-                                    child: const Text('إلغاء'),
-                                  ),
-                                  ElevatedButton(
-                                    onPressed: () {
-                                      Navigator.pop(dialogCtx);
-                                      Navigator.pop(ctx);
-                                      final updated = _state.history
-                                          .where((x) => x.id != record.id)
-                                          .toList();
-                                      _saveState(_state.copyWith(history: updated));
-                                    },
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: AppColors.dangerRed,
-                                      foregroundColor: Colors.white,
-                                    ),
-                                    child: const Text('حذف'),
-                                  ),
-                                ],
-                              ),
+                          onPressed: () async {
+                            final confirmed = await SpendoConfirmDeleteDialog.show(
+                              context,
+                              title: 'حذف المعاملة',
+                              itemName: record.title,
+                              itemIcon: record.isFuel
+                                  ? Remix.gas_station_line
+                                  : Remix.tools_line,
+                              description: 'هل أنت متأكد من حذف هذه المعاملة نهائياً من سجل المركبة؟',
+                              confirmLabel: 'حذف',
                             );
+                            if (confirmed && context.mounted) {
+                              Navigator.pop(ctx);
+                              final updated = _state.history
+                                  .where((x) => x.id != record.id)
+                                  .toList();
+                              _saveState(_state.copyWith(history: updated));
+                              await DeletionSyncService.recordDeletion(_storageKey, record.id);
+                            }
                           },
                           icon: const Icon(Remix.delete_bin_line,
                               size: 16, color: AppColors.dangerRed),

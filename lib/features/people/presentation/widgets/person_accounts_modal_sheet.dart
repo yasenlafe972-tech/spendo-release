@@ -9,6 +9,7 @@ import 'package:sanad_app/features/people/models/person_account_model.dart';
 import 'package:sanad_app/features/people/repositories/people_repository.dart';
 import 'package:sanad_app/features/people/presentation/widgets/person_details_modal_sheet.dart';
 import 'package:sanad_app/features/people/presentation/widgets/add_edit_person_sheet.dart';
+import 'package:sanad_app/core/widgets/spendo_confirm_delete_dialog.dart';
 
 /// Spendo Mini Logo Painter (matches the 3-polygon official logo mark)
 class SpendoMiniLogoPainter extends CustomPainter {
@@ -92,7 +93,6 @@ class _PersonAccountsModalSheetState extends State<PersonAccountsModalSheet> {
   static Color get surfaceBorder => _isDark ? const Color(0xFF22262E) : const Color(0xFFE5E7EB);
   static const Color brandGreen = Color(0xFF00A86B);
   static const Color brandYellow = Color(0xFFEAB308);
-  static const Color brandRed = Color(0xFFEF4444);
   static Color get textWhite => _isDark ? Colors.white : const Color(0xFF111827);
   static Color get textMuted => _isDark ? const Color(0xFF9CA3AF) : const Color(0xFF4B5563);
 
@@ -195,33 +195,13 @@ class _PersonAccountsModalSheetState extends State<PersonAccountsModalSheet> {
   }
 
   Future<void> _confirmDelete(PersonAccountModel account) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: surfaceMain,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-          side: BorderSide(color: surfaceBorder),
-        ),
-        title: Text(
-          'حذف الحساب',
-          style: TextStyle(color: textWhite, fontSize: 14, fontWeight: FontWeight.bold),
-        ),
-        content: Text(
-          'هل أنت متأكد من حذف حساب (${account.service}) نهائياً؟',
-          style: TextStyle(color: textMuted, fontSize: 12.5),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('إلغاء', style: TextStyle(color: Color(0xFFA1A1AA))),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('حذف', style: TextStyle(color: brandRed, fontWeight: FontWeight.bold)),
-          ),
-        ],
-      ),
+    final confirmed = await SpendoConfirmDeleteDialog.show(
+      context,
+      title: 'حذف الحساب',
+      itemName: account.service,
+      itemIcon: Remix.key_2_line,
+      description: 'هل أنت متأكد من حذف هذا الحساب وكلمة المرور الخاصة به نهائياً؟',
+      confirmLabel: 'حذف الحساب',
     );
 
     if (confirmed == true) {

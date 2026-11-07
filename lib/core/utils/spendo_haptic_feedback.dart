@@ -34,6 +34,15 @@ class SpendoHaptics {
     }
   }
 
+  /// Warning/Alert feedback for destructive action prompts and delete confirmations.
+  static Future<void> warning() async {
+    try {
+      await HapticFeedback.mediumImpact();
+    } catch (_) {
+      // Gracefully ignore on unsupported devices
+    }
+  }
+
   /// Selection click feedback for picker wheels, carousels, or segment switches.
   static Future<void> selection() async {
     try {

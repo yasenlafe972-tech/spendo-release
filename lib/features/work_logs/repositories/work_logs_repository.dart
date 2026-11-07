@@ -1,5 +1,6 @@
 import 'package:sqflite/sqflite.dart';
 import '../../../core/database/database_helper.dart';
+import '../../../core/services/deletion_sync_service.dart';
 import '../../../core/services/firebase_backup_service.dart';
 import '../models/work_log_model.dart';
 
@@ -152,6 +153,8 @@ class WorkLogsRepository {
   Future<void> deleteWorkLog(String id) async {
     final db = await _dbHelper.database;
     await db.delete('work_logs', where: 'id = ?', whereArgs: [id]);
+    await DeletionSyncService.recordDeletion('work_logs', id);
+    DatabaseHelper.notifyDataChanged();
     FirebaseBackupService.instance.scheduleAutoBackup();
   }
 }

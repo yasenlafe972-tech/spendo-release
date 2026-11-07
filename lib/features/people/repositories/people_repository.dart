@@ -1,6 +1,7 @@
 import 'package:sqflite/sqflite.dart';
 import '../../../core/database/database_helper.dart';
 import '../../../core/security/security_service.dart';
+import '../../../core/services/deletion_sync_service.dart';
 import '../../../core/services/firebase_backup_service.dart';
 import '../models/person_model.dart';
 import '../models/person_account_model.dart';
@@ -87,11 +88,32 @@ class PeopleRepository {
   /// Deletes a person and cascades to their work logs and payments
   Future<void> deletePerson(String id) async {
     final db = await _dbHelper.database;
-    await db.delete(
-      'people',
-      where: 'id = ?',
-      whereArgs: [id],
-    );
+    await db.transaction((txn) async {
+      final accounts = await txn.query(
+        'person_accounts',
+        columns: ['id'],
+        where: 'person_id = ?',
+        whereArgs: [id],
+      );
+      await txn.delete(
+        'person_accounts',
+        where: 'person_id = ?',
+        whereArgs: [id],
+      );
+      for (final a in accounts) {
+        final aid = a['id']?.toString();
+        if (aid != null) {
+          await DeletionSyncService.recordDeletion('person_accounts', aid);
+        }
+      }
+      await txn.delete(
+        'people',
+        where: 'id = ?',
+        whereArgs: [id],
+      );
+      await DeletionSyncService.recordDeletion('people', id);
+    });
+    DatabaseHelper.notifyDataChanged();
     FirebaseBackupService.instance.scheduleAutoBackup();
   }
 
@@ -183,6 +205,8 @@ class PeopleRepository {
       where: 'id = ?',
       whereArgs: [id],
     );
+    await DeletionSyncService.recordDeletion('person_accounts', id);
+    DatabaseHelper.notifyDataChanged();
     FirebaseBackupService.instance.scheduleAutoBackup(
       debounce: const Duration(seconds: 1),
     );

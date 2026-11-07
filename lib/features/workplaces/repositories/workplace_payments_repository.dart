@@ -1,4 +1,5 @@
 import 'package:sanad_app/core/database/database_helper.dart';
+import 'package:sanad_app/core/services/deletion_sync_service.dart';
 import 'package:sanad_app/core/services/firebase_backup_service.dart';
 import 'package:sanad_app/features/workplaces/models/workplace_payment_model.dart';
 
@@ -61,6 +62,8 @@ class WorkplacePaymentsRepository {
       where: 'id = ?',
       whereArgs: [id],
     );
+    await DeletionSyncService.recordDeletion('workplace_payments', id);
+    DatabaseHelper.notifyDataChanged();
     FirebaseBackupService.instance.scheduleAutoBackup();
   }
 }

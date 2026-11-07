@@ -10,6 +10,7 @@ import 'package:sanad_app/features/work_logs/repositories/work_logs_repository.d
 import 'package:sanad_app/features/settings/presentation/screens/app_settings_screen.dart';
 import 'package:sanad_app/core/utils/spendo_haptic_feedback.dart';
 import 'package:sanad_app/core/database/database_helper.dart';
+import 'package:sanad_app/core/widgets/spendo_confirm_delete_dialog.dart';
 
 /// سجل العمل - دليل المشغّلين وأصحاب العمل (מעסיקים)
 ///
@@ -559,57 +560,15 @@ class _WorkLogsScreenState extends State<WorkLogsScreen> {
     }).toList();
     final count = matchedLogs.length;
 
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: surfaceField,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(14),
-          side: BorderSide(color: surfaceBorder),
-        ),
-        title: Row(
-          children: [
-            Icon(Remix.delete_bin_6_line,
-                color: Color(0xFFEF4444), size: 18),
-            SizedBox(width: 8),
-            Text(
-              'تأكيد الحذف',
-              style: TextStyle(
-                color: textPrimary,
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ],
-        ),
-        content: Text(
-          count > 0
-              ? 'هل أنت متأكد من حذف المشغّل "${wp.name}"؟\nسيتم حذف المشغّل وجميع أيام وسجلات العمل التابعة له ($count يوم).'
-              : 'هل أنت متأكد من حذف المشغّل "${wp.name}" نهائياً من السجل؟',
-          style: TextStyle(color: textMuted, fontSize: 12, height: 1.4),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: Text('إلغاء',
-                style: TextStyle(color: textMuted, fontSize: 12)),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFEF4444),
-              foregroundColor: Colors.white,
-              elevation: 0,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8)),
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-            ),
-            onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('حذف',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
-          ),
-        ],
-      ),
+    final confirmed = await SpendoConfirmDeleteDialog.show(
+      context,
+      title: 'تأكيد حذف المشغّل',
+      itemName: wp.name,
+      itemIcon: Remix.building_2_line,
+      warningNote: count > 0
+          ? 'سيتم حذف المشغّل وجميع أيام وسجلات العمل التابعة له ($count يوم عمل).'
+          : 'سيتم حذف المشغّل نهائياً من السجل.',
+      confirmLabel: 'حذف المشغّل',
     );
 
     if (confirmed == true) {

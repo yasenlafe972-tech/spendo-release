@@ -13,6 +13,7 @@ import '../../repositories/finance_repository.dart';
 import '../widgets/add_debt_sheet.dart';
 import '../widgets/record_repayment_sheet.dart';
 import '../../../../core/database/database_helper.dart';
+import '../../../../core/widgets/spendo_confirm_delete_dialog.dart';
 
 /// Spendo Finance & Personal Debts Screen.
 /// Designed 1:1 based on the Spendo Obsidian Dark Design System.
@@ -278,39 +279,14 @@ class _FinanceScreenState extends State<FinanceScreen> {
   }
 
   Future<void> _confirmDelete(DebtModel debt) async {
-    SpendoHaptics.light();
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: surfaceMain,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-          side: BorderSide(color: surfaceBorder),
-        ),
-        title: Text(
-          'حذف المعاملة',
-          style: TextStyle(fontFamily: 'Cairo', color: textWhite, fontWeight: FontWeight.bold, fontSize: 15),
-        ),
-        content: const Text(
-          'هل أنت متأكد من حذف هذا السجل المالي وسجل الدفعات المرتبطة به نهائياً؟',
-          style: TextStyle(fontFamily: 'Cairo', color: Color(0xFF9CA3AF), fontSize: 12),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('إلغاء', style: TextStyle(fontFamily: 'Cairo', color: Color(0xFF71717A))),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: brandRed,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-            ),
-            onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('حذف', style: TextStyle(fontFamily: 'Cairo', fontWeight: FontWeight.bold)),
-          ),
-        ],
-      ),
+    final personName = _peopleMap[debt.personId]?.name ?? 'معاملة مالية';
+    final confirmed = await SpendoConfirmDeleteDialog.show(
+      context,
+      title: 'حذف المعاملة المالية',
+      itemName: '$personName - ${debt.originalAmount.toStringAsFixed(0)} ₪',
+      itemIcon: Remix.hand_coin_line,
+      description: 'هل أنت متأكد من حذف هذا السجل المالي وسجل الدفعات المرتبطة به نهائياً؟',
+      confirmLabel: 'حذف',
     );
 
     if (confirmed == true) {

@@ -1,3 +1,4 @@
+import '../../../core/services/deletion_sync_service.dart';
 import '../../../core/services/firebase_backup_service.dart';
 import '../../../core/services/location_service.dart';
 import 'dart:async';
@@ -486,6 +487,8 @@ class DailyExpenseService {
     final current = await getAllExpenses();
     final updated = current.where((e) => e.id != id).toList();
     await saveAllExpenses(updated);
+    await DeletionSyncService.recordDeletion(_expensesKey, id);
+    expensesChangedNotifier.value++;
   }
 
   /// تغيير صنف حركة وتحديث ذاكرة المحل لجميع حركاته بنفس الاسم

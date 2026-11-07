@@ -1,5 +1,6 @@
 import 'package:sqflite/sqflite.dart';
 import '../../../core/database/database_helper.dart';
+import '../../../core/services/deletion_sync_service.dart';
 import '../../../core/services/firebase_backup_service.dart';
 import '../models/payment_model.dart';
 import '../models/debt_model.dart';
@@ -65,7 +66,24 @@ class FinanceRepository {
 
   Future<void> deleteDebt(String id) async {
     final db = await _dbHelper.database;
-    await db.delete('debts', where: 'id = ?', whereArgs: [id]);
+    await db.transaction((txn) async {
+      final payments = await txn.query(
+        'debt_payments',
+        columns: ['id'],
+        where: 'debt_id = ?',
+        whereArgs: [id],
+      );
+      await txn.delete('debt_payments', where: 'debt_id = ?', whereArgs: [id]);
+      for (final p in payments) {
+        final pid = p['id']?.toString();
+        if (pid != null) {
+          await DeletionSyncService.recordDeletion('debt_payments', pid);
+        }
+      }
+      await txn.delete('debts', where: 'id = ?', whereArgs: [id]);
+      await DeletionSyncService.recordDeletion('debts', id);
+    });
+    DatabaseHelper.notifyDataChanged();
     FirebaseBackupService.instance.scheduleAutoBackup();
   }
 
@@ -147,6 +165,7 @@ class FinanceRepository {
         where: 'id = ?',
         whereArgs: [paymentId],
       );
+      await DeletionSyncService.recordDeletion('debt_payments', paymentId);
 
       final debtRows = await txn.query(
         'debts',
@@ -290,6 +309,8 @@ class FinanceRepository {
   Future<void> deletePayment(String id) async {
     final db = await _dbHelper.database;
     await db.delete('payments', where: 'id = ?', whereArgs: [id]);
+    await DeletionSyncService.recordDeletion('payments', id);
+    DatabaseHelper.notifyDataChanged();
     FirebaseBackupService.instance.scheduleAutoBackup(
       debounce: const Duration(seconds: 1),
     );

@@ -1,5 +1,6 @@
 import 'package:sqflite/sqflite.dart';
 import '../../../core/database/database_helper.dart';
+import '../../../core/services/deletion_sync_service.dart';
 import '../../../core/services/firebase_backup_service.dart';
 import '../../work_logs/models/work_log_model.dart';
 import '../models/workplace_model.dart';
@@ -134,18 +135,37 @@ class WorkplacesRepository {
     final db = await _dbHelper.database;
     await db.transaction((txn) async {
       if (deleteLogs) {
+        final List<Map<String, dynamic>> logsToDelete;
         if (workplaceName != null && workplaceName.trim().isNotEmpty) {
+          logsToDelete = await txn.query(
+            'work_logs',
+            columns: ['id'],
+            where: 'workplace_id = ? OR workplace_name = ?',
+            whereArgs: [id, workplaceName.trim()],
+          );
           await txn.delete(
             'work_logs',
             where: 'workplace_id = ? OR workplace_name = ?',
             whereArgs: [id, workplaceName.trim()],
           );
         } else {
+          logsToDelete = await txn.query(
+            'work_logs',
+            columns: ['id'],
+            where: 'workplace_id = ?',
+            whereArgs: [id],
+          );
           await txn.delete(
             'work_logs',
             where: 'workplace_id = ?',
             whereArgs: [id],
           );
+        }
+        for (final row in logsToDelete) {
+          final logId = row['id']?.toString();
+          if (logId != null) {
+            await DeletionSyncService.recordDeletion('work_logs', logId);
+          }
         }
       }
       await txn.delete(
@@ -153,7 +173,9 @@ class WorkplacesRepository {
         where: 'id = ?',
         whereArgs: [id],
       );
+      await DeletionSyncService.recordDeletion('workplaces', id);
     });
+    DatabaseHelper.notifyDataChanged();
     FirebaseBackupService.instance.scheduleAutoBackup();
   }
 

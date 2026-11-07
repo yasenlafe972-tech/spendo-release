@@ -4,6 +4,7 @@ import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:uuid/uuid.dart';
 import '../security/security_service.dart';
+import '../services/deletion_sync_service.dart';
 
 class DatabaseHelper {
   static final DatabaseHelper instance = DatabaseHelper._internal();
@@ -623,7 +624,13 @@ class DatabaseHelper {
     for (final table in tables) {
       try {
         final rows = await db.query(table);
-        data[table] = rows.map((r) => Map<String, dynamic>.from(r)).toList();
+        data[table] = rows
+            .map((r) => Map<String, dynamic>.from(r))
+            .where((r) {
+              final id = r['id']?.toString() ?? '';
+              return id.isEmpty || !DeletionSyncService.isDeleted(table, id);
+            })
+            .toList();
       } catch (_) {
         data[table] = [];
       }
@@ -754,6 +761,11 @@ class DatabaseHelper {
           for (final rawRow in rawRows) {
             if (rawRow is! Map) continue;
             try {
+              final rawId = rawRow['id']?.toString() ?? '';
+              if (rawId.isNotEmpty && DeletionSyncService.isDeleted(table, rawId)) {
+                continue; // Do not resurrect deleted record
+              }
+
               final sanitized = _sanitizeRowForTable(
                 table,
                 Map<String, dynamic>.from(rawRow),
@@ -769,6 +781,9 @@ class DatabaseHelper {
             }
           }
         }
+
+        // Purge any local tombstoned records
+        await DeletionSyncService.purgeDeletedRowsFromDatabase(txn);
       });
     } finally {
       // Always re-enable foreign keys OUTSIDE after transaction completes

@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:remixicon/remixicon.dart';
-import 'package:sanad_app/core/theme/app_colors.dart';
 import 'package:sanad_app/core/utils/arabic_date_helper.dart';
 import 'package:sanad_app/core/utils/spendo_haptic_feedback.dart';
 import 'package:sanad_app/core/widgets/spendo_logo.dart';
@@ -23,6 +22,7 @@ import 'package:sanad_app/features/work_logs/repositories/work_logs_repository.d
 import 'package:sanad_app/features/work_logs/presentation/widgets/add_work_log_sheet.dart';
 import 'package:sanad_app/features/workplaces/presentation/screens/map_location_picker_screen.dart';
 import 'package:sanad_app/features/reports/services/pdf_statement_service.dart';
+import 'package:sanad_app/core/widgets/spendo_confirm_delete_dialog.dart';
 
 /// Employer Account Statement Screen (`كشف حساب المشغّل - Spendo`).
 ///
@@ -569,36 +569,14 @@ class _EmployerDetailsScreenState extends State<EmployerDetailsScreen> {
   }
 
   Future<void> _confirmDeleteWorkday(WorkLogModel log) async {
-    SpendoHaptics.medium();
     final dayName = ArabicDateHelper.getWeekdayFromDateString(log.date);
-    final confirm = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: EmployerDetailsScreen.surfaceMain,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-          side: BorderSide(color: EmployerDetailsScreen.surfaceBorder),
-        ),
-        title: Text('حذف يوم العمل', style: TextStyle(color: EmployerDetailsScreen.textWhite, fontSize: 14)),
-        content: Text(
-          'هل تريد بالتأكيد حذف يومية $dayName (${log.date}) من السجل؟',
-          style: TextStyle(color: EmployerDetailsScreen.textMuted, fontSize: 12),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: Text('إلغاء', style: TextStyle(color: EmployerDetailsScreen.textSubtle)),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.dangerRed,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-            ),
-            onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('حذف', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-          ),
-        ],
-      ),
+    final confirm = await SpendoConfirmDeleteDialog.show(
+      context,
+      title: 'حذف يوم العمل',
+      itemName: '$dayName (${log.date})',
+      itemIcon: Remix.calendar_event_line,
+      description: 'هل تريد بالتأكيد حذف يومية العمل هذه من السجل؟',
+      confirmLabel: 'حذف اليومية',
     );
 
     if (confirm == true) {
@@ -630,35 +608,13 @@ class _EmployerDetailsScreenState extends State<EmployerDetailsScreen> {
   }
 
   Future<void> _confirmDeletePayment(WorkplacePaymentModel payment) async {
-    SpendoHaptics.medium();
-    final confirm = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: EmployerDetailsScreen.surfaceMain,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-          side: BorderSide(color: EmployerDetailsScreen.surfaceBorder),
-        ),
-        title: Text('حذف الدفعة المستلمة', style: TextStyle(color: EmployerDetailsScreen.textWhite, fontSize: 14)),
-        content: Text(
-          'هل تريد بالتأكيد حذف الدفعة بقيمة ${payment.amount.toStringAsFixed(0)} ₪ بتاريخ ${payment.date}؟',
-          style: TextStyle(color: EmployerDetailsScreen.textMuted, fontSize: 12),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: Text('إلغاء', style: TextStyle(color: EmployerDetailsScreen.textSubtle)),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.dangerRed,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-            ),
-            onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('حذف الدفعة', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-          ),
-        ],
-      ),
+    final confirm = await SpendoConfirmDeleteDialog.show(
+      context,
+      title: 'حذف الدفعة المستلمة',
+      itemName: '${payment.amount.toStringAsFixed(0)} ₪ - ${payment.date}',
+      itemIcon: Remix.money_dollar_circle_line,
+      description: 'هل تريد بالتأكيد حذف هذه الدفعة من السجل وإعادة حساب الرصيد؟',
+      confirmLabel: 'حذف الدفعة',
     );
 
     if (confirm == true) {
@@ -853,35 +809,13 @@ class _EmployerDetailsScreenState extends State<EmployerDetailsScreen> {
   }
 
   Future<void> _confirmDeleteWorkplace() async {
-    SpendoHaptics.medium();
-    final confirm = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: EmployerDetailsScreen.surfaceMain,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-          side: BorderSide(color: EmployerDetailsScreen.surfaceBorder),
-        ),
-        title: Text('حذف المشغّل', style: TextStyle(color: EmployerDetailsScreen.textWhite, fontSize: 14)),
-        content: Text(
-          'هل أنت متأكد من حذف المشغّل "${_workplace.name}"؟ ستبقى سجلات أيام العمل السابقة محفوظة في الأرشيف.',
-          style: TextStyle(color: EmployerDetailsScreen.textMuted, fontSize: 12),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: Text('إلغاء', style: TextStyle(color: EmployerDetailsScreen.textSubtle)),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.dangerRed,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-            ),
-            onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('تأكيد الحذف', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-          ),
-        ],
-      ),
+    final confirm = await SpendoConfirmDeleteDialog.show(
+      context,
+      title: 'حذف المشغّل',
+      itemName: _workplace.name,
+      itemIcon: Remix.building_2_line,
+      warningNote: 'ستبقى سجلات أيام العمل السابقة محفوظة في الأرشيف.',
+      confirmLabel: 'تأكيد الحذف',
     );
 
     if (confirm == true) {

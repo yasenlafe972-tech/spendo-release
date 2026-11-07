@@ -10,6 +10,7 @@ import 'package:sanad_app/features/people/presentation/widgets/person_details_mo
 import 'package:sanad_app/features/people/presentation/widgets/person_accounts_modal_sheet.dart';
 import 'package:sanad_app/features/settings/presentation/screens/app_settings_screen.dart';
 import 'package:sanad_app/core/database/database_helper.dart';
+import 'package:sanad_app/core/widgets/spendo_confirm_delete_dialog.dart';
 
 class PeopleScreen extends StatefulWidget {
   const PeopleScreen({super.key});
@@ -518,47 +519,14 @@ class _PeopleScreenState extends State<PeopleScreen> {
   }
 
   Future<void> _confirmDelete(PersonModel person) async {
-    SpendoHaptics.light();
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: surfaceField,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-          side: BorderSide(color: surfaceBorder),
-        ),
-        title: Text(
-          'تأكيد الحذف',
-          style: TextStyle(
-            color: textPrimary,
-            fontSize: 14.5,
-            fontWeight: FontWeight.w800,
-          ),
-        ),
-        content: Text(
-          'هل أنت متأكد من حذف بطاقة "${person.name}" نهائياً من السجل؟',
-          style: TextStyle(color: textMuted, fontSize: 12, height: 1.4),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: Text('إلغاء', style: TextStyle(color: textMuted)),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFEF4444).withValues(alpha: 0.15),
-              foregroundColor: const Color(0xFFEF4444),
-              side: BorderSide(
-                  color: const Color(0xFFEF4444).withValues(alpha: 0.4)),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8)),
-            ),
-            child: const Text('حذف',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
-          ),
-        ],
-      ),
+    final confirmed = await SpendoConfirmDeleteDialog.show(
+      context,
+      title: 'تأكيد حذف جهة الاتصال',
+      itemName: person.name,
+      itemIcon: Icons.person_outline,
+      description: 'هل أنت متأكد من حذف بطاقة "${person.name}" نهائياً من السجل؟',
+      warningNote: 'سيتم أيضاً حذف جميع الحسابات وكلمات المرور المرتبطة بهذا الشخص.',
+      confirmLabel: 'حذف',
     );
 
     if (confirmed == true) {

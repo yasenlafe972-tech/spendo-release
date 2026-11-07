@@ -12,6 +12,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:sanad_app/core/database/database_helper.dart';
 import 'package:sanad_app/core/security/security_service.dart';
 import 'package:sanad_app/core/services/auth_link_service.dart';
+import 'package:sanad_app/core/services/deletion_sync_service.dart';
 import 'package:sanad_app/core/theme/app_theme.dart';
 import 'package:sanad_app/features/home/services/daily_expense_service.dart';
 import 'package:sanad_app/features/vehicle/models/vehicle_model.dart';
@@ -504,6 +505,13 @@ class FirebaseBackupService {
             {'data': merchantCats}
           ];
         }
+
+        final deletedList = await DeletionSyncService.getExportableDeletedRecords();
+        if (deletedList.isNotEmpty) {
+          tables['spendo_deleted_records_v1'] = [
+            {'data': jsonEncode(deletedList)}
+          ];
+        }
       } catch (_) {}
 
       final peopleList = tables['people'] ?? [];
@@ -712,6 +720,18 @@ class FirebaseBackupService {
         );
       }
 
+      // 1. Process distributed deletion tombstones first so deleted rows are never resurrected
+      try {
+        if (tables.containsKey('spendo_deleted_records_v1')) {
+          final delData = _extractStringFromTable(tables['spendo_deleted_records_v1']);
+          if (delData != null && delData.isNotEmpty) {
+            await DeletionSyncService.applyCloudDeletedRecords(delData);
+          }
+        }
+      } catch (e) {
+        debugPrint('Failed to apply cloud deleted records: $e');
+      }
+
       // Smart Merge vehicle tracker data (deduplicating history and keeping max odometer)
       try {
         final prefs = await SharedPreferences.getInstance();
@@ -726,11 +746,12 @@ class FirebaseBackupService {
                   final localState = VehicleDataState.fromJson(localRaw);
                   final cloudState = VehicleDataState.fromJson(vData);
 
-                  // Merge histories deduplicated
-                  final mergedHistory = VehicleDataState.deduplicateHistory([
+                  // Merge histories deduplicated, skipping deleted items
+                  final allHistory = [
                     ...localState.history,
                     ...cloudState.history,
-                  ]);
+                  ].where((h) => !DeletionSyncService.isDeleted('spendo_vehicle_tracker_v5', h.id)).toList();
+                  final mergedHistory = VehicleDataState.deduplicateHistory(allHistory);
 
                   final mergedState = localState.copyWith(
                     history: mergedHistory,
@@ -750,7 +771,16 @@ class FirebaseBackupService {
                   await prefs.setString('spendo_vehicle_tracker_v5', vData);
                 }
               } else {
-                await prefs.setString('spendo_vehicle_tracker_v5', vData);
+                try {
+                  final cloudState = VehicleDataState.fromJson(vData);
+                  final filteredHistory = cloudState.history
+                      .where((h) => !DeletionSyncService.isDeleted('spendo_vehicle_tracker_v5', h.id))
+                      .toList();
+                  final cleanedState = cloudState.copyWith(history: filteredHistory);
+                  await prefs.setString('spendo_vehicle_tracker_v5', cleanedState.toJson());
+                } catch (_) {
+                  await prefs.setString('spendo_vehicle_tracker_v5', vData);
+                }
               }
             }
           }
@@ -770,11 +800,15 @@ class FirebaseBackupService {
                   final merged = <String, Map<String, dynamic>>{};
                   for (final item in localList) {
                     final key = item['id']?.toString() ?? '${item['date']}_${item['amount']}';
-                    merged[key] = item;
+                    if (!DeletionSyncService.isDeleted('spendo_daily_expenses_v1', key)) {
+                      merged[key] = item;
+                    }
                   }
                   for (final item in cloudList) {
                     final key = item['id']?.toString() ?? '${item['date']}_${item['amount']}';
-                    merged[key] = item;
+                    if (!DeletionSyncService.isDeleted('spendo_daily_expenses_v1', key)) {
+                      merged[key] = item;
+                    }
                   }
                   final resultList = merged.values.toList();
                   resultList.sort((a, b) => (b['date']?.toString() ?? '').compareTo(a['date']?.toString() ?? ''));
@@ -783,7 +817,16 @@ class FirebaseBackupService {
                   await prefs.setString('spendo_daily_expenses_v1', v);
                 }
               } else {
-                await prefs.setString('spendo_daily_expenses_v1', v);
+                try {
+                  final cloudList = (jsonDecode(v) as List).cast<Map<String, dynamic>>();
+                  final filteredList = cloudList.where((item) {
+                    final key = item['id']?.toString() ?? '${item['date']}_${item['amount']}';
+                    return !DeletionSyncService.isDeleted('spendo_daily_expenses_v1', key);
+                  }).toList();
+                  await prefs.setString('spendo_daily_expenses_v1', jsonEncode(filteredList));
+                } catch (_) {
+                  await prefs.setString('spendo_daily_expenses_v1', v);
+                }
               }
             }
           }
