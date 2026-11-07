@@ -11,7 +11,7 @@ import '../../../../core/utils/spendo_haptic_feedback.dart';
 import '../../../auth/presentation/screens/auth_screen.dart';
 import '../../../people/models/person_model.dart';
 import '../../../people/repositories/people_repository.dart';
-import '../../../../core/theme/app_theme.dart';
+import 'package:sanad_app/core/theme/app_theme.dart';
 import '../../services/settings_service.dart';
 
 /// AppSettingsScreen (شاشة الإعدادات المدمجة).

@@ -1,4 +1,4 @@
-import '../../../../core/theme/app_theme.dart';
+import 'package:sanad_app/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/spendo_haptic_feedback.dart';

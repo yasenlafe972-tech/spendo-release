@@ -1,4 +1,4 @@
-import '../../../../core/theme/app_theme.dart';
+import 'package:sanad_app/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:remixicon/remixicon.dart';

@@ -1,5 +1,5 @@
 import 'package:sanad_app/core/widgets/banking_animations.dart';
-import '../../../../core/theme/app_theme.dart';
+import 'package:sanad_app/core/theme/app_theme.dart';
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
@@ -37,15 +37,19 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
   double _officialFuelPrice = 7.68;
   bool _isGovSyncing = false;
 
-  static bool get _isDark => AppTheme.isDarkMode;
-  static Color get surfaceMain => _isDark ? const Color(0xFF121413) : const Color(0xFFF8F9FA);
-  static Color get surfaceField => _isDark ? const Color(0xFF171A19) : const Color(0xFFFFFFFF);
-  static Color get surfaceBorder => _isDark ? const Color(0xFF242927) : const Color(0xFFE5E7EB);
-  static const Color brandGreen = Color(0xFF00A86B);
-  static const Color brandYellow = Color(0xFFEAB308);
+  bool get _isDark => Theme.of(context).brightness == Brightness.dark;
+  Color get surfaceMain => _isDark ? const Color(0xFF0A0A0C) : const Color(0xFFF8F9FA);
+  Color get surfaceField => _isDark ? const Color(0xFF121215) : const Color(0xFFFFFFFF);
+  Color get surfaceBorder => _isDark ? const Color(0xFF1E1E24) : const Color(0xFFE5E7EB);
+  static const Color brandGreen = Color(0xFF10B981);
+  static const Color brandYellow = Color(0xFFF59E0B);
   static const Color brandRed = Color(0xFFEF4444);
-  static Color get textWhite => _isDark ? Colors.white : const Color(0xFF111827);
-  static Color get textMuted => _isDark ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280);
+  Color get textWhite => _isDark ? Colors.white : const Color(0xFF111827);
+  Color get textMuted => _isDark ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280);
+
+  void _onThemeChanged() {
+    if (mounted) setState(() {});
+  }
 
   @override
   void initState() {
@@ -53,11 +57,13 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
     _odometerController =
         TextEditingController(text: _state.currentOdometer.toString());
     DatabaseHelper.dataVersionNotifier.addListener(_loadState);
+    AppTheme.themeModeNotifier.addListener(_onThemeChanged);
     _loadState();
   }
 
   @override
   void dispose() {
+    AppTheme.themeModeNotifier.removeListener(_onThemeChanged);
     DatabaseHelper.dataVersionNotifier.removeListener(_loadState);
     _odometerController.dispose();
     super.dispose();
@@ -351,10 +357,10 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
           // Vehicle Name + Subtitle + Update Button
           Container(
             padding: const EdgeInsets.only(bottom: 10),
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               border: Border(
                 bottom: BorderSide(
-                  color: Color(0xB3242927),
+                  color: surfaceBorder,
                 ),
               ),
             ),
@@ -604,9 +610,9 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
           Container(
             margin: const EdgeInsets.only(top: 10),
             padding: const EdgeInsets.only(top: 8),
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               border: Border(
-                top: BorderSide(color: Color(0xB3242927)),
+                top: BorderSide(color: surfaceBorder),
               ),
             ),
             child: InkWell(

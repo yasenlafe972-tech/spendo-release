@@ -1,4 +1,4 @@
-import '../../../../core/theme/app_theme.dart';
+import 'package:sanad_app/core/theme/app_theme.dart';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';

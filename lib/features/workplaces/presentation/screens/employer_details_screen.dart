@@ -77,14 +77,25 @@ class _EmployerDetailsScreenState extends State<EmployerDetailsScreen> {
   String _selectedMonth = 'ALL';
   bool _isPaymentsSectionExpanded = true;
 
+  void _onThemeChanged() {
+    if (mounted) setState(() {});
+  }
+
   @override
   void initState() {
     super.initState();
+    AppTheme.themeModeNotifier.addListener(_onThemeChanged);
     _workplace = widget.workplace;
     if (widget.initialMonth != null) {
       _selectedMonth = widget.initialMonth!;
     }
     _loadData();
+  }
+
+  @override
+  void dispose() {
+    AppTheme.themeModeNotifier.removeListener(_onThemeChanged);
+    super.dispose();
   }
 
   Future<void> _loadData() async {

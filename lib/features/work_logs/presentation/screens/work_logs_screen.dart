@@ -29,27 +29,33 @@ class _WorkLogsScreenState extends State<WorkLogsScreen> {
   List<WorkLogModel> _logs = [];
   bool _isLoading = true;
 
-  // Design Tokens (Matching HTML exactly)
-  static bool get _isDark => AppTheme.isDarkMode;
-  static Color get surfaceMain => _isDark ? const Color(0xFF121413) : const Color(0xFFF8F9FA);
-  static Color get surfaceField => _isDark ? const Color(0xFF171A19) : const Color(0xFFFFFFFF);
-  static Color get surfaceBorder => _isDark ? const Color(0xFF242927) : const Color(0xFFE5E7EB);
-  static const Color brandGreen = Color(0xFF00A86B);
-  static const Color brandYellow = Color(0xFFEAB308);
-  static Color get textPrimary => _isDark ? const Color(0xFFF3F4F6) : const Color(0xFF111827);
-  static Color get textMuted => _isDark ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280);
-  static Color get textSubtle => _isDark ? const Color(0xFF71717A) : const Color(0xFF9CA3AF);
-  static Color get textWhite => _isDark ? Colors.white : const Color(0xFF111827);
+  // Design Tokens - Reactive to active Theme
+  bool get _isDark => Theme.of(context).brightness == Brightness.dark;
+  Color get surfaceMain => _isDark ? const Color(0xFF0A0A0C) : const Color(0xFFF8F9FA);
+  Color get surfaceField => _isDark ? const Color(0xFF121215) : const Color(0xFFFFFFFF);
+  Color get surfaceBorder => _isDark ? const Color(0xFF1E1E24) : const Color(0xFFE5E7EB);
+  static const Color brandGreen = Color(0xFF10B981);
+  static const Color brandYellow = Color(0xFFF59E0B);
+  Color get textPrimary => _isDark ? const Color(0xFFF3F4F6) : const Color(0xFF111827);
+  Color get textMuted => _isDark ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280);
+  Color get textSubtle => _isDark ? const Color(0xFF71717A) : const Color(0xFF9CA3AF);
+  Color get textWhite => _isDark ? Colors.white : const Color(0xFF111827);
+
+  void _onThemeChanged() {
+    if (mounted) setState(() {});
+  }
 
   @override
   void initState() {
     super.initState();
     DatabaseHelper.dataVersionNotifier.addListener(_loadData);
+    AppTheme.themeModeNotifier.addListener(_onThemeChanged);
     _loadData();
   }
 
   @override
   void dispose() {
+    AppTheme.themeModeNotifier.removeListener(_onThemeChanged);
     DatabaseHelper.dataVersionNotifier.removeListener(_loadData);
     super.dispose();
   }
