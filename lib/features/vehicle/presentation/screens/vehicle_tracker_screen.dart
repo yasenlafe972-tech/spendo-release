@@ -2753,20 +2753,12 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                       const SizedBox(height: 16),
                       Row(
                         children: [
-                          Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFF59E0B)
-                                  .withValues(alpha: 0.15),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: const Icon(
-                              Icons.picture_as_pdf_rounded,
-                              color: Color(0xFFF59E0B),
-                              size: 22,
-                            ),
+                          const Icon(
+                            Icons.picture_as_pdf_rounded,
+                            color: Color(0xFFF59E0B),
+                            size: 22,
                           ),
-                          const SizedBox(width: 12),
+                          const SizedBox(width: 10),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,

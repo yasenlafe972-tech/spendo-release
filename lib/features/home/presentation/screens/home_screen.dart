@@ -718,15 +718,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ],
             ),
           ),
-          Container(
-            padding: const EdgeInsets.all(4),
-            decoration: BoxDecoration(
-              color: surfaceMain,
-              borderRadius: BorderRadius.circular(6),
-              border: Border.all(color: surfaceBorder.withValues(alpha: 0.5)),
-            ),
-            child: Icon(icon, size: 13, color: iconColor),
-          ),
+          Icon(icon, size: 15, color: iconColor),
         ],
       ),
     );
@@ -988,20 +980,10 @@ class _HomeScreenState extends State<HomeScreen> {
                           Expanded(
                             child: Row(
                               children: [
-                                Container(
-                                  width: 32,
-                                  height: 32,
-                                  decoration: BoxDecoration(
-                                    color: surfaceElevated,
-                                    borderRadius: BorderRadius.circular(10),
-                                    border: Border.all(
-                                        color: surfaceBorder.withValues(alpha: 0.6)),
-                                  ),
-                                  child: Icon(
-                                    itemIcon,
-                                    size: 16,
-                                    color: itemColor,
-                                  ),
+                                Icon(
+                                  itemIcon,
+                                  size: 17,
+                                  color: itemColor,
                                 ),
                                 const SizedBox(width: 10),
                                 Expanded(
