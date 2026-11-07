@@ -1032,11 +1032,13 @@ class _EmployerDetailsScreenState extends State<EmployerDetailsScreen> {
     );
   }
 
-  void _showLocationDetailsModal(WorkLogModel log) {
+  void _showWorkdayDetailsModal(WorkLogModel log) {
     SpendoHaptics.light();
     final locationName = log.city.trim().isNotEmpty
         ? log.city.trim()
         : (log.workplaceName.trim().isNotEmpty ? log.workplaceName.trim() : 'مكان العمل');
+    final hasNote = log.notes != null && log.notes!.trim().isNotEmpty;
+    final hasAttachments = log.attachments.isNotEmpty;
 
     showDialog(
       context: context,
@@ -1045,216 +1047,490 @@ class _EmployerDetailsScreenState extends State<EmployerDetailsScreen> {
         textDirection: TextDirection.rtl,
         child: Dialog(
           backgroundColor: Colors.transparent,
-          insetPadding: const EdgeInsets.symmetric(horizontal: 16),
+          insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
           child: Container(
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.of(ctx).size.height * 0.82,
+            ),
             decoration: BoxDecoration(
               color: EmployerDetailsScreen.surfaceMain,
               borderRadius: BorderRadius.circular(18),
               border: Border.all(color: EmployerDetailsScreen.surfaceBorder, width: 1.2),
             ),
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 18),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                // Header Row with clean icon + close button
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      children: [
-                        Icon(
-                          log.hasLocation ? Remix.map_pin_fill : Remix.map_pin_2_line,
-                          color: log.hasLocation ? EmployerDetailsScreen.brandGreen : EmployerDetailsScreen.brandYellow,
-                          size: 22,
-                        ),
-                        const SizedBox(width: 10),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              log.hasLocation ? 'مكان العمل الموثّق' : 'مكان العمل',
-                              style: TextStyle(
-                                color: EmployerDetailsScreen.textWhite,
-                                fontSize: 13.5,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(height: 1),
-                            Text(
-                              log.formattedDateWithDay,
-                              style: TextStyle(
-                                color: EmployerDetailsScreen.textMuted,
-                                fontSize: 10.5,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                    InkWell(
-                      onTap: () => Navigator.pop(ctx),
-                      borderRadius: BorderRadius.circular(20),
-                      child: Padding(
-                        padding: const EdgeInsets.all(4),
-                        child: Icon(Remix.close_line, size: 18, color: EmployerDetailsScreen.textMuted),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 14),
-
-              // الزر 1: بطاقة مكان العمل (النقر عليها يفتح الملاحة في Google Maps فوراً)
-              InkWell(
-                onTap: log.hasLocation
-                    ? () {
-                        Navigator.pop(ctx);
-                        LocationService.openMap(log.latitude!, log.longitude!);
-                      }
-                    : null,
-                borderRadius: BorderRadius.circular(12),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
-                  decoration: BoxDecoration(
-                    color: EmployerDetailsScreen.surfaceField,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: log.hasLocation
-                          ? EmployerDetailsScreen.brandGreen.withValues(alpha: 0.4)
-                          : EmployerDetailsScreen.surfaceBorder,
-                    ),
-                  ),
-                  child: Row(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+            child: SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // Header Row: Day/Date + Wage Badge + Close
+                  Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Row(
-                        children: [
-                          Icon(
-                            Remix.building_line,
-                            size: 16,
-                            color: log.hasLocation
-                                ? EmployerDetailsScreen.brandGreen
-                                : EmployerDetailsScreen.brandYellow,
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            'مكان العمل:',
-                            style: TextStyle(
-                              color: EmployerDetailsScreen.textMuted,
-                              fontSize: 11.5,
-                            ),
-                          ),
-                          const SizedBox(width: 6),
-                          Text(
-                            locationName,
-                            style: TextStyle(
-                              color: EmployerDetailsScreen.textWhite,
-                              fontSize: 13,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          if (log.locationAddress != null &&
-                              log.locationAddress!.trim().isNotEmpty &&
-                              log.locationAddress!.trim() != locationName) ...[
-                            const SizedBox(width: 6),
-                            Text(
-                              '(${log.locationAddress!.trim()})',
-                              style: TextStyle(
-                                color: EmployerDetailsScreen.brandYellow,
-                                fontSize: 11,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ],
-                        ],
-                      ),
-                      if (log.hasLocation)
-                        Row(
-                          children: const [
-                            Text(
-                              'فتح في الخرائط',
-                              style: TextStyle(
-                                color: EmployerDetailsScreen.brandGreen,
-                                fontSize: 10.5,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            SizedBox(width: 4),
+                      Expanded(
+                        child: Row(
+                          children: [
                             Icon(
-                              Remix.arrow_left_s_line,
-                              size: 14,
+                              Remix.calendar_check_line,
                               color: EmployerDetailsScreen.brandGreen,
+                              size: 20,
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'تفاصيل وتوثيق يوم العمل',
+                                    style: TextStyle(
+                                      color: EmployerDetailsScreen.textWhite,
+                                      fontSize: 13.5,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 1),
+                                  Text(
+                                    '${log.formattedDateWithDay} • ${_workplace.name}',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      color: EmployerDetailsScreen.textMuted,
+                                      fontSize: 10.5,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ],
                         ),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: EmployerDetailsScreen.brandYellow.withValues(alpha: 0.14),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: EmployerDetailsScreen.brandYellow.withValues(alpha: 0.4)),
+                        ),
+                        child: Text(
+                          '${log.totalEarned.toStringAsFixed(0)} ₪',
+                          style: const TextStyle(
+                            color: EmployerDetailsScreen.brandYellow,
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      InkWell(
+                        onTap: () => Navigator.pop(ctx),
+                        borderRadius: BorderRadius.circular(20),
+                        child: Padding(
+                          padding: const EdgeInsets.all(4),
+                          child: Icon(Remix.close_line, size: 18, color: EmployerDetailsScreen.textMuted),
+                        ),
+                      ),
                     ],
                   ),
-                ),
-              ),
-              const SizedBox(height: 10),
+                  const SizedBox(height: 14),
 
-              // الزر 2: نسخ رابط الموقع الجغرافي
-              if (log.hasLocation)
-                OutlinedButton.icon(
-                  style: OutlinedButton.styleFrom(
-                    backgroundColor: Colors.transparent,
-                    foregroundColor: EmployerDetailsScreen.textMuted,
-                    side: BorderSide(color: EmployerDetailsScreen.surfaceBorder),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                    padding: const EdgeInsets.symmetric(vertical: 11),
+                  // 1. قسم الملاحظات وتفاصيل العمل
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: EmployerDetailsScreen.surfaceField,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: hasNote
+                            ? EmployerDetailsScreen.brandYellow.withValues(alpha: 0.45)
+                            : EmployerDetailsScreen.surfaceBorder,
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Row(
+                              children: [
+                                Icon(
+                                  Remix.sticky_note_line,
+                                  size: 15,
+                                  color: hasNote
+                                      ? EmployerDetailsScreen.brandYellow
+                                      : EmployerDetailsScreen.textMuted,
+                                ),
+                                const SizedBox(width: 6),
+                                Text(
+                                  'ملاحظات وتفاصيل العمل:',
+                                  style: TextStyle(
+                                    color: EmployerDetailsScreen.textWhite,
+                                    fontSize: 11.5,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            if (hasNote)
+                              InkWell(
+                                onTap: () {
+                                  Clipboard.setData(ClipboardData(text: log.notes!.trim()));
+                                  SpendoHaptics.light();
+                                  _showToast('تم نسخ الملاحظة');
+                                },
+                                borderRadius: BorderRadius.circular(6),
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(Remix.file_copy_line, size: 12, color: EmployerDetailsScreen.textMuted),
+                                      const SizedBox(width: 3),
+                                      Text(
+                                        'نسخ',
+                                        style: TextStyle(
+                                          color: EmployerDetailsScreen.textMuted,
+                                          fontSize: 9.5,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
+                        const SizedBox(height: 6),
+                        if (hasNote)
+                          SelectableText(
+                            log.notes!.trim(),
+                            style: TextStyle(
+                              color: EmployerDetailsScreen.textWhite,
+                              fontSize: 12.5,
+                              height: 1.45,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          )
+                        else
+                          InkWell(
+                            onTap: () {
+                              Navigator.pop(ctx);
+                              _openAddOrEditLog(log);
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 2),
+                              child: Text(
+                                '+ لا توجد ملاحظة مسجلة • اضغط لإضافة ملاحظة',
+                                style: TextStyle(
+                                  color: EmployerDetailsScreen.brandGreen,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
                   ),
-                  onPressed: () {
-                    Clipboard.setData(ClipboardData(text: log.googleMapsUrl));
-                    SpendoHaptics.light();
-                    Navigator.pop(ctx);
-                    _showToast('تم نسخ رابط الموقع للحافظة');
-                  },
-                  icon: const Icon(Remix.file_copy_line, size: 15),
-                  label: const Text(
-                    'نسخ رابط الموقع الجغرافي',
-                    style: TextStyle(fontSize: 11.5),
+                  const SizedBox(height: 10),
+
+                  // 2. قسم الصور والمرفقات الموثّقة
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: EmployerDetailsScreen.surfaceField,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: hasAttachments
+                            ? EmployerDetailsScreen.brandGreen.withValues(alpha: 0.45)
+                            : EmployerDetailsScreen.surfaceBorder,
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Row(
+                              children: [
+                                Icon(
+                                  Remix.camera_3_line,
+                                  size: 15,
+                                  color: hasAttachments
+                                      ? EmployerDetailsScreen.brandGreen
+                                      : EmployerDetailsScreen.textMuted,
+                                ),
+                                const SizedBox(width: 6),
+                                Text(
+                                  hasAttachments
+                                      ? 'الصور والمرفقات (${log.attachments.length}):'
+                                      : 'الصور والمرفقات:',
+                                  style: TextStyle(
+                                    color: EmployerDetailsScreen.textWhite,
+                                    fontSize: 11.5,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            InkWell(
+                              onTap: () {
+                                Navigator.pop(ctx);
+                                _openAddOrEditLog(log);
+                              },
+                              borderRadius: BorderRadius.circular(6),
+                              child: const Padding(
+                                padding: EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                                child: Text(
+                                  '+ إرفاق صور/ملفات',
+                                  style: TextStyle(
+                                    color: EmployerDetailsScreen.brandGreen,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        if (hasAttachments) ...[
+                          const SizedBox(height: 8),
+                          SizedBox(
+                            height: 84,
+                            child: ListView.separated(
+                              scrollDirection: Axis.horizontal,
+                              physics: const BouncingScrollPhysics(),
+                              itemCount: log.attachments.length,
+                              separatorBuilder: (_, __) => const SizedBox(width: 8),
+                              itemBuilder: (c, idx) {
+                                final path = log.attachments[idx];
+                                final item = AttachmentItem.fromPath(path);
+                                return GestureDetector(
+                                  onTap: () {
+                                    Navigator.pop(ctx);
+                                    AttachmentViewerModal.show(context, filePath: path);
+                                  },
+                                  child: Container(
+                                    width: 84,
+                                    height: 84,
+                                    decoration: BoxDecoration(
+                                      color: EmployerDetailsScreen.surfaceMain,
+                                      borderRadius: BorderRadius.circular(10),
+                                      border: Border.all(color: EmployerDetailsScreen.surfaceBorder),
+                                    ),
+                                    clipBehavior: Clip.antiAlias,
+                                    child: item.isImage
+                                        ? Image.file(
+                                            File(path),
+                                            fit: BoxFit.cover,
+                                            errorBuilder: (_, __, ___) => Icon(
+                                              Remix.image_line,
+                                              color: EmployerDetailsScreen.textMuted,
+                                              size: 26,
+                                            ),
+                                          )
+                                        : Column(
+                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            children: [
+                                              Icon(
+                                                item.isPdf ? Remix.file_pdf_2_fill : Remix.file_text_fill,
+                                                size: 28,
+                                                color: item.isPdf
+                                                    ? const Color(0xFFEF4444)
+                                                    : const Color(0xFF38BDF8),
+                                              ),
+                                              const SizedBox(height: 4),
+                                              Padding(
+                                                padding: const EdgeInsets.symmetric(horizontal: 4),
+                                                child: Text(
+                                                  item.name,
+                                                  style: TextStyle(
+                                                    fontSize: 8.5,
+                                                    color: EmployerDetailsScreen.textMuted,
+                                                  ),
+                                                  maxLines: 1,
+                                                  overflow: TextOverflow.ellipsis,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        ] else ...[
+                          const SizedBox(height: 4),
+                          Text(
+                            'لا توجد صور أو ملفات مرفقة لهذا اليوم',
+                            style: TextStyle(
+                              color: EmployerDetailsScreen.textMuted,
+                              fontSize: 10.5,
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
                   ),
-                )
-              else
-                ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: EmployerDetailsScreen.brandYellow,
-                    foregroundColor: const Color(0xFF0A0B0B),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                    padding: const EdgeInsets.symmetric(vertical: 12),
+                  const SizedBox(height: 10),
+
+                  // 3. بطاقة مكان العمل والخريطة
+                  InkWell(
+                    onTap: log.hasLocation
+                        ? () {
+                            Navigator.pop(ctx);
+                            LocationService.openMap(log.latitude!, log.longitude!);
+                          }
+                        : null,
+                    borderRadius: BorderRadius.circular(12),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
+                      decoration: BoxDecoration(
+                        color: EmployerDetailsScreen.surfaceField,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: log.hasLocation
+                              ? EmployerDetailsScreen.brandGreen.withValues(alpha: 0.4)
+                              : EmployerDetailsScreen.surfaceBorder,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                            child: Row(
+                              children: [
+                                Icon(
+                                  log.hasLocation ? Remix.map_pin_fill : Remix.map_pin_2_line,
+                                  size: 16,
+                                  color: log.hasLocation
+                                      ? EmployerDetailsScreen.brandGreen
+                                      : EmployerDetailsScreen.brandYellow,
+                                ),
+                                const SizedBox(width: 6),
+                                Text(
+                                  'مكان العمل:',
+                                  style: TextStyle(
+                                    color: EmployerDetailsScreen.textMuted,
+                                    fontSize: 11,
+                                  ),
+                                ),
+                                const SizedBox(width: 5),
+                                Flexible(
+                                  child: Text(
+                                    locationName,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      color: EmployerDetailsScreen.textWhite,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          if (log.hasLocation)
+                            const Row(
+                              children: [
+                                Text(
+                                  'فتح الخريطة',
+                                  style: TextStyle(
+                                    color: EmployerDetailsScreen.brandGreen,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                SizedBox(width: 2),
+                                Icon(
+                                  Remix.arrow_left_s_line,
+                                  size: 13,
+                                  color: EmployerDetailsScreen.brandGreen,
+                                ),
+                              ],
+                            )
+                          else
+                            InkWell(
+                              onTap: () async {
+                                Navigator.pop(ctx);
+                                final result = await MapLocationPickerScreen.pick(
+                                  context,
+                                  initialCity: locationName,
+                                  initialAddress: locationName,
+                                );
+                                if (result != null) {
+                                  final newAddr = result.address;
+                                  final updated = log.copyWith(
+                                    latitude: result.latitude,
+                                    longitude: result.longitude,
+                                    locationAddress: newAddr,
+                                    city: (newAddr != null && newAddr.trim().isNotEmpty) ? newAddr.trim() : log.city,
+                                  );
+                                  await _workRepo.updateWorkLog(updated);
+                                  _loadData();
+                                  _showToast('تم تثبيت مكان العمل بنجاح');
+                                }
+                              },
+                              child: const Text(
+                                'تثبيت على الخريطة',
+                                style: TextStyle(
+                                  color: EmployerDetailsScreen.brandYellow,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
                   ),
-                  onPressed: () async {
-                    Navigator.pop(ctx);
-                    final result = await MapLocationPickerScreen.pick(
-                      context,
-                      initialCity: locationName,
-                      initialAddress: locationName,
-                    );
-                    if (result != null) {
-                      final newAddr = result.address;
-                      final updated = log.copyWith(
-                        latitude: result.latitude,
-                        longitude: result.longitude,
-                        locationAddress: newAddr,
-                        city: (newAddr != null && newAddr.trim().isNotEmpty) ? newAddr.trim() : log.city,
-                      );
-                      await _workRepo.updateWorkLog(updated);
-                      _loadData();
-                      _showToast('تم تثبيت مكان العمل بنجاح');
-                    }
-                  },
-                  icon: const Icon(Remix.map_pin_add_line, size: 18),
-                  label: const Text(
-                    'تثبيت مكان العمل على الخريطة الآن',
-                    style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold),
+                  const SizedBox(height: 12),
+
+                  // 4. أزرار التعديل والإغلاق
+                  Row(
+                    children: [
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: EmployerDetailsScreen.brandGreen,
+                            foregroundColor: Colors.white,
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                            padding: const EdgeInsets.symmetric(vertical: 10),
+                          ),
+                          onPressed: () {
+                            Navigator.pop(ctx);
+                            _openAddOrEditLog(log);
+                          },
+                          icon: const Icon(Remix.edit_2_line, size: 15),
+                          label: const Text(
+                            'تعديل اليوم والملاحظات والصور',
+                            style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      OutlinedButton(
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: EmployerDetailsScreen.textMuted,
+                          side: BorderSide(color: EmployerDetailsScreen.surfaceBorder),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                        ),
+                        onPressed: () => Navigator.pop(ctx),
+                        child: const Text('إغلاق', style: TextStyle(fontSize: 11.5)),
+                      ),
+                    ],
                   ),
-                ),
-            ],
+                ],
+              ),
+            ),
           ),
         ),
       ),
-    ),
-  );
+    );
   }
 
   void _showLogAttachments(WorkLogModel log) {
@@ -1375,6 +1651,7 @@ class _EmployerDetailsScreenState extends State<EmployerDetailsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    Theme.of(context);
     return Scaffold(
       backgroundColor: EmployerDetailsScreen.bgCanvas,
       body: SafeArea(
@@ -2298,176 +2575,265 @@ class _EmployerDetailsScreenState extends State<EmployerDetailsScreen> {
     final location = log.city.trim().isNotEmpty
         ? log.city.trim()
         : (log.workplaceName.trim().isNotEmpty ? log.workplaceName.trim() : 'يوم عمل');
+    final hasNote = log.notes != null && log.notes!.trim().isNotEmpty;
+    final hasAttachments = log.hasAttachments;
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
-      decoration: BoxDecoration(
-        border: Border(bottom: BorderSide(color: EmployerDetailsScreen.surfaceBorder)),
-      ),
-      child: SizedBox(
-        height: 42,
-        child: Row(
+    return InkWell(
+      onTap: () => _showWorkdayDetailsModal(log),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+        decoration: BoxDecoration(
+          border: Border(bottom: BorderSide(color: EmployerDetailsScreen.surfaceBorder)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Col 1: Day & Date (flex: 4)
-            Expanded(
-              flex: 4,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
+            SizedBox(
+              height: 40,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Text(
-                    dayName.isNotEmpty ? dayName : 'يوم عمل',
-                    style: TextStyle(
-                      color: EmployerDetailsScreen.textWhite,
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
+                  // Col 1: Day & Date (flex: 4)
+                  Expanded(
+                    flex: 4,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Row(
+                          children: [
+                            Flexible(
+                              child: Text(
+                                dayName.isNotEmpty ? dayName : 'يوم عمل',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  color: EmployerDetailsScreen.textWhite,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
+                            if (hasNote) ...[
+                              const SizedBox(width: 4),
+                              Icon(
+                                Remix.sticky_note_line,
+                                size: 11,
+                                color: EmployerDetailsScreen.brandYellow,
+                              ),
+                            ],
+                          ],
+                        ),
+                        const SizedBox(height: 1),
+                        Text(
+                          dateFormatted,
+                          style: TextStyle(
+                            color: EmployerDetailsScreen.textMuted,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  const SizedBox(height: 1),
-                  Text(
-                    dateFormatted,
-                    style: TextStyle(
-                      color: EmployerDetailsScreen.textMuted,
-                      fontSize: 10,
-                      fontWeight: FontWeight.w500,
+                  _buildCellDivider(),
+
+                  // Col 2: Workplace Location (flex: 4)
+                  Expanded(
+                    flex: 4,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 6),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: GestureDetector(
+                              behavior: HitTestBehavior.opaque,
+                              onTap: () => _showWorkdayDetailsModal(log),
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 2),
+                                child: Row(
+                                  children: [
+                                    Icon(
+                                      log.hasLocation ? Remix.map_pin_fill : Remix.map_pin_2_line,
+                                      color: log.hasLocation
+                                          ? EmployerDetailsScreen.brandGreen
+                                          : EmployerDetailsScreen.brandYellow,
+                                      size: 14,
+                                    ),
+                                    const SizedBox(width: 5),
+                                    Expanded(
+                                      child: Text(
+                                        location,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                          color: log.hasLocation ? EmployerDetailsScreen.textWhite : EmployerDetailsScreen.textMuted,
+                                          fontSize: 11.5,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                          if (hasAttachments) ...[
+                            const SizedBox(width: 4),
+                            InkWell(
+                              onTap: () => _showLogAttachments(log),
+                              borderRadius: BorderRadius.circular(4),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1.5),
+                                decoration: BoxDecoration(
+                                  color: EmployerDetailsScreen.brandYellow.withValues(alpha: 0.15),
+                                  borderRadius: BorderRadius.circular(4),
+                                  border: Border.all(color: EmployerDetailsScreen.brandYellow.withValues(alpha: 0.4)),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    const Icon(Remix.camera_3_line, size: 9, color: EmployerDetailsScreen.brandYellow),
+                                    const SizedBox(width: 2),
+                                    Text(
+                                      '${log.attachments.length}',
+                                      style: const TextStyle(
+                                        color: EmployerDetailsScreen.brandYellow,
+                                        fontSize: 8.5,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                  ),
+                  _buildCellDivider(),
+
+                  // Col 3: Amount (flex: 2)
+                  Expanded(
+                    flex: 2,
+                    child: Center(
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            log.totalEarned.toStringAsFixed(0),
+                            style: const TextStyle(
+                              color: EmployerDetailsScreen.brandYellow,
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                          const SizedBox(width: 2),
+                          const Text(
+                            '₪',
+                            style: TextStyle(
+                              color: EmployerDetailsScreen.brandYellow,
+                              fontSize: 9.5,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  _buildCellDivider(),
+
+                  // Col 4: Partitioned Actions: Edit & Delete (flex: 2)
+                  Expanded(
+                    flex: 2,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        InkWell(
+                          onTap: () => _openAddOrEditLog(log),
+                          child: Padding(
+                            padding: const EdgeInsets.all(2),
+                            child: Icon(Remix.pencil_line, size: 13, color: EmployerDetailsScreen.textMuted),
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        InkWell(
+                          onTap: () => _confirmDeleteWorkday(log),
+                          child: Padding(
+                            padding: const EdgeInsets.all(2),
+                            child: Icon(Remix.delete_bin_6_line, size: 13, color: EmployerDetailsScreen.textSubtle),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
               ),
             ),
-            _buildCellDivider(),
 
-            // Col 2: Workplace Location (flex: 4)
-            Expanded(
-              flex: 4,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 6),
+            // Inline Note & Attachments Preview Strip (يظهر تلقائياً عند وجود ملاحظة أو صور)
+            if (hasNote || hasAttachments) ...[
+              const SizedBox(height: 5),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: EmployerDetailsScreen.surfaceMain.withValues(alpha: 0.65),
+                  borderRadius: BorderRadius.circular(6),
+                  border: Border.all(
+                    color: EmployerDetailsScreen.surfaceBorder.withValues(alpha: 0.8),
+                  ),
+                ),
                 child: Row(
                   children: [
-                    Expanded(
-                      child: GestureDetector(
-                        behavior: HitTestBehavior.opaque,
-                        onTap: () => _showLocationDetailsModal(log),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 2),
-                          child: Row(
-                            children: [
-                              Icon(
-                                log.hasLocation ? Remix.map_pin_fill : Remix.map_pin_2_line,
-                                color: log.hasLocation
-                                    ? EmployerDetailsScreen.brandGreen
-                                    : EmployerDetailsScreen.brandYellow,
-                                size: 14,
-                              ),
-                              const SizedBox(width: 5),
-                              Expanded(
-                                child: Text(
-                                  location,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(
-                                    color: log.hasLocation ? EmployerDetailsScreen.textWhite : EmployerDetailsScreen.textMuted,
-                                    fontSize: 11.5,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ),
-                            ],
+                    if (hasNote) ...[
+                      const Icon(
+                        Remix.sticky_note_line,
+                        size: 11,
+                        color: EmployerDetailsScreen.brandYellow,
+                      ),
+                      const SizedBox(width: 5),
+                      Expanded(
+                        child: Text(
+                          log.notes!.trim(),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: EmployerDetailsScreen.textWhite,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
                       ),
-                    ),
-                    if (log.hasAttachments) ...[
-                      const SizedBox(width: 4),
-                      InkWell(
-                        onTap: () => _showLogAttachments(log),
-                        borderRadius: BorderRadius.circular(4),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1.5),
-                          decoration: BoxDecoration(
-                            color: EmployerDetailsScreen.brandYellow.withValues(alpha: 0.15),
-                            borderRadius: BorderRadius.circular(4),
-                            border: Border.all(color: EmployerDetailsScreen.brandYellow.withValues(alpha: 0.4)),
+                    ] else
+                      const Spacer(),
+                    if (hasAttachments) ...[
+                      if (hasNote) const SizedBox(width: 8),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(
+                            Remix.image_2_line,
+                            size: 11,
+                            color: EmployerDetailsScreen.brandGreen,
                           ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(Remix.camera_3_line, size: 9, color: EmployerDetailsScreen.brandYellow),
-                              const SizedBox(width: 2),
-                              Text(
-                                '${log.attachments.length}',
-                                style: TextStyle(
-                                  color: EmployerDetailsScreen.brandYellow,
-                                  fontSize: 8.5,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
+                          const SizedBox(width: 3),
+                          Text(
+                            '${log.attachments.length} مرفق',
+                            style: const TextStyle(
+                              color: EmployerDetailsScreen.brandGreen,
+                              fontSize: 9.5,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
-                        ),
+                        ],
                       ),
                     ],
                   ],
                 ),
               ),
-            ),
-            _buildCellDivider(),
-
-            // Col 3: Amount (flex: 2)
-            Expanded(
-              flex: 2,
-              child: Center(
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      log.totalEarned.toStringAsFixed(0),
-                      style: TextStyle(
-                        color: EmployerDetailsScreen.brandYellow,
-                        fontSize: 11.5,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                    const SizedBox(width: 2),
-                    Text(
-                      '₪',
-                      style: TextStyle(
-                        color: EmployerDetailsScreen.brandYellow,
-                        fontSize: 9.5,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            _buildCellDivider(),
-
-            // Col 4: Partitioned Actions: Edit & Delete (flex: 2)
-            Expanded(
-              flex: 2,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  InkWell(
-                    onTap: () => _openAddOrEditLog(log),
-                    child: Padding(
-                      padding: const EdgeInsets.all(2),
-                      child: Icon(Remix.pencil_line, size: 13, color: EmployerDetailsScreen.textMuted),
-                    ),
-                  ),
-                  const SizedBox(width: 6),
-                  InkWell(
-                    onTap: () => _confirmDeleteWorkday(log),
-                    child: Padding(
-                      padding: const EdgeInsets.all(2),
-                      child: Icon(Remix.delete_bin_6_line, size: 13, color: EmployerDetailsScreen.textSubtle),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            ],
           ],
         ),
       ),
