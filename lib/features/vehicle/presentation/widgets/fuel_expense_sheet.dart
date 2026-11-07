@@ -474,176 +474,6 @@ class FuelExpenseSheet {
                           ),
                           Row(
                             children: [
-                              // زر الكاميرا
-                              Expanded(
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(12),
-                                  child: Material(
-                                    color: surfaceField,
-                                    child: InkWell(
-                                      onTap: () => scanFuelReceipt(
-                                          ImageSource.camera),
-                                      borderRadius:
-                                          BorderRadius.circular(12),
-                                      child: Container(
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 10, vertical: 8),
-                                        decoration: BoxDecoration(
-                                          borderRadius:
-                                              BorderRadius.circular(12),
-                                          border: Border.all(
-                                              color: surfaceBorder),
-                                        ),
-                                        child: Stack(
-                                          clipBehavior: Clip.antiAlias,
-                                          children: [
-                                            Positioned(
-                                              left: 2,
-                                              bottom: -4,
-                                              child: Icon(
-                                                Icons.camera_alt_outlined,
-                                                size: 34,
-                                                color: Colors.white
-                                                    .withValues(
-                                                        alpha: 0.035),
-                                              ),
-                                            ),
-                                            Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment
-                                                      .spaceBetween,
-                                              children: [
-                                                Column(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
-                                                  children: [
-                                                    Text(
-                                                      'الكاميرا',
-                                                      style: TextStyle(
-                                                        fontSize: 11.5,
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                        color: textWhite,
-                                                      ),
-                                                    ),
-                                                    SizedBox(height: 2),
-                                                    Text(
-                                                      'تصوير مباشر',
-                                                      style: TextStyle(
-                                                        fontSize: 9.5,
-                                                        fontWeight:
-                                                            FontWeight.w600,
-                                                        color: brandGreen,
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                                Container(
-                                                  width: 3,
-                                                  height: 18,
-                                                  decoration: BoxDecoration(
-                                                    color: brandGreen
-                                                        .withValues(alpha: 0.5),
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            99),
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              // زر الألبوم
-                              Expanded(
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(12),
-                                  child: Material(
-                                    color: surfaceField,
-                                    child: InkWell(
-                                      onTap: () => scanFuelReceipt(
-                                          ImageSource.gallery),
-                                      borderRadius:
-                                          BorderRadius.circular(12),
-                                      child: Container(
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 10, vertical: 8),
-                                        decoration: BoxDecoration(
-                                          borderRadius:
-                                              BorderRadius.circular(12),
-                                          border: Border.all(
-                                              color: surfaceBorder),
-                                        ),
-                                        child: Stack(
-                                          clipBehavior: Clip.antiAlias,
-                                          children: [
-                                            Positioned(
-                                              left: 2,
-                                              bottom: -4,
-                                              child: Icon(
-                                                Icons.photo_library_outlined,
-                                                size: 34,
-                                                color: Colors.white
-                                                    .withValues(
-                                                        alpha: 0.035),
-                                              ),
-                                            ),
-                                            Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment
-                                                      .spaceBetween,
-                                              children: [
-                                                Column(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
-                                                  children: [
-                                                    Text(
-                                                      'الألبوم',
-                                                      style: TextStyle(
-                                                        fontSize: 11.5,
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                        color: textWhite,
-                                                      ),
-                                                    ),
-                                                    SizedBox(height: 2),
-                                                    Text(
-                                                      'من الاستوديو',
-                                                      style: TextStyle(
-                                                        fontSize: 9.5,
-                                                        fontWeight:
-                                                            FontWeight.w600,
-                                                        color: brandYellow,
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                                Container(
-                                                  width: 3,
-                                                  height: 18,
-                                                  decoration: BoxDecoration(
-                                                    color: brandYellow
-                                                        .withValues(alpha: 0.5),
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            99),
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 8),
                               // زر ملف PDF (فاتورة Yellow)
                               Expanded(
                                 child: ClipRRect(
@@ -655,7 +485,7 @@ class FuelExpenseSheet {
                                       borderRadius: BorderRadius.circular(12),
                                       child: Container(
                                         padding: const EdgeInsets.symmetric(
-                                            horizontal: 10, vertical: 8),
+                                            horizontal: 12, vertical: 9),
                                         decoration: BoxDecoration(
                                           borderRadius:
                                               BorderRadius.circular(12),
@@ -680,28 +510,38 @@ class FuelExpenseSheet {
                                                   MainAxisAlignment
                                                       .spaceBetween,
                                               children: [
-                                                Column(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
+                                                Row(
                                                   children: [
-                                                    Text(
-                                                      'ملف PDF',
-                                                      style: TextStyle(
-                                                        fontSize: 11.5,
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                        color: textWhite,
-                                                      ),
+                                                    const Icon(
+                                                      Icons.picture_as_pdf_rounded,
+                                                      color: brandYellow,
+                                                      size: 20,
                                                     ),
-                                                    SizedBox(height: 2),
-                                                    Text(
-                                                      'من Yellow',
-                                                      style: TextStyle(
-                                                        fontSize: 9.5,
-                                                        fontWeight:
-                                                            FontWeight.w600,
-                                                        color: brandYellow,
-                                                      ),
+                                                    const SizedBox(width: 8),
+                                                    Column(
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment.start,
+                                                      children: [
+                                                        Text(
+                                                          'اختيار ملف فاتورة PDF',
+                                                          style: TextStyle(
+                                                            fontSize: 12,
+                                                            fontWeight:
+                                                                FontWeight.bold,
+                                                            color: textWhite,
+                                                          ),
+                                                        ),
+                                                        const SizedBox(height: 2),
+                                                        const Text(
+                                                          'من تطبيق Yellow / פז',
+                                                          style: TextStyle(
+                                                            fontSize: 9.5,
+                                                            fontWeight:
+                                                                FontWeight.w600,
+                                                            color: brandYellow,
+                                                          ),
+                                                        ),
+                                                      ],
                                                     ),
                                                   ],
                                                 ),

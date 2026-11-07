@@ -2,9 +2,9 @@ import 'package:sanad_app/core/widgets/banking_animations.dart';
 import 'package:sanad_app/core/theme/app_theme.dart';
 import 'dart:convert';
 import 'dart:io';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:remixicon/remixicon.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/database/database_helper.dart';
@@ -15,6 +15,7 @@ import '../../../../core/utils/arabic_date_helper.dart';
 import '../../../../core/utils/spendo_haptic_feedback.dart';
 import '../../models/vehicle_model.dart';
 import '../widgets/fuel_expense_sheet.dart';
+import '../widgets/multi_fuel_import_sheet.dart';
 import '../../../settings/presentation/screens/app_settings_screen.dart';
 
 class VehicleTrackerScreen extends StatefulWidget {
@@ -2566,16 +2567,14 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
 );
   }
 
-  // ignore: unused_element
   void _showInvoiceParserSheet() {
-    File? selectedImageFile;
+    String? loadedPdfFileName;
     bool isScanning = false;
     ParsedReceiptResult? parsedResult;
     String? statusMessage;
     VehicleExpenseRecord? duplicateRecord;
     final amountCtrl = TextEditingController();
     final titleCtrl = TextEditingController();
-    final picker = ImagePicker();
 
     showModalBottomSheet(
       context: context,
@@ -2614,44 +2613,71 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
               }
             }
 
-            Future<void> processImage(File imageFile) async {
-              setSheetState(() {
-                selectedImageFile = imageFile;
-                isScanning = true;
-                statusMessage =
-                    'جاري تحليل الصورة ضوئياً واستخراج بيانات الفاتورة...';
-              });
-
-              final result =
-                  await ReceiptOcrService.analyzeReceiptImage(imageFile);
-
-              setSheetState(() {
-                isScanning = false;
-                if (result != null && result.amount > 0) {
-                  updateParsed(result);
-                } else {
-                  statusMessage =
-                      'تمت قراءة الصورة ولكن لم تظهر أرقام واضحة، يُرجى إدخال المبلغ يدوياً.';
-                  SpendoHaptics.medium();
-                }
-              });
-            }
-
-            Future<void> pickFromSource(ImageSource source) async {
+            Future<void> pickAndAnalyzePdf() async {
               try {
-                final picked = await picker.pickImage(
-                  source: source,
-                  maxWidth: 1600,
-                  maxHeight: 1600,
-                  imageQuality: 85,
+                final picked = await FilePicker.pickFiles(
+                  type: FileType.custom,
+                  allowedExtensions: const ['pdf'],
                 );
-                if (picked != null) {
-                  SpendoHaptics.light();
-                  await processImage(File(picked.path));
+                if (picked.isEmpty || picked.first.path == null) return;
+
+                final pdfFile = File(picked.first.path!);
+                SpendoHaptics.light();
+                setSheetState(() {
+                  loadedPdfFileName =
+                      pdfFile.path.split(Platform.pathSeparator).last;
+                  isScanning = true;
+                  statusMessage =
+                      'جاري قراءة واستخراج بيانات ملف الـ PDF...';
+                });
+
+                final multiResults =
+                    await ReceiptOcrService.analyzeReceiptPdfMulti(
+                  pdfFile,
+                  onProgress: (current, total) {
+                    setSheetState(() {
+                      statusMessage =
+                          'الملف يتكون من $total صفحات - جاري فحص صفحة $current من $total...';
+                    });
+                  },
+                );
+
+                setSheetState(() {
+                  isScanning = false;
+                });
+
+                if (multiResults.length > 1) {
+                  if (ctx.mounted) {
+                    Navigator.pop(ctx);
+                  }
+                  if (mounted) {
+                    MultiFuelImportSheet.show(
+                      this.context,
+                      receipts: multiResults,
+                      sourceFileName: loadedPdfFileName,
+                      onSaved: _loadState,
+                    );
+                  }
+                  return;
                 }
+
+                final result = multiResults.firstOrNull;
+                setSheetState(() {
+                  if (result != null &&
+                      (result.amount > 0 ||
+                          (result.liters != null && result.liters! > 0))) {
+                    updateParsed(result);
+                  } else {
+                    statusMessage =
+                        'تمت قراءة ملف الـ PDF ولكن لم تظهر أرقام واضحة، يُرجى إدخال المبلغ يدوياً.';
+                    SpendoHaptics.medium();
+                  }
+                });
               } catch (_) {
                 setSheetState(() {
-                  statusMessage = 'تعذر فتح الصورة، يرجى المحاولة مرة أخرى.';
+                  isScanning = false;
+                  statusMessage =
+                      'تعذر فتح ملف الـ PDF، يرجى المحاولة مرة أخرى.';
                 });
               }
             }
@@ -2735,102 +2761,58 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: const Icon(
-                              Icons.document_scanner_rounded,
+                              Icons.picture_as_pdf_rounded,
                               color: Color(0xFFF59E0B),
                               size: 22,
                             ),
                           ),
                           const SizedBox(width: 12),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'مسح وتحليل الفواتير بالصور',
-                                style: TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w800,
-                                  color: textWhite,
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'استيراد وتحليل فواتير PDF',
+                                  style: TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w800,
+                                    color: textWhite,
+                                  ),
                                 ),
-                              ),
-                              Text(
-                                'التقط صورة للفاتورة أو اخترها من الألبوم لاستخراج البيانات',
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  color: textMuted,
+                                Text(
+                                  'اختر ملف الفاتورة بصيغة PDF لاستخراج البيانات تلقائياً',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    color: textMuted,
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ],
                       ),
                       const SizedBox(height: 18),
-                      // أزرار اختيار الصور والكاميرا
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _buildImageSourceButton(
-                              icon: Icons.photo_library_rounded,
-                              label: 'اختيار من الألبوم',
-                              onTap: () => pickFromSource(ImageSource.gallery),
-                            ),
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: _buildImageSourceButton(
-                              icon: Icons.camera_alt_rounded,
-                              label: 'تصوير بالكاميرا',
-                              onTap: () => pickFromSource(ImageSource.camera),
-                            ),
-                          ),
-                        ],
+                      // زر اختيار ملف PDF فقط
+                      _buildImageSourceButton(
+                        icon: Icons.picture_as_pdf_rounded,
+                        label: 'اختيار ملف فاتورة PDF',
+                        onTap: pickAndAnalyzePdf,
                       ),
-                      const SizedBox(height: 14),
-                      // نماذج فحص سريعة
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _buildPresetChip(
-                                'تجربة مسح فاتورة פז בעינה 365', () {
-                              setSheetState(() {
-                                final res = ReceiptOcrService.parseReceiptText(
-                                    'פז בעינה 365 חשבונית 041709901387254 תאריך 21/10/26 רכב 55505403 משאבה 05 אוקטן 95 7.770 כמות 6.000 ליטרים סה"כ לתשלום 46.62 ש"ח Yellow yasen lafe');
-                                updateParsed(res);
-                              });
-                            }),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: _buildPresetChip(
-                                'تجربة مسح חשבונית אור אמנוני', () {
-                              setSheetState(() {
-                                final res = ReceiptOcrService.parseReceiptText(
-                                    'מוסך אור אמנוני כרמיאל חשבונית מס קבלה 2289 תאריך 01/09/2026 רכב 55-505-403 טיפול גדול 932.20 צמיג קדמי 254.24 סה"כ לתשלום 1400.00 ש"ח');
-                                updateParsed(res);
-                              });
-                            }),
-                          ),
-                        ],
-                      ),
-                      if (selectedImageFile != null) ...[
+                      if (loadedPdfFileName != null) ...[
                         const SizedBox(height: 16),
                         Container(
                           padding: const EdgeInsets.all(10),
                           decoration: BoxDecoration(
                             color: surfaceField,
                             borderRadius: BorderRadius.circular(16),
-                            border: Border.all(
-                                color: surfaceBorder),
+                            border: Border.all(color: surfaceBorder),
                           ),
                           child: Row(
                             children: [
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(10),
-                                child: Image.file(
-                                  selectedImageFile!,
-                                  width: 60,
-                                  height: 60,
-                                  fit: BoxFit.cover,
-                                ),
+                              const Icon(
+                                Icons.picture_as_pdf_rounded,
+                                color: Color(0xFFF59E0B),
+                                size: 28,
                               ),
                               const SizedBox(width: 12),
                               Expanded(
@@ -2838,7 +2820,7 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      'تم تحميل صورة الفاتورة',
+                                      'تم استيراد ملف PDF',
                                       style: TextStyle(
                                         fontSize: 12.5,
                                         fontWeight: FontWeight.w700,
@@ -2846,7 +2828,7 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                                       ),
                                     ),
                                     Text(
-                                      'المسار: ${selectedImageFile!.path.split(Platform.pathSeparator).last}',
+                                      loadedPdfFileName!,
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
                                       style: TextStyle(
@@ -3930,31 +3912,6 @@ ${record.provider != null ? '- المزود: ${record.provider}' : ''}
               ),
             ),
           ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPresetChip(String label, VoidCallback onTap) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(99),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-        decoration: BoxDecoration(
-          color: AppColors.spendoGreen.withValues(alpha: 0.12),
-          borderRadius: BorderRadius.circular(99),
-          border: Border.all(
-            color: AppColors.spendoGreen.withValues(alpha: 0.35),
-          ),
-        ),
-        child: Text(
-          label,
-          style: const TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w700,
-            color: AppColors.spendoGreen,
-          ),
         ),
       ),
     );
