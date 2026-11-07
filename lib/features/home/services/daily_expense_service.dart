@@ -1,3 +1,4 @@
+import '../../../core/services/firebase_backup_service.dart';
 import '../../../core/services/location_service.dart';
 import 'dart:async';
 import 'dart:convert';
@@ -13,13 +14,17 @@ class DailyExpenseService {
   static const MethodChannel _deepLinkChannel =
       MethodChannel('com.finance.spendo/deeplink');
 
-  /// عنوان Webhook السحابي لاستقبال دفعات المحفظة في الخلفية بدون فتح التطبيق
+  /// عنوان Webhook السحابي لاستقبال دفعات المحفظة في الخلفية بدون فتح التطبيق (داخل مسار spendo_backups المصرح)
   static const String cloudWebhookUrl =
-      'https://spendo-4813f-default-rtdb.europe-west1.firebasedatabase.app/auto_expenses_inbox.json';
+      'https://spendo-4813f-default-rtdb.europe-west1.firebasedatabase.app/spendo_backups/auto_expenses_inbox.json';
 
-  /// عنوان الرابط المباشر للـ Shortcuts في الآيفون والأندرويد (يقبل كل كروت المحفظة مع الموقع)
+  /// عنوان الرابط المباشر للـ Shortcuts في الآيفون والأندرويد (يقبل الدفعة تلقائياً بدون أسئلة يدوية)
   static const String shortcutDeepLinkTemplate =
-      'spendo://pay?amount={Amount}&merchant={Merchant}&location={Location}';
+      'spendo://pay?tx=';
+
+  /// الأمر الجاهز للصقه في خانة Describe a change في اختصار الآيفون لإلغاء الأسئلة اليدوية نهائياً
+  static const String iosShortcutAutoFixCommand =
+      'Remove Ask for payment amount, Ask for merchant name, and Get current location. Get Amount and Merchant directly from Shortcut Input Transaction and open URL spendo://pay?amount=[Amount]&merchant=[Merchant]';
 
   static bool _listenerInitialized = false;
   static final ValueNotifier<int> expensesChangedNotifier = ValueNotifier<int>(0);
@@ -167,9 +172,13 @@ class DailyExpenseService {
   }
 
   /// معالجة الرابط القادم من Shortcut أو محفظة الهاتف تلقائياً مع التقاط الموقع الجغرافي
-  /// يقبل: spendo://pay?amount=45&merchant=BBB&location=...
+  /// يقبل:
+  /// - `spendo://pay?tx=Transaction`
+  /// - `spendo://pay?amount=45&merchant=BBB`
+  /// - `spendo://pay?text=...`
   static Future<bool> handleIncomingShortcutUri(String rawUri) async {
     try {
+      final decodedRaw = Uri.decodeFull(rawUri);
       final uri = Uri.parse(rawUri);
       final params = uri.queryParameters;
 
@@ -178,40 +187,63 @@ class DailyExpenseService {
       String source = params['source'] ??
           (Platform.isAndroid ? 'google_pay' : 'apple_pay');
 
-      if (params.containsKey('text') && params['text']!.trim().isNotEmpty) {
-        final parsed = parsePaymentNotification(params['text']!);
-        amount = parsed.amount;
-        merchant = parsed.merchant;
+      // 1. Check raw transaction / text parameters (`tx`, `transaction`, `input`, `text`, `body`)
+      for (final key in ['tx', 'transaction', 'input', 'text', 'body', 'data']) {
+        if (params.containsKey(key) && params[key]!.trim().isNotEmpty) {
+          final parsed = parsePaymentNotification(params[key]!);
+          amount ??= parsed.amount;
+          if (parsed.merchant != null && parsed.merchant!.isNotEmpty) {
+            merchant ??= parsed.merchant;
+          }
+        }
       }
 
-      if (params.containsKey('amount')) {
+      // 2. Check explicit amount parameter
+      if (params.containsKey('amount') && params['amount']!.trim().isNotEmpty) {
         final rawAmt = params['amount']!
             .replaceAll(RegExp(r'[^0-9.,]'), '')
             .replaceAll(',', '.');
         amount = double.tryParse(rawAmt) ?? amount;
+        if (amount == null) {
+          final parsedAmt = parsePaymentNotification(params['amount']!);
+          amount = parsedAmt.amount;
+          merchant ??= parsedAmt.merchant;
+        }
       }
 
-      if (params.containsKey('merchant') &&
-          params['merchant']!.trim().isNotEmpty) {
-        merchant = params['merchant']!.trim();
-      } else if (params.containsKey('name') &&
-          params['name']!.trim().isNotEmpty) {
-        merchant = params['name']!.trim();
+      // 3. Check explicit merchant / name / store / cardOrMerchant parameter
+      for (final mKey in ['merchant', 'name', 'store', 'shop', 'title']) {
+        if (params.containsKey(mKey) && params[mKey]!.trim().isNotEmpty) {
+          final candidate = params[mKey]!.trim();
+          if (!candidate.contains('{') && !candidate.contains('[')) {
+            merchant = candidate;
+            break;
+          }
+        }
+      }
+
+      // 4. Fallback: if the user passed raw Transaction directly after `spendo://pay?` or `spendo://pay/`
+      if (amount == null) {
+        final payloadPart = decodedRaw
+            .replaceFirst(RegExp(r'^spendo://pay/?\??', caseSensitive: false), '')
+            .replaceFirst(RegExp(r'^tx=', caseSensitive: false), '')
+            .trim();
+        if (payloadPart.isNotEmpty) {
+          final parsed = parsePaymentNotification(payloadPart);
+          amount = parsed.amount;
+          merchant ??= parsed.merchant;
+        }
       }
 
       String? location;
-      if (params.containsKey('location') &&
-          params['location']!.trim().isNotEmpty) {
-        location = params['location']!.trim();
-      } else if (params.containsKey('city') &&
-          params['city']!.trim().isNotEmpty) {
-        location = params['city']!.trim();
-      } else if (params.containsKey('place') &&
-          params['place']!.trim().isNotEmpty) {
-        location = params['place']!.trim();
-      } else if (params.containsKey('address') &&
-          params['address']!.trim().isNotEmpty) {
-        location = params['address']!.trim();
+      for (final lKey in ['location', 'city', 'place', 'address']) {
+        if (params.containsKey(lKey) && params[lKey]!.trim().isNotEmpty) {
+          final locVal = params[lKey]!.trim();
+          if (!locVal.contains('{') && !locVal.contains('[')) {
+            location = locVal;
+            break;
+          }
+        }
       }
 
       if (amount != null && amount > 0) {
@@ -334,11 +366,14 @@ class DailyExpenseService {
     }
   }
 
-  /// حفظ قائمة المصاريف
+  /// حفظ قائمة المصاريف ومزامنتها سحابياً فوراً بين الجلاكسي والآيفون
   static Future<void> saveAllExpenses(List<DailyExpenseModel> list) async {
     final prefs = await SharedPreferences.getInstance();
     final encoded = jsonEncode(list.map((e) => e.toMap()).toList());
     await prefs.setString(_expensesKey, encoded);
+    FirebaseBackupService.instance.scheduleAutoBackup(
+      debounce: const Duration(seconds: 1),
+    );
   }
 
   /// إضافة دفعة جديدة مع التعرف الذكي على الصنف وحفظ الموقع الجغرافي تلقائياً
@@ -473,7 +508,7 @@ class DailyExpenseService {
     }
   }
 
-  /// حفظ صنف محل في الذاكرة ليُصنّف تلقائياً في المرات القادمة
+  /// حفظ صنف محل في الذاكرة ليُصنّف تلقائياً في المرات القادمة ومزامنته سحابياً
   static Future<void> rememberMerchantCategory(
       String merchantName, String category) async {
     final norm = merchantName.trim().toLowerCase();
@@ -482,6 +517,9 @@ class DailyExpenseService {
     map[norm] = category;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_merchantMapKey, jsonEncode(map));
+    FirebaseBackupService.instance.scheduleAutoBackup(
+      debounce: const Duration(seconds: 1),
+    );
   }
 
   /// معرفة صنف المحل تلقائياً من الذاكرة أو من الكلمات المفتاحية الذكية
@@ -587,6 +625,17 @@ class DailyExpenseService {
         ).firstMatch(clean);
         if (atMerchant != null) {
           extractedMerchant = atMerchant.group(1)!.trim();
+        } else {
+          // Strip out numbers, currencies, and common verbs to extract the merchant directly (e.g. "שופרסל דיל 120 ₪" or "55 שווארמה")
+          final stripped = clean
+              .replaceAll(RegExp(r'(?:₪|ש"ח|שח|ILS|NIS|شيكل|\$)', caseSensitive: false), ' ')
+              .replaceAll(RegExp(r'\d+(?:[.,]\d{1,2})?'), ' ')
+              .replaceAll(RegExp(r'[-–—•|_:,]+'), ' ')
+              .replaceAll(RegExp(r'\s+'), ' ')
+              .trim();
+          if (stripped.length >= 2) {
+            extractedMerchant = stripped;
+          }
         }
       }
     }

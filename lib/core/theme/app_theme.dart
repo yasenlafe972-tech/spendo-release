@@ -49,8 +49,11 @@ class AppTheme {
   AppTheme._();
 
   static const String _prefThemeKey = 'spendo_theme_mode_v1';
+  static const String _prefFontScaleKey = 'spendo_font_scale_v1';
   static final ValueNotifier<ThemeMode> themeModeNotifier =
       ValueNotifier<ThemeMode>(ThemeMode.dark);
+  static final ValueNotifier<double> fontScaleNotifier =
+      ValueNotifier<double>(1.0);
 
   static const PageTransitionsTheme _pageTransitionsTheme = PageTransitionsTheme(
     builders: {
@@ -73,6 +76,20 @@ class AppTheme {
       } else {
         themeModeNotifier.value = ThemeMode.dark;
       }
+
+      final savedScale = prefs.getDouble(_prefFontScaleKey);
+      if (savedScale != null && savedScale >= 0.80 && savedScale <= 1.25) {
+        fontScaleNotifier.value = savedScale;
+      }
+    } catch (_) {}
+  }
+
+  static Future<void> setFontScale(double scale) async {
+    final clamped = scale.clamp(0.80, 1.25);
+    fontScaleNotifier.value = clamped;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setDouble(_prefFontScaleKey, clamped);
     } catch (_) {}
   }
 

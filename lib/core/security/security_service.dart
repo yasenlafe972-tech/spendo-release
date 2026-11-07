@@ -29,14 +29,62 @@ class SecurityService {
   static const String _keyPinHash = 'sanad_pin_hash_v1';
 
   enc.Encrypter? _encrypter;
+  final List<enc.Encrypter> _fallbackEncrypters = [];
+  String? _currentMasterKeyBase64;
   enc.IV? _legacyFixedIv;
 
   void _ensureInitialized() {
     if (_encrypter != null) return;
     // Generate a secure ephemeral key if initialize() was not awaited
     final key = enc.Key.fromSecureRandom(32);
+    _currentMasterKeyBase64 = key.base64;
     _legacyFixedIv = enc.IV.fromUtf8('sanad_vault_iv16');
     _encrypter = enc.Encrypter(enc.AES(key, mode: enc.AESMode.cbc));
+  }
+
+  /// Returns the active AES-256 master key (Base64) so it can be synchronized across devices
+  Future<String?> getMasterKeyBase64() async {
+    if (_currentMasterKeyBase64 != null && _currentMasterKeyBase64!.isNotEmpty) {
+      return _currentMasterKeyBase64;
+    }
+    try {
+      final k = await _secureStorage.read(key: _keyMasterSecret);
+      if (k != null && k.isNotEmpty) {
+        _currentMasterKeyBase64 = k;
+        return k;
+      }
+    } catch (_) {}
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final k = prefs.getString(_keyMasterSecret);
+      if (k != null && k.isNotEmpty) {
+        _currentMasterKeyBase64 = k;
+        return k;
+      }
+    } catch (_) {}
+    return _currentMasterKeyBase64;
+  }
+
+  /// Adopts a synchronized AES-256 master key from cloud backup while keeping any local key as fallback
+  Future<void> adoptMasterKey(String base64Key) async {
+    final clean = base64Key.trim();
+    if (clean.isEmpty) return;
+    try {
+      final newKey = enc.Key.fromBase64(clean);
+      if (_encrypter != null && _currentMasterKeyBase64 != clean) {
+        _fallbackEncrypters.add(_encrypter!);
+      }
+      _currentMasterKeyBase64 = clean;
+      _legacyFixedIv = enc.IV.fromUtf8('sanad_vault_iv16');
+      _encrypter = enc.Encrypter(enc.AES(newKey, mode: enc.AESMode.cbc));
+      try {
+        await _secureStorage.write(key: _keyMasterSecret, value: clean);
+      } catch (_) {}
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString(_keyMasterSecret, clean);
+      } catch (_) {}
+    } catch (_) {}
   }
 
   /// Initializes cryptographic key material. Generates a secure random 256-bit key
@@ -69,6 +117,7 @@ class SecurityService {
     }
 
     try {
+      _currentMasterKeyBase64 = storedKey;
       final key = enc.Key.fromBase64(storedKey);
       _legacyFixedIv = enc.IV.fromUtf8('sanad_vault_iv16');
       _encrypter = enc.Encrypter(enc.AES(key, mode: enc.AESMode.cbc));
@@ -103,7 +152,14 @@ class SecurityService {
           try {
             final iv = enc.IV.fromBase64(parts[0]);
             return _encrypter!.decrypt64(parts[1], iv: iv);
-          } catch (_) {}
+          } catch (_) {
+            for (final fb in _fallbackEncrypters) {
+              try {
+                final iv = enc.IV.fromBase64(parts[0]);
+                return fb.decrypt64(parts[1], iv: iv);
+              } catch (_) {}
+            }
+          }
         }
       }
 

@@ -1,6 +1,7 @@
 import 'package:sanad_app/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../../../core/services/firebase_backup_service.dart';
 import '../../../../core/services/israel_gov_api_service.dart';
 import '../../../../core/services/receipt_ocr_service.dart';
 import '../../../../core/utils/arabic_date_helper.dart';
@@ -219,6 +220,9 @@ class _MultiFuelImportSheetState extends State<MultiFuelImportSheet> {
       final updatedState = _state.copyWith(history: updatedHistory);
       await prefs.setString(FuelExpenseSheet.storageKey, updatedState.toJson());
       DailyExpenseService.expensesChangedNotifier.value++;
+      FirebaseBackupService.instance.scheduleAutoBackup(
+        debounce: const Duration(seconds: 1),
+      );
 
       SpendoHaptics.success();
       widget.onSaved?.call();

@@ -4,6 +4,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../../../core/services/firebase_backup_service.dart';
 import '../../../../core/services/israel_gov_api_service.dart';
 import '../../../../core/services/receipt_ocr_service.dart';
 import '../../../../core/utils/arabic_date_helper.dart';
@@ -305,6 +306,9 @@ class FuelExpenseSheet {
               final updated = [newRecord, ...state.history];
               final updatedState = state.copyWith(history: updated);
               await prefs.setString(storageKey, updatedState.toJson());
+              FirebaseBackupService.instance.scheduleAutoBackup(
+                debounce: const Duration(seconds: 1),
+              );
               onSaved?.call();
               if (ctx.mounted) {
                 Navigator.pop(ctx, true);

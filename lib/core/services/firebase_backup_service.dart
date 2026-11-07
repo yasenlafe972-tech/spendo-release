@@ -10,7 +10,10 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sanad_app/core/database/database_helper.dart';
+import 'package:sanad_app/core/security/security_service.dart';
 import 'package:sanad_app/core/services/auth_link_service.dart';
+import 'package:sanad_app/core/theme/app_theme.dart';
+import 'package:sanad_app/features/home/services/daily_expense_service.dart';
 import 'package:sanad_app/features/vehicle/models/vehicle_model.dart';
 
 class CloudBackupInfo {
@@ -193,8 +196,8 @@ class FirebaseBackupService {
     // Trigger initial pull & merge sync immediately on startup
     syncWithCloud(isSilent: true);
 
-    // Periodic automatic background check (every 30 seconds while app is active)
-    Timer.periodic(const Duration(seconds: 30), (_) {
+    // Periodic automatic background check (every 10 seconds while app is active for real-time cross-device sync)
+    Timer.periodic(const Duration(seconds: 10), (_) {
       syncWithCloud(isSilent: true);
     });
 
@@ -231,13 +234,14 @@ class FirebaseBackupService {
 
       debugPrint('>>> [AutoSync] Checking sync: cloudTs=$cloudTs, localLastSyncTs=$lastSyncTs, localWorkEmpty=$localWorkEmpty');
 
-      // If cloud is newer than our last sync OR local work_logs/workplaces are empty, pull and merge
-      if (cloudTs > lastSyncTs || localWorkEmpty) {
+      // If cloud timestamp differs from our last sync OR local work_logs/workplaces are empty, pull and merge
+      if (cloudTs != lastSyncTs || localWorkEmpty) {
         debugPrint('>>> [AutoSync] Pulling & merging cloud data...');
         final res = await performRestore();
         if (res.isSuccess) {
           await _safeStorageWrite(_keyLastCloudSyncTimestamp, cloudTs.toString());
           DatabaseHelper.notifyDataChanged();
+          DailyExpenseService.expensesChangedNotifier.value++;
           debugPrint('>>> [AutoSync] Sync succeeded: merged ${res.recordsRestored} records!');
         }
       }
@@ -411,15 +415,32 @@ class FirebaseBackupService {
   /// Uploads all database tables to Firebase under the user's secure backup document
   Future<BackupResult> performBackup({bool isSilent = false}) async {
     try {
+      // First pull & merge any newer cloud records so neither device ever overwrites the other
+      try {
+        await performRestore();
+      } catch (_) {}
+
       final backupKey = await getBackupKey();
       final profile = await getUserProfile();
 
       // 1. Export all tables from local SQLite
       final tables = await _dbHelper.exportAllTables();
 
-      // Include SharedPreferences (Vehicle tracker, Paz info, Gov info) into backup tables
+      // Include SharedPreferences (Vehicle tracker, Paz info, Gov info, Daily Expenses, Master Key, Font Scale) into backup tables
       try {
         final prefs = await SharedPreferences.getInstance();
+        final masterKey = await SecurityService.instance.getMasterKeyBase64();
+        if (masterKey != null && masterKey.isNotEmpty) {
+          tables['sanad_master_key_v1'] = [
+            {'data': masterKey}
+          ];
+        }
+        final fontScale = prefs.getDouble('spendo_font_scale_v1');
+        if (fontScale != null) {
+          tables['spendo_font_scale_v1'] = [
+            {'data': fontScale.toString()}
+          ];
+        }
         final vehicleJson = prefs.getString('spendo_vehicle_tracker_v5');
         if (vehicleJson != null && vehicleJson.isNotEmpty) {
           tables['spendo_vehicle_tracker_v5'] = [
@@ -759,6 +780,27 @@ class FirebaseBackupService {
             }
           }
         }
+
+        if (tables.containsKey('sanad_master_key_v1')) {
+          final list = tables['sanad_master_key_v1'];
+          if (list is List && list.isNotEmpty && list.first is Map) {
+            final cloudKey = list.first['data'] as String?;
+            if (cloudKey != null && cloudKey.isNotEmpty) {
+              await SecurityService.instance.adoptMasterKey(cloudKey);
+            }
+          }
+        }
+
+        if (tables.containsKey('spendo_font_scale_v1')) {
+          final list = tables['spendo_font_scale_v1'];
+          if (list is List && list.isNotEmpty && list.first is Map) {
+            final scaleStr = list.first['data']?.toString();
+            final scaleVal = double.tryParse(scaleStr ?? '');
+            if (scaleVal != null && scaleVal >= 0.80 && scaleVal <= 1.25) {
+              await AppTheme.setFontScale(scaleVal);
+            }
+          }
+        }
       } catch (_) {}
 
       // Import all tables into local SQLite (additive upsert)
@@ -766,6 +808,7 @@ class FirebaseBackupService {
 
       // Notify UI immediately across the app
       DatabaseHelper.notifyDataChanged();
+      DailyExpenseService.expensesChangedNotifier.value++;
 
       // Mark initial restore as permanently completed on this device
       try {

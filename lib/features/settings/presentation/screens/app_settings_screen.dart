@@ -943,6 +943,198 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
     );
   }
 
+  Widget _buildFontScaleSection() {
+    return ValueListenableBuilder<double>(
+      valueListenable: AppTheme.fontScaleNotifier,
+      builder: (context, scale, _) {
+        final pct = (scale * 100).round();
+        final presets = <Map<String, dynamic>>[
+          {'label': 'صغير 85%', 'val': 0.85},
+          {'label': 'مريح 92%', 'val': 0.92},
+          {'label': 'طبيعي 100%', 'val': 1.00},
+          {'label': 'كبير 108%', 'val': 1.08},
+          {'label': 'كبير جداً 115%', 'val': 1.15},
+        ];
+
+        return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
+          decoration: BoxDecoration(
+            color: surfaceCell,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: surfaceBorder),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      const Icon(Remix.font_size_2, size: 15, color: brandYellow),
+                      const SizedBox(width: 6),
+                      Text(
+                        'تكبير الخط وأبعاد الشاشة',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          color: textWhite,
+                        ),
+                      ),
+                    ],
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: brandGreen.withValues(alpha: 0.14),
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(color: brandGreen.withValues(alpha: 0.4)),
+                    ),
+                    child: Text(
+                      '$pct%',
+                      style: const TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                        color: brandGreen,
+                        fontFamily: 'monospace',
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 6),
+              Row(
+                children: [
+                  InkWell(
+                    onTap: () {
+                      SpendoHaptics.selection();
+                      AppTheme.setFontScale((scale - 0.04).clamp(0.80, 1.25));
+                      _backupService.scheduleAutoBackup(debounce: const Duration(seconds: 1));
+                    },
+                    borderRadius: BorderRadius.circular(6),
+                    child: Container(
+                      width: 28,
+                      height: 26,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: surfaceMain,
+                        borderRadius: BorderRadius.circular(6),
+                        border: Border.all(color: surfaceBorder),
+                      ),
+                      child: Text(
+                        'A-',
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                          color: textMuted,
+                        ),
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: SliderTheme(
+                      data: SliderTheme.of(context).copyWith(
+                        activeTrackColor: brandGreen,
+                        inactiveTrackColor: surfaceBorder,
+                        thumbColor: brandGreen,
+                        overlayColor: brandGreen.withValues(alpha: 0.15),
+                        trackHeight: 3.0,
+                        thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 7),
+                      ),
+                      child: Slider(
+                        value: scale.clamp(0.80, 1.25),
+                        min: 0.80,
+                        max: 1.25,
+                        divisions: 18,
+                        onChanged: (val) {
+                          AppTheme.setFontScale(val);
+                        },
+                        onChangeEnd: (_) {
+                          SpendoHaptics.light();
+                          _backupService.scheduleAutoBackup(debounce: const Duration(seconds: 1));
+                        },
+                      ),
+                    ),
+                  ),
+                  InkWell(
+                    onTap: () {
+                      SpendoHaptics.selection();
+                      AppTheme.setFontScale((scale + 0.04).clamp(0.80, 1.25));
+                      _backupService.scheduleAutoBackup(debounce: const Duration(seconds: 1));
+                    },
+                    borderRadius: BorderRadius.circular(6),
+                    child: Container(
+                      width: 28,
+                      height: 26,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: surfaceMain,
+                        borderRadius: BorderRadius.circular(6),
+                        border: Border.all(color: surfaceBorder),
+                      ),
+                      child: Text(
+                        'A+',
+                        style: TextStyle(
+                          fontSize: 11.5,
+                          fontWeight: FontWeight.bold,
+                          color: textWhite,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 4),
+              Row(
+                children: presets.map((p) {
+                  final val = p['val'] as double;
+                  final isSelected = (scale - val).abs() < 0.02;
+                  return Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 2),
+                      child: InkWell(
+                        onTap: () {
+                          SpendoHaptics.selection();
+                          AppTheme.setFontScale(val);
+                          _backupService.scheduleAutoBackup(debounce: const Duration(seconds: 1));
+                        },
+                        borderRadius: BorderRadius.circular(7),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(vertical: 5),
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            color: isSelected
+                                ? brandGreen.withValues(alpha: 0.16)
+                                : surfaceMain,
+                            borderRadius: BorderRadius.circular(7),
+                            border: Border.all(
+                              color: isSelected ? brandGreen : surfaceBorder,
+                              width: isSelected ? 1.1 : 0.8,
+                            ),
+                          ),
+                          child: Text(
+                            p['label'] as String,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 8.8,
+                              fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+                              color: isSelected ? brandGreen : textMuted,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   Widget _buildThemeSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -1202,6 +1394,8 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
                             _buildThemeSection(),
+                            _buildFontScaleSection(),
+                            const SizedBox(height: 12),
 
                             // ================= Section 1: البروفايل والأمان =================
                             Row(

@@ -8,6 +8,7 @@ import 'package:flutter/services.dart';
 import 'package:remixicon/remixicon.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/database/database_helper.dart';
+import '../../../../core/services/firebase_backup_service.dart';
 import '../../../../core/services/israel_gov_api_service.dart';
 import '../../../../core/services/receipt_ocr_service.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -158,6 +159,9 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
     });
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_storageKey, newState.toJson());
+    FirebaseBackupService.instance.scheduleAutoBackup(
+      debounce: const Duration(seconds: 1),
+    );
   }
 
   Color _getStatusColor(MaintenancePart part) {

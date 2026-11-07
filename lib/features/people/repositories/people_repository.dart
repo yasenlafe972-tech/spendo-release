@@ -79,6 +79,9 @@ class PeopleRepository {
       where: 'id = ?',
       whereArgs: [id],
     );
+    FirebaseBackupService.instance.scheduleAutoBackup(
+      debounce: const Duration(seconds: 1),
+    );
   }
 
   /// Deletes a person and cascades to their work logs and payments
@@ -148,6 +151,9 @@ class PeopleRepository {
       accountToSave.toMap(),
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
+    FirebaseBackupService.instance.scheduleAutoBackup(
+      debounce: const Duration(seconds: 1),
+    );
   }
 
   /// Updates an account, re-encrypting the password
@@ -164,6 +170,9 @@ class PeopleRepository {
       where: 'id = ?',
       whereArgs: [account.id],
     );
+    FirebaseBackupService.instance.scheduleAutoBackup(
+      debounce: const Duration(seconds: 1),
+    );
   }
 
   /// Deletes an account by id
@@ -173,6 +182,9 @@ class PeopleRepository {
       'person_accounts',
       where: 'id = ?',
       whereArgs: [id],
+    );
+    FirebaseBackupService.instance.scheduleAutoBackup(
+      debounce: const Duration(seconds: 1),
     );
   }
 }

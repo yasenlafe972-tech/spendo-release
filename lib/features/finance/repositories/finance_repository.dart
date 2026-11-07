@@ -282,10 +282,16 @@ class FinanceRepository {
   Future<void> addPayment(PaymentModel payment) async {
     final db = await _dbHelper.database;
     await db.insert('payments', payment.toMap(), conflictAlgorithm: ConflictAlgorithm.replace);
+    FirebaseBackupService.instance.scheduleAutoBackup(
+      debounce: const Duration(seconds: 1),
+    );
   }
 
   Future<void> deletePayment(String id) async {
     final db = await _dbHelper.database;
     await db.delete('payments', where: 'id = ?', whereArgs: [id]);
+    FirebaseBackupService.instance.scheduleAutoBackup(
+      debounce: const Duration(seconds: 1),
+    );
   }
 }

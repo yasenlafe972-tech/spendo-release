@@ -1358,6 +1358,90 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     const SizedBox(height: 10),
 
+                    // إصلاح فوري لمشكلة السؤال اليدوي في اختصار الآيفون (Pay with Spendo)
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: brandGreen.withValues(alpha: 0.08),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                          color: brandGreen.withValues(alpha: 0.45),
+                        ),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Row(
+                            children: [
+                              const Icon(Remix.flashlight_fill,
+                                  size: 14, color: brandGreen),
+                              const SizedBox(width: 6),
+                              Expanded(
+                                child: Text(
+                                  'إلغاء السؤال اليدوي في الآيفون (سحب مباشر من المحفظة)',
+                                  style: TextStyle(
+                                    fontSize: 10.5,
+                                    fontWeight: FontWeight.bold,
+                                    color: textWhite,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 5),
+                          Text(
+                            'إذا كان اختصار Pay with Spendo يسألك عن المبلغ أو اسم المحل: انسخ الأمر التالي والصقه في خانة Describe a change أسفل شاشة الاختصار في الآيفون ليأخذ كل شيء تلقائياً من المحفظة بدون أي سؤال:',
+                            style: TextStyle(
+                              fontSize: 9.5,
+                              color: textMuted,
+                              height: 1.35,
+                            ),
+                          ),
+                          const SizedBox(height: 7),
+                          ElevatedButton.icon(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: brandGreen,
+                              foregroundColor: const Color(0xFF0A0B0D),
+                              elevation: 0,
+                              padding: const EdgeInsets.symmetric(vertical: 8),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                            onPressed: () {
+                              Clipboard.setData(
+                                const ClipboardData(
+                                  text: DailyExpenseService
+                                      .iosShortcutAutoFixCommand,
+                                ),
+                              );
+                              SpendoHaptics.success();
+                              Navigator.pop(ctx);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                    'تم نسخ أمر الإصلاح! الصقه في Describe a change داخل تطبيق Shortcuts',
+                                  ),
+                                  duration: Duration(seconds: 3),
+                                ),
+                              );
+                            },
+                            icon: const Icon(Remix.magic_line,
+                                size: 14, color: Color(0xFF0A0B0D)),
+                            label: const Text(
+                              'نسخ أمر تحويل الاختصار لتلقائي بالكامل (Describe a change)',
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF0A0B0D),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+
                     // نسخ الرابط المباشر للاختصار (Apple Pay Shortcuts)
                     Row(
                       children: [
@@ -1380,7 +1464,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
                                   content: Text(
-                                      'تم نسخ رابط الاختصار المباشر مع الموقع (spendo://pay)'),
+                                      'تم نسخ رابط المحفظة التلقائي المباشر (spendo://pay?tx=)'),
                                   duration: Duration(seconds: 2),
                                 ),
                               );
@@ -1388,7 +1472,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             icon: const Icon(Remix.links_line,
                                 size: 14, color: brandGreen),
                             label: const Text(
-                              'نسخ رابط الاختصار المباشر',
+                              'نسخ رابط الاختصار التلقائي',
                               style: TextStyle(
                                   fontSize: 10.5, fontWeight: FontWeight.bold),
                             ),
@@ -1892,6 +1976,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     'spendo_vehicle_tracker_v5',
                     state.copyWith(history: updatedHistory).toJson(),
                   );
+                  FirebaseBackupService.instance.scheduleAutoBackup(
+                    debounce: const Duration(seconds: 1),
+                  );
                 }
                 _loadData();
               },
@@ -1978,6 +2065,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   await prefs.setString(
                     'spendo_vehicle_tracker_v5',
                     state.copyWith(history: updated).toJson(),
+                  );
+                  FirebaseBackupService.instance.scheduleAutoBackup(
+                    debounce: const Duration(seconds: 1),
                   );
                 }
                 _loadData();
