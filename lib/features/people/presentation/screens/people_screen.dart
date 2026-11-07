@@ -1,7 +1,9 @@
 import 'package:sanad_app/core/widgets/banking_animations.dart';
 import 'package:sanad_app/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart' hide TextDirection;
+import 'package:remixicon/remixicon.dart';
 import 'package:sanad_app/core/utils/spendo_haptic_feedback.dart';
 import 'package:sanad_app/features/people/models/person_model.dart';
 import 'package:sanad_app/features/people/repositories/people_repository.dart';
@@ -100,6 +102,37 @@ class _PeopleScreenState extends State<PeopleScreen> {
     return list;
   }
 
+  /// Cleans pasted numbers: converts Indic/Eastern numerals to ASCII digits,
+  /// strips zero-width/directional marks, and sanitizes for phone or national ID.
+  static String _cleanPastedNumber(
+    String raw, {
+    bool isPhone = false,
+    bool digitsOnly = false,
+  }) {
+    if (raw.isEmpty) return raw;
+    const arabicIndic = '٠١٢٣٤٥٦٧٨٩';
+    const easternIndic = '۰۱۲۳۴۵۶۷۸۹';
+    var cleaned = raw;
+    for (int i = 0; i < 10; i++) {
+      cleaned = cleaned.replaceAll(arabicIndic[i], i.toString());
+      cleaned = cleaned.replaceAll(easternIndic[i], i.toString());
+    }
+    // Remove invisible directional and format unicode characters
+    cleaned = cleaned.replaceAll(
+      RegExp(r'[\u200B-\u200F\u202A-\u202E\u2066-\u2069\uFEFF]'),
+      '',
+    );
+
+    if (digitsOnly) {
+      cleaned = cleaned.replaceAll(RegExp(r'[^0-9]'), '');
+    } else if (isPhone) {
+      final hasPlus = cleaned.trim().startsWith('+');
+      cleaned = cleaned.replaceAll(RegExp(r'[^0-9]'), '');
+      if (hasPlus) cleaned = '+$cleaned';
+    }
+    return cleaned;
+  }
+
   // نافذة الإضافة والتعديل المدمجة المطابقة لكود الـ HTML بنسبة 1:1
   Future<void> _showAddEditModal([PersonModel? person]) async {
     SpendoHaptics.light();
@@ -107,11 +140,6 @@ class _PeopleScreenState extends State<PeopleScreen> {
     final nameCtrl = TextEditingController(text: person?.name ?? '');
     final phoneCtrl = TextEditingController(
         text: person?.phone ?? person?.whatsapp ?? '');
-    final birthdayCtrl = TextEditingController(
-      text: person?.birthdate != null
-          ? DateFormat('dd/MM/yyyy').format(person!.birthdate!)
-          : '',
-    );
     final idNumberCtrl =
         TextEditingController(text: person?.nationalId ?? '');
     final emailCtrl = TextEditingController(text: person?.email ?? '');
@@ -226,80 +254,181 @@ class _PeopleScreenState extends State<PeopleScreen> {
                                 controller: nameCtrl,
                                 placeholder: 'الاسم الكامل',
                               ),
-                              const SizedBox(height: 8),
+                              const SizedBox(height: 10),
 
-                              // 2. الهاتف وعيد الميلاد في صف مقسوم عمودين
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        _buildFieldLabel('الهاتف'),
-                                        _buildInputField(
-                                          controller: phoneCtrl,
-                                          placeholder: '05X-XXXXXXX',
-                                          isLtr: true,
-                                          keyboardType: TextInputType.phone,
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        _buildFieldLabel(
-                                            'عيد الميلاد (اختياري)'),
-                                        _buildInputField(
-                                          controller: birthdayCtrl,
-                                          placeholder: 'DD/MM/YYYY',
-                                          isLtr: true,
-                                          suffixIcon: Icons.calendar_today_rounded,
-                                          onSuffixTap: () async {
-                                            DateTime? initDate = selectedDate;
-                                            if (initDate == null && birthdayCtrl.text.trim().isNotEmpty) {
-                                              try {
-                                                final parts = birthdayCtrl.text.trim().split('/');
-                                                if (parts.length == 3) {
-                                                  initDate = DateTime(int.parse(parts[2]), int.parse(parts[1]), int.parse(parts[0]));
-                                                }
-                                              } catch (_) {}
-                                            }
-                                            final picked = await SpendoDatePicker.pickBirthDate(
-                                              context,
-                                              initialDate: initDate,
-                                            );
-                                            if (picked != null) {
-                                              selectedDate = picked;
-                                              birthdayCtrl.text =
-                                                  DateFormat('dd/MM/yyyy')
-                                                      .format(picked);
-                                              setModalState(() {});
-                                            }
-                                          },
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
+                              // 2. الهاتف (حقل كامل العرض مع زر لصق مخصص)
+                              _buildFieldLabel('الهاتف (اختياري)'),
+                              _buildInputField(
+                                controller: phoneCtrl,
+                                placeholder: '05X-XXXXXXX',
+                                isLtr: true,
+                                keyboardType: TextInputType.phone,
+                                showPasteButton: true,
+                                isPhone: true,
                               ),
-                              const SizedBox(height: 8),
+                              const SizedBox(height: 10),
 
-                              // 3. رقم الهوية
+                              // 3. رقم الهوية (حقل كامل العرض مع زر لصق مخصص)
                               _buildFieldLabel('رقم الهوية (اختياري)'),
                               _buildInputField(
                                 controller: idNumberCtrl,
                                 placeholder: '9 أرقام',
                                 isLtr: true,
                                 keyboardType: TextInputType.number,
+                                showPasteButton: true,
+                                digitsOnlyOnPaste: true,
                               ),
-                              const SizedBox(height: 8),
+                              const SizedBox(height: 10),
 
-                              // 4. الإيميل
+                              // 4. تاريخ الميلاد (بطاقة كبسولة تفاعلية أنيقة)
+                              _buildFieldLabel('تاريخ الميلاد (اختياري)'),
+                              InkWell(
+                                onTap: () async {
+                                  final picked =
+                                      await SpendoDatePicker.pickBirthDate(
+                                    context,
+                                    initialDate: selectedDate,
+                                  );
+                                  if (picked != null) {
+                                    selectedDate = picked;
+                                    setModalState(() {});
+                                  }
+                                },
+                                borderRadius: BorderRadius.circular(10),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 12, vertical: 10),
+                                  decoration: BoxDecoration(
+                                    color: surfaceMain,
+                                    borderRadius: BorderRadius.circular(10),
+                                    border: Border.all(
+                                      color: selectedDate != null
+                                          ? brandGreen.withValues(alpha: 0.5)
+                                          : surfaceBorder,
+                                    ),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Container(
+                                        width: 32,
+                                        height: 32,
+                                        decoration: BoxDecoration(
+                                          color: (selectedDate != null
+                                                  ? brandGreen
+                                                  : brandYellow)
+                                              .withValues(alpha: 0.12),
+                                          borderRadius:
+                                              BorderRadius.circular(8),
+                                        ),
+                                        child: Icon(
+                                          Remix.cake_2_line,
+                                          size: 16,
+                                          color: selectedDate != null
+                                              ? brandGreen
+                                              : brandYellow,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 10),
+                                      Expanded(
+                                        child: selectedDate != null
+                                            ? Row(
+                                                children: [
+                                                  Text(
+                                                    DateFormat('dd/MM/yyyy')
+                                                        .format(selectedDate!),
+                                                    style: TextStyle(
+                                                      color: textPrimary,
+                                                      fontSize: 12,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      letterSpacing: 0.5,
+                                                    ),
+                                                  ),
+                                                  const SizedBox(width: 8),
+                                                  Builder(
+                                                    builder: (ctx) {
+                                                      final now =
+                                                          DateTime.now();
+                                                      int age = now.year -
+                                                          selectedDate!.year;
+                                                      if (now.month <
+                                                              selectedDate!
+                                                                  .month ||
+                                                          (now.month ==
+                                                                  selectedDate!
+                                                                      .month &&
+                                                              now.day <
+                                                                  selectedDate!
+                                                                      .day)) {
+                                                        age--;
+                                                      }
+                                                      if (age >= 0) {
+                                                        return Container(
+                                                          padding: const EdgeInsets
+                                                              .symmetric(
+                                                              horizontal: 6,
+                                                              vertical: 2),
+                                                          decoration:
+                                                              BoxDecoration(
+                                                            color: brandGreen
+                                                                .withValues(
+                                                                    alpha: 0.15),
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        4),
+                                                          ),
+                                                          child: Text(
+                                                            '$age سنة',
+                                                            style:
+                                                                const TextStyle(
+                                                              color: brandGreen,
+                                                              fontSize: 10,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold,
+                                                            ),
+                                                          ),
+                                                        );
+                                                      }
+                                                      return const SizedBox
+                                                          .shrink();
+                                                    },
+                                                  ),
+                                                ],
+                                              )
+                                            : Text(
+                                                'انقر لاختيار تاريخ الميلاد',
+                                                style: TextStyle(
+                                                  color: textSubtle,
+                                                  fontSize: 11.5,
+                                                ),
+                                              ),
+                                      ),
+                                      if (selectedDate != null)
+                                        InkWell(
+                                          onTap: () {
+                                            selectedDate = null;
+                                            setModalState(() {});
+                                          },
+                                          borderRadius:
+                                              BorderRadius.circular(6),
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(4),
+                                            child: Icon(Icons.close_rounded,
+                                                size: 16, color: textMuted),
+                                          ),
+                                        )
+                                      else
+                                        Icon(Remix.calendar_event_line,
+                                            size: 16, color: textMuted),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 10),
+
+                              // 5. الإيميل
                               _buildFieldLabel('الإيميل (اختياري)'),
                               _buildInputField(
                                 controller: emailCtrl,
@@ -330,54 +459,66 @@ class _PeopleScreenState extends State<PeopleScreen> {
                                             return;
                                           }
 
-                                          DateTime? bDate = selectedDate;
-                                          if (bDate == null &&
-                                              birthdayCtrl.text
-                                                  .trim()
-                                                  .isNotEmpty) {
-                                            try {
-                                              final parts = birthdayCtrl.text
-                                                  .trim()
-                                                  .split('/');
-                                              if (parts.length == 3) {
-                                                bDate = DateTime(
-                                                  int.parse(parts[2]),
-                                                  int.parse(parts[1]),
-                                                  int.parse(parts[0]),
-                                                );
-                                              }
-                                            } catch (_) {}
-                                          }
-
-                                          final updated = PersonModel(
-                                            id: isEdit
-                                                ? person.id
-                                                : DateTime.now()
-                                                    .millisecondsSinceEpoch
-                                                    .toString(),
-                                            name: name,
-                                            isUser: person?.isUser ?? false,
-                                            phone: phoneCtrl.text.trim().isEmpty
-                                                ? null
-                                                : phoneCtrl.text.trim(),
-                                            whatsapp:
-                                                phoneCtrl.text.trim().isEmpty
-                                                    ? null
-                                                    : phoneCtrl.text.trim(),
-                                            birthdate: bDate,
-                                            nationalId: idNumberCtrl.text
-                                                    .trim()
-                                                    .isEmpty
-                                                ? null
-                                                : idNumberCtrl.text.trim(),
-                                            email: emailCtrl.text.trim().isEmpty
-                                                ? null
-                                                : emailCtrl.text.trim(),
-                                            isPinned: person?.isPinned ?? false,
-                                            createdAt: person?.createdAt ??
-                                                DateTime.now(),
-                                            updatedAt: DateTime.now(),
+                                          final cleanPhone = _cleanPastedNumber(
+                                            phoneCtrl.text.trim(),
+                                            isPhone: true,
                                           );
+                                          final cleanId = _cleanPastedNumber(
+                                            idNumberCtrl.text.trim(),
+                                            digitsOnly: true,
+                                          );
+                                          final cleanEmail =
+                                              emailCtrl.text.trim();
+
+                                          final updated = isEdit
+                                              ? PersonModel(
+                                                  id: person.id,
+                                                  name: name,
+                                                  isUser: person.isUser,
+                                                  birthdate: selectedDate,
+                                                  email: cleanEmail.isEmpty
+                                                      ? null
+                                                      : cleanEmail,
+                                                  phone: cleanPhone.isEmpty
+                                                      ? null
+                                                      : cleanPhone,
+                                                  whatsapp: cleanPhone.isEmpty
+                                                      ? null
+                                                      : cleanPhone,
+                                                  nationalId: cleanId.isEmpty
+                                                      ? null
+                                                      : cleanId,
+                                                  bank: person.bank,
+                                                  accountNumber:
+                                                      person.accountNumber,
+                                                  isPinned: person.isPinned,
+                                                  hourlyRate: person.hourlyRate,
+                                                  dailyRate: person.dailyRate,
+                                                  notes: person.notes,
+                                                  createdAt: person.createdAt,
+                                                  updatedAt: DateTime.now(),
+                                                )
+                                              : PersonModel(
+                                                  id: DateTime.now()
+                                                      .millisecondsSinceEpoch
+                                                      .toString(),
+                                                  name: name,
+                                                  birthdate: selectedDate,
+                                                  email: cleanEmail.isEmpty
+                                                      ? null
+                                                      : cleanEmail,
+                                                  phone: cleanPhone.isEmpty
+                                                      ? null
+                                                      : cleanPhone,
+                                                  whatsapp: cleanPhone.isEmpty
+                                                      ? null
+                                                      : cleanPhone,
+                                                  nationalId: cleanId.isEmpty
+                                                      ? null
+                                                      : cleanId,
+                                                  createdAt: DateTime.now(),
+                                                  updatedAt: DateTime.now(),
+                                                );
 
                                           SpendoHaptics.success();
                                           if (isEdit) {
@@ -479,11 +620,15 @@ class _PeopleScreenState extends State<PeopleScreen> {
     required String placeholder,
     bool isLtr = false,
     TextInputType keyboardType = TextInputType.text,
+    bool showPasteButton = false,
+    bool isPhone = false,
+    bool digitsOnlyOnPaste = false,
     IconData? suffixIcon,
     VoidCallback? onSuffixTap,
+    ValueChanged<String>? onChanged,
   }) {
     return Container(
-      height: 36,
+      constraints: const BoxConstraints(minHeight: 40),
       decoration: BoxDecoration(
         color: surfaceMain,
         borderRadius: BorderRadius.circular(8),
@@ -494,20 +639,97 @@ class _PeopleScreenState extends State<PeopleScreen> {
         keyboardType: keyboardType,
         textDirection: isLtr ? TextDirection.ltr : TextDirection.rtl,
         textAlign: isLtr ? TextAlign.right : TextAlign.start,
-        style: TextStyle(color: textPrimary, fontSize: 11.5),
+        style: TextStyle(
+          color: textPrimary,
+          fontSize: 12,
+          fontWeight: isLtr ? FontWeight.w600 : FontWeight.normal,
+        ),
+        enableInteractiveSelection: true,
+        onChanged: (val) {
+          if (isPhone || digitsOnlyOnPaste) {
+            final cleaned = _cleanPastedNumber(
+              val,
+              isPhone: isPhone,
+              digitsOnly: digitsOnlyOnPaste,
+            );
+            if (cleaned != val) {
+              controller.value = TextEditingValue(
+                text: cleaned,
+                selection: TextSelection.collapsed(offset: cleaned.length),
+              );
+            }
+          }
+          onChanged?.call(val);
+        },
         decoration: InputDecoration(
+          isDense: true,
           hintText: placeholder,
           hintStyle: TextStyle(color: textSubtle, fontSize: 11),
           hintTextDirection: isLtr ? TextDirection.ltr : TextDirection.rtl,
           border: InputBorder.none,
           contentPadding:
-              const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
-          suffixIcon: suffixIcon != null
-              ? InkWell(
-                  onTap: onSuffixTap,
-                  child: Icon(suffixIcon, size: 14, color: brandYellow),
+              const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+          suffixIconConstraints:
+              const BoxConstraints(minWidth: 40, minHeight: 36),
+          suffixIcon: showPasteButton
+              ? Padding(
+                  padding: const EdgeInsetsDirectional.only(end: 4),
+                  child: InkWell(
+                    onTap: () async {
+                      final data = await Clipboard.getData(Clipboard.kTextPlain);
+                      final text = data?.text ?? '';
+                      if (text.trim().isNotEmpty) {
+                        final cleaned = _cleanPastedNumber(
+                          text,
+                          isPhone: isPhone,
+                          digitsOnly: digitsOnlyOnPaste,
+                        );
+                        if (cleaned.isNotEmpty) {
+                          controller.text = cleaned;
+                          controller.selection =
+                              TextSelection.collapsed(offset: cleaned.length);
+                          SpendoHaptics.light();
+                          onChanged?.call(cleaned);
+                        }
+                      }
+                    },
+                    borderRadius: BorderRadius.circular(6),
+                    child: Container(
+                      margin:
+                          const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
+                      padding:
+                          const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: brandGreen.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(6),
+                        border:
+                            Border.all(color: brandGreen.withValues(alpha: 0.3)),
+                      ),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.content_paste_rounded,
+                              size: 12, color: brandGreen),
+                          SizedBox(width: 4),
+                          Text(
+                            'لصق',
+                            style: TextStyle(
+                              color: brandGreen,
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                 )
-              : null,
+              : (suffixIcon != null
+                  ? InkWell(
+                      onTap: onSuffixTap,
+                      child: Icon(suffixIcon, size: 14, color: brandYellow),
+                    )
+                  : null),
         ),
       ),
     );

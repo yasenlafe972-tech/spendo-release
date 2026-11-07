@@ -43,6 +43,7 @@ class PeopleRepository {
       personToSave.toMap(),
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
+    DatabaseHelper.notifyDataChanged();
     FirebaseBackupService.instance.scheduleAutoBackup();
   }
 
@@ -65,6 +66,7 @@ class PeopleRepository {
       where: 'id = ?',
       whereArgs: [person.id],
     );
+    DatabaseHelper.notifyDataChanged();
     FirebaseBackupService.instance.scheduleAutoBackup();
   }
 
