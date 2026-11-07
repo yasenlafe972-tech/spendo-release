@@ -16,6 +16,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/arabic_date_helper.dart';
 import '../../../../core/utils/spendo_haptic_feedback.dart';
 import '../../../../core/widgets/spendo_confirm_delete_dialog.dart';
+import '../../../../core/widgets/spendo_date_picker.dart';
 import '../../models/vehicle_model.dart';
 import '../widgets/fuel_expense_sheet.dart';
 import '../widgets/multi_fuel_import_sheet.dart';
@@ -1169,37 +1170,15 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
   Future<void> _pickDocExpiryDate({required bool isInsurance}) async {
     final initialDate =
         isInsurance ? _state.insuranceExpiry : _state.testExpiry;
-    final picked = await showDatePicker(
-      context: context,
+    final picked = await SpendoDatePicker.pickDate(
+      context,
       initialDate: initialDate,
       firstDate: DateTime(2024),
       lastDate: DateTime(2035),
       helpText: isInsurance
           ? 'تحديد تاريخ انتهاء التأمين (ביטוח)'
           : 'تحديد تاريخ انتهاء التست (טסט)',
-      cancelText: 'إلغاء',
       confirmText: 'حفظ التاريخ',
-      builder: (context, child) {
-        return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: ColorScheme.dark(
-              primary: brandGreen,
-              onPrimary: const Color(0xFF0A0B0B),
-              surface: surfaceField,
-              onSurface: Colors.white,
-              secondary: brandYellow,
-            ),
-            dialogTheme: DialogThemeData(
-              backgroundColor: surfaceMain,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-                side: BorderSide(color: surfaceBorder),
-              ),
-            ),
-          ),
-          child: child!,
-        );
-      },
     );
 
     if (picked != null && mounted) {

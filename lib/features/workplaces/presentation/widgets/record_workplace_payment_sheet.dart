@@ -7,6 +7,7 @@ import 'package:sanad_app/core/utils/arabic_date_helper.dart';
 import 'package:sanad_app/core/utils/spendo_haptic_feedback.dart';
 import 'package:sanad_app/features/workplaces/models/workplace_model.dart';
 import 'package:sanad_app/features/workplaces/models/workplace_payment_model.dart';
+import 'package:sanad_app/core/widgets/spendo_date_picker.dart';
 
 class RecordWorkplacePaymentSheet extends StatefulWidget {
   final WorkplaceModel workplace;
@@ -95,25 +96,12 @@ class _RecordWorkplacePaymentSheetState extends State<RecordWorkplacePaymentShee
   }
 
   Future<void> _selectDate() async {
-    SpendoHaptics.selection();
-    final picked = await showDatePicker(
-      context: context,
+    final picked = await SpendoDatePicker.pickDate(
+      context,
       initialDate: _selectedDate,
       firstDate: DateTime(2020),
       lastDate: DateTime(2030),
-      builder: (context, child) {
-        return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: ColorScheme.dark(
-              primary: RecordWorkplacePaymentSheet.brandGreen,
-              onPrimary: Colors.black,
-              surface: RecordWorkplacePaymentSheet.surfaceField,
-              onSurface: const Color(0xFFF3F4F6),
-            ),
-          ),
-          child: child!,
-        );
-      },
+      helpText: 'اختر تاريخ الدفعة',
     );
     if (picked != null) {
       setState(() => _selectedDate = picked);

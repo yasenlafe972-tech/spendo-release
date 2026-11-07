@@ -15,6 +15,7 @@ import 'package:sanad_app/features/work_logs/models/work_log_model.dart';
 import 'package:sanad_app/features/workplaces/models/workplace_model.dart';
 import 'package:sanad_app/features/workplaces/repositories/workplaces_repository.dart';
 import 'package:sanad_app/features/work_logs/repositories/work_logs_repository.dart';
+import 'package:sanad_app/core/widgets/spendo_date_picker.dart';
 
 /// نافذة تسجيل يوم عمل جديد (تسجيل يوم عمل جديد)
 ///
@@ -100,7 +101,6 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
   static Color get surfaceBorder => _isDark ? const Color(0xFF242927) : const Color(0xFFE5E7EB);
   static const Color brandGreen = Color(0xFF00A86B);
   static const Color brandYellow = Color(0xFFEAB308);
-  static Color get textPrimary => _isDark ? const Color(0xFFF3F4F6) : const Color(0xFF111827);
   static Color get textMuted => _isDark ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280);
   static Color get textSubtle => _isDark ? const Color(0xFF71717A) : const Color(0xFF6B7280);
   static Color get textWhite => _isDark ? Colors.white : const Color(0xFF111827);
@@ -516,26 +516,12 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
   }
 
   Future<void> _pickDate() async {
-    SpendoHaptics.light();
-    final picked = await showDatePicker(
-      context: context,
+    final picked = await SpendoDatePicker.pickDate(
+      context,
       initialDate: _selectedDate,
       firstDate: DateTime(2020),
       lastDate: DateTime(2035),
-      builder: (context, child) {
-        return Theme(
-          data: ThemeData.dark().copyWith(
-            colorScheme: ColorScheme.dark(
-              primary: brandGreen,
-              onPrimary: Colors.white,
-              surface: surfaceField,
-              onSurface: textPrimary,
-            ),
-            dialogTheme: DialogThemeData(backgroundColor: surfaceMain),
-          ),
-          child: child!,
-        );
-      },
+      helpText: 'اختر تاريخ يوم العمل',
     );
 
     if (picked != null) {

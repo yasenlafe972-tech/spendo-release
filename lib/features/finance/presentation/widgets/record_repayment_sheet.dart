@@ -8,6 +8,7 @@ import '../../../../core/utils/spendo_haptic_feedback.dart';
 import '../../../people/models/person_model.dart';
 import '../../models/debt_model.dart';
 import '../../models/debt_payment_model.dart';
+import '../../../../core/widgets/spendo_date_picker.dart';
 
 /// Bottom sheet to record a repayment toward an existing debt (`سداد دفعة`).
 class RecordRepaymentSheet extends StatefulWidget {
@@ -84,32 +85,12 @@ class _RecordRepaymentSheetState extends State<RecordRepaymentSheet> {
   }
 
   Future<void> _pickDate() async {
-    SpendoHaptics.light();
-    final picked = await showDatePicker(
-      context: context,
+    final picked = await SpendoDatePicker.pickDate(
+      context,
       initialDate: _paymentDate,
       firstDate: DateTime(2020),
       lastDate: DateTime(2035),
-      builder: (context, child) {
-        return Theme(
-          data: ThemeData.dark().copyWith(
-            colorScheme: ColorScheme.dark(
-              primary: brandGreen,
-              onPrimary: Colors.black,
-              surface: surfaceMain,
-              onSurface: Colors.white,
-            ),
-            dialogTheme: DialogThemeData(
-              backgroundColor: surfaceMain,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-                side: BorderSide(color: surfaceBorder),
-              ),
-            ),
-          ),
-          child: child!,
-        );
-      },
+      helpText: 'تاريخ الدفعة',
     );
     if (picked != null) {
       setState(() => _paymentDate = picked);

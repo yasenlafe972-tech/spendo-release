@@ -7,6 +7,7 @@ import '../../../../core/utils/arabic_date_helper.dart';
 import '../../../../core/utils/spendo_haptic_feedback.dart';
 import '../../../people/models/person_model.dart';
 import '../../../people/repositories/people_repository.dart';
+import '../../../../core/widgets/spendo_date_picker.dart';
 import '../../models/debt_model.dart';
 
 /// Modal bottom sheet to add or edit a personal debt / loan / receipt (`تسجيل سلفة / دين مالي`).
@@ -100,32 +101,12 @@ class _AddDebtSheetState extends State<AddDebtSheet> {
   }
 
   Future<void> _pickDate(bool isDue) async {
-    SpendoHaptics.light();
-    final picked = await showDatePicker(
-      context: context,
+    final picked = await SpendoDatePicker.pickDate(
+      context,
       initialDate: isDue ? (_dueDate ?? DateTime.now().add(const Duration(days: 30))) : _transactionDate,
       firstDate: DateTime(2020),
       lastDate: DateTime(2035),
-      builder: (context, child) {
-        return Theme(
-          data: ThemeData.dark().copyWith(
-            colorScheme: ColorScheme.dark(
-              primary: brandGreen,
-              onPrimary: Colors.black,
-              surface: surfaceMain,
-              onSurface: Colors.white,
-            ),
-            dialogTheme: DialogThemeData(
-              backgroundColor: surfaceMain,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-                side: BorderSide(color: surfaceBorder),
-              ),
-            ),
-          ),
-          child: child!,
-        );
-      },
+      helpText: isDue ? 'تاريخ السداد المتوقع' : 'تاريخ المعاملة',
     );
     if (picked != null) {
       setState(() {

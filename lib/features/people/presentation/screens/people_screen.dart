@@ -11,6 +11,7 @@ import 'package:sanad_app/features/people/presentation/widgets/person_accounts_m
 import 'package:sanad_app/features/settings/presentation/screens/app_settings_screen.dart';
 import 'package:sanad_app/core/database/database_helper.dart';
 import 'package:sanad_app/core/widgets/spendo_confirm_delete_dialog.dart';
+import 'package:sanad_app/core/widgets/spendo_date_picker.dart';
 
 class PeopleScreen extends StatefulWidget {
   const PeopleScreen({super.key});
@@ -259,24 +260,18 @@ class _PeopleScreenState extends State<PeopleScreen> {
                                           isLtr: true,
                                           suffixIcon: Icons.calendar_today_rounded,
                                           onSuffixTap: () async {
-                                            final now = DateTime.now();
-                                            final picked = await showDatePicker(
-                                              context: context,
-                                              initialDate: selectedDate ??
-                                                  DateTime(now.year - 25, 1, 1),
-                                              firstDate: DateTime(1930),
-                                              lastDate: now,
-                                              builder: (dCtx, child) =>
-                                                  Theme(
-                                                data: ThemeData.dark().copyWith(
-                                                  colorScheme:
-                                                      ColorScheme.dark(
-                                                    primary: brandGreen,
-                                                    surface: surfaceField,
-                                                  ),
-                                                ),
-                                                child: child!,
-                                              ),
+                                            DateTime? initDate = selectedDate;
+                                            if (initDate == null && birthdayCtrl.text.trim().isNotEmpty) {
+                                              try {
+                                                final parts = birthdayCtrl.text.trim().split('/');
+                                                if (parts.length == 3) {
+                                                  initDate = DateTime(int.parse(parts[2]), int.parse(parts[1]), int.parse(parts[0]));
+                                                }
+                                              } catch (_) {}
+                                            }
+                                            final picked = await SpendoDatePicker.pickBirthDate(
+                                              context,
+                                              initialDate: initDate,
                                             );
                                             if (picked != null) {
                                               selectedDate = picked;

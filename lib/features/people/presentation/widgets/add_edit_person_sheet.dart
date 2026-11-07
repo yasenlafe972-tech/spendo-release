@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:uuid/uuid.dart';
 import 'package:sanad_app/core/theme/app_colors.dart';
+import 'package:sanad_app/core/widgets/spendo_date_picker.dart';
 import 'package:sanad_app/features/people/models/person_model.dart';
 
 class AddEditPersonSheet extends StatefulWidget {
@@ -63,22 +64,9 @@ class _AddEditPersonSheetState extends State<AddEditPersonSheet> {
   }
 
   Future<void> _pickDate() async {
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: _selectedBirthdate ?? DateTime(1998, 1, 1),
-      firstDate: DateTime(1930),
-      lastDate: DateTime.now(),
-      builder: (context, child) {
-        return Theme(
-          data: ThemeData.dark().copyWith(
-            colorScheme: const ColorScheme.dark(
-              primary: AppColors.spendoGreen,
-              surface: AppColors.surfaceElevated,
-            ),
-          ),
-          child: child!,
-        );
-      },
+    final picked = await SpendoDatePicker.pickBirthDate(
+      context,
+      initialDate: _selectedBirthdate,
     );
     if (picked != null) {
       setState(() {

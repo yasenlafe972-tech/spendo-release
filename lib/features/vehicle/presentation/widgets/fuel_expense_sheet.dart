@@ -9,6 +9,7 @@ import '../../../../core/services/israel_gov_api_service.dart';
 import '../../../../core/services/receipt_ocr_service.dart';
 import '../../../../core/utils/arabic_date_helper.dart';
 import '../../../../core/utils/spendo_haptic_feedback.dart';
+import '../../../../core/widgets/spendo_date_picker.dart';
 import '../../models/vehicle_model.dart';
 import 'multi_fuel_import_sheet.dart';
 
@@ -1011,25 +1012,12 @@ class FuelExpenseSheet {
                                     ),
                                     GestureDetector(
                                       onTap: () async {
-                                        final picked = await showDatePicker(
-                                          context: context,
+                                        final picked = await SpendoDatePicker.pickDate(
+                                          context,
                                           initialDate: selectedDate,
                                           firstDate: DateTime(2020),
-                                          lastDate: DateTime.now()
-                                              .add(const Duration(days: 365)),
-                                          builder: (context, child) {
-                                            return Theme(
-                                              data: ThemeData.dark().copyWith(
-                                                colorScheme:
-                                                    ColorScheme.dark(
-                                                  primary: brandGreen,
-                                                  surface: surfaceField,
-                                                  onSurface: textWhite,
-                                                ),
-                                              ),
-                                              child: child!,
-                                            );
-                                          },
+                                          lastDate: DateTime.now().add(const Duration(days: 365)),
+                                          helpText: 'تاريخ تعبئة الوقود',
                                         );
                                         if (picked != null) {
                                           SpendoHaptics.selection();
