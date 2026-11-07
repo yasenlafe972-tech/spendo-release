@@ -880,7 +880,27 @@ class _HomeScreenState extends State<HomeScreen> {
           const SizedBox(height: 8),
           Divider(color: surfaceBorder, height: 1),
 
-          if (timelineItems.isEmpty)
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 240),
+            switchInCurve: Curves.easeOutCubic,
+            switchOutCurve: Curves.easeInCubic,
+            transitionBuilder: (child, anim) {
+              return FadeTransition(
+                opacity: anim,
+                child: SlideTransition(
+                  position: Tween<Offset>(
+                    begin: const Offset(0, 0.03),
+                    end: Offset.zero,
+                  ).animate(anim),
+                  child: child,
+                ),
+              );
+            },
+            child: Column(
+              key: ValueKey<String>('${_selectedLogsFilter}_${_selectedMonthKey}_${_showAllTimelineItems}_${timelineItems.length}'),
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                if (timelineItems.isEmpty)
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 22),
               child: Center(
@@ -1063,6 +1083,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
           ],
+              ],
+            ),
+          ),
         ],
       ),
     );
@@ -1075,7 +1098,9 @@ class _HomeScreenState extends State<HomeScreen> {
         SpendoHaptics.selection();
         setState(() => _selectedLogsFilter = key);
       },
-      child: Container(
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 220),
+        curve: Curves.easeOutCubic,
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3.5),
         decoration: BoxDecoration(
           color: isSelected ? brandGreen : surfaceElevated,
@@ -1084,15 +1109,18 @@ class _HomeScreenState extends State<HomeScreen> {
             color: isSelected ? brandGreen : surfaceBorder,
           ),
         ),
-        child: Text(
-          label,
+        child: AnimatedDefaultTextStyle(
+          duration: const Duration(milliseconds: 180),
+          curve: Curves.easeOutCubic,
           style: TextStyle(
+            fontFamily: 'Cairo',
             fontSize: 10,
             fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
             color: isSelected
                 ? (_isDark ? Colors.white : const Color(0xFF047857))
                 : textMuted,
           ),
+          child: Text(label),
         ),
       ),
     );

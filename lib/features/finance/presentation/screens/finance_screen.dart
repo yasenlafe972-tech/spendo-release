@@ -382,11 +382,34 @@ class _FinanceScreenState extends State<FinanceScreen> {
                     _buildFilterBar(),
                     const SizedBox(height: 12),
 
-                    // 5. قائمة بطاقات المعاملات
-                    if (_filteredDebts.isEmpty)
-                      _buildEmptyState()
-                    else
-                      ..._filteredDebts.map((debt) => _buildDebtCard(debt)),
+                    // 5. قائمة بطاقات المعاملات (مع أنيميشن سلس عند تبديل الفلتر)
+                    AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 240),
+                      switchInCurve: Curves.easeOutCubic,
+                      switchOutCurve: Curves.easeInCubic,
+                      transitionBuilder: (child, anim) {
+                        return FadeTransition(
+                          opacity: anim,
+                          child: SlideTransition(
+                            position: Tween<Offset>(
+                              begin: const Offset(0, 0.03),
+                              end: Offset.zero,
+                            ).animate(anim),
+                            child: child,
+                          ),
+                        );
+                      },
+                      child: Column(
+                        key: ValueKey<String>('${_selectedFilter}_${_filteredDebts.length}'),
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          if (_filteredDebts.isEmpty)
+                            _buildEmptyState()
+                          else
+                            ..._filteredDebts.map((debt) => _buildDebtCard(debt)),
+                        ],
+                      ),
+                    ),
 
                     const SizedBox(height: 80),
                   ],

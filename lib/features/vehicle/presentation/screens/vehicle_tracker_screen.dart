@@ -1787,7 +1787,27 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
           const SizedBox(height: 4),
 
           // Operations List
-          if (displayHistory.isEmpty)
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 240),
+            switchInCurve: Curves.easeOutCubic,
+            switchOutCurve: Curves.easeInCubic,
+            transitionBuilder: (child, anim) {
+              return FadeTransition(
+                opacity: anim,
+                child: SlideTransition(
+                  position: Tween<Offset>(
+                    begin: const Offset(0, 0.03),
+                    end: Offset.zero,
+                  ).animate(anim),
+                  child: child,
+                ),
+              );
+            },
+            child: Column(
+              key: ValueKey<String>('${_selectedMonthKey}_${_showAllHistory}_${displayHistory.length}'),
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                if (displayHistory.isEmpty)
             const Padding(
               padding: EdgeInsets.symmetric(vertical: 18),
               child: Center(
@@ -1954,6 +1974,9 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
               ),
             ),
           ],
+              ],
+            ),
+          ),
         ],
       ),
     );
@@ -1970,23 +1993,28 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
         setState(() => _selectedMonthKey = keyName);
       },
       borderRadius: BorderRadius.circular(8),
-      child: Container(
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 220),
+        curve: Curves.easeOutCubic,
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
         decoration: BoxDecoration(
-          color: surfaceMain,
+          color: isSelected ? brandGreen.withValues(alpha: 0.12) : surfaceMain,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
             color: isSelected ? brandGreen : surfaceBorder,
           ),
         ),
         alignment: Alignment.center,
-        child: Text(
-          label,
+        child: AnimatedDefaultTextStyle(
+          duration: const Duration(milliseconds: 180),
+          curve: Curves.easeOutCubic,
           style: TextStyle(
+            fontFamily: 'Cairo',
             fontSize: 10,
             fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
             color: isSelected ? brandGreen : textMuted,
           ),
+          child: Text(label),
         ),
       ),
     );

@@ -1,7 +1,49 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'app_colors.dart';
+
+/// Custom smooth page transition (Fade + Directional Slide + Subtle Scale)
+/// for all Navigator.push routes across Spendo.
+class SpendoPageTransitionsBuilder extends PageTransitionsBuilder {
+  const SpendoPageTransitionsBuilder();
+
+  @override
+  Widget buildTransitions<T>(
+    PageRoute<T> route,
+    BuildContext context,
+    Animation<double> animation,
+    Animation<double> secondaryAnimation,
+    Widget child,
+  ) {
+    final curvedEntry = CurvedAnimation(
+      parent: animation,
+      curve: Curves.easeOutCubic,
+      reverseCurve: Curves.easeInCubic,
+    );
+
+    final curvedSecondary = CurvedAnimation(
+      parent: secondaryAnimation,
+      curve: Curves.easeOutCubic,
+      reverseCurve: Curves.easeInCubic,
+    );
+
+    // Incoming page slides smoothly from the leading edge with a soft fade & scale
+    return SlideTransition(
+      position: Tween<Offset>(
+        begin: const Offset(-0.08, 0.0),
+        end: Offset.zero,
+      ).animate(curvedEntry),
+      child: FadeTransition(
+        opacity: Tween<double>(begin: 0.0, end: 1.0).animate(curvedEntry),
+        child: ScaleTransition(
+          scale: Tween<double>(begin: 1.0, end: 0.97).animate(curvedSecondary),
+          child: child,
+        ),
+      ),
+    );
+  }
+}
 
 class AppTheme {
   AppTheme._();
@@ -9,6 +51,16 @@ class AppTheme {
   static const String _prefThemeKey = 'spendo_theme_mode_v1';
   static final ValueNotifier<ThemeMode> themeModeNotifier =
       ValueNotifier<ThemeMode>(ThemeMode.dark);
+
+  static const PageTransitionsTheme _pageTransitionsTheme = PageTransitionsTheme(
+    builders: {
+      TargetPlatform.android: SpendoPageTransitionsBuilder(),
+      TargetPlatform.iOS: SpendoPageTransitionsBuilder(),
+      TargetPlatform.windows: SpendoPageTransitionsBuilder(),
+      TargetPlatform.macOS: SpendoPageTransitionsBuilder(),
+      TargetPlatform.linux: SpendoPageTransitionsBuilder(),
+    },
+  );
 
   static Future<void> initThemeMode() async {
     try {
@@ -38,7 +90,8 @@ class AppTheme {
   static bool get isLightMode {
     if (themeModeNotifier.value == ThemeMode.light) return true;
     if (themeModeNotifier.value == ThemeMode.dark) return false;
-    return WidgetsBinding.instance.platformDispatcher.platformBrightness == Brightness.light;
+    return WidgetsBinding.instance.platformDispatcher.platformBrightness ==
+        Brightness.light;
   }
 
   static bool get isDarkMode => !isLightMode;
@@ -58,6 +111,7 @@ class AppTheme {
       brightness: Brightness.dark,
       scaffoldBackgroundColor: AppColors.background,
       fontFamily: 'Cairo',
+      pageTransitionsTheme: _pageTransitionsTheme,
       colorScheme: const ColorScheme.dark(
         surface: AppColors.surface,
         primary: AppColors.spendoGreen,
@@ -111,6 +165,7 @@ class AppTheme {
       brightness: Brightness.light,
       scaffoldBackgroundColor: const Color(0xFFF8F9FA),
       fontFamily: 'Cairo',
+      pageTransitionsTheme: _pageTransitionsTheme,
       colorScheme: const ColorScheme.light(
         surface: Color(0xFFFFFFFF),
         primary: AppColors.spendoGreen,
