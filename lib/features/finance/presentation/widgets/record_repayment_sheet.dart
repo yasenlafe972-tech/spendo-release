@@ -46,6 +46,7 @@ class _RecordRepaymentSheetState extends State<RecordRepaymentSheet> {
     {'key': 'bit', 'title': 'تطبيق Bit', 'icon': Remix.smartphone_line, 'color': brandYellow},
     {'key': 'cash', 'title': 'كاش نقدي', 'icon': Remix.money_dollar_box_line, 'color': brandGreen},
     {'key': 'bank_transfer', 'title': 'تحويل بنكي', 'icon': Remix.bank_line, 'color': brandYellow},
+    {'key': 'atm_code', 'title': 'كود صراف بنكي', 'icon': Remix.qr_code_line, 'color': brandGreen},
   ];
 
   @override

@@ -23,6 +23,8 @@ class DebtPaymentModel {
         return 'Bit';
       case 'bank_transfer':
         return 'تحويل بنكي';
+      case 'atm_code':
+        return 'كود صراف بنكي';
       case 'check':
         return 'شيك';
       case 'cash':

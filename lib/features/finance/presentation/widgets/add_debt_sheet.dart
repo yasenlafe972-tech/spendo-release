@@ -59,6 +59,7 @@ class _AddDebtSheetState extends State<AddDebtSheet> {
     {'key': 'bit', 'title': 'تطبيق Bit', 'icon': Remix.smartphone_line, 'color': brandYellow},
     {'key': 'cash', 'title': 'كاش نقدي', 'icon': Remix.money_dollar_box_line, 'color': brandGreen},
     {'key': 'bank_transfer', 'title': 'تحويل بنكي', 'icon': Remix.bank_line, 'color': brandYellow},
+    {'key': 'atm_code', 'title': 'كود صراف بنكي', 'icon': Remix.qr_code_line, 'color': brandGreen},
   ];
 
   @override
@@ -447,14 +448,14 @@ class _AddDebtSheetState extends State<AddDebtSheet> {
                 ),
               ),
               const SizedBox(width: 6),
-              // 4. مقبوضات (استلمت مبلغ بدون إرجاع)
+              // 4. مبالغ مستلمة (سحب بنكي أو استلام مالي)
               Expanded(
                 child: _buildTypeOptionCard(
                   isSelected: isReceived,
                   activeColor: brandGreen,
                   icon: Remix.checkbox_circle_line,
-                  title: 'مقبوضات',
-                  subtitle: 'استلمت مبلغ بدون إرجاع',
+                  title: 'مبالغ مستلمة',
+                  subtitle: 'سحب بنكي أو استلام مالي',
                   onTap: () => setState(() => _debtType = 'received'),
                 ),
               ),
@@ -907,7 +908,9 @@ class _AddDebtSheetState extends State<AddDebtSheet> {
               decoration: InputDecoration(
                 hintText: _debtType == 'pay_later'
                     ? 'تفاصيل الخدمة (مثال: حلاقة، غيار زيت، أغراض) - اختياري'
-                    : 'ملاحظات وتفاصيل المعاملة (اختياري)',
+                    : (_debtType == 'received'
+                        ? 'تفاصيل السحب أو الاستلام (مثال: كود صراف لصديق، تسليم كاش) - اختياري'
+                        : 'ملاحظات وتفاصيل المعاملة (اختياري)'),
                 hintStyle: const TextStyle(
                   fontFamily: 'Cairo',
                   color: Color(0xFF71717A),

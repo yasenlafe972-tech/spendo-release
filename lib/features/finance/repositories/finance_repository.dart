@@ -249,7 +249,7 @@ class FinanceRepository {
         .fold(0.0, (sum, d) => sum + d.remainingAmount);
   }
 
-  /// حساب إجمالي المبالغ المستلمة بدون إرجاع (مقبوضات غير مستردة)
+  /// حساب إجمالي المبالغ المستلمة (مبالغ مستلمة / خالص ومسدد)
   static double calculateTotalReceived(List<DebtModel> debts) {
     return debts
         .where((d) => d.isReceived)

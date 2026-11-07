@@ -96,6 +96,8 @@ class _FinanceScreenState extends State<FinanceScreen> {
         return _debts.where((d) => d.isPayLater && !d.isSettled).toList();
       case 'received':
         return _debts.where((d) => d.isReceived).toList();
+      case 'atm_code':
+        return _debts.where((d) => d.paymentMethod.toLowerCase() == 'atm_code').toList();
       case 'bit':
         return _debts.where((d) => d.paymentMethod.toLowerCase() == 'bit').toList();
       case 'cash':
@@ -230,14 +232,14 @@ class _FinanceScreenState extends State<FinanceScreen> {
     final person = _peopleMap[debt.personId];
     final buffer = StringBuffer();
     if (debt.isReceived) {
-      buffer.writeln('إشعار استلام مبلغ - Spendo');
+      buffer.writeln('إشعار استلام مالي - Spendo');
       buffer.writeln('--------------------------------');
       buffer.writeln('الاسم: ${person?.name ?? "غير محدد"}');
-      buffer.writeln('نوع المعاملة: استلام مبلغ (بدون إرجاع)');
+      buffer.writeln('نوع المعاملة: مبالغ مستلمة (سحب بنكي أو استلام مالي)');
       buffer.writeln('طريقة الاستلام: ${debt.paymentMethodTitle}');
-      buffer.writeln('تاريخ الاستلام: ${ArabicDateHelper.formatArabicDateWithWeekdayFromString(debt.transactionDate)}');
+      buffer.writeln('تاريخ المعاملة: ${ArabicDateHelper.formatArabicDateWithWeekdayFromString(debt.transactionDate)}');
       buffer.writeln('المبلغ المستلم: ${debt.originalAmount.toStringAsFixed(1)} ₪');
-      buffer.writeln('الحالة: مستلم بالكامل (غير مسترد)');
+      buffer.writeln('الحالة: خالص ومسدد (مستلم بالكامل)');
       if (debt.notes != null) {
         buffer.writeln('ملاحظات: ${debt.notes}');
       }
@@ -443,7 +445,7 @@ class _FinanceScreenState extends State<FinanceScreen> {
                     ),
                   ),
                   Text(
-                    'متابعة السلف، الديون، والمقبوضات',
+                    'متابعة السلف، الديون، والمبالغ المستلمة',
                     style: TextStyle(
                       fontFamily: 'Cairo',
                       color: Color(0xFF9CA3AF),
@@ -683,17 +685,17 @@ class _FinanceScreenState extends State<FinanceScreen> {
 
               Container(width: 1, height: 28, color: surfaceBorder),
 
-              // مقبوضات (باللون الأصفر الدافئ)
+              // مبالغ مستلمة (باللون الأصفر الدافئ)
               Expanded(
                 child: Column(
                   children: [
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
+                      children: const [
                         Icon(Remix.checkbox_circle_line, color: brandYellow, size: 14),
                         SizedBox(width: 4),
                         Text(
-                          'مقبوضات',
+                          'مبالغ مستلمة',
                           style: TextStyle(
                             fontFamily: 'Cairo',
                             color: Color(0xFF9CA3AF),
@@ -812,6 +814,7 @@ class _FinanceScreenState extends State<FinanceScreen> {
     final payLaterCount = _debts.where((d) => d.isPayLater && !d.isSettled).length;
     final receivedCount = _debts.where((d) => d.isReceived).length;
     final settledCount = _debts.where((d) => d.isSettled && !d.isReceived).length;
+    final atmCodeCount = _debts.where((d) => d.paymentMethod.toLowerCase() == 'atm_code').length;
 
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
@@ -826,9 +829,11 @@ class _FinanceScreenState extends State<FinanceScreen> {
           const SizedBox(width: 6),
           _buildFilterChip('pay_later', 'عالحساب ($payLaterCount)', icon: Remix.time_line, iconColor: brandYellow),
           const SizedBox(width: 6),
-          _buildFilterChip('received', 'مقبوضات ($receivedCount)', icon: Remix.checkbox_circle_line, iconColor: brandGreen),
+          _buildFilterChip('received', 'مبالغ مستلمة ($receivedCount)', icon: Remix.checkbox_circle_line, iconColor: brandGreen),
           const SizedBox(width: 6),
           _buildFilterChip('settled', 'المسددة ($settledCount)'),
+          const SizedBox(width: 6),
+          _buildFilterChip('atm_code', 'كود صراف ($atmCodeCount)', icon: Remix.qr_code_line, iconColor: brandGreen),
           const SizedBox(width: 6),
           _buildFilterChip('bit', 'Bit', icon: Remix.smartphone_line, iconColor: brandYellow),
           const SizedBox(width: 6),
@@ -905,10 +910,10 @@ class _FinanceScreenState extends State<FinanceScreen> {
       amountPrefix = '-';
       subStatus = isSettled ? 'تم السداد' : 'مستحق الدفع';
     } else if (isReceived) {
-      badgeText = 'مقبوضات';
+      badgeText = 'مبالغ مستلمة';
       badgeColor = brandYellow;
       amountPrefix = '+';
-      subStatus = 'غير مسترد';
+      subStatus = 'خالص ومسدد';
     }
 
     final double displayAmount = isReceived ? debt.originalAmount : (isSettled ? debt.originalAmount : debt.remainingAmount);
@@ -1234,7 +1239,7 @@ class _FinanceScreenState extends State<FinanceScreen> {
           ),
           SizedBox(height: 6),
           Text(
-            'سجل سلفك ومقبوضاتك وديونك لمتابعة الأرصدة والمتبقي وطريقة الدفع بكل دقة',
+            'سجل سلفك ومبالغك المستلمة وديونك لمتابعة الأرصدة والمتبقي وطريقة الدفع بكل دقة',
             style: TextStyle(
               fontFamily: 'Cairo',
               color: Color(0xFF71717A),

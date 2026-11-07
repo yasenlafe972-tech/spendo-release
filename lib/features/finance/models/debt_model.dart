@@ -87,6 +87,8 @@ class DebtModel {
         return 'تطبيق Bit';
       case 'bank_transfer':
         return 'تحويل بنكي';
+      case 'atm_code':
+        return 'كود صراف بنكي';
       case 'check':
         return 'شيك';
       case 'cash':
@@ -97,7 +99,7 @@ class DebtModel {
 
   /// وصف نوع المعاملة بالعربية
   String get typeTitle {
-    if (isReceived) return 'مقبوضات (استلمت مبلغ)';
+    if (isReceived) return 'مبالغ مستلمة (سحب بنكي أو استلام مالي)';
     if (isPayLater) return 'عالحساب / دفع لاحقاً (خدمة أو محل)';
     return isTheyOwe ? 'إلي عنده (سلفة أعطيته)' : 'عليّ إله (دين أخذته)';
   }
