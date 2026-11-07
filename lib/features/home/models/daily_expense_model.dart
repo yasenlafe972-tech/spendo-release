@@ -57,8 +57,19 @@ class DailyExpenseModel {
 
   String get sourceTitle {
     switch (source) {
+      case 'google_pay':
+        return 'Google Pay';
+      case 'samsung_pay':
+        return 'Samsung Pay';
+      case 'cal':
       case 'cal_card':
-        return 'إشعار כאל';
+        return 'بطاقة כאל';
+      case 'max':
+        return 'بطاقة Max';
+      case 'isracard':
+        return 'بطاقة ישראכרט';
+      case 'wallet':
+        return 'محفظة الهاتف';
       case 'apple_pay':
       default:
         return 'Apple Pay';

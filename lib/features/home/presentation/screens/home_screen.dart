@@ -88,7 +88,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _loadData() async {
     try {
-      // سحب أي دفعات Apple Pay جديدة وصلت بالخلفية عبر السحابة
+      // سحب أي دفعات جديدة وصلت بالخلفية من محفظة الهاتف أو السحابة
+      await DailyExpenseService.pullPendingAndroidWalletNotifications();
       DailyExpenseService.pullCloudAutoExpenses();
       // مزامنة سحابية ثنائية تلقائية
       FirebaseBackupService.instance.syncWithCloud(isSilent: true);
@@ -387,12 +388,17 @@ class _HomeScreenState extends State<HomeScreen> {
       if (_selectedLogsFilter != 'all' && _selectedLogsFilter != e.category) {
         continue;
       }
+      final timeStr =
+          '${e.date.hour.toString().padLeft(2, '0')}:${e.date.minute.toString().padLeft(2, '0')}';
+      final locPart = (e.location != null && e.location!.trim().isNotEmpty)
+          ? ' • ${e.location!.trim()}'
+          : '';
       items.add(_TimelineItem(
         category: e.category,
         date: e.date,
         title: e.merchantName,
         subtitle:
-            '${ArabicDateHelper.getRelativeDayDescription(e.date)} • ${e.sourceTitle} • ${e.categoryTitle}',
+            '${ArabicDateHelper.getRelativeDayDescription(e.date)} • $timeStr • ${e.sourceTitle}$locPart',
         amount: e.amount,
         dailyExpense: e,
       ));
@@ -1125,12 +1131,14 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  /// نافذة إعداد الربط التلقائي مع Apple Pay Shortcuts (بدون تدخل يدوي وبدون تحديد البطاقة)
-  void _showAutoApplePaySetupSheet() {
+  /// نافذة إعداد الربط التلقائي مع محفظة الهاتف (Google Wallet / Samsung Pay / Apple Pay)
+  Future<void> _showAutoApplePaySetupSheet() async {
     SpendoHaptics.light();
     const directUrlTemplate = DailyExpenseService.shortcutDeepLinkTemplate;
     const cloudWebhookUrl = DailyExpenseService.cloudWebhookUrl;
+    bool isListenerActive = await DailyExpenseService.isWalletListenerEnabled();
 
+    if (!mounted) return;
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -1139,256 +1147,401 @@ class _HomeScreenState extends State<HomeScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (ctx) {
-        return Directionality(
-          textDirection: TextDirection.rtl,
-          child: SafeArea(
-            top: false,
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 18),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Center(
-                    child: Container(
-                      width: 34,
-                      height: 4,
-                      decoration: BoxDecoration(
-                        color: surfaceBorder,
-                        borderRadius: BorderRadius.circular(99),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        return StatefulBuilder(
+          builder: (ctx, setSheetState) {
+            return Directionality(
+              textDirection: TextDirection.rtl,
+              child: SafeArea(
+                top: false,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 18),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
+                      Center(
+                        child: Container(
+                          width: 34,
+                          height: 4,
+                          decoration: BoxDecoration(
+                            color: surfaceBorder,
+                            borderRadius: BorderRadius.circular(99),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 10),
                       Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Icon(Remix.apple_line, color: textWhite, size: 19),
-                          const SizedBox(width: 8),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                          Row(
                             children: [
-                              Text(
-                                'الربط التلقائي مع Apple Pay (Shortcuts)',
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.bold,
-                                  color: textWhite,
+                              Icon(Remix.wallet_3_line,
+                                  color: brandGreen, size: 19),
+                              const SizedBox(width: 8),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'ربط المحفظة التلقائي مع الموقع (Wallet)',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.bold,
+                                    color: textWhite,
+                                  ),
+                                ),
+                                Text(
+                                  'يلتقط الدفعة من المحفظة ويسجلها مع الموقع والساعة تلقائياً',
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    color: textMuted,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                        InkWell(
+                          onTap: () => Navigator.pop(ctx),
+                          child: Icon(Remix.close_line,
+                              color: textMuted, size: 19),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    Divider(color: surfaceBorder, height: 1),
+                    const SizedBox(height: 10),
+
+                    // حالة الربط المباشر مع محفظة الهاتف (Google Wallet / Samsung Pay / כאל)
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: surfaceField,
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                          color: isListenerActive ? brandGreen : brandYellow,
+                        ),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Row(
+                                children: [
+                                  Icon(
+                                    isListenerActive
+                                        ? Remix.checkbox_circle_line
+                                        : Remix.notification_badge_line,
+                                    size: 15,
+                                    color: isListenerActive
+                                        ? brandGreen
+                                        : brandYellow,
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    isListenerActive
+                                        ? 'التقاط دفعات المحفظة: مفعّل وجاهز'
+                                        : 'التقاط دفعات المحفظة بحاجة لتفعيل الصلاحية',
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.bold,
+                                      color: isListenerActive
+                                          ? brandGreen
+                                          : brandYellow,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              InkWell(
+                                onTap: () async {
+                                  final active = await DailyExpenseService
+                                      .isWalletListenerEnabled();
+                                  setSheetState(() => isListenerActive = active);
+                                },
+                                child: Text(
+                                  'تحديث الحالة',
+                                  style: TextStyle(
+                                      fontSize: 9.5, color: textMuted),
                                 ),
                               ),
-                              Text(
-                                'يسجل الدفعة تلقائياً من أي بطاقة في المحفظة بدون تدخلك',
-                                style: TextStyle(
-                                  fontSize: 10,
-                                  color: textMuted,
+                            ],
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            'عند الدفع عبر المحفظة (Google Wallet / Samsung Pay / Apple Pay)، يلتقط التطبيق المبلغ واسم المحل ويحفظ موقعك الجغرافي (GPS) والساعة فوراً.',
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: textWhite,
+                              height: 1.4,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: ElevatedButton.icon(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: isListenerActive
+                                        ? surfaceElevated
+                                        : brandGreen,
+                                    foregroundColor: isListenerActive
+                                        ? textWhite
+                                        : Colors.white,
+                                    elevation: 0,
+                                    padding:
+                                        const EdgeInsets.symmetric(vertical: 8),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                  ),
+                                  onPressed: () async {
+                                    SpendoHaptics.light();
+                                    await DailyExpenseService
+                                        .openWalletListenerSettings();
+                                  },
+                                  icon: Icon(
+                                    Remix.shield_check_line,
+                                    size: 14,
+                                    color: isListenerActive
+                                        ? brandGreen
+                                        : Colors.white,
+                                  ),
+                                  label: Text(
+                                    isListenerActive
+                                        ? 'إعدادات صلاحية المحفظة'
+                                        : 'تفعيل ربط المحفظة الآن',
+                                    style: const TextStyle(
+                                        fontSize: 10.5,
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: OutlinedButton.icon(
+                                  style: OutlinedButton.styleFrom(
+                                    foregroundColor: textWhite,
+                                    side: BorderSide(color: surfaceBorder),
+                                    backgroundColor: surfaceMain,
+                                    padding:
+                                        const EdgeInsets.symmetric(vertical: 8),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                  ),
+                                  onPressed: () async {
+                                    SpendoHaptics.light();
+                                    Navigator.pop(ctx);
+                                    await DailyExpenseService
+                                        .openDeviceWalletApp();
+                                  },
+                                  icon: const Icon(Remix.bank_card_line,
+                                      size: 14, color: brandYellow),
+                                  label: const Text(
+                                    'فتح محفظة البطاقات',
+                                    style: TextStyle(
+                                        fontSize: 10.5,
+                                        fontWeight: FontWeight.bold),
+                                  ),
                                 ),
                               ),
                             ],
                           ),
                         ],
                       ),
-                      InkWell(
-                        onTap: () => Navigator.pop(ctx),
-                        child: Icon(Remix.close_line,
-                            color: textMuted, size: 19),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 10),
-                  Divider(color: surfaceBorder, height: 1),
-                  const SizedBox(height: 10),
-
-                  // شرح مبسط لطريقة العمل
-                  Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: surfaceField,
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: surfaceBorder),
                     ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                    const SizedBox(height: 10),
+
+                    // نسخ الرابط المباشر للاختصار (Apple Pay Shortcuts)
+                    Row(
                       children: [
-                        const Text(
-                          'كيف يعمل تلقائياً مع كل كروتك؟',
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.bold,
-                            color: brandGreen,
+                        Expanded(
+                          child: OutlinedButton.icon(
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: textWhite,
+                              side: BorderSide(color: surfaceBorder),
+                              backgroundColor: surfaceField,
+                              padding: const EdgeInsets.symmetric(vertical: 9),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                            onPressed: () {
+                              Clipboard.setData(
+                                  const ClipboardData(text: directUrlTemplate));
+                              SpendoHaptics.success();
+                              Navigator.pop(ctx);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                      'تم نسخ رابط الاختصار المباشر مع الموقع (spendo://pay)'),
+                                  duration: Duration(seconds: 2),
+                                ),
+                              );
+                            },
+                            icon: const Icon(Remix.links_line,
+                                size: 14, color: brandGreen),
+                            label: const Text(
+                              'نسخ رابط الاختصار المباشر',
+                              style: TextStyle(
+                                  fontSize: 10.5, fontWeight: FontWeight.bold),
+                            ),
                           ),
                         ),
-                        const SizedBox(height: 4),
-                        Text(
-                          '1. في تطبيق Shortcuts بالآيفون: اختر Automation ثم Transaction وحدد جميع بطاقاتك دفعة واحدة.\n'
-                          '2. يرسل الاختصار (المبلغ + اسم المحل) للتطبيق مباشرة دون الحاجة لتحديد نوع الكرت.\n'
-                          '3. يتعرف التطبيق على صنف المحل (أكل / مشتريات / وقود) تلقائياً حسب الاسم المحفوظ.',
-                          style: TextStyle(
-                            fontSize: 10,
-                            color: textWhite,
-                            height: 1.4,
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: OutlinedButton.icon(
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: textWhite,
+                              side: BorderSide(color: surfaceBorder),
+                              backgroundColor: surfaceField,
+                              padding: const EdgeInsets.symmetric(vertical: 9),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                            onPressed: () {
+                              Clipboard.setData(
+                                  const ClipboardData(text: cloudWebhookUrl));
+                              SpendoHaptics.success();
+                              Navigator.pop(ctx);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                      'تم نسخ رابط الإرسال الصامت بالخلفية (Webhook)'),
+                                  duration: Duration(seconds: 2),
+                                ),
+                              );
+                            },
+                            icon: const Icon(Remix.cloud_line,
+                                size: 14, color: brandYellow),
+                            label: const Text(
+                              'نسخ رابط الخلفية الصامت',
+                              style: TextStyle(
+                                  fontSize: 10.5, fontWeight: FontWeight.bold),
+                            ),
                           ),
                         ),
                       ],
                     ),
-                  ),
-                  const SizedBox(height: 10),
+                    const SizedBox(height: 10),
 
-                  // نسخ الرابط المباشر للاختصار
-                  Row(
-                    children: [
-                      Expanded(
-                        child: OutlinedButton.icon(
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: textWhite,
-                            side: BorderSide(color: surfaceBorder),
-                            backgroundColor: surfaceField,
-                            padding: const EdgeInsets.symmetric(vertical: 9),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                          ),
-                          onPressed: () {
-                            Clipboard.setData(
-                                const ClipboardData(text: directUrlTemplate));
-                            SpendoHaptics.success();
-                            Navigator.pop(ctx);
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text(
-                                    'تم نسخ رابط الاختصار المباشر (spendo://pay)'),
-                                duration: Duration(seconds: 2),
+                    // تجربة سريعة لوصول دفعة محفظة تلقائية مع الموقع الجغرافي
+                    Text(
+                      'فحص وتجربة سحب دفعة من المحفظة مع الموقع الآن:',
+                      style: TextStyle(fontSize: 10, color: textMuted),
+                    ),
+                    const SizedBox(height: 6),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: ElevatedButton.icon(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor:
+                                  brandYellow.withValues(alpha: 0.16),
+                              foregroundColor: brandYellow,
+                              elevation: 0,
+                              padding: const EdgeInsets.symmetric(vertical: 9),
+                              side: const BorderSide(color: brandYellow),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
                               ),
-                            );
-                          },
-                          icon: const Icon(Remix.links_line,
-                              size: 14, color: brandGreen),
-                          label: const Text(
-                            'نسخ رابط الاختصار المباشر',
-                            style: TextStyle(
-                                fontSize: 10.5, fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: OutlinedButton.icon(
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: textWhite,
-                            side: BorderSide(color: surfaceBorder),
-                            backgroundColor: surfaceField,
-                            padding: const EdgeInsets.symmetric(vertical: 9),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            onPressed: () async {
+                              SpendoHaptics.success();
+                              Navigator.pop(ctx);
+                              final added = await DailyExpenseService.addExpense(
+                                merchantName: 'שווארמה הנשיא',
+                                amount: 55,
+                                explicitCategory: 'food',
+                                source: 'google_pay',
+                              );
+                              await _loadData();
+                              if (mounted) {
+                                final locMsg = added.location != null
+                                    ? ' • الموقع: ${added.location}'
+                                    : '';
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                        'تم تسجيل الدفعة (55 ₪)$locMsg'),
+                                    duration: const Duration(seconds: 3),
+                                  ),
+                                );
+                              }
+                            },
+                            icon: const Icon(Remix.restaurant_2_line, size: 14),
+                            label: const Text(
+                              'تجربة دفعة أكل (55 ₪)',
+                              style: TextStyle(
+                                  fontSize: 10.5, fontWeight: FontWeight.bold),
                             ),
                           ),
-                          onPressed: () {
-                            Clipboard.setData(
-                                const ClipboardData(text: cloudWebhookUrl));
-                            SpendoHaptics.success();
-                            Navigator.pop(ctx);
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text(
-                                    'تم نسخ رابط الإرسال الصامت بالخلفية (Webhook)'),
-                                duration: Duration(seconds: 2),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: ElevatedButton.icon(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor:
+                                  brandGreen.withValues(alpha: 0.16),
+                              foregroundColor: brandGreen,
+                              elevation: 0,
+                              padding: const EdgeInsets.symmetric(vertical: 9),
+                              side: const BorderSide(color: brandGreen),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
                               ),
-                            );
-                          },
-                          icon: const Icon(Remix.cloud_line,
-                              size: 14, color: brandYellow),
-                          label: const Text(
-                            'نسخ رابط الخلفية الصامت',
-                            style: TextStyle(
-                                fontSize: 10.5, fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 10),
-
-                  // تجربة سريعة لوصول دفعة Apple Pay تلقائية
-                  Text(
-                    'تجربة وصول دفعة Apple Pay تلقائية الآن:',
-                    style: TextStyle(fontSize: 10, color: textMuted),
-                  ),
-                  const SizedBox(height: 6),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: ElevatedButton.icon(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: brandYellow.withValues(alpha: 0.16),
-                            foregroundColor: brandYellow,
-                            elevation: 0,
-                            padding: const EdgeInsets.symmetric(vertical: 9),
-                            side: const BorderSide(color: brandYellow),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            onPressed: () async {
+                              SpendoHaptics.success();
+                              Navigator.pop(ctx);
+                              final added = await DailyExpenseService.addExpense(
+                                merchantName: 'שופרסל דיל',
+                                amount: 120,
+                                explicitCategory: 'shopping',
+                                source: 'google_pay',
+                              );
+                              await _loadData();
+                              if (mounted) {
+                                final locMsg = added.location != null
+                                    ? ' • الموقع: ${added.location}'
+                                    : '';
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                        'تم تسجيل الدفعة (120 ₪)$locMsg'),
+                                    duration: const Duration(seconds: 3),
+                                  ),
+                                );
+                              }
+                            },
+                            icon:
+                                const Icon(Remix.shopping_bag_3_line, size: 14),
+                            label: const Text(
+                              'تجربة دفعة مشتريات (120 ₪)',
+                              style: TextStyle(
+                                  fontSize: 10.5, fontWeight: FontWeight.bold),
                             ),
                           ),
-                          onPressed: () async {
-                            SpendoHaptics.success();
-                            Navigator.pop(ctx);
-                            await DailyExpenseService.handleIncomingShortcutUri(
-                              'spendo://pay?amount=55&merchant=%D7%A9%D7%95%D7%95%D7%90%D7%A8%D7%9E%D7%94%20%D7%94%D7%A0%D7%A9%D7%99%D7%90',
-                            );
-                            _loadData();
-                          },
-                          icon: const Icon(Remix.restaurant_2_line, size: 14),
-                          label: const Text(
-                            'تجربة دفعة أكل (55 ₪)',
-                            style: TextStyle(
-                                fontSize: 10.5, fontWeight: FontWeight.bold),
-                          ),
                         ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: ElevatedButton.icon(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: brandGreen.withValues(alpha: 0.16),
-                            foregroundColor: brandGreen,
-                            elevation: 0,
-                            padding: const EdgeInsets.symmetric(vertical: 9),
-                            side: const BorderSide(color: brandGreen),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                          ),
-                          onPressed: () async {
-                            SpendoHaptics.success();
-                            Navigator.pop(ctx);
-                            await DailyExpenseService.handleIncomingShortcutUri(
-                              'spendo://pay?amount=120&merchant=%D7%A9%D7%95%D7%A4%D7%A8%D7%A1%D7%9C%20%D7%93%D7%99%D7%9C',
-                            );
-                            _loadData();
-                          },
-                          icon: const Icon(Remix.shopping_bag_3_line, size: 14),
-                          label: const Text(
-                            'تجربة دفعة مشتريات (120 ₪)',
-                            style: TextStyle(
-                                fontSize: 10.5, fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
+          );
+          },
         );
       },
     );
   }
 
   /// نافذة تفاصيل العملية (المبلغ، التاريخ، الساعة، وسيلة الدفع، والموقع)
-  void _showExpenseDetailsSheet(DailyExpenseModel expense) {
-    final timeStr =
-        '${expense.date.hour.toString().padLeft(2, '0')}:${expense.date.minute.toString().padLeft(2, '0')}';
+  void _showExpenseDetailsSheet(DailyExpenseModel initialExpense) {
+    DailyExpenseModel expense = initialExpense;
+    bool isUpdatingLoc = false;
 
     showModalBottomSheet(
       context: context,
@@ -1397,176 +1550,227 @@ class _HomeScreenState extends State<HomeScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (ctx) {
-        final media = MediaQuery.of(ctx);
-        final bottomInset = media.viewInsets.bottom;
-        final bottomPadding = media.padding.bottom > 0
-            ? media.padding.bottom
-            : media.viewPadding.bottom;
+        return StatefulBuilder(
+          builder: (ctx, setSheetState) {
+            final timeStr =
+                '${expense.date.hour.toString().padLeft(2, '0')}:${expense.date.minute.toString().padLeft(2, '0')}';
+            final media = MediaQuery.of(ctx);
+            final bottomInset = media.viewInsets.bottom;
+            final bottomPadding = media.padding.bottom > 0
+                ? media.padding.bottom
+                : media.viewPadding.bottom;
 
-        return Directionality(
-          textDirection: TextDirection.rtl,
-          child: SafeArea(
-            top: false,
-            bottom: true,
-            child: Padding(
-              padding: EdgeInsets.fromLTRB(
-                18,
-                12,
-                18,
-                bottomInset > 0
-                    ? bottomInset + 12
-                    : (bottomPadding > 0 ? bottomPadding + 14 : 20),
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Center(
-                    child: Container(
-                      width: 36,
-                      height: 4,
-                      margin: const EdgeInsets.only(bottom: 14),
-                      decoration: BoxDecoration(
-                        color: surfaceBorder,
-                        borderRadius: BorderRadius.circular(99),
-                      ),
-                    ),
+            return Directionality(
+              textDirection: TextDirection.rtl,
+              child: SafeArea(
+                top: false,
+                bottom: true,
+                child: Padding(
+                  padding: EdgeInsets.fromLTRB(
+                    18,
+                    12,
+                    18,
+                    bottomInset > 0
+                        ? bottomInset + 12
+                        : (bottomPadding > 0 ? bottomPadding + 14 : 20),
                   ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      Expanded(
-                        child: Text(
-                          expense.merchantName,
-                          style: TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.bold,
-                            color: textWhite,
+                      Center(
+                        child: Container(
+                          width: 36,
+                          height: 4,
+                          margin: const EdgeInsets.only(bottom: 14),
+                          decoration: BoxDecoration(
+                            color: surfaceBorder,
+                            borderRadius: BorderRadius.circular(99),
                           ),
                         ),
                       ),
-                      IconButton(
-                        onPressed: () async {
-                          Navigator.pop(ctx);
-                          await DailyExpenseService.deleteExpense(expense.id);
-                          _loadData();
-                        },
-                        icon: const Icon(Remix.delete_bin_6_line,
-                            color: brandRed, size: 18),
-                        tooltip: 'حذف السجل',
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                            child: Text(
+                              expense.merchantName,
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
+                                color: textWhite,
+                              ),
+                            ),
+                          ),
+                          IconButton(
+                            onPressed: () async {
+                              Navigator.pop(ctx);
+                              await DailyExpenseService.deleteExpense(expense.id);
+                              _loadData();
+                            },
+                            icon: const Icon(Remix.delete_bin_6_line,
+                                color: brandRed, size: 18),
+                            tooltip: 'حذف السجل',
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 14, vertical: 12),
+                        decoration: BoxDecoration(
+                          color: surfaceField,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: surfaceBorder),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  'المبلغ:',
+                                  style:
+                                      TextStyle(color: textMuted, fontSize: 11.5),
+                                ),
+                                Text(
+                                  '₪${expense.amount.toStringAsFixed(2)}',
+                                  style: const TextStyle(
+                                    color: brandYellow,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            Divider(color: surfaceBorder, height: 16),
+                            Row(
+                              children: [
+                                const Icon(Remix.calendar_event_line,
+                                    size: 13, color: brandGreen),
+                                const SizedBox(width: 6),
+                                Text(
+                                  'التاريخ: ${ArabicDateHelper.formatArabicDateWithWeekday(expense.date)}',
+                                  style:
+                                      TextStyle(color: textMuted, fontSize: 11),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 6),
+                            Row(
+                              children: [
+                                const Icon(Remix.time_line,
+                                    size: 13, color: brandYellow),
+                                const SizedBox(width: 6),
+                                Text(
+                                  'الساعة: $timeStr',
+                                  style:
+                                      TextStyle(color: textMuted, fontSize: 11),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 6),
+                            Row(
+                              children: [
+                                Icon(Remix.wallet_3_line,
+                                    size: 13, color: textMuted),
+                                const SizedBox(width: 6),
+                                Text(
+                                  'المصدر: ${expense.sourceTitle}',
+                                  style:
+                                      TextStyle(color: textMuted, fontSize: 11),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 6),
+                            Row(
+                              children: [
+                                const Icon(Remix.map_pin_2_line,
+                                    size: 13, color: brandRed),
+                                const SizedBox(width: 6),
+                                Expanded(
+                                  child: Text(
+                                    expense.location != null &&
+                                            expense.location!.isNotEmpty
+                                        ? 'الموقع: ${expense.location}'
+                                        : 'الموقع: غير محدد بعد',
+                                    style: TextStyle(
+                                        color: expense.location != null &&
+                                                expense.location!.isNotEmpty
+                                            ? textWhite
+                                            : textMuted,
+                                        fontSize: 11,
+                                        fontWeight: expense.location != null &&
+                                                expense.location!.isNotEmpty
+                                            ? FontWeight.w600
+                                            : FontWeight.normal),
+                                  ),
+                                ),
+                                InkWell(
+                                  onTap: isUpdatingLoc
+                                      ? null
+                                      : () async {
+                                          setSheetState(
+                                              () => isUpdatingLoc = true);
+                                          final loc = await DailyExpenseService
+                                              .updateExpenseLocationWithCurrentGps(
+                                                  expense.id);
+                                          if (ctx.mounted) {
+                                            setSheetState(() {
+                                              isUpdatingLoc = false;
+                                              if (loc != null) {
+                                                expense = expense.copyWith(
+                                                    location: loc);
+                                              }
+                                            });
+                                          }
+                                          _loadData();
+                                        },
+                                  child: Text(
+                                    isUpdatingLoc
+                                        ? 'جاري التحديد...'
+                                        : 'تحديث الموقع (GPS)',
+                                    style: const TextStyle(
+                                      color: brandGreen,
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      SizedBox(
+                        height: 34,
+                        child: OutlinedButton(
+                          style: OutlinedButton.styleFrom(
+                            visualDensity: VisualDensity.compact,
+                            side: BorderSide(color: surfaceBorder),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                          onPressed: () => Navigator.pop(ctx),
+                          child: const Text(
+                            'إغلاق',
+                            style: TextStyle(
+                              color: brandGreen,
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 6),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                    decoration: BoxDecoration(
-                      color: surfaceField,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: surfaceBorder),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              'المبلغ:',
-                              style: TextStyle(color: textMuted, fontSize: 11.5),
-                            ),
-                            Text(
-                              '₪${expense.amount.toStringAsFixed(2)}',
-                              style: const TextStyle(
-                                color: brandYellow,
-                                fontSize: 14,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                        Divider(color: surfaceBorder, height: 16),
-                        Row(
-                          children: [
-                            Icon(Remix.calendar_event_line,
-                                size: 13, color: brandGreen),
-                            const SizedBox(width: 6),
-                            Text(
-                              'التاريخ: ${ArabicDateHelper.formatArabicDateWithWeekday(expense.date)}',
-                              style: TextStyle(color: textMuted, fontSize: 11),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 6),
-                        Row(
-                          children: [
-                            Icon(Remix.time_line,
-                                size: 13, color: brandYellow),
-                            const SizedBox(width: 6),
-                            Text(
-                              'الساعة: $timeStr',
-                              style: TextStyle(color: textMuted, fontSize: 11),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 6),
-                        Row(
-                          children: [
-                            Icon(Remix.wallet_3_line,
-                                size: 13, color: textMuted),
-                            const SizedBox(width: 6),
-                            Text(
-                              'المصدر: ${expense.sourceTitle}',
-                              style: TextStyle(color: textMuted, fontSize: 11),
-                            ),
-                          ],
-                        ),
-                        if (expense.location != null &&
-                            expense.location!.isNotEmpty) ...[
-                          const SizedBox(height: 6),
-                          Row(
-                            children: [
-                              const Icon(Remix.map_pin_2_line,
-                                  size: 13, color: brandRed),
-                              const SizedBox(width: 6),
-                              Expanded(
-                                child: Text(
-                                  'الموقع: ${expense.location}',
-                                  style: TextStyle(color: textMuted, fontSize: 11),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  SizedBox(
-                    height: 34,
-                    child: OutlinedButton(
-                      style: OutlinedButton.styleFrom(
-                        visualDensity: VisualDensity.compact,
-                        side: BorderSide(color: surfaceBorder),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                      onPressed: () => Navigator.pop(ctx),
-                      child: Text(
-                        'إغلاق',
-                        style: TextStyle(
-                          color: brandGreen,
-                          fontSize: 11.5,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
+                ),
               ),
-            ),
-          ),
+            );
+          },
         );
       },
     );

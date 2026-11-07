@@ -1,9 +1,14 @@
 package com.finance.spendo
 
+import android.content.ComponentName
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
+import android.provider.Settings
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
@@ -21,20 +26,71 @@ class MainActivity : FlutterFragmentActivity() {
     private var initialLink: String? = null
     private var initialSharedFilePath: String? = null
 
+    companion object {
+        private var activeChannel: MethodChannel? = null
+        private val mainHandler = Handler(Looper.getMainLooper())
+
+        fun deliverLiveWalletNotification(payloadJson: String): Boolean {
+            val channel = activeChannel ?: return false
+            mainHandler.post {
+                try {
+                    channel.invokeMethod("onWalletNotification", payloadJson)
+                } catch (_: Exception) {
+                }
+            }
+            return true
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         handleIntent(intent, isInitial = true)
     }
 
+    override fun onDestroy() {
+        if (activeChannel == methodChannel) {
+            activeChannel = null
+        }
+        super.onDestroy()
+    }
+
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
         methodChannel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, channelName)
+        activeChannel = methodChannel
+
         methodChannel?.setMethodCallHandler { call, result ->
-            if (call.method == "getInitialLink") {
-                result.success(initialLink)
-                initialLink = null
-            } else {
-                result.notImplemented()
+            when (call.method) {
+                "getInitialLink" -> {
+                    result.success(initialLink)
+                    initialLink = null
+                }
+                "isNotificationListenerEnabled" -> {
+                    result.success(isNotificationServiceEnabled())
+                }
+                "openNotificationListenerSettings" -> {
+                    try {
+                        val intent = Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)
+                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        startActivity(intent)
+                        result.success(true)
+                    } catch (_: Exception) {
+                        result.success(false)
+                    }
+                }
+                "getPendingWalletNotifications" -> {
+                    val prefs = applicationContext.getSharedPreferences(
+                        SpendoWalletNotificationListener.PREFS_NAME,
+                        Context.MODE_PRIVATE
+                    )
+                    val raw = prefs.getString(SpendoWalletNotificationListener.KEY_PENDING, "[]") ?: "[]"
+                    prefs.edit().putString(SpendoWalletNotificationListener.KEY_PENDING, "[]").apply()
+                    result.success(raw)
+                }
+                "openWalletApp" -> {
+                    result.success(launchWalletOnDevice())
+                }
+                else -> result.notImplemented()
             }
         }
 
@@ -66,6 +122,48 @@ class MainActivity : FlutterFragmentActivity() {
             } else {
                 result.notImplemented()
             }
+        }
+    }
+
+    private fun isNotificationServiceEnabled(): Boolean {
+        val pkgName = packageName
+        val flat = Settings.Secure.getString(contentResolver, "enabled_notification_listeners")
+        if (!flat.isNullOrEmpty()) {
+            val names = flat.split(":")
+            for (name in names) {
+                val cn = ComponentName.unflattenFromString(name)
+                if (cn != null && cn.packageName == pkgName) {
+                    return true
+                }
+            }
+        }
+        return false
+    }
+
+    private fun launchWalletOnDevice(): Boolean {
+        val walletPackages = listOf(
+            "com.google.android.apps.walletnfcrel",
+            "com.samsung.android.spay",
+            "com.samsung.android.spaymini"
+        )
+        for (pkg in walletPackages) {
+            val launchIntent = packageManager.getLaunchIntentForPackage(pkg)
+            if (launchIntent != null) {
+                launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                startActivity(launchIntent)
+                return true
+            }
+        }
+        return try {
+            val playStoreIntent = Intent(
+                Intent.ACTION_VIEW,
+                Uri.parse("https://wallet.google.com")
+            )
+            playStoreIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            startActivity(playStoreIntent)
+            true
+        } catch (_: Exception) {
+            false
         }
     }
 

@@ -13,33 +13,74 @@ class DailyExpenseService {
   static const MethodChannel _deepLinkChannel =
       MethodChannel('com.finance.spendo/deeplink');
 
-  /// عنوان Webhook السحابي لاستقبال دفعات Apple Pay / כאל في الخلفية بدون فتح التطبيق
+  /// عنوان Webhook السحابي لاستقبال دفعات المحفظة في الخلفية بدون فتح التطبيق
   static const String cloudWebhookUrl =
       'https://spendo-4813f-default-rtdb.europe-west1.firebasedatabase.app/auto_expenses_inbox.json';
 
-  /// عنوان الرابط المباشر للـ Shortcuts في الآيفون والأندرويد (يقبل كل كروت Apple Pay بدون تحديد كرت)
+  /// عنوان الرابط المباشر للـ Shortcuts في الآيفون والأندرويد (يقبل كل كروت المحفظة مع الموقع)
   static const String shortcutDeepLinkTemplate =
       'spendo://pay?amount={Amount}&merchant={Merchant}&location={Location}';
 
   static bool _listenerInitialized = false;
   static final ValueNotifier<int> expensesChangedNotifier = ValueNotifier<int>(0);
 
-  /// تهيئة الاستماع التلقائي للروابط (`spendo://pay`) والمزامنة السحابية للدفعات التلقائية
+  /// التحقق مما إذا كان التقاط دفعات المحفظة التلقائي مفعلاً على الجهاز (Android)
+  static Future<bool> isWalletListenerEnabled() async {
+    if (!Platform.isAndroid) return true;
+    try {
+      final enabled = await _deepLinkChannel
+          .invokeMethod<bool>('isNotificationListenerEnabled');
+      return enabled ?? false;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  /// فتح إعدادات صلاحية التقاط إشعارات المحفظة تلقائياً (Android)
+  static Future<bool> openWalletListenerSettings() async {
+    if (!Platform.isAndroid) return false;
+    try {
+      final opened = await _deepLinkChannel
+          .invokeMethod<bool>('openNotificationListenerSettings');
+      return opened ?? false;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  /// فتح تطبيق المحفظة الرسمي على الهاتف (Google Wallet / Samsung Wallet)
+  static Future<bool> openDeviceWalletApp() async {
+    if (!Platform.isAndroid) return false;
+    try {
+      final opened =
+          await _deepLinkChannel.invokeMethod<bool>('openWalletApp');
+      return opened ?? false;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  /// تهيئة الاستماع التلقائي للروابط (`spendo://pay`) وإشعارات المحفظة والمزامنة السحابية
   static Future<void> initAutoSyncListener() async {
-    if (_listenerInitialized) return;
-    _listenerInitialized = true;
+    if (!_listenerInitialized) {
+      _listenerInitialized = true;
 
-    // 1. الاستماع للروابط القادمة أثناء عمل التطبيق
-    _deepLinkChannel.setMethodCallHandler((call) async {
-      if (call.method == 'onDeepLink') {
-        final link = call.arguments as String?;
-        if (link != null && link.isNotEmpty) {
-          await handleIncomingShortcutUri(link);
+      _deepLinkChannel.setMethodCallHandler((call) async {
+        if (call.method == 'onDeepLink') {
+          final link = call.arguments as String?;
+          if (link != null && link.isNotEmpty) {
+            await handleIncomingShortcutUri(link);
+          }
+        } else if (call.method == 'onWalletNotification') {
+          final payloadJson = call.arguments as String?;
+          if (payloadJson != null && payloadJson.isNotEmpty) {
+            await _handleWalletNotificationJson(payloadJson);
+          }
         }
-      }
-    });
+      });
+    }
 
-    // 2. فحص إذا تم فتح التطبيق عبر شورتكات Apple Pay
+    // 1. فحص إذا تم فتح التطبيق عبر شورتكات المحفظة
     try {
       final initialLink =
           await _deepLinkChannel.invokeMethod<String>('getInitialLink');
@@ -48,12 +89,85 @@ class DailyExpenseService {
       }
     } catch (_) {}
 
+    // 2. سحب أي دفعات التقطتها محفظة الأندرويد بالخلفية
+    await pullPendingAndroidWalletNotifications();
+
     // 3. سحب أي دفعات أرسلها شورتكات الآيفون للسحابة بالخلفية
     await pullCloudAutoExpenses();
   }
 
-  /// معالجة الرابط القادم من Apple Pay Shortcut تلقائياً بدون أي تدخل يدوي
-  /// يقبل: spendo://pay?amount=45&merchant=BBB أو spendo://pay?text=...
+  /// سحب دفعات محفظة الأندرويد (Google Wallet / Samsung Pay / כאל / Max) الملتقطة في الخلفية
+  static Future<int> pullPendingAndroidWalletNotifications() async {
+    if (!Platform.isAndroid) return 0;
+    try {
+      final raw = await _deepLinkChannel
+          .invokeMethod<String>('getPendingWalletNotifications');
+      if (raw == null || raw.isEmpty || raw == '[]') return 0;
+
+      final list = jsonDecode(raw) as List<dynamic>;
+      int count = 0;
+      for (final item in list) {
+        if (item is Map<String, dynamic>) {
+          final ok = await _processWalletNotificationMap(item);
+          if (ok) count++;
+        }
+      }
+      if (count > 0) {
+        expensesChangedNotifier.value++;
+      }
+      return count;
+    } catch (_) {
+      return 0;
+    }
+  }
+
+  static Future<bool> _handleWalletNotificationJson(String payloadJson) async {
+    try {
+      final map = jsonDecode(payloadJson) as Map<String, dynamic>;
+      final ok = await _processWalletNotificationMap(map);
+      if (ok) {
+        expensesChangedNotifier.value++;
+      }
+      return ok;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  static Future<bool> _processWalletNotificationMap(
+      Map<String, dynamic> map) async {
+    final title = map['title']?.toString().trim() ?? '';
+    final body = map['body']?.toString().trim() ?? '';
+    final text = map['text']?.toString().trim() ?? '$title\n$body';
+    final source = map['source']?.toString().trim() ??
+        (Platform.isAndroid ? 'google_pay' : 'apple_pay');
+    final ts = map['timestamp'] as int?;
+    final date = ts != null && ts > 0
+        ? DateTime.fromMillisecondsSinceEpoch(ts)
+        : DateTime.now();
+
+    final parsed = parsePaymentNotification(
+      text,
+      notificationTitle: title,
+      notificationBody: body,
+    );
+
+    if (parsed.amount != null && parsed.amount! > 0) {
+      await addExpense(
+        merchantName: (parsed.merchant != null && parsed.merchant!.isNotEmpty)
+            ? parsed.merchant!
+            : 'دفعة محفظة',
+        amount: parsed.amount!,
+        source: source,
+        date: date,
+      );
+      return true;
+    }
+    return false;
+  }
+
+  /// معالجة الرابط القادم من Shortcut أو محفظة الهاتف تلقائياً مع التقاط الموقع الجغرافي
+  /// يقبل: spendo://pay?amount=45&merchant=BBB&location=...
   static Future<bool> handleIncomingShortcutUri(String rawUri) async {
     try {
       final uri = Uri.parse(rawUri);
@@ -61,7 +175,8 @@ class DailyExpenseService {
 
       double? amount;
       String? merchant;
-      String source = params['source'] ?? 'apple_pay';
+      String source = params['source'] ??
+          (Platform.isAndroid ? 'google_pay' : 'apple_pay');
 
       if (params.containsKey('text') && params['text']!.trim().isNotEmpty) {
         final parsed = parsePaymentNotification(params['text']!);
@@ -70,25 +185,32 @@ class DailyExpenseService {
       }
 
       if (params.containsKey('amount')) {
-        final rawAmt =
-            params['amount']!.replaceAll(RegExp(r'[^0-9.,]'), '').replaceAll(',', '.');
+        final rawAmt = params['amount']!
+            .replaceAll(RegExp(r'[^0-9.,]'), '')
+            .replaceAll(',', '.');
         amount = double.tryParse(rawAmt) ?? amount;
       }
 
-      if (params.containsKey('merchant') && params['merchant']!.trim().isNotEmpty) {
+      if (params.containsKey('merchant') &&
+          params['merchant']!.trim().isNotEmpty) {
         merchant = params['merchant']!.trim();
-      } else if (params.containsKey('name') && params['name']!.trim().isNotEmpty) {
+      } else if (params.containsKey('name') &&
+          params['name']!.trim().isNotEmpty) {
         merchant = params['name']!.trim();
       }
 
       String? location;
-      if (params.containsKey('location') && params['location']!.trim().isNotEmpty) {
+      if (params.containsKey('location') &&
+          params['location']!.trim().isNotEmpty) {
         location = params['location']!.trim();
-      } else if (params.containsKey('city') && params['city']!.trim().isNotEmpty) {
+      } else if (params.containsKey('city') &&
+          params['city']!.trim().isNotEmpty) {
         location = params['city']!.trim();
-      } else if (params.containsKey('place') && params['place']!.trim().isNotEmpty) {
+      } else if (params.containsKey('place') &&
+          params['place']!.trim().isNotEmpty) {
         location = params['place']!.trim();
-      } else if (params.containsKey('address') && params['address']!.trim().isNotEmpty) {
+      } else if (params.containsKey('address') &&
+          params['address']!.trim().isNotEmpty) {
         location = params['address']!.trim();
       }
 
@@ -96,7 +218,7 @@ class DailyExpenseService {
         await addExpense(
           merchantName: (merchant != null && merchant.isNotEmpty)
               ? merchant
-              : 'دفعة Apple Pay',
+              : 'دفعة المحفظة',
           amount: amount,
           source: source,
           location: location,
@@ -110,7 +232,7 @@ class DailyExpenseService {
     return false;
   }
 
-  /// سحب الدفعات المرسلة تلقائياً في الخلفية عبر iOS Shortcuts إلى Firebase مع إغلاق المقابس بأمان
+  /// سحب الدفعات المرسلة تلقائياً في الخلفية عبر Shortcuts إلى Firebase مع إغلاق المقابس بأمان
   static Future<int> pullCloudAutoExpenses() async {
     final client = HttpClient()..connectionTimeout = const Duration(seconds: 6);
     try {
@@ -144,7 +266,8 @@ class DailyExpenseService {
                 .replaceAll(',', '.');
             amount = double.tryParse(rawAmt) ?? amount;
           }
-          if (val['merchant'] != null && val['merchant'].toString().trim().isNotEmpty) {
+          if (val['merchant'] != null &&
+              val['merchant'].toString().trim().isNotEmpty) {
             merchant = val['merchant'].toString().trim();
           }
 
@@ -157,7 +280,7 @@ class DailyExpenseService {
             await addExpense(
               merchantName: (merchant != null && merchant.isNotEmpty)
                   ? merchant
-                  : 'دفعة Apple Pay',
+                  : 'دفعة المحفظة',
               amount: amount,
               source: source,
               location: location,
@@ -168,7 +291,6 @@ class DailyExpenseService {
       }
 
       if (importedCount > 0) {
-        // مسح صندوق الوارد السحابي بعد استيراده محلياً لمنع التكرار
         final delReq = await client.deleteUrl(Uri.parse(cloudWebhookUrl));
         await delReq.close().timeout(const Duration(seconds: 5));
         expensesChangedNotifier.value++;
@@ -181,7 +303,7 @@ class DailyExpenseService {
     }
   }
 
-  /// جلب كافة المصاريف اليومية ودفعات Apple Pay / כאל
+  /// جلب كافة المصاريف اليومية ودفعات المحفظة
   static Future<List<DailyExpenseModel>> getAllExpenses() async {
     final prefs = await SharedPreferences.getInstance();
     final raw = prefs.getString(_expensesKey);
@@ -195,7 +317,8 @@ class DailyExpenseService {
       final seen = <String>{};
       final unique = <DailyExpenseModel>[];
       for (final e in items) {
-        final key = '${e.date.year}_${e.date.month}_${e.date.day}_${e.date.hour}_${e.date.minute}_${e.amount.toStringAsFixed(2)}_${e.merchantName.trim()}';
+        final key =
+            '${e.date.year}_${e.date.month}_${e.date.day}_${e.date.hour}_${e.date.minute}_${e.amount.toStringAsFixed(2)}_${e.merchantName.trim()}';
         if (!seen.contains(key)) {
           seen.add(key);
           unique.add(e);
@@ -231,12 +354,12 @@ class DailyExpenseService {
     final cleanMerchant = merchantName.trim();
     final targetDate = date ?? DateTime.now();
 
-    String? resolvedLocation = location;
+    String? resolvedLocation = location?.trim();
     if (resolvedLocation == null || resolvedLocation.isEmpty) {
       try {
         final locRes = await LocationService.instance
             .getCurrentLocation()
-            .timeout(const Duration(seconds: 3), onTimeout: () => null);
+            .timeout(const Duration(seconds: 6), onTimeout: () => null);
         if (locRes != null) {
           resolvedLocation = locRes.address ??
               '${locRes.latitude.toStringAsFixed(4)}, ${locRes.longitude.toStringAsFixed(4)}';
@@ -253,6 +376,14 @@ class DailyExpenseService {
         e.date.hour == targetDate.hour &&
         e.date.minute == targetDate.minute);
     if (existingIdx != -1) {
+      if ((current[existingIdx].location == null ||
+              current[existingIdx].location!.isEmpty) &&
+          resolvedLocation != null &&
+          resolvedLocation.isNotEmpty) {
+        current[existingIdx] =
+            current[existingIdx].copyWith(location: resolvedLocation);
+        await saveAllExpenses(current);
+      }
       return current[existingIdx];
     }
 
@@ -278,6 +409,28 @@ class DailyExpenseService {
     }
 
     return newItem;
+  }
+
+  /// تحديث موقع دفعة مسجلة باستخدام الـ GPS الحالي
+  static Future<String?> updateExpenseLocationWithCurrentGps(
+      String expenseId) async {
+    final locRes = await LocationService.instance
+        .getCurrentLocation()
+        .timeout(const Duration(seconds: 6), onTimeout: () => null);
+    if (locRes == null) return null;
+
+    final resolvedLocation = locRes.address ??
+        '${locRes.latitude.toStringAsFixed(4)}, ${locRes.longitude.toStringAsFixed(4)}';
+    final current = await getAllExpenses();
+    final updated = current.map((e) {
+      if (e.id == expenseId) {
+        return e.copyWith(location: resolvedLocation);
+      }
+      return e;
+    }).toList();
+    await saveAllExpenses(updated);
+    expensesChangedNotifier.value++;
+    return resolvedLocation;
   }
 
   /// حذف حركة مصروف
@@ -375,19 +528,33 @@ class DailyExpenseService {
     return 'shopping';
   }
 
-  /// محلل ذكي لنص إشعار כאל (Cal) أو Apple Pay
+  /// محلل ذكي لنص إشعار Google Wallet / Samsung Pay / Apple Pay / כאל / Max
   static ({double? amount, String? merchant}) parsePaymentNotification(
-      String text) {
+    String text, {
+    String? notificationTitle,
+    String? notificationBody,
+  }) {
     final clean = text.trim();
     if (clean.isEmpty) return (amount: null, merchant: null);
 
     double? extractedAmount;
-    final amountRegex = RegExp(
-        r'(\d+(?:[.,]\d{1,2})?)\s*(?:ש"ח|שח|₪|ILS|شيكل)',
-        caseSensitive: false);
-    final match = amountRegex.firstMatch(clean);
-    if (match != null) {
-      extractedAmount = double.tryParse(match.group(1)!.replaceAll(',', '.'));
+    // 1. صيغة العملة قبل الرقم: ₪120.00 أو ₪ 120
+    final prefixCurrency = RegExp(
+      r'(?:₪|ש"ח|שח|ILS)\s*(\d+(?:[.,]\d{1,2})?)',
+      caseSensitive: false,
+    ).firstMatch(clean);
+    // 2. صيغة الرقم قبل العملة: 120.00 ₪ أو 120 ש"ח
+    final suffixCurrency = RegExp(
+      r'(\d+(?:[.,]\d{1,2})?)\s*(?:ש"ח|שח|₪|ILS|شيكل)',
+      caseSensitive: false,
+    ).firstMatch(clean);
+
+    if (prefixCurrency != null) {
+      extractedAmount =
+          double.tryParse(prefixCurrency.group(1)!.replaceAll(',', '.'));
+    } else if (suffixCurrency != null) {
+      extractedAmount =
+          double.tryParse(suffixCurrency.group(1)!.replaceAll(',', '.'));
     } else {
       final anyNum = RegExp(r'(\d+(?:\.\d{1,2})?)').firstMatch(clean);
       if (anyNum != null) {
@@ -396,17 +563,31 @@ class DailyExpenseService {
     }
 
     String? extractedMerchant;
-    final hebrewMerchant =
-        RegExp(r'ב-?\s*([^\n\r.,]+?)(?:\s+בسך|\s+בתאריך|\s+בכרטיס|$)');
-    final mHeb = hebrewMerchant.firstMatch(clean);
-    if (mHeb != null && mHeb.group(1) != null) {
-      extractedMerchant = mHeb.group(1)!.trim();
-    } else {
-      final atMerchant =
-          RegExp(r'(?:at|في|لدى|محل)\s+([^\n\r.,]+)', caseSensitive: false)
-              .firstMatch(clean);
-      if (atMerchant != null) {
-        extractedMerchant = atMerchant.group(1)!.trim();
+    // في Google Wallet و Apple Pay غالباً يكون عنوان الإشعار (title) هو اسم المحل مباشرة
+    if (notificationTitle != null &&
+        notificationTitle.trim().isNotEmpty &&
+        !notificationTitle.contains('₪') &&
+        !notificationTitle.toLowerCase().contains('google') &&
+        !notificationTitle.toLowerCase().contains('wallet') &&
+        !notificationTitle.toLowerCase().contains('samsung')) {
+      extractedMerchant = notificationTitle.trim();
+    }
+
+    if (extractedMerchant == null || extractedMerchant.isEmpty) {
+      final hebrewMerchant = RegExp(
+        r'(?:ב-?|ל-?)\s*([^\n\r.,]+?)(?:\s+בסך|\s+בתאריך|\s+בכרטיס|\s+עם|$)',
+      );
+      final mHeb = hebrewMerchant.firstMatch(clean);
+      if (mHeb != null && mHeb.group(1) != null) {
+        extractedMerchant = mHeb.group(1)!.trim();
+      } else {
+        final atMerchant = RegExp(
+          r'(?:at|في|لدى|محل)\s+([^\n\r.,]+)',
+          caseSensitive: false,
+        ).firstMatch(clean);
+        if (atMerchant != null) {
+          extractedMerchant = atMerchant.group(1)!.trim();
+        }
       }
     }
 
