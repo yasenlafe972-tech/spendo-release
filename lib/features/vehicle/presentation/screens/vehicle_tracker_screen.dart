@@ -1,3 +1,4 @@
+import 'package:sanad_app/core/widgets/banking_animations.dart';
 import '../../../../core/theme/app_theme.dart';
 import 'dart:convert';
 import 'dart:io';
@@ -214,15 +215,35 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
               children: [
                 _buildHeaderBar(),
                 const SizedBox(height: 12),
-                _buildHeroOdometerCard(),
+                BankingCascadeItem(
+                  tabIndex: 2,
+                  staggerIndex: 0,
+                  child: _buildHeroOdometerCard(),
+                ),
                 const SizedBox(height: 10),
-                _buildInsuranceAndTestRow(),
+                BankingCascadeItem(
+                  tabIndex: 2,
+                  staggerIndex: 1,
+                  child: _buildInsuranceAndTestRow(),
+                ),
                 const SizedBox(height: 10),
-                _buildMaintenanceGrid(),
+                BankingCascadeItem(
+                  tabIndex: 2,
+                  staggerIndex: 2,
+                  child: _buildMaintenanceGrid(),
+                ),
                 const SizedBox(height: 12),
-                _buildQuickActionButtons(),
+                BankingCascadeItem(
+                  tabIndex: 2,
+                  staggerIndex: 3,
+                  child: _buildQuickActionButtons(),
+                ),
                 const SizedBox(height: 12),
-                _buildMonthlySummaryAndHistory(),
+                BankingCascadeItem(
+                  tabIndex: 2,
+                  staggerIndex: 4,
+                  child: _buildMonthlySummaryAndHistory(),
+                ),
                 const SizedBox(height: 24),
               ],
             ),
@@ -469,13 +490,15 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                     crossAxisAlignment: CrossAxisAlignment.baseline,
                     textBaseline: TextBaseline.alphabetic,
                     children: [
-                      Text(
-                        _formatNumber(_state.currentOdometer),
+                      BankingRollingNumber(
+                        tabIndex: 2,
+                        value: _state.currentOdometer.toDouble(),
+                        formatter: (val) => _formatNumber(val.round()),
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.w900,
                           color: textWhite,
-                          fontFeatures: [FontFeature.tabularFigures()],
+                          fontFeatures: const [FontFeature.tabularFigures()],
                         ),
                       ),
                       const SizedBox(width: 4),
@@ -1555,8 +1578,10 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                             ),
                           ),
                           const SizedBox(width: 2),
-                          Text(
-                            _formatNumber(fuelTotal.round()),
+                          BankingRollingNumber(
+                            tabIndex: 2,
+                            value: fuelTotal,
+                            formatter: (val) => _formatNumber(val.round()),
                             style: const TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w900,
@@ -1605,8 +1630,10 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                             ),
                           ),
                           const SizedBox(width: 2),
-                          Text(
-                            _formatNumber(maintenanceTotal.round()),
+                          BankingRollingNumber(
+                            tabIndex: 2,
+                            value: maintenanceTotal,
+                            formatter: (val) => _formatNumber(val.round()),
                             style: const TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w900,
@@ -1645,13 +1672,15 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                             ),
                           ),
                           const SizedBox(width: 2),
-                          Text(
-                            _formatNumber(totalSpent.round()),
+                          BankingRollingNumber(
+                            tabIndex: 2,
+                            value: totalSpent,
+                            formatter: (val) => _formatNumber(val.round()),
                             style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w900,
                               color: textWhite,
-                              fontFeatures: [FontFeature.tabularFigures()],
+                              fontFeatures: const [FontFeature.tabularFigures()],
                             ),
                           ),
                         ],

@@ -5,6 +5,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:remixicon/remixicon.dart';
 import '../../../../core/utils/spendo_haptic_feedback.dart';
 import '../../../../core/services/firebase_backup_service.dart';
+import '../../../../core/widgets/banking_animations.dart';
 import 'home_screen.dart';
 import '../../../people/presentation/screens/people_screen.dart';
 import '../../../work_logs/presentation/screens/work_logs_screen.dart';
@@ -40,12 +41,12 @@ class _MainNavigationScreenState extends State<MainNavigationScreen>
 
     _tabAnimController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 280),
+      duration: const Duration(milliseconds: 340),
       value: 1.0,
     );
     _tabCurvedAnim = CurvedAnimation(
       parent: _tabAnimController,
-      curve: Curves.easeOutCubic,
+      curve: Curves.fastLinearToSlowEaseIn,
     );
 
     _screens = [
@@ -69,7 +70,9 @@ class _MainNavigationScreenState extends State<MainNavigationScreen>
   }
 
   void _switchToTab(int newIndex) {
-    if (newIndex == _currentIndex || newIndex < 0 || newIndex >= _screens.length) {
+    if (newIndex == _currentIndex ||
+        newIndex < 0 ||
+        newIndex >= _screens.length) {
       return;
     }
     setState(() {
@@ -77,6 +80,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen>
       _currentIndex = newIndex;
     });
     _tabAnimController.forward(from: 0.0);
+    BankingMotionController.notifyTabActivated(newIndex);
   }
 
   void _initSharedFileListener() {
@@ -113,7 +117,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen>
 
     if (!mounted) return;
 
-    _switchToTab(2); // Jump straight to Vehicle tab with animation
+    _switchToTab(2); // Jump straight to Vehicle tab with banking animation
 
     final ext = path.toLowerCase();
     final isPdf = ext.endsWith('.pdf');
@@ -141,13 +145,11 @@ class _MainNavigationScreenState extends State<MainNavigationScreen>
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
-      // Whenever app returns to foreground, sync with cloud
       try {
         FirebaseBackupService.instance.syncWithCloud(isSilent: true);
       } catch (_) {}
     } else if (state == AppLifecycleState.paused ||
         state == AppLifecycleState.inactive) {
-      // Auto-save backup snapshot when app goes to background
       try {
         if (Firebase.apps.isNotEmpty) {
           FirebaseBackupService.instance
@@ -157,6 +159,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen>
     }
   }
 
+  /// Revolut 10 / Apple Wallet Banking Parallax & Depth Transition
   Widget _buildAnimatedTabBody() {
     return AnimatedBuilder(
       animation: _tabCurvedAnim,
@@ -166,10 +169,9 @@ class _MainNavigationScreenState extends State<MainNavigationScreen>
             _tabAnimController.isAnimating && _previousIndex != _currentIndex;
 
         // In RTL layout, index 0 (الرئيسية) is on the right, index 4 (المالية) is on the left.
-        // Moving to a higher index means moving leftwards across the navigation bar.
         final bool movingLeftwards = _currentIndex > _previousIndex;
-        final double enterStartDx = movingLeftwards ? -0.065 : 0.065;
-        final double exitEndDx = movingLeftwards ? 0.045 : -0.045;
+        final double enterStartDx = movingLeftwards ? -0.10 : 0.10;
+        final double exitEndDx = movingLeftwards ? 0.06 : -0.06;
 
         return Stack(
           fit: StackFit.expand,
@@ -180,17 +182,19 @@ class _MainNavigationScreenState extends State<MainNavigationScreen>
 
             double opacity = 1.0;
             double dx = 0.0;
+            double dy = 0.0;
             double scale = 1.0;
 
             if (isTransitioning) {
               if (isCurrent) {
                 opacity = t.clamp(0.0, 1.0);
                 dx = enterStartDx * (1.0 - t);
-                scale = 0.985 + (0.015 * t);
+                dy = 0.018 * (1.0 - t);
+                scale = 0.96 + (0.04 * t);
               } else if (isPrevious) {
-                opacity = (1.0 - (t * 1.25)).clamp(0.0, 1.0);
+                opacity = (1.0 - (t * 1.35)).clamp(0.0, 1.0);
                 dx = exitEndDx * t;
-                scale = 1.0 - (0.015 * t);
+                scale = 1.0 - (0.045 * t);
               }
             }
 
@@ -199,7 +203,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen>
               child: IgnorePointer(
                 ignoring: !isCurrent,
                 child: FractionalTranslation(
-                  translation: Offset(dx, 0.0),
+                  translation: Offset(dx, dy),
                   child: Transform.scale(
                     scale: scale,
                     child: Opacity(
@@ -234,6 +238,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen>
               isDark ? const Color(0xFF1E1E24) : const Color(0xFFE5E7EB);
           final shadowColor =
               isDark ? const Color(0x66000000) : const Color(0x12000000);
+          const activeColor = Color(0xFF10B981);
 
           return Container(
             margin: const EdgeInsets.fromLTRB(10, 0, 10, 8),
@@ -249,20 +254,73 @@ class _MainNavigationScreenState extends State<MainNavigationScreen>
                 ),
               ],
             ),
-            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-            child: Row(
-              children: [
-                _buildNavItem(context, 0, 'الرئيسية', Remix.home_5_line,
-                    Remix.home_5_fill),
-                _buildNavItem(context, 1, 'سجل العمل', Remix.briefcase_4_line,
-                    Remix.briefcase_4_fill),
-                _buildNavItem(context, 2, 'المركبة', Remix.motorbike_line,
-                    Remix.motorbike_fill),
-                _buildNavItem(context, 3, 'الأشخاص', Remix.group_line,
-                    Remix.group_fill),
-                _buildNavItem(context, 4, 'المالية', Remix.wallet_3_line,
-                    Remix.wallet_3_fill),
-              ],
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 3),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final double itemWidth = constraints.maxWidth / 5;
+                // In RTL, index 0 is on the right edge: right offset = _currentIndex * itemWidth
+                final double rightOffset = _currentIndex * itemWidth;
+
+                return Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    // Physical Banking Sliding Glass Pill & Top Emerald Indicator
+                    AnimatedPositioned(
+                      duration: const Duration(milliseconds: 360),
+                      curve: Curves.easeOutBack,
+                      right: rightOffset + 3,
+                      top: 1,
+                      bottom: 1,
+                      width: itemWidth - 6,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: activeColor.withValues(
+                              alpha: isDark ? 0.11 : 0.08),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: activeColor.withValues(alpha: 0.22),
+                            width: 0.8,
+                          ),
+                        ),
+                        child: Align(
+                          alignment: Alignment.topCenter,
+                          child: Container(
+                            width: 24,
+                            height: 2.5,
+                            decoration: BoxDecoration(
+                              color: activeColor,
+                              borderRadius: BorderRadius.circular(99),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: activeColor.withValues(alpha: 0.55),
+                                  blurRadius: 6,
+                                  offset: const Offset(0, 1),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    // Navigation Items Row
+                    Row(
+                      children: [
+                        _buildNavItem(context, 0, 'الرئيسية',
+                            Remix.home_5_line, Remix.home_5_fill),
+                        _buildNavItem(context, 1, 'سجل العمل',
+                            Remix.briefcase_4_line, Remix.briefcase_4_fill),
+                        _buildNavItem(context, 2, 'المركبة',
+                            Remix.motorbike_line, Remix.motorbike_fill),
+                        _buildNavItem(context, 3, 'الأشخاص', Remix.group_line,
+                            Remix.group_fill),
+                        _buildNavItem(context, 4, 'المالية',
+                            Remix.wallet_3_line, Remix.wallet_3_fill),
+                      ],
+                    ),
+                  ],
+                );
+              },
             ),
           );
         }),
@@ -290,51 +348,36 @@ class _MainNavigationScreenState extends State<MainNavigationScreen>
         borderRadius: BorderRadius.circular(12),
         splashColor: const Color(0x1A10B981),
         highlightColor: Colors.transparent,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 240),
-          curve: Curves.easeOutCubic,
-          margin: const EdgeInsets.symmetric(horizontal: 2, vertical: 2),
-          padding: const EdgeInsets.symmetric(vertical: 2),
-          decoration: BoxDecoration(
-            color: isSelected
-                ? activeColor.withValues(alpha: isDark ? 0.08 : 0.06)
-                : Colors.transparent,
-            borderRadius: BorderRadius.circular(11),
-          ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 4),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Active top indicator (emerald slim line)
-              AnimatedContainer(
-                duration: const Duration(milliseconds: 240),
-                curve: Curves.easeOutCubic,
-                width: isSelected ? 24 : 0,
-                height: 2,
-                decoration: BoxDecoration(
-                  color: isSelected ? activeColor : Colors.transparent,
-                  borderRadius: BorderRadius.circular(99),
-                ),
-              ),
               const SizedBox(height: 5),
-              // Animated Icon with smooth scale & crossfade
-              AnimatedScale(
-                scale: isSelected ? 1.12 : 1.0,
-                duration: const Duration(milliseconds: 240),
+              // Animated Banking Icon with spring lift & scale
+              AnimatedSlide(
+                offset: isSelected ? const Offset(0, -0.06) : Offset.zero,
+                duration: const Duration(milliseconds: 280),
                 curve: Curves.easeOutBack,
-                child: AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 180),
-                  child: Icon(
-                    isSelected ? fillIcon : lineIcon,
-                    key: ValueKey<bool>(isSelected),
-                    size: 20,
-                    color: isSelected ? activeColor : inactiveColor,
+                child: AnimatedScale(
+                  scale: isSelected ? 1.15 : 1.0,
+                  duration: const Duration(milliseconds: 280),
+                  curve: Curves.easeOutBack,
+                  child: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 180),
+                    child: Icon(
+                      isSelected ? fillIcon : lineIcon,
+                      key: ValueKey<bool>(isSelected),
+                      size: 20,
+                      color: isSelected ? activeColor : inactiveColor,
+                    ),
                   ),
                 ),
               ),
               const SizedBox(height: 3),
               // Label with animated style
               AnimatedDefaultTextStyle(
-                duration: const Duration(milliseconds: 200),
+                duration: const Duration(milliseconds: 220),
                 curve: Curves.easeOutCubic,
                 style: TextStyle(
                   fontFamily: 'Cairo',

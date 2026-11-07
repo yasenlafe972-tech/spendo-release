@@ -1,3 +1,4 @@
+import 'package:sanad_app/core/widgets/banking_animations.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -490,19 +491,35 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
 
                       // الترويسة العلوية
-                      _buildHeader(userName),
+                      BankingCascadeItem(
+                        tabIndex: 0,
+                        staggerIndex: 0,
+                        child: _buildHeader(userName),
+                      ),
                       const SizedBox(height: 12),
 
                       // 1. بطاقتين مدمجتين للمصاريف (أكل + مشتريات)
-                      _buildExpenseCategoriesRow(),
+                      BankingCascadeItem(
+                        tabIndex: 0,
+                        staggerIndex: 1,
+                        child: _buildExpenseCategoriesRow(),
+                      ),
                       const SizedBox(height: 10),
 
                       // 2. أزرار الإجراءات السريعة (تسجيل يوم عمل + تعبئة وقود)
-                      _buildQuickActionButtons(),
+                      BankingCascadeItem(
+                        tabIndex: 0,
+                        staggerIndex: 2,
+                        child: _buildQuickActionButtons(),
+                      ),
                       const SizedBox(height: 12),
 
                       // 3. سجل آخر السجلات (الكل | أكل | مشتريات | وقود)
-                      _buildRecentTransactionsSection(),
+                      BankingCascadeItem(
+                        tabIndex: 0,
+                        staggerIndex: 3,
+                        child: _buildRecentTransactionsSection(),
+                      ),
                       const SizedBox(height: 16),
                     ],
                   ),
@@ -620,7 +637,7 @@ class _HomeScreenState extends State<HomeScreen> {
             borderRadius: BorderRadius.circular(14),
             child: _buildStatCard(
               title: 'مصاريف الأكل',
-              value: '${_formatAmount(_totalFoodExpense)} ₪',
+              numericValue: _totalFoodExpense,
               icon: Remix.restaurant_2_line,
               iconColor: brandYellow,
               isHighlighted: _selectedLogsFilter == 'food',
@@ -638,7 +655,7 @@ class _HomeScreenState extends State<HomeScreen> {
             borderRadius: BorderRadius.circular(14),
             child: _buildStatCard(
               title: 'المشتريات العامة',
-              value: '${_formatAmount(_totalShoppingExpense)} ₪',
+              numericValue: _totalShoppingExpense,
               icon: Remix.shopping_bag_3_line,
               iconColor: brandGreen,
               isHighlighted: _selectedLogsFilter == 'shopping',
@@ -651,7 +668,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildStatCard({
     required String title,
-    required String value,
+    required double numericValue,
     required IconData icon,
     required Color iconColor,
     bool isHighlighted = false,
@@ -686,10 +703,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
                 const SizedBox(height: 1),
-                Text(
-                  value,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+                BankingRollingNumber(
+                  tabIndex: 0,
+                  value: numericValue,
+                  formatter: (val) => '${_formatAmount(val)} ₪',
                   style: TextStyle(
                     fontSize: 11.5,
                     fontWeight: FontWeight.bold,

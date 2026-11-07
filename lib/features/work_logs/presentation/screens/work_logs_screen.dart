@@ -1,3 +1,4 @@
+import 'package:sanad_app/core/widgets/banking_animations.dart';
 import 'package:sanad_app/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:remixicon/remixicon.dart';
@@ -731,19 +732,36 @@ class _WorkLogsScreenState extends State<WorkLogsScreen> {
                               const EdgeInsets.fromLTRB(14, 0, 14, 90),
                           children: [
                             // بطاقة ملخص دليل المشغّلين وأصحاب العمل
-                            _buildSummaryCard(
-                              totalEmployers: totalEmployers,
-                              totalDays: totalDays,
+                            BankingCascadeItem(
+                              tabIndex: 1,
+                              staggerIndex: 0,
+                              child: _buildSummaryCard(
+                                totalEmployers: totalEmployers,
+                                totalDays: totalDays,
+                              ),
                             ),
 
                             // شريط عنوان القائمة + زر إضافة مشغّل
-                            _buildSectionHeader(count: totalEmployers),
+                            BankingCascadeItem(
+                              tabIndex: 1,
+                              staggerIndex: 1,
+                              child: _buildSectionHeader(count: totalEmployers),
+                            ),
 
                             // قائمة بطاقات المشغّلين
-                            if (_workplaces.isEmpty)
-                              _buildEmptyState()
-                            else
-                              ..._workplaces.map(_buildWorkplaceCard),
+                            BankingCascadeItem(
+                              tabIndex: 1,
+                              staggerIndex: 2,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  if (_workplaces.isEmpty)
+                                    _buildEmptyState()
+                                  else
+                                    ..._workplaces.map(_buildWorkplaceCard),
+                                ],
+                              ),
+                            ),
                           ],
                         ),
                       ),

@@ -1,3 +1,4 @@
+import 'package:sanad_app/core/widgets/banking_animations.dart';
 import 'package:flutter/material.dart';
 import 'package:remixicon/remixicon.dart';
 import 'package:share_plus/share_plus.dart';
@@ -371,15 +372,27 @@ class _FinanceScreenState extends State<FinanceScreen> {
                     const SizedBox(height: 12),
 
                     // 2. بطاقة ملخص الحسابات (مدمجة وبدون دوائر خلف الأيقونات)
-                    _buildDashboardCards(),
+                    BankingCascadeItem(
+                      tabIndex: 4,
+                      staggerIndex: 0,
+                      child: _buildDashboardCards(),
+                    ),
                     const SizedBox(height: 14),
 
                     // 3. عنوان سجل المعاملات + زر تسجيل جديد
-                    _buildSectionHeader(),
+                    BankingCascadeItem(
+                      tabIndex: 4,
+                      staggerIndex: 1,
+                      child: _buildSectionHeader(),
+                    ),
                     const SizedBox(height: 10),
 
                     // 4. فلاتر التصنيف المدمجة
-                    _buildFilterBar(),
+                    BankingCascadeItem(
+                      tabIndex: 4,
+                      staggerIndex: 2,
+                      child: _buildFilterBar(),
+                    ),
                     const SizedBox(height: 12),
 
                     // 5. قائمة بطاقات المعاملات (مع أنيميشن سلس عند تبديل الفلتر)
@@ -529,8 +542,10 @@ class _FinanceScreenState extends State<FinanceScreen> {
                     ),
                   ),
                   const SizedBox(width: 6),
-                  Text(
-                    '$netPrefix${_formatCurrency(absNet)} ',
+                  BankingRollingNumber(
+                    tabIndex: 4,
+                    value: absNet,
+                    formatter: (val) => '$netPrefix${_formatCurrency(val)} ',
                     style: TextStyle(
                       fontFamily: 'Cairo',
                       color: textWhite,
@@ -606,8 +621,10 @@ class _FinanceScreenState extends State<FinanceScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text(
-                          _formatCurrency(_totalTheyOweMe),
+                        BankingRollingNumber(
+                          tabIndex: 4,
+                          value: _totalTheyOweMe,
+                          formatter: (val) => _formatCurrency(val),
                           style: TextStyle(
                             fontFamily: 'Cairo',
                             color: textWhite,
@@ -655,8 +672,10 @@ class _FinanceScreenState extends State<FinanceScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text(
-                          _formatCurrency(_totalIOweThem),
+                        BankingRollingNumber(
+                          tabIndex: 4,
+                          value: _totalIOweThem,
+                          formatter: (val) => _formatCurrency(val),
                           style: TextStyle(
                             fontFamily: 'Cairo',
                             color: textWhite,
@@ -704,8 +723,10 @@ class _FinanceScreenState extends State<FinanceScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text(
-                          '+${_formatCurrency(_totalReceived)}',
+                        BankingRollingNumber(
+                          tabIndex: 4,
+                          value: _totalReceived,
+                          formatter: (val) => '+${_formatCurrency(val)}',
                           style: const TextStyle(
                             fontFamily: 'Cairo',
                             color: brandYellow,

@@ -1,3 +1,4 @@
+import 'package:sanad_app/core/widgets/banking_animations.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart' hide TextDirection;
 import 'package:sanad_app/core/utils/spendo_haptic_feedback.dart';
@@ -688,9 +689,12 @@ class _PeopleScreenState extends State<PeopleScreen> {
               const SizedBox(height: 10),
 
               // 3. شريط البحث المدمج
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 14),
-                child: Container(
+              BankingCascadeItem(
+                tabIndex: 3,
+                staggerIndex: 0,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 14),
+                  child: Container(
                   height: 38,
                   decoration: BoxDecoration(
                     color: surfaceField,
@@ -725,6 +729,7 @@ class _PeopleScreenState extends State<PeopleScreen> {
                   ),
                 ),
               ),
+              ),
               const SizedBox(height: 10),
 
               // 4. شبكة البطاقات المصغرة (بطاقتان في كل صف)
@@ -745,7 +750,10 @@ class _PeopleScreenState extends State<PeopleScreen> {
                               ),
                             ),
                           )
-                        : GridView.builder(
+                        : BankingCascadeItem(
+                            tabIndex: 3,
+                            staggerIndex: 1,
+                            child: GridView.builder(
                             physics: const BouncingScrollPhysics(
                                 parent: AlwaysScrollableScrollPhysics()),
                             padding: const EdgeInsets.only(
@@ -798,6 +806,7 @@ class _PeopleScreenState extends State<PeopleScreen> {
                               );
                             },
                           ),
+                        ),
               ),
             ],
           ),
