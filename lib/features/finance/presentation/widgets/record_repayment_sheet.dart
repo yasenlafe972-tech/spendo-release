@@ -43,10 +43,10 @@ class _RecordRepaymentSheetState extends State<RecordRepaymentSheet> {
   static Color get textMuted => _isDark ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280);
 
   static const List<Map<String, dynamic>> _methods = [
-    {'key': 'bit', 'title': 'تطبيق Bit', 'icon': Remix.smartphone_line, 'color': brandYellow},
-    {'key': 'cash', 'title': 'كاش نقدي', 'icon': Remix.money_dollar_box_line, 'color': brandGreen},
+    {'key': 'bit', 'title': 'Bit', 'icon': Remix.smartphone_line, 'color': brandYellow},
+    {'key': 'cash', 'title': 'كاش', 'icon': Remix.money_dollar_box_line, 'color': brandGreen},
     {'key': 'bank_transfer', 'title': 'تحويل بنكي', 'icon': Remix.bank_line, 'color': brandYellow},
-    {'key': 'atm_code', 'title': 'كود صراف بنكي', 'icon': Remix.qr_code_line, 'color': brandGreen},
+    {'key': 'atm_code', 'title': 'كود صراف', 'icon': Remix.qr_code_line, 'color': brandGreen},
   ];
 
   @override

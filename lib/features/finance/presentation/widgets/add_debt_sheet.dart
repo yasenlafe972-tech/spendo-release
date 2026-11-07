@@ -56,10 +56,10 @@ class _AddDebtSheetState extends State<AddDebtSheet> {
   static Color get textWhite => _isDark ? Colors.white : const Color(0xFF111827);
 
   static const List<Map<String, dynamic>> _paymentMethods = [
-    {'key': 'bit', 'title': 'تطبيق Bit', 'icon': Remix.smartphone_line, 'color': brandYellow},
-    {'key': 'cash', 'title': 'كاش نقدي', 'icon': Remix.money_dollar_box_line, 'color': brandGreen},
+    {'key': 'bit', 'title': 'Bit', 'icon': Remix.smartphone_line, 'color': brandYellow},
+    {'key': 'cash', 'title': 'كاش', 'icon': Remix.money_dollar_box_line, 'color': brandGreen},
     {'key': 'bank_transfer', 'title': 'تحويل بنكي', 'icon': Remix.bank_line, 'color': brandYellow},
-    {'key': 'atm_code', 'title': 'كود صراف بنكي', 'icon': Remix.qr_code_line, 'color': brandGreen},
+    {'key': 'atm_code', 'title': 'كود صراف', 'icon': Remix.qr_code_line, 'color': brandGreen},
   ];
 
   @override
@@ -247,24 +247,24 @@ class _AddDebtSheetState extends State<AddDebtSheet> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               // 1. مؤشر السحب العلوي (Drag handle)
-              const SizedBox(height: 8),
+              const SizedBox(height: 6),
               Center(
                 child: Container(
-                  width: 36,
-                  height: 4,
+                  width: 32,
+                  height: 3.5,
                   decoration: BoxDecoration(
                     color: surfaceBorder,
                     borderRadius: BorderRadius.circular(99),
                   ),
                 ),
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 6),
 
-              // 2. ترويسة النافذة (أيقونات نظيفة بدون أي خلفيات دائرية)
+              // 2. ترويسة النافذة
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
+                padding: const EdgeInsets.symmetric(horizontal: 14),
                 child: Container(
-                  padding: const EdgeInsets.only(bottom: 10),
+                  padding: const EdgeInsets.only(bottom: 8),
                   decoration: BoxDecoration(
                     border: Border(bottom: BorderSide(color: surfaceBorder, width: 1.0)),
                   ),
@@ -273,8 +273,8 @@ class _AddDebtSheetState extends State<AddDebtSheet> {
                     children: [
                       Row(
                         children: [
-                          const Icon(Remix.hand_coin_line, color: brandYellow, size: 22),
-                          const SizedBox(width: 8),
+                          const Icon(Remix.hand_coin_line, color: brandYellow, size: 19),
+                          const SizedBox(width: 7),
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -283,7 +283,7 @@ class _AddDebtSheetState extends State<AddDebtSheet> {
                                 style: TextStyle(
                                   fontFamily: 'Cairo',
                                   color: textWhite,
-                                  fontSize: 14,
+                                  fontSize: 13.5,
                                   fontWeight: FontWeight.bold,
                                   height: 1.2,
                                 ),
@@ -293,7 +293,7 @@ class _AddDebtSheetState extends State<AddDebtSheet> {
                                 style: TextStyle(
                                   fontFamily: 'Cairo',
                                   color: Color(0xFF9CA3AF),
-                                  fontSize: 11,
+                                  fontSize: 10.5,
                                 ),
                               ),
                             ],
@@ -305,7 +305,7 @@ class _AddDebtSheetState extends State<AddDebtSheet> {
                         borderRadius: BorderRadius.circular(6),
                         child: const Padding(
                           padding: EdgeInsets.all(4),
-                          child: Icon(Remix.close_line, color: Color(0xFF9CA3AF), size: 20),
+                          child: Icon(Remix.close_line, color: Color(0xFF9CA3AF), size: 19),
                         ),
                       ),
                     ],
@@ -317,7 +317,7 @@ class _AddDebtSheetState extends State<AddDebtSheet> {
               Flexible(
                 child: SingleChildScrollView(
                   physics: const BouncingScrollPhysics(),
-                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+                  padding: const EdgeInsets.fromLTRB(14, 8, 14, 8),
                   child: Form(
                     key: _formKey,
                     child: Column(
@@ -325,56 +325,56 @@ class _AddDebtSheetState extends State<AddDebtSheet> {
                       children: [
                         // اختيار نوع العملية
                         _buildTypeSelector(),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: 7),
 
                         // حقل اسم الشخص
                         _buildPersonNameField(),
-                        const SizedBox(height: 10),
+                        const SizedBox(height: 6),
 
                         // حقل المبلغ الأصلي
                         _buildAmountField(),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: 7),
 
-                        // طريقة دفع / تحويل السلفة (تختفي عند اختيار عالحساب لأن الدفع مؤجل لوقت السداد)
+                        // طريقة دفع / تحويل السلفة
                         if (_debtType != 'pay_later') ...[
                           _buildPaymentMethodsGrid(),
-                          const SizedBox(height: 12),
+                          const SizedBox(height: 7),
                         ] else ...[
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                             decoration: BoxDecoration(
                               color: brandYellow.withValues(alpha: 0.08),
-                              borderRadius: BorderRadius.circular(10),
+                              borderRadius: BorderRadius.circular(8),
                               border: Border.all(color: brandYellow.withValues(alpha: 0.3)),
                             ),
                             child: Row(
                               children: [
-                                const Icon(Remix.time_line, color: brandYellow, size: 15),
-                                SizedBox(width: 8),
+                                const Icon(Remix.time_line, color: brandYellow, size: 14),
+                                const SizedBox(width: 6),
                                 Expanded(
                                   child: Text(
                                     'دفعة مؤجلة عالحساب — يتم اختيار طريقة الدفع (كاش / Bit / بنكي) عند الضغط على "تم الدفع" لاحقاً.',
                                     style: TextStyle(
                                       fontFamily: 'Cairo',
                                       color: textMuted,
-                                      fontSize: 10.5,
-                                      height: 1.3,
+                                      fontSize: 10,
+                                      height: 1.25,
                                     ),
                                   ),
                                 ),
                               ],
                             ),
                           ),
-                          const SizedBox(height: 12),
+                          const SizedBox(height: 7),
                         ],
 
                         // التواريخ: تاريخ السلفة + تاريخ السداد المتوقع
                         _buildDatesRow(isReceived),
-                        const SizedBox(height: 10),
+                        const SizedBox(height: 6),
 
                         // ملاحظات وتفاصيل السلفة
                         _buildNotesField(),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 8),
 
                         // زر الحفظ
                         _buildSaveButton(),
@@ -390,7 +390,7 @@ class _AddDebtSheetState extends State<AddDebtSheet> {
     );
   }
 
-  /// 1. اختيار نوع العملية (شبكة 2×2 مرتبة وواضحة)
+  /// 1. اختيار نوع العملية (شبكة 2×2 مدمجة وأنيقة)
   Widget _buildTypeSelector() {
     final isTheyOwe = _debtType == 'they_owe';
     final isIOwe = _debtType == 'i_owe';
@@ -398,10 +398,10 @@ class _AddDebtSheetState extends State<AddDebtSheet> {
     final isReceived = _debtType == 'received';
 
     return Container(
-      padding: const EdgeInsets.all(6),
+      padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
         color: surfaceField,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(10),
         border: Border.all(color: surfaceBorder),
       ),
       child: Column(
@@ -419,7 +419,7 @@ class _AddDebtSheetState extends State<AddDebtSheet> {
                   onTap: () => setState(() => _debtType = 'they_owe'),
                 ),
               ),
-              const SizedBox(width: 6),
+              const SizedBox(width: 4),
               // 2. عليّ إله (تدينت منه)
               Expanded(
                 child: _buildTypeOptionCard(
@@ -433,10 +433,10 @@ class _AddDebtSheetState extends State<AddDebtSheet> {
               ),
             ],
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 4),
           Row(
             children: [
-              // 3. عالحساب / دفع لاحقاً (حلاق، محل، خدمة ما دفعتها اسا)
+              // 3. عالحساب / دفع لاحقاً
               Expanded(
                 child: _buildTypeOptionCard(
                   isSelected: isPayLater,
@@ -447,7 +447,7 @@ class _AddDebtSheetState extends State<AddDebtSheet> {
                   onTap: () => setState(() => _debtType = 'pay_later'),
                 ),
               ),
-              const SizedBox(width: 6),
+              const SizedBox(width: 4),
               // 4. مبالغ مستلمة (سحب بنكي أو استلام مالي)
               Expanded(
                 child: _buildTypeOptionCard(
@@ -479,13 +479,13 @@ class _AddDebtSheetState extends State<AddDebtSheet> {
         SpendoHaptics.selection();
         onTap();
       },
-      borderRadius: BorderRadius.circular(8),
+      borderRadius: BorderRadius.circular(7),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 150),
-        padding: const EdgeInsets.symmetric(vertical: 7, horizontal: 8),
+        padding: const EdgeInsets.symmetric(vertical: 4.5, horizontal: 6),
         decoration: BoxDecoration(
           color: isSelected ? activeColor.withValues(alpha: 0.12) : surfaceMain,
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(7),
           border: Border.all(
             color: isSelected ? activeColor : surfaceBorder,
             width: isSelected ? 1.2 : 1.0,
@@ -497,8 +497,8 @@ class _AddDebtSheetState extends State<AddDebtSheet> {
           children: [
             Row(
               children: [
-                Icon(icon, color: activeColor, size: 13),
-                const SizedBox(width: 5),
+                Icon(icon, color: activeColor, size: 12),
+                const SizedBox(width: 4),
                 Flexible(
                   child: Text(
                     title,
@@ -507,14 +507,14 @@ class _AddDebtSheetState extends State<AddDebtSheet> {
                     style: TextStyle(
                       fontFamily: 'Cairo',
                       color: isSelected ? textWhite : textMuted,
-                      fontSize: 11,
+                      fontSize: 10.5,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 2),
+            const SizedBox(height: 1.5),
             Text(
               subtitle,
               maxLines: 1,
@@ -522,7 +522,7 @@ class _AddDebtSheetState extends State<AddDebtSheet> {
               style: TextStyle(
                 fontFamily: 'Cairo',
                 color: isSelected ? activeColor : const Color(0xFF71717A),
-                fontSize: 9.5,
+                fontSize: 8.5,
               ),
             ),
           ],
@@ -536,14 +536,14 @@ class _AddDebtSheetState extends State<AddDebtSheet> {
     return Container(
       decoration: BoxDecoration(
         color: surfaceField,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(10),
         border: Border.all(color: surfaceBorder),
       ),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 0),
       child: Row(
         children: [
-          const Icon(Remix.user_3_line, color: brandGreen, size: 18),
-          const SizedBox(width: 10),
+          const Icon(Remix.user_3_line, color: brandGreen, size: 16),
+          const SizedBox(width: 8),
           Expanded(
             child: Autocomplete<PersonModel>(
               initialValue: TextEditingValue(text: _nameCtrl.text),
@@ -576,7 +576,7 @@ class _AddDebtSheetState extends State<AddDebtSheet> {
                   style: TextStyle(
                     fontFamily: 'Cairo',
                     color: textWhite,
-                    fontSize: 12,
+                    fontSize: 11.5,
                     fontWeight: FontWeight.bold,
                   ),
                   decoration: InputDecoration(
@@ -586,11 +586,11 @@ class _AddDebtSheetState extends State<AddDebtSheet> {
                     hintStyle: const TextStyle(
                       fontFamily: 'Cairo',
                       color: Color(0xFF71717A),
-                      fontSize: 12,
+                      fontSize: 11.5,
                     ),
                     border: InputBorder.none,
                     isDense: true,
-                    contentPadding: const EdgeInsets.symmetric(vertical: 10),
+                    contentPadding: const EdgeInsets.symmetric(vertical: 6),
                   ),
                   validator: (val) {
                     if (val == null || val.trim().isEmpty) {
@@ -625,7 +625,7 @@ class _AddDebtSheetState extends State<AddDebtSheet> {
                               style: TextStyle(
                                 fontFamily: 'Cairo',
                                 color: textWhite,
-                                fontSize: 12,
+                                fontSize: 11.5,
                               ),
                             ),
                             onTap: () => onSelected(p),
@@ -648,14 +648,14 @@ class _AddDebtSheetState extends State<AddDebtSheet> {
     return Container(
       decoration: BoxDecoration(
         color: surfaceField,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(10),
         border: Border.all(color: surfaceBorder),
       ),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 0),
       child: Row(
         children: [
-          const Icon(Remix.cash_line, color: brandYellow, size: 18),
-          const SizedBox(width: 10),
+          const Icon(Remix.cash_line, color: brandYellow, size: 16),
+          const SizedBox(width: 8),
           Expanded(
             child: TextFormField(
               controller: _amountCtrl,
@@ -663,7 +663,7 @@ class _AddDebtSheetState extends State<AddDebtSheet> {
               style: TextStyle(
                 fontFamily: 'Cairo',
                 color: textWhite,
-                fontSize: 13,
+                fontSize: 12.5,
                 fontWeight: FontWeight.bold,
               ),
               decoration: const InputDecoration(
@@ -671,11 +671,11 @@ class _AddDebtSheetState extends State<AddDebtSheet> {
                 hintStyle: TextStyle(
                   fontFamily: 'Cairo',
                   color: Color(0xFF71717A),
-                  fontSize: 12,
+                  fontSize: 11.5,
                 ),
                 border: InputBorder.none,
                 isDense: true,
-                contentPadding: EdgeInsets.symmetric(vertical: 10),
+                contentPadding: EdgeInsets.symmetric(vertical: 6),
               ),
               validator: (val) {
                 if (val == null || val.trim().isEmpty) {
@@ -694,7 +694,7 @@ class _AddDebtSheetState extends State<AddDebtSheet> {
             style: TextStyle(
               fontFamily: 'Cairo',
               color: brandYellow,
-              fontSize: 14,
+              fontSize: 13,
               fontWeight: FontWeight.w900,
             ),
           ),
@@ -703,7 +703,7 @@ class _AddDebtSheetState extends State<AddDebtSheet> {
     );
   }
 
-  /// 4. شبكة طرق الدفع (Bit / كاش / بنكي / شيك)
+  /// 4. شبكة طرق الدفع (Bit / كاش / بنكي / كود صراف)
   Widget _buildPaymentMethodsGrid() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -715,12 +715,12 @@ class _AddDebtSheetState extends State<AddDebtSheet> {
             style: TextStyle(
               fontFamily: 'Cairo',
               color: Color(0xFF9CA3AF),
-              fontSize: 11,
+              fontSize: 10.5,
               fontWeight: FontWeight.w600,
             ),
           ),
         ),
-        const SizedBox(height: 6),
+        const SizedBox(height: 4),
         Row(
           children: _paymentMethods.map((m) {
             final isSelected = _paymentMethod == m['key'];
@@ -735,13 +735,13 @@ class _AddDebtSheetState extends State<AddDebtSheet> {
                     SpendoHaptics.selection();
                     setState(() => _paymentMethod = m['key']);
                   },
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(8),
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 160),
-                    padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 2),
+                    padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 2),
                     decoration: BoxDecoration(
                       color: surfaceField,
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.circular(8),
                       border: Border.all(
                         color: isSelected ? brandYellow : surfaceBorder,
                         width: isSelected ? 1.2 : 1.0,
@@ -750,14 +750,14 @@ class _AddDebtSheetState extends State<AddDebtSheet> {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(icon, color: iconColor, size: 16),
-                        const SizedBox(height: 4),
+                        Icon(icon, color: iconColor, size: 14),
+                        const SizedBox(height: 3),
                         Text(
                           m['title'],
                           style: TextStyle(
                             fontFamily: 'Cairo',
                             color: isSelected ? textWhite : textMuted,
-                            fontSize: 10,
+                            fontSize: 9.5,
                             fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
                           ),
                           maxLines: 1,
@@ -777,105 +777,157 @@ class _AddDebtSheetState extends State<AddDebtSheet> {
 
   /// 5. التواريخ: تاريخ السلفة + تاريخ السداد المتوقع
   Widget _buildDatesRow(bool isReceived) {
+    if (isReceived) {
+      return InkWell(
+        onTap: () => _pickDate(false),
+        borderRadius: BorderRadius.circular(10),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+          decoration: BoxDecoration(
+            color: surfaceField,
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: surfaceBorder),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  const Icon(Remix.calendar_event_line, color: brandGreen, size: 15),
+                  const SizedBox(width: 8),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'تاريخ استلام المبلغ / المعاملة',
+                        style: TextStyle(
+                          fontFamily: 'Cairo',
+                          color: Color(0xFF9CA3AF),
+                          fontSize: 9.5,
+                        ),
+                      ),
+                      const SizedBox(height: 1),
+                      Text(
+                        ArabicDateHelper.formatArabicDateWithWeekday(_transactionDate),
+                        style: TextStyle(
+                          fontFamily: 'Cairo',
+                          color: textWhite,
+                          fontSize: 10.5,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              const Icon(Remix.edit_line, color: Color(0xFF9CA3AF), size: 13),
+            ],
+          ),
+        ),
+      );
+    }
+
     return Row(
       children: [
         // تاريخ السلفة
         Expanded(
           child: InkWell(
             onTap: () => _pickDate(false),
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(10),
             child: Container(
-              padding: const EdgeInsets.all(10),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
               decoration: BoxDecoration(
                 color: surfaceField,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(10),
                 border: Border.all(color: surfaceBorder),
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        _debtType == 'pay_later' ? 'تاريخ الخدمة / الشراء' : 'تاريخ المعاملة',
-                        style: const TextStyle(
-                          fontFamily: 'Cairo',
-                          color: Color(0xFF9CA3AF),
-                          fontSize: 10,
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          _debtType == 'pay_later' ? 'تاريخ الخدمة' : 'تاريخ المعاملة',
+                          style: const TextStyle(
+                            fontFamily: 'Cairo',
+                            color: Color(0xFF9CA3AF),
+                            fontSize: 9.5,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        ArabicDateHelper.formatArabicDateWithWeekday(_transactionDate),
-                        style: TextStyle(
-                          fontFamily: 'Cairo',
-                          color: textWhite,
-                          fontSize: 11,
-                          fontWeight: FontWeight.bold,
+                        const SizedBox(height: 1),
+                        Text(
+                          ArabicDateHelper.formatArabicDateWithWeekday(_transactionDate),
+                          style: TextStyle(
+                            fontFamily: 'Cairo',
+                            color: textWhite,
+                            fontSize: 10.5,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                  const Icon(Remix.calendar_event_line, color: brandGreen, size: 16),
+                  const Icon(Remix.calendar_event_line, color: brandGreen, size: 14),
                 ],
               ),
             ),
           ),
         ),
-        const SizedBox(width: 8),
+        const SizedBox(width: 6),
         // تاريخ السداد المتوقع
         Expanded(
-          child: Opacity(
-            opacity: isReceived ? 0.35 : 1.0,
-            child: IgnorePointer(
-              ignoring: isReceived,
-              child: InkWell(
-                onTap: () => _pickDate(true),
-                borderRadius: BorderRadius.circular(12),
-                child: Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: surfaceField,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: surfaceBorder),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              _debtType == 'pay_later' ? 'متى ناوي تدفع؟' : 'تاريخ السداد المتوقع',
-                              style: const TextStyle(
-                                fontFamily: 'Cairo',
-                                color: Color(0xFF9CA3AF),
-                                fontSize: 10,
-                              ),
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              _dueDate != null
-                                  ? ArabicDateHelper.formatArabicDateWithWeekday(_dueDate!)
-                                  : 'غير محدد (اختياري)',
-                              style: TextStyle(
-                                fontFamily: 'Cairo',
-                                color: _dueDate != null ? textWhite : textMuted,
-                                fontSize: 11,
-                                fontWeight: _dueDate != null ? FontWeight.bold : FontWeight.normal,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ],
+          child: InkWell(
+            onTap: () => _pickDate(true),
+            borderRadius: BorderRadius.circular(10),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+              decoration: BoxDecoration(
+                color: surfaceField,
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: surfaceBorder),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          _debtType == 'pay_later' ? 'متى ناوي تدفع؟' : 'تاريخ السداد المتوقع',
+                          style: const TextStyle(
+                            fontFamily: 'Cairo',
+                            color: Color(0xFF9CA3AF),
+                            fontSize: 9.5,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                      ),
-                      const Icon(Remix.calendar_check_line, color: brandYellow, size: 16),
-                    ],
+                        const SizedBox(height: 1),
+                        Text(
+                          _dueDate != null
+                              ? ArabicDateHelper.formatArabicDateWithWeekday(_dueDate!)
+                              : 'غير محدد (اختياري)',
+                          style: TextStyle(
+                            fontFamily: 'Cairo',
+                            color: _dueDate != null ? textWhite : textMuted,
+                            fontSize: 10.5,
+                            fontWeight: _dueDate != null ? FontWeight.bold : FontWeight.normal,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
                   ),
-                ),
+                  const Icon(Remix.calendar_check_line, color: brandYellow, size: 14),
+                ],
               ),
             ),
           ),
@@ -889,21 +941,21 @@ class _AddDebtSheetState extends State<AddDebtSheet> {
     return Container(
       decoration: BoxDecoration(
         color: surfaceField,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(10),
         border: Border.all(color: surfaceBorder),
       ),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 0),
       child: Row(
         children: [
-          const Icon(Remix.file_text_line, color: Color(0xFF9CA3AF), size: 18),
-          const SizedBox(width: 10),
+          const Icon(Remix.file_text_line, color: Color(0xFF9CA3AF), size: 16),
+          const SizedBox(width: 8),
           Expanded(
             child: TextFormField(
               controller: _notesCtrl,
               style: TextStyle(
                 fontFamily: 'Cairo',
                 color: textWhite,
-                fontSize: 12,
+                fontSize: 11.5,
               ),
               decoration: InputDecoration(
                 hintText: _debtType == 'pay_later'
@@ -914,11 +966,11 @@ class _AddDebtSheetState extends State<AddDebtSheet> {
                 hintStyle: const TextStyle(
                   fontFamily: 'Cairo',
                   color: Color(0xFF71717A),
-                  fontSize: 12,
+                  fontSize: 11.5,
                 ),
                 border: InputBorder.none,
                 isDense: true,
-                contentPadding: const EdgeInsets.symmetric(vertical: 10),
+                contentPadding: const EdgeInsets.symmetric(vertical: 6),
               ),
             ),
           ),
@@ -931,32 +983,32 @@ class _AddDebtSheetState extends State<AddDebtSheet> {
   Widget _buildSaveButton() {
     return InkWell(
       onTap: _isSaving ? null : _save,
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(10),
       child: Container(
         width: double.infinity,
-        padding: const EdgeInsets.symmetric(vertical: 11),
+        padding: const EdgeInsets.symmetric(vertical: 8.5),
         decoration: BoxDecoration(
           color: brandGreen,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(10),
         ),
         alignment: Alignment.center,
         child: _isSaving
             ? const SizedBox(
-                width: 18,
-                height: 18,
+                width: 16,
+                height: 16,
                 child: CircularProgressIndicator(color: Colors.black, strokeWidth: 2),
               )
             : Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: const [
-                  Icon(Remix.check_line, color: Color(0xFF0A0B0B), size: 18),
-                  SizedBox(width: 6),
+                  Icon(Remix.check_line, color: Color(0xFF0A0B0B), size: 16),
+                  SizedBox(width: 5),
                   Text(
                     'حفظ في كشف المالية',
                     style: TextStyle(
                       fontFamily: 'Cairo',
                       color: Color(0xFF0A0B0B),
-                      fontSize: 13,
+                      fontSize: 12.5,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
