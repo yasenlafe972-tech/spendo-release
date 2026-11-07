@@ -350,7 +350,11 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
       });
 
       if (_selectedWorkplace != null) {
-        await _workplacesRepo.updateWorkplace(_selectedWorkplace!);
+        await _workplacesRepo.cascadeEmployerDailyRate(
+          workplaceId: _selectedWorkplace!.id,
+          workplaceName: _selectedWorkplace!.name,
+          newRate: newRate,
+        );
       }
     }
   }
@@ -729,6 +733,14 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
       attachments: _attachments,
       createdAt: widget.existingLog?.createdAt ?? DateTime.now(),
     );
+
+    if (_selectedWorkplace != null && rate > 0 && rate != _selectedWorkplace!.dailyRate) {
+      await _workplacesRepo.cascadeEmployerDailyRate(
+        workplaceId: _selectedWorkplace!.id,
+        workplaceName: _selectedWorkplace!.name,
+        newRate: rate,
+      );
+    }
 
     widget.onSave(log);
 

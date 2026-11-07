@@ -76,7 +76,62 @@ class WorkLogsRepository {
 
   Future<void> addWorkLog(WorkLogModel log) async {
     final db = await _dbHelper.database;
-    await db.insert('work_logs', log.toMap(), conflictAlgorithm: ConflictAlgorithm.replace);
+    await db.transaction((txn) async {
+      await txn.insert('work_logs', log.toMap(), conflictAlgorithm: ConflictAlgorithm.replace);
+
+      if (log.rateApplied > 0) {
+        final wpId = (log.workplaceId ?? '').trim();
+        final wpName = log.workplaceName.trim();
+        final nowIso = DateTime.now().toIso8601String();
+
+        if (wpId.isNotEmpty) {
+          await txn.update(
+            'workplaces',
+            {
+              'daily_rate': log.rateApplied,
+              'updated_at': nowIso,
+            },
+            where: 'id = ?',
+            whereArgs: [wpId],
+          );
+        }
+        if (wpName.isNotEmpty) {
+          await txn.update(
+            'workplaces',
+            {
+              'daily_rate': log.rateApplied,
+              'updated_at': nowIso,
+            },
+            where: 'TRIM(name) = ?',
+            whereArgs: [wpName],
+          );
+        }
+
+        if (wpId.isNotEmpty || wpName.isNotEmpty) {
+          await txn.rawUpdate(
+            '''
+            UPDATE work_logs
+            SET rate_applied = ?,
+                total_earned = ? * COALESCE(day_fraction, 1.0),
+                workplace_id = CASE WHEN (workplace_id IS NULL OR workplace_id = '') AND ? != '' THEN ? ELSE workplace_id END
+            WHERE (? != '' AND workplace_id = ?)
+               OR (? != '' AND TRIM(workplace_name) = ?)
+            ''',
+            [
+              log.rateApplied,
+              log.rateApplied,
+              wpId,
+              wpId,
+              wpId,
+              wpId,
+              wpName,
+              wpName,
+            ],
+          );
+        }
+      }
+    });
+    DatabaseHelper.notifyDataChanged();
     FirebaseBackupService.instance.scheduleAutoBackup();
   }
 
@@ -91,26 +146,30 @@ class WorkLogsRepository {
       );
 
       if (log.rateApplied > 0) {
-        final wpId = log.workplaceId ?? '';
+        final wpId = (log.workplaceId ?? '').trim();
         final wpName = log.workplaceName.trim();
+        final nowIso = DateTime.now().toIso8601String();
+
         if (wpId.isNotEmpty) {
           await txn.update(
             'workplaces',
             {
               'daily_rate': log.rateApplied,
-              'updated_at': DateTime.now().toIso8601String(),
+              'updated_at': nowIso,
             },
             where: 'id = ?',
             whereArgs: [wpId],
           );
-        } else if (wpName.isNotEmpty) {
-          await txn.rawUpdate(
-            '''
-            UPDATE workplaces
-            SET daily_rate = ?, updated_at = ?
-            WHERE LOWER(TRIM(name)) = LOWER(TRIM(?))
-            ''',
-            [log.rateApplied, DateTime.now().toIso8601String(), wpName],
+        }
+        if (wpName.isNotEmpty) {
+          await txn.update(
+            'workplaces',
+            {
+              'daily_rate': log.rateApplied,
+              'updated_at': nowIso,
+            },
+            where: 'TRIM(name) = ?',
+            whereArgs: [wpName],
           );
         }
 
@@ -119,13 +178,16 @@ class WorkLogsRepository {
             '''
             UPDATE work_logs
             SET rate_applied = ?,
-                total_earned = ? * COALESCE(day_fraction, 1.0)
+                total_earned = ? * COALESCE(day_fraction, 1.0),
+                workplace_id = CASE WHEN (workplace_id IS NULL OR workplace_id = '') AND ? != '' THEN ? ELSE workplace_id END
             WHERE (? != '' AND workplace_id = ?)
-               OR (? != '' AND LOWER(TRIM(workplace_name)) = LOWER(TRIM(?)))
+               OR (? != '' AND TRIM(workplace_name) = ?)
             ''',
             [
               log.rateApplied,
               log.rateApplied,
+              wpId,
+              wpId,
               wpId,
               wpId,
               wpName,

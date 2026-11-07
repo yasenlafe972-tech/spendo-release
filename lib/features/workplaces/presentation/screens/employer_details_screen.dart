@@ -561,7 +561,14 @@ class _EmployerDetailsScreenState extends State<EmployerDetailsScreen> {
           } else {
             await _workRepo.addWorkLog(log);
           }
-          _loadData();
+          if (log.rateApplied > 0 && log.rateApplied != _workplace.dailyRate) {
+            await _workplacesRepo.cascadeEmployerDailyRate(
+              workplaceId: _workplace.id,
+              workplaceName: _workplace.name,
+              newRate: log.rateApplied,
+            );
+          }
+          await _loadData();
         },
       ),
     );
@@ -797,11 +804,15 @@ class _EmployerDetailsScreenState extends State<EmployerDetailsScreen> {
 
     if (newRate != null && newRate > 0 && mounted) {
       SpendoHaptics.success();
+      await _workplacesRepo.cascadeEmployerDailyRate(
+        workplaceId: _workplace.id,
+        workplaceName: _workplace.name,
+        newRate: newRate,
+      );
       final updated = _workplace.copyWith(
         dailyRate: newRate,
         updatedAt: DateTime.now(),
       );
-      await _workplacesRepo.updateWorkplace(updated);
       setState(() => _workplace = updated);
       await _loadData();
       _showToast('تم تحديث سعر اليومية لجميع أيام العمل في السجل');

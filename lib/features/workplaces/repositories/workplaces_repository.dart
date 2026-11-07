@@ -91,8 +91,8 @@ class WorkplacesRepository {
               rate_applied = ?,
               total_earned = ? * COALESCE(day_fraction, 1.0)
           WHERE workplace_id = ?
-             OR LOWER(TRIM(workplace_name)) = LOWER(TRIM(?))
-             OR (? != '' AND LOWER(TRIM(workplace_name)) = LOWER(TRIM(?)))
+             OR TRIM(workplace_name) = ?
+             OR (? != '' AND TRIM(workplace_name) = ?)
           ''',
           [
             workplace.id,
@@ -112,8 +112,8 @@ class WorkplacesRepository {
           SET workplace_id = ?,
               workplace_name = ?
           WHERE workplace_id = ?
-             OR LOWER(TRIM(workplace_name)) = LOWER(TRIM(?))
-             OR (? != '' AND LOWER(TRIM(workplace_name)) = LOWER(TRIM(?)))
+             OR TRIM(workplace_name) = ?
+             OR (? != '' AND TRIM(workplace_name) = ?)
           ''',
           [
             workplace.id,
@@ -126,6 +126,70 @@ class WorkplacesRepository {
         );
       }
     });
+    DatabaseHelper.notifyDataChanged();
+    FirebaseBackupService.instance.scheduleAutoBackup();
+  }
+
+  /// Atomically updates an employer's daily rate and cascades it across all historical and current work logs
+  Future<void> cascadeEmployerDailyRate({
+    required String workplaceId,
+    required String workplaceName,
+    required double newRate,
+  }) async {
+    if (newRate <= 0) return;
+    final db = await _dbHelper.database;
+    final cleanId = workplaceId.trim();
+    final cleanName = workplaceName.trim();
+    final nowIso = DateTime.now().toIso8601String();
+
+    await db.transaction((txn) async {
+      // 1. Update workplaces table
+      if (cleanId.isNotEmpty) {
+        await txn.update(
+          'workplaces',
+          {
+            'daily_rate': newRate,
+            'updated_at': nowIso,
+          },
+          where: 'id = ?',
+          whereArgs: [cleanId],
+        );
+      }
+      if (cleanName.isNotEmpty) {
+        await txn.update(
+          'workplaces',
+          {
+            'daily_rate': newRate,
+            'updated_at': nowIso,
+          },
+          where: 'TRIM(name) = ?',
+          whereArgs: [cleanName],
+        );
+      }
+
+      // 2. Cascade update to all matching work_logs
+      await txn.rawUpdate(
+        '''
+        UPDATE work_logs
+        SET rate_applied = ?,
+            total_earned = ? * COALESCE(day_fraction, 1.0),
+            workplace_id = CASE WHEN (workplace_id IS NULL OR workplace_id = '') AND ? != '' THEN ? ELSE workplace_id END
+        WHERE (? != '' AND workplace_id = ?)
+           OR (? != '' AND TRIM(workplace_name) = ?)
+        ''',
+        [
+          newRate,
+          newRate,
+          cleanId,
+          cleanId,
+          cleanId,
+          cleanId,
+          cleanName,
+          cleanName,
+        ],
+      );
+    });
+
     DatabaseHelper.notifyDataChanged();
     FirebaseBackupService.instance.scheduleAutoBackup();
   }
