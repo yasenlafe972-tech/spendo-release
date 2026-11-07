@@ -81,12 +81,60 @@ class WorkLogsRepository {
 
   Future<void> updateWorkLog(WorkLogModel log) async {
     final db = await _dbHelper.database;
-    await db.update(
-      'work_logs',
-      log.toMap(),
-      where: 'id = ?',
-      whereArgs: [log.id],
-    );
+    await db.transaction((txn) async {
+      await txn.update(
+        'work_logs',
+        log.toMap(),
+        where: 'id = ?',
+        whereArgs: [log.id],
+      );
+
+      if (log.rateApplied > 0) {
+        final wpId = log.workplaceId ?? '';
+        final wpName = log.workplaceName.trim();
+        if (wpId.isNotEmpty) {
+          await txn.update(
+            'workplaces',
+            {
+              'daily_rate': log.rateApplied,
+              'updated_at': DateTime.now().toIso8601String(),
+            },
+            where: 'id = ?',
+            whereArgs: [wpId],
+          );
+        } else if (wpName.isNotEmpty) {
+          await txn.rawUpdate(
+            '''
+            UPDATE workplaces
+            SET daily_rate = ?, updated_at = ?
+            WHERE LOWER(TRIM(name)) = LOWER(TRIM(?))
+            ''',
+            [log.rateApplied, DateTime.now().toIso8601String(), wpName],
+          );
+        }
+
+        if (wpId.isNotEmpty || wpName.isNotEmpty) {
+          await txn.rawUpdate(
+            '''
+            UPDATE work_logs
+            SET rate_applied = ?,
+                total_earned = ? * COALESCE(day_fraction, 1.0)
+            WHERE (? != '' AND workplace_id = ?)
+               OR (? != '' AND LOWER(TRIM(workplace_name)) = LOWER(TRIM(?)))
+            ''',
+            [
+              log.rateApplied,
+              log.rateApplied,
+              wpId,
+              wpId,
+              wpName,
+              wpName,
+            ],
+          );
+        }
+      }
+    });
+    DatabaseHelper.notifyDataChanged();
     FirebaseBackupService.instance.scheduleAutoBackup();
   }
 

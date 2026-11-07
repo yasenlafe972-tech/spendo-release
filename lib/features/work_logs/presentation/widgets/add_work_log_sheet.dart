@@ -78,6 +78,7 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
 
   WorkplaceModel? _selectedWorkplace;
   String? _activePlaceChip;
+  double? _overrideDailyRate;
 
   late final TextEditingController _cityController;
   late final TextEditingController _notesController;
@@ -176,6 +177,9 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
   }
 
   double get _currentRate {
+    if (_overrideDailyRate != null && _overrideDailyRate! > 0) {
+      return _overrideDailyRate!;
+    }
     if (_selectedWorkplace != null && _selectedWorkplace!.dailyRate > 0) {
       return _selectedWorkplace!.dailyRate;
     }
@@ -183,6 +187,172 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
       return widget.existingLog!.rateApplied;
     }
     return 350.0;
+  }
+
+  Future<void> _editDailyRateDialog() async {
+    SpendoHaptics.selection();
+    final ctrl = TextEditingController(text: _formattedRate);
+    final newRate = await showDialog<double>(
+      context: context,
+      barrierColor: Colors.black.withValues(alpha: 0.75),
+      builder: (ctx) => Directionality(
+        textDirection: TextDirection.rtl,
+        child: Dialog(
+          backgroundColor: Colors.transparent,
+          insetPadding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: surfaceMain,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: surfaceBorder, width: 1.2),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        const Icon(Remix.money_dollar_circle_line,
+                            color: brandYellow, size: 18),
+                        const SizedBox(width: 8),
+                        Text(
+                          'تعديل سعر اليومية (₪)',
+                          style: TextStyle(
+                            color: textWhite,
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                    InkWell(
+                      onTap: () => Navigator.pop(ctx),
+                      borderRadius: BorderRadius.circular(20),
+                      child: Padding(
+                        padding: const EdgeInsets.all(4),
+                        child: Icon(Remix.close_line,
+                            size: 18, color: textMuted),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  'سيتم تطبيق سعر اليومية الجديد وتحديث جميع أيام العمل المسجلة لهذا المشغّل في السجل تلقائياً.',
+                  style: TextStyle(
+                    color: textMuted,
+                    fontSize: 11,
+                    height: 1.4,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Container(
+                  decoration: BoxDecoration(
+                    color: surfaceField,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: brandYellow.withValues(alpha: 0.5)),
+                  ),
+                  child: TextField(
+                    controller: ctrl,
+                    autofocus: true,
+                    keyboardType:
+                        const TextInputType.numberWithOptions(decimal: true),
+                    style: TextStyle(
+                      color: textWhite,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    decoration: InputDecoration(
+                      hintText: 'مثال: 350',
+                      hintStyle: TextStyle(color: textSubtle, fontSize: 13),
+                      suffixText: '₪ / يوم',
+                      suffixStyle: const TextStyle(
+                        color: brandYellow,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      border: InputBorder.none,
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 10),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 14),
+                Row(
+                  children: [
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: brandGreen,
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          padding: const EdgeInsets.symmetric(vertical: 10),
+                        ),
+                        onPressed: () {
+                          final parsed = double.tryParse(ctrl.text.trim());
+                          if (parsed != null && parsed > 0) {
+                            Navigator.pop(ctx, parsed);
+                          }
+                        },
+                        icon: const Icon(Remix.check_line, size: 16),
+                        label: const Text(
+                          'تحديث كل اليوميات',
+                          style: TextStyle(
+                              fontSize: 12, fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    OutlinedButton(
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: textMuted,
+                        side: BorderSide(color: surfaceBorder),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 14, vertical: 10),
+                      ),
+                      onPressed: () => Navigator.pop(ctx),
+                      child:
+                          const Text('إلغاء', style: TextStyle(fontSize: 12)),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+
+    if (newRate != null && newRate > 0 && mounted) {
+      SpendoHaptics.success();
+      setState(() {
+        _overrideDailyRate = newRate;
+        if (_selectedWorkplace != null) {
+          final updatedWp = _selectedWorkplace!.copyWith(
+            dailyRate: newRate,
+            updatedAt: DateTime.now(),
+          );
+          _selectedWorkplace = updatedWp;
+          _allWorkplaces = _allWorkplaces
+              .map((w) => w.id == updatedWp.id ? updatedWp : w)
+              .toList();
+        }
+      });
+
+      if (_selectedWorkplace != null) {
+        await _workplacesRepo.updateWorkplace(_selectedWorkplace!);
+      }
+    }
   }
 
   String get _formattedRate {
@@ -898,35 +1068,45 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
                           ),
                         ),
 
-                        // شارة اليومية الثابتة للقراءة فقط (بدون قفل)
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: surfaceMain,
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: surfaceBorder),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                '$_formattedRate ₪',
-                                style: const TextStyle(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.bold,
-                                  color: brandYellow,
+                        // شارة اليومية القابلة للتعديل لتحديث كل السجل
+                        InkWell(
+                          onTap: _editDailyRateDialog,
+                          borderRadius: BorderRadius.circular(8),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: surfaceMain,
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: surfaceBorder),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  '$_formattedRate ₪',
+                                  style: const TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
+                                    color: brandYellow,
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(width: 2),
-                              Text(
-                                '/ يوم',
-                                style: TextStyle(
-                                  fontSize: 10,
+                                const SizedBox(width: 2),
+                                Text(
+                                  '/ يوم',
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    color: textMuted,
+                                  ),
+                                ),
+                                const SizedBox(width: 5),
+                                Icon(
+                                  Remix.pencil_line,
+                                  size: 11,
                                   color: textMuted,
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
                       ],
@@ -1180,80 +1360,95 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
 
               const SizedBox(height: 10),
 
-              // 4. المبلغ المستحق لليوم (قراءة فقط - يضاف للحساب الشهري تلقائياً)
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                decoration: BoxDecoration(
-                  color: surfaceField,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: brandGreen.withValues(alpha: 0.4)),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      children: [
-                        const Icon(
-                          Remix.wallet_3_line,
-                          size: 16,
-                          color: brandGreen,
-                        ),
-                        const SizedBox(width: 8),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'المبلغ المستحق لليوم',
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                                color: textWhite,
-                              ),
-                            ),
-                            const SizedBox(height: 1),
-                            Text(
-                              'يُرحّل تلقائياً إلى كشف الحساب الشهري',
-                              style: TextStyle(
-                                fontSize: 9,
-                                color: textMuted,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-
-                    // المبلغ المستحق بالـ LTR
-                    Directionality(
-                      textDirection: TextDirection.ltr,
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.baseline,
-                        textBaseline: TextBaseline.alphabetic,
+              // 4. المبلغ المستحق لليوم (قابل للنقر لتعديل سعر اليومية وتحديث كل السجل)
+              InkWell(
+                onTap: _editDailyRateDialog,
+                borderRadius: BorderRadius.circular(12),
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: surfaceField,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: brandGreen.withValues(alpha: 0.4)),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
                         children: [
-                          const Text(
-                            '₪',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                              color: brandYellow,
-                            ),
+                          const Icon(
+                            Remix.wallet_3_line,
+                            size: 16,
+                            color: brandGreen,
                           ),
-                          const SizedBox(width: 2),
-                          Text(
-                            _currentRate.toStringAsFixed(1),
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w800,
-                              color: textWhite,
-                              fontFamily: 'monospace',
-                            ),
+                          const SizedBox(width: 8),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'المبلغ المستحق لليوم',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                  color: textWhite,
+                                ),
+                              ),
+                              const SizedBox(height: 1),
+                              Text(
+                                'اضغط لتعديل اليومية وتحديث كل السجل تلقائياً',
+                                style: TextStyle(
+                                  fontSize: 9,
+                                  color: textMuted,
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
-                    ),
-                  ],
+
+                      // المبلغ المستحق بالـ LTR
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Directionality(
+                            textDirection: TextDirection.ltr,
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.baseline,
+                              textBaseline: TextBaseline.alphabetic,
+                              children: [
+                                const Text(
+                                  '₪',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                    color: brandYellow,
+                                  ),
+                                ),
+                                const SizedBox(width: 2),
+                                Text(
+                                  _currentRate.toStringAsFixed(1),
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w800,
+                                    color: textWhite,
+                                    fontFamily: 'monospace',
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          Icon(
+                            Remix.pencil_line,
+                            size: 13,
+                            color: textMuted,
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
 

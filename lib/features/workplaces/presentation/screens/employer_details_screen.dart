@@ -565,6 +565,7 @@ class _EmployerDetailsScreenState extends State<EmployerDetailsScreen> {
         },
       ),
     );
+    _loadData();
   }
 
   Future<void> _confirmDeleteWorkday(WorkLogModel log) async {
@@ -679,7 +680,175 @@ class _EmployerDetailsScreenState extends State<EmployerDetailsScreen> {
       await _workplacesRepo.updateWorkplace(result);
       setState(() => _workplace = result);
       _loadData();
-      _showToast('تم تعديل بيانات المشغّل');
+      _showToast('تم تعديل بيانات المشغّل وتحديث اليوميات');
+    }
+  }
+
+  Future<void> _editDailyRateDialog([double? initialRate]) async {
+    SpendoHaptics.selection();
+    final baseRate = initialRate ?? (_workplace.dailyRate > 0 ? _workplace.dailyRate : 350.0);
+    final rateText = baseRate == baseRate.roundToDouble()
+        ? baseRate.toInt().toString()
+        : baseRate.toStringAsFixed(1);
+    final ctrl = TextEditingController(text: rateText);
+
+    final newRate = await showDialog<double>(
+      context: context,
+      barrierColor: Colors.black.withValues(alpha: 0.75),
+      builder: (ctx) => Directionality(
+        textDirection: TextDirection.rtl,
+        child: Dialog(
+          backgroundColor: Colors.transparent,
+          insetPadding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: EmployerDetailsScreen.surfaceMain,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                  color: EmployerDetailsScreen.surfaceBorder, width: 1.2),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        const Icon(Remix.money_dollar_circle_line,
+                            color: EmployerDetailsScreen.brandYellow, size: 18),
+                        const SizedBox(width: 8),
+                        Text(
+                          'تعديل سعر اليومية (₪)',
+                          style: TextStyle(
+                            color: EmployerDetailsScreen.textWhite,
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                    InkWell(
+                      onTap: () => Navigator.pop(ctx),
+                      borderRadius: BorderRadius.circular(20),
+                      child: Padding(
+                        padding: const EdgeInsets.all(4),
+                        child: Icon(Remix.close_line,
+                            size: 18, color: EmployerDetailsScreen.textMuted),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  'سيتم تطبيق سعر اليومية الجديد وتحديث جميع أيام العمل المسجلة لـ "${_workplace.name}" في السجل تلقائياً.',
+                  style: TextStyle(
+                    color: EmployerDetailsScreen.textMuted,
+                    fontSize: 11,
+                    height: 1.4,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Container(
+                  decoration: BoxDecoration(
+                    color: EmployerDetailsScreen.surfaceField,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                        color: EmployerDetailsScreen.brandYellow
+                            .withValues(alpha: 0.5)),
+                  ),
+                  child: TextField(
+                    controller: ctrl,
+                    autofocus: true,
+                    keyboardType:
+                        const TextInputType.numberWithOptions(decimal: true),
+                    style: TextStyle(
+                      color: EmployerDetailsScreen.textWhite,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    decoration: InputDecoration(
+                      hintText: 'مثال: 350',
+                      hintStyle: TextStyle(
+                          color: EmployerDetailsScreen.textSubtle,
+                          fontSize: 13),
+                      suffixText: '₪ / يوم',
+                      suffixStyle: const TextStyle(
+                        color: EmployerDetailsScreen.brandYellow,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      border: InputBorder.none,
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 10),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 14),
+                Row(
+                  children: [
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: EmployerDetailsScreen.brandGreen,
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          padding: const EdgeInsets.symmetric(vertical: 10),
+                        ),
+                        onPressed: () {
+                          final parsed = double.tryParse(ctrl.text.trim());
+                          if (parsed != null && parsed > 0) {
+                            Navigator.pop(ctx, parsed);
+                          }
+                        },
+                        icon: const Icon(Remix.check_line, size: 16),
+                        label: const Text(
+                          'تحديث كل اليوميات',
+                          style: TextStyle(
+                              fontSize: 12, fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    OutlinedButton(
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: EmployerDetailsScreen.textMuted,
+                        side:
+                            BorderSide(color: EmployerDetailsScreen.surfaceBorder),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 14, vertical: 10),
+                      ),
+                      onPressed: () => Navigator.pop(ctx),
+                      child:
+                          const Text('إلغاء', style: TextStyle(fontSize: 12)),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+
+    if (newRate != null && newRate > 0 && mounted) {
+      SpendoHaptics.success();
+      final updated = _workplace.copyWith(
+        dailyRate: newRate,
+        updatedAt: DateTime.now(),
+      );
+      await _workplacesRepo.updateWorkplace(updated);
+      setState(() => _workplace = updated);
+      await _loadData();
+      _showToast('تم تحديث سعر اليومية لجميع أيام العمل في السجل');
     }
   }
 
@@ -1913,33 +2082,37 @@ class _EmployerDetailsScreenState extends State<EmployerDetailsScreen> {
                           ),
                         ),
                         const SizedBox(width: 6),
-                        // Daily rate badge
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: EmployerDetailsScreen.surfaceMain,
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: EmployerDetailsScreen.surfaceBorder),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                'اليومية',
-                                style: TextStyle(color: EmployerDetailsScreen.textMuted, fontSize: 9),
-                              ),
-                              Text(
-                                _workplace.dailyRate > 0
-                                    ? '${_workplace.dailyRate.toStringAsFixed(0)} ₪'
-                                    : 'غير محددة',
-                                style: TextStyle(
-                                  color: EmployerDetailsScreen.brandYellow,
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w700,
+                        // Daily rate badge (tappable to edit all daily rates)
+                        InkWell(
+                          onTap: () => _editDailyRateDialog(_workplace.dailyRate),
+                          borderRadius: BorderRadius.circular(8),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: EmployerDetailsScreen.surfaceMain,
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: EmployerDetailsScreen.surfaceBorder),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  'اليومية',
+                                  style: TextStyle(color: EmployerDetailsScreen.textMuted, fontSize: 9),
                                 ),
-                              ),
-                            ],
+                                Text(
+                                  _workplace.dailyRate > 0
+                                      ? '${_workplace.dailyRate.toStringAsFixed(0)} ₪'
+                                      : 'غير محددة',
+                                  style: TextStyle(
+                                    color: EmployerDetailsScreen.brandYellow,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ],
@@ -2715,31 +2888,34 @@ class _EmployerDetailsScreenState extends State<EmployerDetailsScreen> {
                   ),
                   _buildCellDivider(),
 
-                  // Col 3: Amount (flex: 2)
+                  // Col 3: Amount (flex: 2) - tappable to edit daily rate across all logs
                   Expanded(
                     flex: 2,
-                    child: Center(
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            log.totalEarned.toStringAsFixed(0),
-                            style: const TextStyle(
-                              color: EmployerDetailsScreen.brandYellow,
-                              fontSize: 11.5,
-                              fontWeight: FontWeight.w800,
+                    child: InkWell(
+                      onTap: () => _editDailyRateDialog(log.totalEarned),
+                      child: Center(
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              log.totalEarned.toStringAsFixed(0),
+                              style: const TextStyle(
+                                color: EmployerDetailsScreen.brandYellow,
+                                fontSize: 11.5,
+                                fontWeight: FontWeight.w800,
+                              ),
                             ),
-                          ),
-                          const SizedBox(width: 2),
-                          const Text(
-                            '₪',
-                            style: TextStyle(
-                              color: EmployerDetailsScreen.brandYellow,
-                              fontSize: 9.5,
-                              fontWeight: FontWeight.w600,
+                            const SizedBox(width: 2),
+                            const Text(
+                              '₪',
+                              style: TextStyle(
+                                color: EmployerDetailsScreen.brandYellow,
+                                fontSize: 9.5,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                   ),

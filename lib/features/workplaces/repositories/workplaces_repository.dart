@@ -54,18 +54,78 @@ class WorkplacesRepository {
     FirebaseBackupService.instance.scheduleAutoBackup();
   }
 
-  /// Updates an existing workplace/employer
+  /// Updates an existing workplace/employer and cascades its dailyRate and name
+  /// to all work_logs belonging to this employer.
   Future<void> updateWorkplace(WorkplaceModel workplace) async {
     final db = await _dbHelper.database;
     final workplaceToSave = workplace.copyWith(
       updatedAt: DateTime.now(),
     );
-    await db.update(
-      'workplaces',
-      workplaceToSave.toMap(),
-      where: 'id = ?',
-      whereArgs: [workplace.id],
-    );
+    await db.transaction((txn) async {
+      final existingRows = await txn.query(
+        'workplaces',
+        columns: ['name'],
+        where: 'id = ?',
+        whereArgs: [workplace.id],
+        limit: 1,
+      );
+      final oldName = existingRows.isNotEmpty
+          ? (existingRows.first['name']?.toString().trim() ?? '')
+          : '';
+      final newName = workplace.name.trim();
+
+      await txn.update(
+        'workplaces',
+        workplaceToSave.toMap(),
+        where: 'id = ?',
+        whereArgs: [workplace.id],
+      );
+
+      if (workplace.dailyRate > 0) {
+        await txn.rawUpdate(
+          '''
+          UPDATE work_logs
+          SET workplace_id = ?,
+              workplace_name = ?,
+              rate_applied = ?,
+              total_earned = ? * COALESCE(day_fraction, 1.0)
+          WHERE workplace_id = ?
+             OR LOWER(TRIM(workplace_name)) = LOWER(TRIM(?))
+             OR (? != '' AND LOWER(TRIM(workplace_name)) = LOWER(TRIM(?)))
+          ''',
+          [
+            workplace.id,
+            newName,
+            workplace.dailyRate,
+            workplace.dailyRate,
+            workplace.id,
+            newName,
+            oldName,
+            oldName,
+          ],
+        );
+      } else {
+        await txn.rawUpdate(
+          '''
+          UPDATE work_logs
+          SET workplace_id = ?,
+              workplace_name = ?
+          WHERE workplace_id = ?
+             OR LOWER(TRIM(workplace_name)) = LOWER(TRIM(?))
+             OR (? != '' AND LOWER(TRIM(workplace_name)) = LOWER(TRIM(?)))
+          ''',
+          [
+            workplace.id,
+            newName,
+            workplace.id,
+            newName,
+            oldName,
+            oldName,
+          ],
+        );
+      }
+    });
+    DatabaseHelper.notifyDataChanged();
     FirebaseBackupService.instance.scheduleAutoBackup();
   }
 
