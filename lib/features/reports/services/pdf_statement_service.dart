@@ -68,7 +68,6 @@ class PdfStatementService {
     final balance = totalEarned - totalPaid;
 
     final generatedDate = DateTime.now().toIso8601String().split('T').first;
-    final periodDisplay = periodTitle ?? 'كافة الأشهر والورديات المسجلة';
 
     final reportTitle = includeFinancials
         ? 'Spendo • كشف حساب مشغّل معتمد'
@@ -192,11 +191,6 @@ class PdfStatementService {
                 pw.Column(
                   crossAxisAlignment: pw.CrossAxisAlignment.end,
                   children: [
-                    pw.Text(
-                      _ar('الفترة المعتمدة: $periodDisplay'),
-                      style: pw.TextStyle(font: boldFont, fontSize: 10, color: PdfColors.grey800),
-                    ),
-                    pw.SizedBox(height: 3),
                     pw.Text(
                       _ar('إجمالي أيام العمل: $totalDays يوم'),
                       style: pw.TextStyle(font: boldFont, fontSize: 10, color: const PdfColor.fromInt(0xFF10B981)),
