@@ -60,6 +60,8 @@
 		<string>tel</string>
 		<string>https</string>
 		<string>http</string>
+		<string>shortcuts</string>
+		<string>shoebox</string>
 	</array>
 	<key>CFBundleURLTypes</key>
 	<array>

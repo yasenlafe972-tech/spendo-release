@@ -12,6 +12,7 @@ import '../../../auth/presentation/screens/auth_screen.dart';
 import '../../../people/models/person_model.dart';
 import '../../../people/repositories/people_repository.dart';
 import 'package:sanad_app/core/theme/app_theme.dart';
+import '../../../home/services/daily_expense_service.dart';
 import '../../services/settings_service.dart';
 
 /// AppSettingsScreen (شاشة الإعدادات المدمجة).
@@ -943,6 +944,485 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
     );
   }
 
+  Widget _buildWalletAutoLinkSection() {
+    return InkWell(
+      onTap: _showWalletAutoLinkSheet,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
+        decoration: BoxDecoration(
+          color: surfaceCell,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: surfaceBorder),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 30,
+              height: 30,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: brandGreen.withValues(alpha: 0.14),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: brandGreen.withValues(alpha: 0.35)),
+              ),
+              child: const Icon(Remix.wallet_3_line, size: 15, color: brandGreen),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Flexible(
+                        child: Text(
+                          'ربط المحفظة التلقائي مع الموقع (Wallet)',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                            color: textWhite,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 5),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                        decoration: BoxDecoration(
+                          color: brandGreen.withValues(alpha: 0.14),
+                          borderRadius: BorderRadius.circular(4),
+                          border: Border.all(color: brandGreen.withValues(alpha: 0.4)),
+                        ),
+                        child: const Text(
+                          'تلقائي',
+                          style: TextStyle(
+                            fontSize: 8.5,
+                            fontWeight: FontWeight.bold,
+                            color: brandGreen,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    'إعداد اختصار Apple Pay / Google Wallet لسحب الدفعات للرئيسية مباشرة',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(fontSize: 9.2, color: textMuted),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 6),
+            Icon(Remix.arrow_left_s_line, size: 16, color: textMuted),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _showWalletAutoLinkSheet() async {
+    SpendoHaptics.light();
+    const directUrlTemplate = DailyExpenseService.shortcutDeepLinkTemplate;
+    const cloudWebhookUrl = DailyExpenseService.cloudWebhookUrl;
+    bool isListenerActive = await DailyExpenseService.isWalletListenerEnabled();
+
+    if (!mounted) return;
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: surfaceMain,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (ctx, setSheetState) {
+            return Directionality(
+              textDirection: TextDirection.rtl,
+              child: SafeArea(
+                top: false,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 18),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Center(
+                        child: Container(
+                          width: 34,
+                          height: 4,
+                          decoration: BoxDecoration(
+                            color: surfaceBorder,
+                            borderRadius: BorderRadius.circular(99),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                            child: Row(
+                              children: [
+                                const Icon(Remix.wallet_3_line,
+                                    color: brandGreen, size: 19),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'ربط المحفظة التلقائي مع الموقع (Wallet)',
+                                        style: TextStyle(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.bold,
+                                          color: textWhite,
+                                        ),
+                                      ),
+                                      Text(
+                                        'يلتقط الدفعة من المحفظة ويسجلها مع الموقع والساعة تلقائياً',
+                                        style: TextStyle(
+                                          fontSize: 10,
+                                          color: textMuted,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          InkWell(
+                            onTap: () => Navigator.pop(ctx),
+                            child: Icon(Remix.close_line,
+                                color: textMuted, size: 19),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      Divider(color: surfaceBorder, height: 1),
+                      const SizedBox(height: 10),
+
+                      // حالة الربط المباشر مع محفظة الهاتف
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: surfaceCell,
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(
+                            color: isListenerActive ? brandGreen : brandYellow,
+                          ),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Flexible(
+                                  child: Row(
+                                    children: [
+                                      Icon(
+                                        isListenerActive
+                                            ? Remix.checkbox_circle_line
+                                            : Remix.notification_badge_line,
+                                        size: 15,
+                                        color: isListenerActive
+                                            ? brandGreen
+                                            : brandYellow,
+                                      ),
+                                      const SizedBox(width: 6),
+                                      Flexible(
+                                        child: Text(
+                                          isListenerActive
+                                              ? 'التقاط دفعات المحفظة: مفعّل وجاهز'
+                                              : 'التقاط دفعات المحفظة بحاجة لتفعيل الصلاحية',
+                                          style: TextStyle(
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.bold,
+                                            color: isListenerActive
+                                                ? brandGreen
+                                                : brandYellow,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                InkWell(
+                                  onTap: () async {
+                                    final active = await DailyExpenseService
+                                        .isWalletListenerEnabled();
+                                    setSheetState(() => isListenerActive = active);
+                                  },
+                                  child: Text(
+                                    'تحديث الحالة',
+                                    style: TextStyle(
+                                        fontSize: 9.5, color: textMuted),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              'عند الدفع عبر المحفظة (Google Wallet / Samsung Pay / Apple Pay)، يلتقط التطبيق المبلغ واسم المحل ويحفظ موقعك الجغرافي (GPS) والساعة فوراً في الرئيسية.',
+                              style: TextStyle(
+                                fontSize: 10,
+                                color: textWhite,
+                                height: 1.4,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: ElevatedButton.icon(
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: isListenerActive
+                                          ? surfaceMain
+                                          : brandGreen,
+                                      foregroundColor: isListenerActive
+                                          ? textWhite
+                                          : Colors.white,
+                                      elevation: 0,
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 8),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                        side: BorderSide(color: surfaceBorder),
+                                      ),
+                                    ),
+                                    onPressed: () async {
+                                      SpendoHaptics.light();
+                                      if (Platform.isIOS) {
+                                        Navigator.pop(ctx);
+                                        await DailyExpenseService
+                                            .openIosShortcutsApp();
+                                      } else {
+                                        await DailyExpenseService
+                                            .openWalletListenerSettings();
+                                      }
+                                    },
+                                    icon: Icon(
+                                      Remix.shield_check_line,
+                                      size: 14,
+                                      color: isListenerActive
+                                          ? brandGreen
+                                          : Colors.white,
+                                    ),
+                                    label: Text(
+                                      isListenerActive
+                                          ? 'إعدادات صلاحية المحفظة'
+                                          : 'تفعيل ربط المحفظة الآن',
+                                      style: const TextStyle(
+                                          fontSize: 10.5,
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: OutlinedButton.icon(
+                                    style: OutlinedButton.styleFrom(
+                                      foregroundColor: textWhite,
+                                      side: BorderSide(color: surfaceBorder),
+                                      backgroundColor: surfaceMain,
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 8),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                    ),
+                                    onPressed: () async {
+                                      SpendoHaptics.light();
+                                      Navigator.pop(ctx);
+                                      await DailyExpenseService
+                                          .openDeviceWalletApp();
+                                    },
+                                    icon: const Icon(Remix.bank_card_line,
+                                        size: 14, color: brandYellow),
+                                    label: const Text(
+                                      'فتح محفظة البطاقات',
+                                      style: TextStyle(
+                                          fontSize: 10.5,
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+
+                      // الاختصار التلقائي الجديد المدمج في الآيفون بدون أي سؤال يدوي
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: brandGreen.withValues(alpha: 0.08),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(
+                            color: brandGreen.withValues(alpha: 0.45),
+                          ),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Row(
+                              children: [
+                                const Icon(Remix.flashlight_fill,
+                                    size: 14, color: brandGreen),
+                                const SizedBox(width: 6),
+                                Expanded(
+                                  child: Text(
+                                    'الاختصار التلقائي الجديد في الآيفون (سحب مباشر بدون سؤال)',
+                                    style: TextStyle(
+                                      fontSize: 10.5,
+                                      fontWeight: FontWeight.bold,
+                                      color: textWhite,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 5),
+                            Text(
+                              'تم دمج اختصار Pay with Spendo الجديد داخل التطبيق نفسه ليأخذ المبلغ واسم المحل من المحفظة مباشرة بدون أي سؤال يدوي. احذف الاختصار القديم في Shortcuts واختر Pay with Spendo الجاهز من قسم تطبيق Spendo، أو الصق أمر التعديل التلقائي:',
+                              style: TextStyle(
+                                fontSize: 9.5,
+                                color: textMuted,
+                                height: 1.35,
+                              ),
+                            ),
+                            const SizedBox(height: 7),
+                            ElevatedButton.icon(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: brandGreen,
+                                foregroundColor: const Color(0xFF0A0B0D),
+                                elevation: 0,
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 8),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                              ),
+                              onPressed: () async {
+                                Clipboard.setData(
+                                  const ClipboardData(
+                                    text: DailyExpenseService
+                                        .iosShortcutAutoFixCommand,
+                                  ),
+                                );
+                                SpendoHaptics.success();
+                                Navigator.pop(ctx);
+                                if (Platform.isIOS) {
+                                  await DailyExpenseService
+                                      .openIosShortcutsApp();
+                                }
+                                _showCustomToast(
+                                  'تم نسخ الأمر التلقائي الجاهز للاختصار الجديد',
+                                );
+                              },
+                              icon: const Icon(Remix.magic_line,
+                                  size: 14, color: Color(0xFF0A0B0D)),
+                              label: const Text(
+                                'تفعيل الاختصار التلقائي الجديد (بدون سؤال يدوي)',
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF0A0B0D),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+
+                      // نسخ الرابط المباشر للاختصار + رابط الخلفية الصامت (بدون خانتي التجربة السفليتين)
+                      Row(
+                        children: [
+                          Expanded(
+                            child: OutlinedButton.icon(
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: textWhite,
+                                side: BorderSide(color: surfaceBorder),
+                                backgroundColor: surfaceCell,
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 9),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                              ),
+                              onPressed: () {
+                                Clipboard.setData(const ClipboardData(
+                                    text: directUrlTemplate));
+                                SpendoHaptics.success();
+                                Navigator.pop(ctx);
+                                _showCustomToast(
+                                  'تم نسخ رابط المحفظة التلقائي المباشر (spendo://pay?tx=)',
+                                );
+                              },
+                              icon: const Icon(Remix.links_line,
+                                  size: 14, color: brandGreen),
+                              label: const Text(
+                                'نسخ رابط الاختصار التلقائي',
+                                style: TextStyle(
+                                    fontSize: 10.5,
+                                    fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: OutlinedButton.icon(
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: textWhite,
+                                side: BorderSide(color: surfaceBorder),
+                                backgroundColor: surfaceCell,
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 9),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                              ),
+                              onPressed: () {
+                                Clipboard.setData(
+                                    const ClipboardData(text: cloudWebhookUrl));
+                                SpendoHaptics.success();
+                                Navigator.pop(ctx);
+                                _showCustomToast(
+                                  'تم نسخ رابط الإرسال الصامت بالخلفية (Webhook)',
+                                );
+                              },
+                              icon: const Icon(Remix.cloud_line,
+                                  size: 14, color: brandYellow),
+                              label: const Text(
+                                'نسخ رابط الخلفية الصامت',
+                                style: TextStyle(
+                                    fontSize: 10.5,
+                                    fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
   Widget _buildFontScaleSection() {
     return ValueListenableBuilder<double>(
       valueListenable: AppTheme.fontScaleNotifier,
@@ -1395,6 +1875,8 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                           children: [
                             _buildThemeSection(),
                             _buildFontScaleSection(),
+                            const SizedBox(height: 10),
+                            _buildWalletAutoLinkSection(),
                             const SizedBox(height: 12),
 
                             // ================= Section 1: البروفايل والأمان =================

@@ -53,12 +53,25 @@ class DailyExpenseService {
     }
   }
 
-  /// فتح تطبيق المحفظة الرسمي على الهاتف (Google Wallet / Samsung Wallet)
+  /// فتح تطبيق المحفظة الرسمي على الهاتف (Google Wallet / Samsung Wallet / Apple Wallet)
   static Future<bool> openDeviceWalletApp() async {
-    if (!Platform.isAndroid) return false;
     try {
       final opened =
           await _deepLinkChannel.invokeMethod<bool>('openWalletApp');
+      return opened ?? false;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  /// فتح تطبيق الاختصارات (Shortcuts) في الآيفون لإضافة الاختصار التلقائي الجديد مباشرة
+  static Future<bool> openIosShortcutsApp() async {
+    try {
+      await Clipboard.setData(
+        const ClipboardData(text: shortcutDeepLinkTemplate),
+      );
+      final opened =
+          await _deepLinkChannel.invokeMethod<bool>('openShortcutsApp');
       return opened ?? false;
     } catch (_) {
       return false;
