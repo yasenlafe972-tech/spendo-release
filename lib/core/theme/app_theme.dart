@@ -50,6 +50,8 @@ class AppTheme {
 
   static const String _prefThemeKey = 'spendo_theme_mode_v1';
   static const String _prefFontScaleKey = 'spendo_font_scale_v1';
+  static const String prefFontScaleTsKey = 'spendo_font_scale_updated_at';
+  static const String prefThemeTsKey = 'spendo_theme_mode_updated_at';
   static final ValueNotifier<ThemeMode> themeModeNotifier =
       ValueNotifier<ThemeMode>(ThemeMode.dark);
   static final ValueNotifier<double> fontScaleNotifier =
@@ -84,16 +86,19 @@ class AppTheme {
     } catch (_) {}
   }
 
-  static Future<void> setFontScale(double scale) async {
+  static Future<void> setFontScale(double scale, {bool updateTimestamp = true}) async {
     final clamped = scale.clamp(0.80, 1.25);
     fontScaleNotifier.value = clamped;
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setDouble(_prefFontScaleKey, clamped);
+      if (updateTimestamp) {
+        await prefs.setInt(prefFontScaleTsKey, DateTime.now().millisecondsSinceEpoch);
+      }
     } catch (_) {}
   }
 
-  static Future<void> setThemeMode(ThemeMode mode) async {
+  static Future<void> setThemeMode(ThemeMode mode, {bool updateTimestamp = true}) async {
     themeModeNotifier.value = mode;
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -101,6 +106,9 @@ class AppTheme {
           ? 'light'
           : (mode == ThemeMode.system ? 'system' : 'dark');
       await prefs.setString(_prefThemeKey, val);
+      if (updateTimestamp) {
+        await prefs.setInt(prefThemeTsKey, DateTime.now().millisecondsSinceEpoch);
+      }
     } catch (_) {}
   }
 

@@ -177,12 +177,17 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
         _userProfile = newUser;
       }
 
+      // Explicitly persist font scale and theme tied to the user's account with fresh timestamp
+      await AppTheme.setFontScale(AppTheme.fontScaleNotifier.value);
+      await AppTheme.setThemeMode(AppTheme.themeModeNotifier.value);
+
       await _settingsService.setDailyReminderEnabled(_dailyReminderEnabled);
       await _settingsService.setDailyReminderTime(_formatTimeOfDay(_reminderTime));
       await _backupService.setAutoBackupEnabled(true);
+      await _backupService.performBackup();
 
       SpendoHaptics.success();
-      _showCustomToast('تم حفظ كافة الإعدادات بنجاح');
+      _showCustomToast('تم حفظ ومزامنة كافة الإعدادات بنجاح');
     } catch (e) {
       debugPrint('Error saving settings: $e');
       _showCustomToast('حدث خطأ أثناء حفظ الإعدادات');

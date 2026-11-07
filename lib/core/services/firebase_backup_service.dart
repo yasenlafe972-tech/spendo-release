@@ -5,7 +5,7 @@ import 'dart:math' as math;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:path_provider/path_provider.dart';
@@ -448,6 +448,24 @@ class FirebaseBackupService {
             {'data': fontScale.toString()}
           ];
         }
+        final themeMode = prefs.getString('spendo_theme_mode_v1');
+        if (themeMode != null && themeMode.isNotEmpty) {
+          tables['spendo_theme_mode_v1'] = [
+            {'data': themeMode}
+          ];
+        }
+        final dailyReminder = prefs.getBool('spendo_daily_reminder_enabled');
+        if (dailyReminder != null) {
+          tables['spendo_daily_reminder_enabled'] = [
+            {'data': dailyReminder ? 'true' : 'false'}
+          ];
+        }
+        final reminderTime = prefs.getString('spendo_daily_reminder_time');
+        if (reminderTime != null && reminderTime.isNotEmpty) {
+          tables['spendo_daily_reminder_time'] = [
+            {'data': reminderTime}
+          ];
+        }
         final vehicleJson = prefs.getString('spendo_vehicle_tracker_v5');
         if (vehicleJson != null && vehicleJson.isNotEmpty) {
           tables['spendo_vehicle_tracker_v5'] = [
@@ -778,34 +796,56 @@ class FirebaseBackupService {
           'spendo_merchant_categories_v1',
         ]) {
           if (tables.containsKey(key)) {
-            final list = tables[key];
-            if (list is List && list.isNotEmpty && list.first is Map) {
-              final v = list.first['data'] as String?;
-              if (v != null && v.isNotEmpty) {
-                await prefs.setString(key, v);
-              }
+            final v = _extractStringFromTable(tables[key]);
+            if (v != null && v.isNotEmpty) {
+              await prefs.setString(key, v);
             }
           }
         }
 
         if (tables.containsKey('sanad_master_key_v1')) {
-          final list = tables['sanad_master_key_v1'];
-          if (list is List && list.isNotEmpty && list.first is Map) {
-            final cloudKey = list.first['data'] as String?;
-            if (cloudKey != null && cloudKey.isNotEmpty) {
-              await SecurityService.instance.adoptMasterKey(cloudKey);
+          final cloudKey = _extractStringFromTable(tables['sanad_master_key_v1']);
+          if (cloudKey != null && cloudKey.isNotEmpty) {
+            await SecurityService.instance.adoptMasterKey(cloudKey);
+          }
+        }
+
+        // Font scale sync (tied to user email, protected against stale overwrites)
+        final localScaleTs = prefs.getInt(AppTheme.prefFontScaleTsKey) ?? 0;
+        if (tables.containsKey('spendo_font_scale_v1')) {
+          final scaleVal = _extractDoubleFromTable(tables['spendo_font_scale_v1']);
+          if (scaleVal != null && scaleVal >= 0.80 && scaleVal <= 1.25) {
+            if (cloudTimestamp >= localScaleTs) {
+              await AppTheme.setFontScale(scaleVal, updateTimestamp: false);
             }
           }
         }
 
-        if (tables.containsKey('spendo_font_scale_v1')) {
-          final list = tables['spendo_font_scale_v1'];
-          if (list is List && list.isNotEmpty && list.first is Map) {
-            final scaleStr = list.first['data']?.toString();
-            final scaleVal = double.tryParse(scaleStr ?? '');
-            if (scaleVal != null && scaleVal >= 0.80 && scaleVal <= 1.25) {
-              await AppTheme.setFontScale(scaleVal);
+        // Theme mode sync (tied to user email, protected against stale overwrites)
+        final localThemeTs = prefs.getInt(AppTheme.prefThemeTsKey) ?? 0;
+        if (tables.containsKey('spendo_theme_mode_v1')) {
+          final themeVal = _extractStringFromTable(tables['spendo_theme_mode_v1']);
+          if (themeVal != null && themeVal.isNotEmpty) {
+            if (cloudTimestamp >= localThemeTs) {
+              final mode = themeVal == 'light'
+                  ? ThemeMode.light
+                  : (themeVal == 'system' ? ThemeMode.system : ThemeMode.dark);
+              await AppTheme.setThemeMode(mode, updateTimestamp: false);
             }
+          }
+        }
+
+        if (tables.containsKey('spendo_daily_reminder_enabled')) {
+          final remVal = _extractStringFromTable(tables['spendo_daily_reminder_enabled']);
+          if (remVal != null) {
+            await prefs.setBool('spendo_daily_reminder_enabled', remVal == 'true');
+          }
+        }
+
+        if (tables.containsKey('spendo_daily_reminder_time')) {
+          final timeVal = _extractStringFromTable(tables['spendo_daily_reminder_time']);
+          if (timeVal != null && timeVal.isNotEmpty) {
+            await prefs.setString('spendo_daily_reminder_time', timeVal);
           }
         }
       } catch (_) {}
@@ -978,5 +1018,29 @@ class FirebaseBackupService {
         message: 'فشلت استعادة النسخة من الملف: $e',
       );
     }
+  }
+
+  static String? _extractStringFromTable(dynamic entry) {
+    if (entry == null) return null;
+    if (entry is String) return entry;
+    if (entry is num || entry is bool) return entry.toString();
+    if (entry is List && entry.isNotEmpty) {
+      return _extractStringFromTable(entry.first);
+    }
+    if (entry is Map) {
+      if (entry.containsKey('data')) return _extractStringFromTable(entry['data']);
+      if (entry.containsKey('0')) return _extractStringFromTable(entry['0']);
+      for (final val in entry.values) {
+        final parsed = _extractStringFromTable(val);
+        if (parsed != null && parsed.isNotEmpty) return parsed;
+      }
+    }
+    return null;
+  }
+
+  static double? _extractDoubleFromTable(dynamic entry) {
+    final str = _extractStringFromTable(entry);
+    if (str == null) return null;
+    return double.tryParse(str);
   }
 }
