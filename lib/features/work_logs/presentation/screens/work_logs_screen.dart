@@ -805,32 +805,39 @@ class _WorkLogsScreenState extends State<WorkLogsScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(Remix.building_2_line, size: 14, color: brandGreen),
-                    const SizedBox(width: 6),
-                    Text.rich(
-                      TextSpan(
-                        text: 'دليل المشغّلين وأصحاب العمل ',
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.bold,
-                          color: textWhite,
-                        ),
-                        children: [
+                Expanded(
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Remix.building_2_line, size: 14, color: brandGreen),
+                      const SizedBox(width: 6),
+                      Flexible(
+                        child: Text.rich(
                           TextSpan(
-                            text: '(מעסיקים)',
+                            text: 'دليل المشغّلين وأصحاب العمل ',
                             style: TextStyle(
-                              color: brandYellow,
-                              fontWeight: FontWeight.w600,
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                              color: textWhite,
                             ),
+                            children: const [
+                              TextSpan(
+                                text: '(מעסיקים)',
+                                style: TextStyle(
+                                  color: brandYellow,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
                           ),
-                        ],
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
+                const SizedBox(width: 6),
                 Container(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 8, vertical: 2),

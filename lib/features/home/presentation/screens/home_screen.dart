@@ -685,8 +685,8 @@ class _HomeScreenState extends State<HomeScreen> {
     bool isHighlighted = false,
   }) {
     return Container(
-      height: 42,
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      constraints: const BoxConstraints(minHeight: 42),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
         color: isHighlighted ? surfaceElevated : surfaceField,
         borderRadius: BorderRadius.circular(10),
@@ -735,7 +735,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // أزرار الإجراءات السريعة (تصميم مريح ومصغر)
+  // أزرار الإجراءات السريعة (تصميم مريح ومصغر يتمدد مع حجم الخط)
   Widget _buildQuickActionButtons() {
     return Row(
       children: [
@@ -754,7 +754,8 @@ class _HomeScreenState extends State<HomeScreen> {
               },
               borderRadius: BorderRadius.circular(8),
               child: Container(
-                height: 28,
+                constraints: const BoxConstraints(minHeight: 28),
+                padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 6),
                 alignment: Alignment.center,
                 child: const Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -762,12 +763,16 @@ class _HomeScreenState extends State<HomeScreen> {
                     Icon(Remix.briefcase_4_line,
                         size: 12, color: Colors.white),
                     SizedBox(width: 4),
-                    Text(
-                      'تسجيل يوم عمل',
-                      style: TextStyle(
-                        fontSize: 10.5,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                    Flexible(
+                      child: Text(
+                        'تسجيل يوم عمل',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 10.5,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
                       ),
                     ),
                   ],
@@ -793,7 +798,8 @@ class _HomeScreenState extends State<HomeScreen> {
               },
               borderRadius: BorderRadius.circular(8),
               child: Container(
-                height: 28,
+                constraints: const BoxConstraints(minHeight: 28),
+                padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 6),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(color: surfaceBorder),
@@ -805,12 +811,16 @@ class _HomeScreenState extends State<HomeScreen> {
                     const Icon(Remix.gas_station_line,
                         size: 12, color: brandYellow),
                     const SizedBox(width: 4),
-                    Text(
-                      'تعبئة وقود',
-                      style: TextStyle(
-                        fontSize: 10.5,
-                        fontWeight: FontWeight.bold,
-                        color: textWhite,
+                    Flexible(
+                      child: Text(
+                        'تعبئة وقود',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 10.5,
+                          fontWeight: FontWeight.bold,
+                          color: textWhite,
+                        ),
                       ),
                     ),
                   ],
@@ -823,7 +833,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // 4. سجل آخر السجلات مع فلترة واستقبال تلقائي
+  // 4. سجل آخر السجلات مع فلترة واستقبال تلقائي (مضاد للـ Overflow عند تكبير الخط)
   Widget _buildRecentTransactionsSection() {
     final timelineItems = _getTimelineItems();
 
@@ -841,23 +851,24 @@ class _HomeScreenState extends State<HomeScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Row(
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   const Icon(Remix.history_line, size: 15, color: brandGreen),
-                  const SizedBox(width: 5),
+                  const SizedBox(width: 4),
                   Text(
                     'آخر السجلات',
                     style: TextStyle(
-                      fontSize: 12.5,
+                      fontSize: 12,
                       fontWeight: FontWeight.bold,
                       color: textWhite,
                     ),
                   ),
-                  const SizedBox(width: 6),
+                  const SizedBox(width: 5),
                   GestureDetector(
                     onTap: _showAutoApplePaySetupSheet,
                     child: Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 6, vertical: 2),
+                          horizontal: 5, vertical: 2),
                       decoration: BoxDecoration(
                         color: surfaceElevated,
                         borderRadius: BorderRadius.circular(6),
@@ -867,11 +878,11 @@ class _HomeScreenState extends State<HomeScreen> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Icon(Remix.apple_line, size: 11, color: textWhite),
-                          const SizedBox(width: 3),
+                          const SizedBox(width: 2),
                           Text(
                             'تلقائي',
                             style: TextStyle(
-                              fontSize: 9,
+                              fontSize: 8.8,
                               fontWeight: FontWeight.bold,
                               color: textMuted,
                             ),
@@ -882,18 +893,26 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ],
               ),
+              const SizedBox(width: 4),
 
-              // الفلاتر المطلوبة: الكل | أكل | مشتريات | وقود
-              Row(
-                children: [
-                  _buildFilterChip('all', 'الكل'),
-                  const SizedBox(width: 3),
-                  _buildFilterChip('food', 'أكل'),
-                  const SizedBox(width: 3),
-                  _buildFilterChip('shopping', 'مشتريات'),
-                  const SizedBox(width: 3),
-                  _buildFilterChip('fuel', 'وقود'),
-                ],
+              // الفلاتر المطلوبة: الكل | أكل | مشتريات | وقود (مضغوطة بـ FittedBox لمنع أي Overflow أو نزول لسطر ثانٍ)
+              Flexible(
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _buildFilterChip('all', 'الكل'),
+                      const SizedBox(width: 3),
+                      _buildFilterChip('food', 'أكل'),
+                      const SizedBox(width: 3),
+                      _buildFilterChip('shopping', 'مشتريات'),
+                      const SizedBox(width: 3),
+                      _buildFilterChip('fuel', 'وقود'),
+                    ],
+                  ),
+                ),
               ),
             ],
           ),

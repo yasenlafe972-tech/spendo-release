@@ -1524,11 +1524,10 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
           const SizedBox(height: 8),
 
           // Horizontal month chips
-          SizedBox(
-            height: 28,
-            child: ListView(
-              scrollDirection: Axis.horizontal,
-              physics: const BouncingScrollPhysics(),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(),
+            child: Row(
               children: [
                 _buildMonthChipItem(
                   keyName: 'all',
