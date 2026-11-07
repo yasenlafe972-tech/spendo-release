@@ -62,15 +62,22 @@ class _FinanceScreenState extends State<FinanceScreen> {
   }
 
   Future<void> _loadData() async {
-    setState(() => _isLoading = true);
-    final debts = await _financeRepo.getAllDebts();
-    final people = await _peopleRepo.getAllPeople();
-    if (!mounted) return;
-    setState(() {
-      _debts = debts;
-      _peopleMap = {for (var p in people) p.id: p};
-      _isLoading = false;
-    });
+    if (mounted) setState(() => _isLoading = true);
+    try {
+      final debts = await _financeRepo.getAllDebts();
+      final people = await _peopleRepo.getAllPeople();
+      if (!mounted) return;
+      setState(() {
+        _debts = debts;
+        _peopleMap = {for (var p in people) p.id: p};
+        _isLoading = false;
+      });
+    } catch (e) {
+      debugPrint('FinanceScreen _loadData error: $e');
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
   }
 
   double get _totalTheyOweMe => FinanceRepository.calculateTotalTheyOwe(_debts);

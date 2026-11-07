@@ -210,9 +210,12 @@ class FirebaseBackupService {
     if (_isSyncing) return;
     _isSyncing = true;
     try {
+      final localTables = await _dbHelper.exportAllTables();
+      final localWorkEmpty = (localTables['work_logs']?.isEmpty ?? true) &&
+          (localTables['workplaces']?.isEmpty ?? true);
+
       final cloudInfo = await getLatestCloudBackupInfo();
       if (cloudInfo == null) {
-        final localTables = await _dbHelper.exportAllTables();
         final hasLocal = (localTables['people']?.isNotEmpty ?? false) ||
             (localTables['work_logs']?.isNotEmpty ?? false) ||
             (localTables['debts']?.isNotEmpty ?? false);
@@ -226,11 +229,11 @@ class FirebaseBackupService {
       final lastSyncTs = int.tryParse(lastSyncStr ?? '0') ?? 0;
       final cloudTs = cloudInfo.timestamp;
 
-      debugPrint('>>> [AutoSync] Checking sync: cloudTs=$cloudTs, localLastSyncTs=$lastSyncTs');
+      debugPrint('>>> [AutoSync] Checking sync: cloudTs=$cloudTs, localLastSyncTs=$lastSyncTs, localWorkEmpty=$localWorkEmpty');
 
-      // If cloud is newer than our last sync, pull and merge
-      if (cloudTs > lastSyncTs) {
-        debugPrint('>>> [AutoSync] Cloud has newer data! Pulling & merging...');
+      // If cloud is newer than our last sync OR local work_logs/workplaces are empty, pull and merge
+      if (cloudTs > lastSyncTs || localWorkEmpty) {
+        debugPrint('>>> [AutoSync] Pulling & merging cloud data...');
         final res = await performRestore();
         if (res.isSuccess) {
           await _safeStorageWrite(_keyLastCloudSyncTimestamp, cloudTs.toString());
@@ -345,7 +348,7 @@ class FirebaseBackupService {
   Future<CloudBackupInfo?> getLatestCloudBackupInfo() async {
     try {
       final key = await getBackupKey();
-      final candidateKeys = <String>{key, 'yasenlafe972_gmail_com', 'yasinlafi24_gmailcom'};
+      final candidateKeys = <String>{'yasenlafe972_gmail_com', key, 'yasinlafi24_gmailcom'};
       if (_auth?.currentUser?.uid != null) {
         candidateKeys.add('uid_${_auth!.currentUser!.uid}');
       }
@@ -578,7 +581,7 @@ class FirebaseBackupService {
   Future<RestoreResult> performRestore() async {
     try {
       final backupKey = await getBackupKey();
-      final candidateKeys = <String>{backupKey, 'yasenlafe972_gmail_com', 'yasinlafi24_gmailcom'};
+      final candidateKeys = <String>{'yasenlafe972_gmail_com', backupKey, 'yasinlafi24_gmailcom'};
       if (_auth?.currentUser?.uid != null) {
         candidateKeys.add('uid_${_auth!.currentUser!.uid}');
       }

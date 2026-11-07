@@ -17,7 +17,7 @@ class DatabaseHelper {
   }
 
   static Database? _database;
-  static const int _databaseVersion = 10;
+  static const int _databaseVersion = 11;
 
   Future<Database> get database async {
     if (_database != null) return _database!;
@@ -25,203 +25,186 @@ class DatabaseHelper {
     return _database!;
   }
 
-  Future<Database> _initDatabase() async {
-    final dbPath = await getDatabasesPath();
-    final path = join(dbPath, 'sanad_master.db');
+  /// Ensures all 9 core tables and indices exist safely (self-heals partial DBs on iOS/Android)
+  static Future<void> _ensureSchemaIntegrity(DatabaseExecutor db) async {
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS people (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        is_user INTEGER NOT NULL DEFAULT 0,
+        birthdate TEXT,
+        email TEXT,
+        phone TEXT,
+        whatsapp TEXT,
+        national_id TEXT,
+        bank TEXT,
+        account_number TEXT,
+        is_pinned INTEGER NOT NULL DEFAULT 0,
+        hourly_rate REAL DEFAULT 0.0,
+        daily_rate REAL DEFAULT 0.0,
+        notes TEXT,
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL
+      )
+    ''');
 
-    return await openDatabase(
-      path,
-      version: _databaseVersion,
-      onConfigure: (db) async {
-        // Enforce SQLite Foreign Key constraints and busy timeout to avoid locked errors
-        await db.execute('PRAGMA foreign_keys = ON;');
-        await db.execute('PRAGMA busy_timeout = 5000;');
-      },
-      onOpen: (db) async {
-        // Enable Write-Ahead Logging (WAL) and normal synchronous for high concurrency
-        try {
-          await db.execute('PRAGMA journal_mode = WAL;');
-          await db.execute('PRAGMA synchronous = NORMAL;');
-        } catch (_) {}
-      },
-      onCreate: (db, version) async {
-        // 1. People table (Contacts, Contractors, Employers, Self)
-        await db.execute('''
-          CREATE TABLE people (
-            id TEXT PRIMARY KEY,
-            name TEXT NOT NULL,
-            is_user INTEGER NOT NULL DEFAULT 0,
-            birthdate TEXT,
-            email TEXT,
-            phone TEXT,
-            whatsapp TEXT,
-            national_id TEXT,
-            bank TEXT,
-            account_number TEXT,
-            is_pinned INTEGER NOT NULL DEFAULT 0,
-            hourly_rate REAL DEFAULT 0.0,
-            daily_rate REAL DEFAULT 0.0,
-            notes TEXT,
-            created_at TEXT NOT NULL,
-            updated_at TEXT NOT NULL
-          )
-        ''');
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS workplaces (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        city TEXT NOT NULL DEFAULT '',
+        person_id TEXT,
+        daily_rate REAL NOT NULL DEFAULT 0.0,
+        hourly_rate REAL NOT NULL DEFAULT 0.0,
+        status TEXT NOT NULL DEFAULT 'active',
+        notes TEXT,
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL,
+        FOREIGN KEY (person_id) REFERENCES people(id) ON DELETE SET NULL
+      )
+    ''');
 
-        // 2. Workplaces table (ورش العمل والمشاريع)
-        await db.execute('''
-          CREATE TABLE workplaces (
-            id TEXT PRIMARY KEY,
-            name TEXT NOT NULL,
-            city TEXT NOT NULL DEFAULT '',
-            person_id TEXT,
-            daily_rate REAL NOT NULL DEFAULT 0.0,
-            hourly_rate REAL NOT NULL DEFAULT 0.0,
-            status TEXT NOT NULL DEFAULT 'active',
-            notes TEXT,
-            created_at TEXT NOT NULL,
-            updated_at TEXT NOT NULL,
-            FOREIGN KEY (person_id) REFERENCES people(id) ON DELETE SET NULL
-          )
-        ''');
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS work_logs (
+        id TEXT PRIMARY KEY,
+        person_id TEXT,
+        workplace_id TEXT,
+        workplace_name TEXT NOT NULL,
+        city TEXT NOT NULL DEFAULT '',
+        day_name TEXT NOT NULL DEFAULT '',
+        date TEXT NOT NULL,
+        rate_type TEXT NOT NULL,
+        hours_worked REAL,
+        day_fraction REAL DEFAULT 1.0,
+        rate_applied REAL NOT NULL,
+        total_earned REAL NOT NULL,
+        amount_collected REAL NOT NULL DEFAULT 0.0,
+        notes TEXT,
+        latitude REAL,
+        longitude REAL,
+        location_address TEXT,
+        attachments TEXT DEFAULT '[]',
+        created_at TEXT NOT NULL,
+        FOREIGN KEY (person_id) REFERENCES people(id) ON DELETE SET NULL,
+        FOREIGN KEY (workplace_id) REFERENCES workplaces(id) ON DELETE SET NULL
+      )
+    ''');
 
-        // 3. Work logs table (Job site sessions for workers with Workplace and City)
-        await db.execute('''
-          CREATE TABLE work_logs (
-            id TEXT PRIMARY KEY,
-            person_id TEXT,
-            workplace_id TEXT,
-            workplace_name TEXT NOT NULL,
-            city TEXT NOT NULL DEFAULT '',
-            day_name TEXT NOT NULL DEFAULT '',
-            date TEXT NOT NULL,
-            rate_type TEXT NOT NULL,
-            hours_worked REAL,
-            day_fraction REAL DEFAULT 1.0,
-            rate_applied REAL NOT NULL,
-            total_earned REAL NOT NULL,
-            amount_collected REAL NOT NULL DEFAULT 0.0,
-            notes TEXT,
-            latitude REAL,
-            longitude REAL,
-            location_address TEXT,
-            attachments TEXT DEFAULT '[]',
-            created_at TEXT NOT NULL,
-            FOREIGN KEY (person_id) REFERENCES people(id) ON DELETE SET NULL,
-            FOREIGN KEY (workplace_id) REFERENCES workplaces(id) ON DELETE SET NULL
-          )
-        ''');
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS workplace_payments (
+        id TEXT PRIMARY KEY,
+        workplace_id TEXT NOT NULL,
+        amount REAL NOT NULL,
+        date TEXT NOT NULL,
+        payment_method TEXT NOT NULL DEFAULT 'كاش',
+        notes TEXT,
+        created_at TEXT NOT NULL,
+        FOREIGN KEY (workplace_id) REFERENCES workplaces(id) ON DELETE CASCADE
+      )
+    ''');
 
-        // Indices for fast Master-Detail employer/workplace filtering and date sorting
-        await db.execute('CREATE INDEX IF NOT EXISTS idx_work_logs_workplace_id ON work_logs(workplace_id)');
-        await db.execute('CREATE INDEX IF NOT EXISTS idx_work_logs_date ON work_logs(date)');
-        await db.execute('CREATE INDEX IF NOT EXISTS idx_work_logs_person_id ON work_logs(person_id)');
-        await db.execute('CREATE INDEX IF NOT EXISTS idx_work_logs_wp_date ON work_logs(workplace_id, date DESC)');
-        await db.execute('CREATE INDEX IF NOT EXISTS idx_workplaces_person_id ON workplaces(person_id)');
-        await db.execute('CREATE INDEX IF NOT EXISTS idx_debts_person_id ON debts(person_id)');
-        await db.execute('CREATE INDEX IF NOT EXISTS idx_debts_tx_date ON debts(transaction_date DESC)');
-        await db.execute('CREATE INDEX IF NOT EXISTS idx_debt_payments_debt_id ON debt_payments(debt_id)');
-        await db.execute('CREATE INDEX IF NOT EXISTS idx_payments_person_id ON payments(person_id)');
-        await db.execute('CREATE INDEX IF NOT EXISTS idx_people_is_user ON people(is_user)');
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS payments (
+        id TEXT PRIMARY KEY,
+        person_id TEXT NOT NULL,
+        amount REAL NOT NULL,
+        date TEXT NOT NULL,
+        type TEXT NOT NULL,
+        notes TEXT,
+        created_at TEXT NOT NULL,
+        FOREIGN KEY (person_id) REFERENCES people(id) ON DELETE CASCADE
+      )
+    ''');
 
-        // 3.1 Workplace Payments table (سجل دفعات المقاولين والمشغلين على الحساب)
-        await db.execute('''
-          CREATE TABLE workplace_payments (
-            id TEXT PRIMARY KEY,
-            workplace_id TEXT NOT NULL,
-            amount REAL NOT NULL,
-            date TEXT NOT NULL,
-            payment_method TEXT NOT NULL DEFAULT 'كاش',
-            notes TEXT,
-            created_at TEXT NOT NULL,
-            FOREIGN KEY (workplace_id) REFERENCES workplaces(id) ON DELETE CASCADE
-          )
-        ''');
-        await db.execute('CREATE INDEX IF NOT EXISTS idx_workplace_payments_workplace_id ON workplace_payments(workplace_id)');
-        await db.execute('CREATE INDEX IF NOT EXISTS idx_workplace_payments_date ON workplace_payments(date)');
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS debts (
+        id TEXT PRIMARY KEY,
+        person_id TEXT NOT NULL,
+        type TEXT NOT NULL,
+        original_amount REAL NOT NULL,
+        remaining_amount REAL NOT NULL,
+        payment_method TEXT NOT NULL,
+        transaction_date TEXT NOT NULL,
+        due_date TEXT,
+        notes TEXT,
+        status TEXT NOT NULL DEFAULT 'active',
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL,
+        FOREIGN KEY (person_id) REFERENCES people(id) ON DELETE CASCADE
+      )
+    ''');
 
-        // 4. Work Collections table (المقبوضات العامة للورشات والمشاريع)
-        await db.execute('''
-          CREATE TABLE payments (
-            id TEXT PRIMARY KEY,
-            person_id TEXT NOT NULL,
-            amount REAL NOT NULL,
-            date TEXT NOT NULL,
-            type TEXT NOT NULL,
-            notes TEXT,
-            created_at TEXT NOT NULL,
-            FOREIGN KEY (person_id) REFERENCES people(id) ON DELETE CASCADE
-          )
-        ''');
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS debt_payments (
+        id TEXT PRIMARY KEY,
+        debt_id TEXT NOT NULL,
+        amount REAL NOT NULL,
+        payment_method TEXT NOT NULL,
+        payment_date TEXT NOT NULL,
+        notes TEXT,
+        created_at TEXT NOT NULL,
+        FOREIGN KEY (debt_id) REFERENCES debts(id) ON DELETE CASCADE
+      )
+    ''');
 
-        // 5. Personal Debts & Loans table (سلف وديون الأشخاص - مفصولة كلياً عن الشغل)
-        await db.execute('''
-          CREATE TABLE debts (
-            id TEXT PRIMARY KEY,
-            person_id TEXT NOT NULL,
-            type TEXT NOT NULL,
-            original_amount REAL NOT NULL,
-            remaining_amount REAL NOT NULL,
-            payment_method TEXT NOT NULL,
-            transaction_date TEXT NOT NULL,
-            due_date TEXT,
-            notes TEXT,
-            status TEXT NOT NULL DEFAULT 'active',
-            created_at TEXT NOT NULL,
-            updated_at TEXT NOT NULL,
-            FOREIGN KEY (person_id) REFERENCES people(id) ON DELETE CASCADE
-          )
-        ''');
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS vault_items (
+        id TEXT PRIMARY KEY,
+        title TEXT NOT NULL,
+        category TEXT NOT NULL,
+        username TEXT,
+        encrypted_password TEXT,
+        encrypted_secret_data TEXT,
+        url TEXT,
+        notes TEXT,
+        latitude REAL,
+        longitude REAL,
+        location_address TEXT,
+        attachments TEXT DEFAULT '[]',
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL
+      )
+    ''');
 
-        // 6. Debt Installments/Repayments (سجل دفعات سداد الديون الجزئية)
-        await db.execute('''
-          CREATE TABLE debt_payments (
-            id TEXT PRIMARY KEY,
-            debt_id TEXT NOT NULL,
-            amount REAL NOT NULL,
-            payment_method TEXT NOT NULL,
-            payment_date TEXT NOT NULL,
-            notes TEXT,
-            created_at TEXT NOT NULL,
-            FOREIGN KEY (debt_id) REFERENCES debts(id) ON DELETE CASCADE
-          )
-        ''');
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS person_accounts (
+        id TEXT PRIMARY KEY,
+        person_id TEXT NOT NULL,
+        service TEXT NOT NULL,
+        email TEXT NOT NULL,
+        password TEXT NOT NULL,
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL,
+        FOREIGN KEY (person_id) REFERENCES people(id) ON DELETE CASCADE
+      )
+    ''');
 
-        // 7. Secure Vault items (Passwords, Sensitive Notes, Bank details)
-        await db.execute('''
-          CREATE TABLE vault_items (
-            id TEXT PRIMARY KEY,
-            title TEXT NOT NULL,
-            category TEXT NOT NULL,
-            username TEXT,
-            encrypted_password TEXT,
-            encrypted_secret_data TEXT,
-            url TEXT,
-            notes TEXT,
-            latitude REAL,
-            longitude REAL,
-            location_address TEXT,
-            attachments TEXT DEFAULT '[]',
-            created_at TEXT NOT NULL,
-            updated_at TEXT NOT NULL
-          )
-        ''');
+    // Indices created safely AFTER all tables exist
+    const indices = [
+      'CREATE INDEX IF NOT EXISTS idx_work_logs_workplace_id ON work_logs(workplace_id)',
+      'CREATE INDEX IF NOT EXISTS idx_work_logs_date ON work_logs(date)',
+      'CREATE INDEX IF NOT EXISTS idx_work_logs_person_id ON work_logs(person_id)',
+      'CREATE INDEX IF NOT EXISTS idx_work_logs_wp_date ON work_logs(workplace_id, date DESC)',
+      'CREATE INDEX IF NOT EXISTS idx_workplaces_person_id ON workplaces(person_id)',
+      'CREATE INDEX IF NOT EXISTS idx_debts_person_id ON debts(person_id)',
+      'CREATE INDEX IF NOT EXISTS idx_debts_tx_date ON debts(transaction_date DESC)',
+      'CREATE INDEX IF NOT EXISTS idx_debt_payments_debt_id ON debt_payments(debt_id)',
+      'CREATE INDEX IF NOT EXISTS idx_payments_person_id ON payments(person_id)',
+      'CREATE INDEX IF NOT EXISTS idx_people_is_user ON people(is_user)',
+      'CREATE INDEX IF NOT EXISTS idx_workplace_payments_workplace_id ON workplace_payments(workplace_id)',
+      'CREATE INDEX IF NOT EXISTS idx_workplace_payments_date ON workplace_payments(date)',
+      'CREATE INDEX IF NOT EXISTS idx_person_accounts_person_id ON person_accounts(person_id)',
+    ];
+    for (final sql in indices) {
+      try {
+        await db.execute(sql);
+      } catch (_) {}
+    }
 
-        // 8. Person Accounts & Passwords table (قسم الإيميلات والحسابات لكل شخص)
-        await db.execute('''
-          CREATE TABLE person_accounts (
-            id TEXT PRIMARY KEY,
-            person_id TEXT NOT NULL,
-            service TEXT NOT NULL,
-            email TEXT NOT NULL,
-            password TEXT NOT NULL,
-            created_at TEXT NOT NULL,
-            updated_at TEXT NOT NULL,
-            FOREIGN KEY (person_id) REFERENCES people(id) ON DELETE CASCADE
-          )
-        ''');
-        await db.execute('CREATE INDEX IF NOT EXISTS idx_person_accounts_person_id ON person_accounts(person_id)');
-
-        // Seed initial "You" user profile with sample matching user's card
+    // Ensure default user profile exists if people table has no user
+    try {
+      final existingUser = await db.query('people', where: 'is_user = 1', limit: 1);
+      if (existingUser.isEmpty) {
         final defaultId = const Uuid().v4();
         final now = DateTime.now().toIso8601String();
         await db.insert('people', {
@@ -229,7 +212,7 @@ class DatabaseHelper {
           'name': 'لافي',
           'is_user': 1,
           'birthdate': '1998-10-24',
-          'email': 'yasenlafi972@gmail.com',
+          'email': 'yasenlafe972@gmail.com',
           'phone': '+972500000000',
           'whatsapp': '+972500000000',
           'national_id': '123456789',
@@ -240,30 +223,70 @@ class DatabaseHelper {
           'created_at': now,
           'updated_at': now,
         });
+      }
+    } catch (_) {}
+  }
 
-        // Seed sample accounts for default user
-        final sampleAccounts = [
-          {'service': 'DaVinci AI', 'email': 'yasenlafi972@gmail.com', 'password': 'DaVinci#9982!'},
-          {'service': 'cloud.oracle', 'email': 'yasenlafi972@gmail.com', 'password': 'OracleCloud_2026'},
-          {'service': 'Nsave', 'email': 'yasenlafi972@gmail.com', 'password': '9482'},
-          {'service': 'mail.ru', 'email': 'yasen98@mail.ru', 'password': 'MailRu_Pass98!'},
-          {'service': 'Apple', 'email': 'yasenlafi972@gmail.com', 'password': 'AppleID#1998_Sp'},
-          {'service': 'Mapbox', 'email': 'yasenlafi972@gmail.com', 'password': 'Mapbox#DevToken!'},
-          {'service': 'Amazon Prime', 'email': 'yasenlafi972@gmail.com', 'password': 'Amazon_Prime26'},
-          {'service': 'PayPal', 'email': 'yasenlafi972@gmail.com', 'password': 'PayPalSecure#98'},
-        ];
-        for (final item in sampleAccounts) {
-          final encryptedPass = SecurityService.instance.encrypt(item['password']!);
-          await db.insert('person_accounts', {
-            'id': const Uuid().v4(),
-            'person_id': defaultId,
-            'service': item['service'],
-            'email': item['email'],
-            'password': encryptedPass,
-            'created_at': now,
-            'updated_at': now,
-          });
+  Future<Database> _initDatabase() async {
+    final dbPath = await getDatabasesPath();
+    final path = join(dbPath, 'sanad_master.db');
+
+    return await openDatabase(
+      path,
+      version: _databaseVersion,
+      onConfigure: (db) async {
+        // Use rawQuery wrapped in try/catch because PRAGMA busy_timeout returns a row on iOS sqflite_darwin
+        try {
+          await db.rawQuery('PRAGMA foreign_keys = ON;');
+        } catch (_) {}
+        try {
+          await db.rawQuery('PRAGMA busy_timeout = 5000;');
+        } catch (_) {}
+      },
+      onOpen: (db) async {
+        // Enable Write-Ahead Logging (WAL) and ensure schema integrity on every open
+        try {
+          await db.rawQuery('PRAGMA journal_mode = WAL;');
+          await db.rawQuery('PRAGMA synchronous = NORMAL;');
+        } catch (_) {}
+        try {
+          await _ensureSchemaIntegrity(db);
+        } catch (e) {
+          debugPrint('Schema integrity check notice: $e');
         }
+      },
+      onCreate: (db, version) async {
+        await _ensureSchemaIntegrity(db);
+
+        try {
+          final existingUser = await db.query('people', where: 'is_user = 1', limit: 1);
+          if (existingUser.isNotEmpty) {
+            final defaultId = existingUser.first['id'] as String;
+            final now = DateTime.now().toIso8601String();
+            final sampleAccounts = [
+              {'service': 'DaVinci AI', 'email': 'yasenlafe972@gmail.com', 'password': 'DaVinci#9982!'},
+              {'service': 'cloud.oracle', 'email': 'yasenlafe972@gmail.com', 'password': 'OracleCloud_2026'},
+              {'service': 'Nsave', 'email': 'yasenlafe972@gmail.com', 'password': '9482'},
+              {'service': 'mail.ru', 'email': 'yasen98@mail.ru', 'password': 'MailRu_Pass98!'},
+              {'service': 'Apple', 'email': 'yasenlafe972@gmail.com', 'password': 'AppleID#1998_Sp'},
+              {'service': 'Mapbox', 'email': 'yasenlafe972@gmail.com', 'password': 'Mapbox#DevToken!'},
+              {'service': 'Amazon Prime', 'email': 'yasenlafe972@gmail.com', 'password': 'Amazon_Prime26'},
+              {'service': 'PayPal', 'email': 'yasenlafe972@gmail.com', 'password': 'PayPalSecure#98'},
+            ];
+            for (final item in sampleAccounts) {
+              final encryptedPass = SecurityService.instance.encrypt(item['password']!);
+              await db.insert('person_accounts', {
+                'id': const Uuid().v4(),
+                'person_id': defaultId,
+                'service': item['service'],
+                'email': item['email'],
+                'password': encryptedPass,
+                'created_at': now,
+                'updated_at': now,
+              });
+            }
+          }
+        } catch (_) {}
       },
       onUpgrade: (db, oldVersion, newVersion) async {
         if (oldVersion < 2) {
@@ -512,22 +535,15 @@ class DatabaseHelper {
             await db.execute('CREATE INDEX IF NOT EXISTS idx_people_is_user ON people(is_user)');
           } catch (_) {}
 
-          // Ensure vault_items exists on all legacy upgrade paths
+          // Ensure all tables and indices exist on all legacy upgrade paths
           try {
-            await db.execute('''
-              CREATE TABLE IF NOT EXISTS vault_items (
-                id TEXT PRIMARY KEY,
-                title TEXT NOT NULL,
-                category TEXT NOT NULL,
-                username TEXT,
-                encrypted_password TEXT,
-                notes TEXT,
-                url TEXT,
-                is_favorite INTEGER NOT NULL DEFAULT 0,
-                created_at TEXT NOT NULL,
-                updated_at TEXT NOT NULL
-              )
-            ''');
+            await _ensureSchemaIntegrity(db);
+          } catch (_) {}
+        }
+
+        if (oldVersion < 11) {
+          try {
+            await _ensureSchemaIntegrity(db);
           } catch (_) {}
         }
       },
@@ -714,7 +730,11 @@ class DatabaseHelper {
     // 1. Temporarily disable foreign keys OUTSIDE before starting the transaction
     // (In SQLite, PRAGMA foreign_keys is a no-op and ignored if called inside a transaction)
     try {
-      await db.execute('PRAGMA foreign_keys = OFF');
+      await db.rawQuery('PRAGMA foreign_keys = OFF');
+    } catch (_) {}
+
+    try {
+      await _ensureSchemaIntegrity(db);
     } catch (_) {}
 
     try {
@@ -753,7 +773,7 @@ class DatabaseHelper {
     } finally {
       // Always re-enable foreign keys OUTSIDE after transaction completes
       try {
-        await db.execute('PRAGMA foreign_keys = ON');
+        await db.rawQuery('PRAGMA foreign_keys = ON');
       } catch (_) {}
     }
 

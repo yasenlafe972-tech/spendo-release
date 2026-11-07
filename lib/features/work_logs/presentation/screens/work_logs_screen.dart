@@ -61,17 +61,24 @@ class _WorkLogsScreenState extends State<WorkLogsScreen> {
   }
 
   Future<void> _loadData() async {
-    setState(() => _isLoading = true);
-    final workplaces = await _workplacesRepo.getAllWorkplaces();
-    final logs = await _workRepo.getAllLogs();
+    if (mounted) setState(() => _isLoading = true);
+    try {
+      final workplaces = await _workplacesRepo.getAllWorkplaces();
+      final logs = await _workRepo.getAllLogs();
 
-    if (!mounted) return;
+      if (!mounted) return;
 
-    setState(() {
-      _workplaces = workplaces;
-      _logs = logs;
-      _isLoading = false;
-    });
+      setState(() {
+        _workplaces = workplaces;
+        _logs = logs;
+        _isLoading = false;
+      });
+    } catch (e) {
+      debugPrint('WorkLogsScreen _loadData error: $e');
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
   }
 
   Future<void> _openEmployerDetails(WorkplaceModel wp) async {

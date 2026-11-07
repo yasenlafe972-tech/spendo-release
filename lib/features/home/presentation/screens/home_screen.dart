@@ -94,9 +94,9 @@ class _HomeScreenState extends State<HomeScreen> {
       // مزامنة سحابية ثنائية تلقائية
       FirebaseBackupService.instance.syncWithCloud(isSilent: true);
 
-      final peopleFuture = _peopleRepo.getAllPeople();
-      final logsFuture = _workLogsRepo.getAllLogs();
-      final expensesFuture = DailyExpenseService.getAllExpenses();
+      final peopleFuture = _peopleRepo.getAllPeople().catchError((_) => <PersonModel>[]);
+      final logsFuture = _workLogsRepo.getAllLogs().catchError((_) => <WorkLogModel>[]);
+      final expensesFuture = DailyExpenseService.getAllExpenses().catchError((_) => <DailyExpenseModel>[]);
 
       // Load vehicle state from SharedPreferences
       final prefs = await SharedPreferences.getInstance();
@@ -148,8 +148,13 @@ class _HomeScreenState extends State<HomeScreen> {
         _isLoading = false;
 
         // If selected month has no records but records exist in other periods,
-        // automatically switch to 'all' (كافة الفترات) so the user immediately sees all work logs & totals!
-        if (_filteredWorkLogs.isEmpty && _filteredDailyExpenses.isEmpty && _filteredFuelRecords.isEmpty && _allWorkLogs.isNotEmpty) {
+        // automatically switch to 'all' (كافة الفترات) so the user immediately sees all records & totals!
+        if (_filteredWorkLogs.isEmpty &&
+            _filteredDailyExpenses.isEmpty &&
+            _filteredFuelRecords.isEmpty &&
+            (_allDailyExpenses.isNotEmpty ||
+                _allFuelRecords.isNotEmpty ||
+                _allWorkLogs.isNotEmpty)) {
           _selectedMonthKey = 'all';
         }
       });

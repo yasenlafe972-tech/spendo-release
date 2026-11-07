@@ -52,15 +52,22 @@ class _PeopleScreenState extends State<PeopleScreen> {
   }
 
   Future<void> _loadPeople() async {
-    setState(() => _isLoading = true);
-    final list = await _repository.getAllPeople();
-    final counts = await _repository.getAllAccountCounts();
-    if (!mounted) return;
-    setState(() {
-      _people = list;
-      _accountCounts = counts;
-      _isLoading = false;
-    });
+    if (mounted) setState(() => _isLoading = true);
+    try {
+      final list = await _repository.getAllPeople();
+      final counts = await _repository.getAllAccountCounts();
+      if (!mounted) return;
+      setState(() {
+        _people = list;
+        _accountCounts = counts;
+        _isLoading = false;
+      });
+    } catch (e) {
+      debugPrint('PeopleScreen _loadPeople error: $e');
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
   }
 
   List<PersonModel> get _filteredPeople {
