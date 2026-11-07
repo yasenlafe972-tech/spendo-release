@@ -182,6 +182,7 @@ class FirebaseBackupService {
   Timer? _debounceTimer;
   bool _isAutoBackupRunning = false;
   bool _isSyncing = false;
+  bool _hasPushedInitialLocalState = false;
 
   final ValueNotifier<bool> isAutoBackupActiveNotifier = ValueNotifier<bool>(true);
   final ValueNotifier<CloudBackupInfo?> latestBackupNotifier = ValueNotifier<CloudBackupInfo?>(null);
@@ -234,7 +235,7 @@ class FirebaseBackupService {
 
       debugPrint('>>> [AutoSync] Checking sync: cloudTs=$cloudTs, localLastSyncTs=$lastSyncTs, localWorkEmpty=$localWorkEmpty');
 
-      // If cloud timestamp differs from our last sync OR local work_logs/workplaces are empty, pull and merge
+      // Always pull & merge cloud data, and if local has unsynced tables (such as daily expenses or master key), push them back
       if (cloudTs != lastSyncTs || localWorkEmpty) {
         debugPrint('>>> [AutoSync] Pulling & merging cloud data...');
         final res = await performRestore();
@@ -244,6 +245,12 @@ class FirebaseBackupService {
           DailyExpenseService.expensesChangedNotifier.value++;
           debugPrint('>>> [AutoSync] Sync succeeded: merged ${res.recordsRestored} records!');
         }
+      }
+
+      // Ensure local SharedPreferences (spendo_daily_expenses_v1, sanad_master_key_v1) are uploaded to cloud once on startup
+      if (!_hasPushedInitialLocalState) {
+        _hasPushedInitialLocalState = true;
+        scheduleAutoBackup(debounce: const Duration(seconds: 2));
       }
     } catch (e) {
       debugPrint('>>> [AutoSync] Sync error: $e');
