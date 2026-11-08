@@ -1,4 +1,4 @@
-﻿import 'dart:io';
+import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 import 'package:sanad_app/core/widgets/banking_animations.dart';
 import 'package:sanad_app/core/theme/app_theme.dart';
@@ -1341,12 +1341,12 @@ class _PeopleScreenState extends State<PeopleScreen> {
                             gridDelegate:
                                 SliverGridDelegateWithFixedCrossAxisCount(
                               crossAxisCount: 2,
-                              mainAxisSpacing: 10,
-                              crossAxisSpacing: 10,
-                              childAspectRatio: (2.65 /
+                              mainAxisSpacing: 8,
+                              crossAxisSpacing: 8,
+                              childAspectRatio: (3.15 /
                                       AppTheme.fontScaleNotifier.value
                                           .clamp(0.85, 1.25))
-                                  .clamp(2.10, 2.95),
+                                  .clamp(2.55, 3.45),
                             ),
                             itemCount: filtered.length,
                             itemBuilder: (context, index) {

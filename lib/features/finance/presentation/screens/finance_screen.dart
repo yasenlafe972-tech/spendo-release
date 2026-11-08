@@ -1,4 +1,4 @@
-﻿import 'package:sanad_app/core/widgets/banking_animations.dart';
+import 'package:sanad_app/core/widgets/banking_animations.dart';
 import 'package:flutter/material.dart';
 import 'package:remixicon/remixicon.dart';
 import 'package:share_plus/share_plus.dart';
@@ -44,6 +44,7 @@ class _FinanceScreenState extends State<FinanceScreen> {
   static const Color brandRed = Color(0xFFEF4444);
   Color get textWhite => _isDark ? const Color(0xFFFFFFFF) : const Color(0xFF111827);
   Color get textMuted => _isDark ? const Color(0xFF71717A) : const Color(0xFF6B7280);
+  Color get textSubtle => _isDark ? const Color(0xFF71717A) : const Color(0xFF9CA3AF);
 
 
 
@@ -888,8 +889,188 @@ class _FinanceScreenState extends State<FinanceScreen> {
     );
   }
 
-  /// 5. بطاقة المعاملة (بدون أي دوائر أو مربعات خلفية)
+  /// 5. بطاقة المعاملة المبسطة من الخارج (الاسم، التاريخ، الحالة، وقلم بجانب السطل وواتساب بدون خلفية)
   Widget _buildDebtCard(DebtModel debt) {
+    final person = _peopleMap[debt.personId];
+    final isSettled = debt.isSettled;
+    final isReceived = debt.isReceived;
+
+    String badgeText = 'إلي عنده';
+    Color badgeColor = brandGreen;
+    String subStatus = isSettled ? 'تم السداد' : 'بانتظار السداد';
+
+    if (debt.isPayLater) {
+      badgeText = 'عالحساب';
+      badgeColor = brandYellow;
+      subStatus = isSettled ? 'تم الدفع' : 'للدفع لاحقاً';
+    } else if (debt.isIOwe) {
+      badgeText = 'عليّ إله';
+      badgeColor = brandRed;
+      subStatus = isSettled ? 'تم السداد' : 'مستحق الدفع';
+    } else if (isReceived) {
+      badgeText = 'مبالغ مستلمة';
+      badgeColor = brandYellow;
+      subStatus = 'خالص ومسدد';
+    }
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 7),
+      decoration: BoxDecoration(
+        color: surfaceField,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: surfaceBorder),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () {
+            SpendoHaptics.light();
+            _showDebtDetailsDialog(debt);
+          },
+          borderRadius: BorderRadius.circular(12),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // الصف العلوي: أيقونة المستخدم الرمزية + الاسم + وسم الحالة (يمين) | أزرار واتساب وتعديل وسطل (يسار)
+                Row(
+                  children: [
+                    // أيقونة المستخدم الرمزية النظيفة (مثل قسم الأشخاص)
+                    Container(
+                      width: 26,
+                      height: 26,
+                      decoration: BoxDecoration(
+                        color: badgeColor.withValues(alpha: _isDark ? 0.14 : 0.20),
+                        borderRadius: BorderRadius.circular(7),
+                        border: Border.all(
+                          color: badgeColor.withValues(alpha: _isDark ? 0.35 : 0.50),
+                          width: 0.9,
+                        ),
+                      ),
+                      alignment: Alignment.center,
+                      child: Icon(Remix.user_3_line, size: 13, color: badgeColor),
+                    ),
+                    const SizedBox(width: 7),
+
+                    // اسم الشخص أو الجهة
+                    Flexible(
+                      child: Text(
+                        person?.name ?? 'شخص غير مسجل',
+                        style: TextStyle(
+                          fontFamily: 'Cairo',
+                          color: textWhite,
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+
+                    // وسم الحالة الأساسي
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                      decoration: BoxDecoration(
+                        color: badgeColor.withValues(alpha: _isDark ? 0.12 : 0.18),
+                        borderRadius: BorderRadius.circular(5),
+                        border: Border.all(color: badgeColor.withValues(alpha: 0.35)),
+                      ),
+                      child: Text(
+                        badgeText,
+                        style: TextStyle(
+                          fontFamily: 'Cairo',
+                          color: badgeColor,
+                          fontSize: 9.5,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+
+                    const Spacer(),
+
+                    // زر واتساب كأيقونة فقط بدون أي خلفية
+                    InkWell(
+                      onTap: () => _shareDebtViaWhatsApp(debt),
+                      borderRadius: BorderRadius.circular(5),
+                      child: const Padding(
+                        padding: EdgeInsets.all(4),
+                        child: Icon(Remix.whatsapp_line,
+                            size: 16, color: Color(0xFF10B981)),
+                      ),
+                    ),
+                    const SizedBox(width: 2),
+
+                    // زر التعديل (قلم) بجانب السطل مباشرة
+                    InkWell(
+                      onTap: () => _showEditDebtSheet(debt),
+                      borderRadius: BorderRadius.circular(5),
+                      child: Padding(
+                        padding: const EdgeInsets.all(4),
+                        child: Icon(Remix.pencil_line, size: 14, color: textMuted),
+                      ),
+                    ),
+                    const SizedBox(width: 1),
+
+                    // زر الحذف (السطل)
+                    InkWell(
+                      onTap: () => _confirmDelete(debt),
+                      borderRadius: BorderRadius.circular(5),
+                      child: Padding(
+                        padding: const EdgeInsets.all(4),
+                        child: Icon(Remix.delete_bin_line, size: 14, color: textMuted),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 5),
+
+                // الصف السفلي: التاريخ فقط + حالة السداد
+                Row(
+                  children: [
+                    Icon(Remix.calendar_line, color: textSubtle, size: 11),
+                    const SizedBox(width: 4),
+                    Text(
+                      ArabicDateHelper.formatArabicDateWithWeekdayFromString(debt.transactionDate),
+                      style: TextStyle(
+                        fontFamily: 'Cairo',
+                        color: textMuted,
+                        fontSize: 10.5,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const Spacer(),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                      decoration: BoxDecoration(
+                        color: (isSettled ? brandGreen : (debt.isIOwe ? brandRed : brandGreen))
+                            .withValues(alpha: _isDark ? 0.10 : 0.16),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        subStatus,
+                        style: TextStyle(
+                          fontFamily: 'Cairo',
+                          color: isSettled ? brandGreen : (debt.isIOwe ? brandRed : brandGreen),
+                          fontSize: 9.5,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// النافذة المنبثقة الوسطية لتفاصيل المعاملة المالية (Popup Dialog وسطية وليست سلايد)
+  void _showDebtDetailsDialog(DebtModel debt) {
+    SpendoHaptics.selection();
     final person = _peopleMap[debt.personId];
     final isTheyOwe = debt.isTheyOwe;
     final isSettled = debt.isSettled;
@@ -898,18 +1079,18 @@ class _FinanceScreenState extends State<FinanceScreen> {
     String badgeText = 'إلي عنده';
     Color badgeColor = brandGreen;
     String amountPrefix = '';
-    String subStatus = isSettled ? 'تم السداد' : 'بانتظار السداد';
+    String subStatus = isSettled ? 'تم السداد بالكامل' : 'بانتظار السداد';
 
     if (debt.isPayLater) {
       badgeText = 'عالحساب (مؤجل)';
       badgeColor = brandYellow;
       amountPrefix = '-';
-      subStatus = isSettled ? 'تم الدفع' : 'للدفع لاحقاً';
+      subStatus = isSettled ? 'تم الدفع بالكامل' : 'مستحق للدفع لاحقاً';
     } else if (debt.isIOwe) {
       badgeText = 'عليّ إله';
       badgeColor = brandRed;
       amountPrefix = '-';
-      subStatus = isSettled ? 'تم السداد' : 'مستحق الدفع';
+      subStatus = isSettled ? 'تم السداد بالكامل' : 'مستحق الدفع فوراً';
     } else if (isReceived) {
       badgeText = 'مبالغ مستلمة';
       badgeColor = brandYellow;
@@ -917,279 +1098,301 @@ class _FinanceScreenState extends State<FinanceScreen> {
       subStatus = 'خالص ومسدد';
     }
 
-    final double displayAmount = isReceived ? debt.originalAmount : (isSettled ? debt.originalAmount : debt.remainingAmount);
+    final double displayAmount = isReceived
+        ? debt.originalAmount
+        : (isSettled ? debt.originalAmount : debt.remainingAmount);
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      decoration: BoxDecoration(
-        color: surfaceField,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: surfaceBorder),
-      ),
-      padding: const EdgeInsets.all(12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          // الصف العلوي: الاسم والتفاصيل مقابل المبلغ
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              // يمين: اسم الشخص والتفاصيل
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        const Icon(Remix.user_3_line, color: brandGreen, size: 14),
-                        const SizedBox(width: 6),
-                        Flexible(
-                          child: Text(
-                            person?.name ?? 'شخص غير مسجل',
-                            style: TextStyle(
-                              fontFamily: 'Cairo',
-                              color: textWhite,
-                              fontSize: 13.5,
-                              fontWeight: FontWeight.bold,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                        const SizedBox(width: 6),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(6),
-                            border: Border.all(color: badgeColor.withValues(alpha: 0.3)),
-                          ),
-                          child: Text(
-                            badgeText,
-                            style: TextStyle(
-                              fontFamily: 'Cairo',
-                              color: badgeColor,
-                              fontSize: 10,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        const Icon(Remix.calendar_line, color: Color(0xFF71717A), size: 12),
-                        const SizedBox(width: 4),
-                        Text(
-                          ArabicDateHelper.formatArabicDateWithWeekdayFromString(debt.transactionDate),
-                          style: const TextStyle(
-                            fontFamily: 'Cairo',
-                            color: Color(0xFF9CA3AF),
-                            fontSize: 11,
-                          ),
-                        ),
-                        const Text(' • ', style: TextStyle(color: Color(0xFF52525B))),
-                        Icon(
-                          _getPaymentMethodIcon(debt.paymentMethod),
-                          color: _getPaymentMethodColor(debt.paymentMethod),
-                          size: 12,
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          debt.paymentMethodTitle,
-                          style: const TextStyle(
-                            fontFamily: 'Cairo',
-                            color: Color(0xFF9CA3AF),
-                            fontSize: 11,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
+    showGeneralDialog(
+      context: context,
+      barrierDismissible: true,
+      barrierLabel: 'DebtPopupDetails',
+      barrierColor: Colors.black.withValues(alpha: 0.65),
+      transitionDuration: const Duration(milliseconds: 220),
+      pageBuilder: (dialogCtx, anim1, anim2) {
+        return Center(
+          child: Material(
+            color: Colors.transparent,
+            child: Container(
+              width: MediaQuery.of(dialogCtx).size.width.clamp(280.0, 380.0),
+              margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+              decoration: BoxDecoration(
+                color: surfaceField,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: surfaceBorder),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: _isDark ? 0.45 : 0.15),
+                    blurRadius: 24,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
               ),
-
-              // يسار: المبلغ وحالة الاسترداد
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
+                  // 1. ترويسة النافذة المنبثقة: زر الإغلاق + اسم الشخص + وسم الحالة
                   Row(
-                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text(
-                        '$amountPrefix${_formatCurrency(displayAmount)} ',
-                        style: TextStyle(
-                          fontFamily: 'Cairo',
-                          color: isReceived
-                              ? brandYellow
-                              : (isSettled ? brandGreen : (isTheyOwe ? brandYellow : brandRed)),
-                          fontSize: 14,
-                          fontWeight: FontWeight.w900,
+                      InkWell(
+                        onTap: () => Navigator.pop(dialogCtx),
+                        borderRadius: BorderRadius.circular(16),
+                        child: Container(
+                          padding: const EdgeInsets.all(5),
+                          decoration: BoxDecoration(
+                            color: surfaceBorder.withValues(alpha: 0.4),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(Remix.close_line, size: 16, color: textMuted),
                         ),
                       ),
-                      Text(
-                        '₪',
-                        style: TextStyle(
-                          fontFamily: 'Cairo',
-                          color: isReceived
-                              ? brandYellow
-                              : (isSettled ? brandGreen : (isTheyOwe ? brandYellow : brandRed)),
-                          fontSize: 11,
-                          fontWeight: FontWeight.bold,
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              person?.name ?? 'شخص غير مسجل',
+                              style: TextStyle(
+                                fontFamily: 'Cairo',
+                                color: textWhite,
+                                fontSize: 14.5,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            Text(
+                              'تفاصيل المعاملة المالية',
+                              style: TextStyle(
+                                fontFamily: 'Cairo',
+                                color: textMuted,
+                                fontSize: 10,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
+                        decoration: BoxDecoration(
+                          color: badgeColor.withValues(alpha: _isDark ? 0.14 : 0.20),
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(color: badgeColor.withValues(alpha: 0.4)),
+                        ),
+                        child: Text(
+                          badgeText,
+                          style: TextStyle(
+                            fontFamily: 'Cairo',
+                            color: badgeColor,
+                            fontSize: 10.5,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 2),
-                  Text(
-                    subStatus,
-                    style: TextStyle(
-                      fontFamily: 'Cairo',
-                      color: isSettled ? brandGreen : (debt.isIOwe ? brandRed : brandGreen),
-                      fontSize: 10,
-                      fontWeight: FontWeight.w500,
+                  const SizedBox(height: 12),
+
+                  // 2. بطاقة Bento 1: المبلغ المالي وحالة السداد
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                    decoration: BoxDecoration(
+                      color: surfaceMain,
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: badgeColor.withValues(alpha: 0.35)),
                     ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-
-          // ملاحظات إذا وجدت
-          if (debt.notes != null && debt.notes!.trim().isNotEmpty) ...[
-            const SizedBox(height: 8),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: surfaceMain,
-                borderRadius: BorderRadius.circular(6),
-                border: Border.all(color: surfaceBorder),
-              ),
-              child: Row(
-                children: [
-                  const Icon(Remix.file_text_line, color: Color(0xFF71717A), size: 12),
-                  const SizedBox(width: 6),
-                  Expanded(
-                    child: Text(
-                      debt.notes!,
-                      style: const TextStyle(
-                        fontFamily: 'Cairo',
-                        color: Color(0xFF9CA3AF),
-                        fontSize: 11,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-
-          const SizedBox(height: 8),
-          Divider(color: surfaceBorder, height: 1, thickness: 1),
-          const SizedBox(height: 6),
-
-          // خط أزرار الإجراءات النظيفة
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                children: [
-                  // زر تعديل
-                  InkWell(
-                    onTap: () => _showEditDebtSheet(debt),
-                    borderRadius: BorderRadius.circular(8),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                      decoration: BoxDecoration(
-                        color: surfaceMain,
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: surfaceBorder),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Remix.pencil_line, size: 12, color: brandYellow),
-                          SizedBox(width: 4),
-                          Text(
-                            'تعديل',
-                            style: TextStyle(
-                              fontFamily: 'Cairo',
-                              color: textWhite,
-                              fontSize: 11,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 6),
-
-                  // زر واتساب
-                  InkWell(
-                    onTap: () => _shareDebtViaWhatsApp(debt),
-                    borderRadius: BorderRadius.circular(8),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                      decoration: BoxDecoration(
-                        color: surfaceMain,
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: surfaceBorder),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Remix.whatsapp_line, size: 12, color: const Color(0xFF10B981)),
-                          SizedBox(width: 4),
-                          Text(
-                            'واتساب',
-                            style: TextStyle(
-                              fontFamily: 'Cairo',
-                              color: textWhite,
-                              fontSize: 11,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-
-                  // زر سداد دفعة / تم الدفع إذا كان الدين فعالاً
-                  if (!isSettled && !isReceived) ...[
-                    const SizedBox(width: 6),
-                    InkWell(
-                      onTap: () => _showRepaymentSheet(debt),
-                      borderRadius: BorderRadius.circular(8),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                        decoration: BoxDecoration(
-                          color: surfaceMain,
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(
-                            color: debt.isPayLater
-                                ? brandYellow.withValues(alpha: 0.45)
-                                : surfaceBorder,
+                    child: Column(
+                      children: [
+                        Text(
+                          isReceived ? 'إجمالي المبلغ المستلم' : (isSettled ? 'المبلغ المسدد' : 'المبلغ المستحق'),
+                          style: TextStyle(
+                            fontFamily: 'Cairo',
+                            fontSize: 10.5,
+                            color: textMuted,
                           ),
                         ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
+                        const SizedBox(height: 2),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(
-                              debt.isPayLater ? Remix.checkbox_circle_line : Remix.cash_line,
-                              size: 12,
-                              color: debt.isPayLater ? brandYellow : brandGreen,
-                            ),
-                            const SizedBox(width: 4),
                             Text(
-                              debt.isPayLater ? 'تم الدفع' : 'سداد دفعة',
+                              '$amountPrefix${_formatCurrency(displayAmount)} ',
                               style: TextStyle(
                                 fontFamily: 'Cairo',
-                                color: debt.isPayLater ? brandYellow : brandGreen,
-                                fontSize: 11,
+                                fontSize: 24,
+                                fontWeight: FontWeight.w900,
+                                color: isReceived
+                                    ? brandYellow
+                                    : (isSettled ? brandGreen : (isTheyOwe ? brandYellow : brandRed)),
+                              ),
+                            ),
+                            Text(
+                              '₪',
+                              style: TextStyle(
+                                fontFamily: 'Cairo',
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: badgeColor,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: badgeColor.withValues(alpha: 0.14),
+                            borderRadius: BorderRadius.circular(6),
+                            border: Border.all(color: badgeColor.withValues(alpha: 0.4)),
+                          ),
+                          child: Text(
+                            subStatus,
+                            style: TextStyle(
+                              fontFamily: 'Cairo',
+                              color: badgeColor,
+                              fontSize: 10.5,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                        // تفصيل السداد الجزئي إن وجد
+                        if (!isSettled && !isReceived && debt.remainingAmount < debt.originalAmount) ...[
+                          const SizedBox(height: 8),
+                          Divider(color: surfaceBorder, height: 1),
+                          const SizedBox(height: 8),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceAround,
+                            children: [
+                              Column(
+                                children: [
+                                  Text('المبلغ الأصلي', style: TextStyle(fontFamily: 'Cairo', fontSize: 10, color: textMuted)),
+                                  Text('${_formatCurrency(debt.originalAmount)} ₪', style: TextStyle(fontFamily: 'Cairo', fontSize: 11, fontWeight: FontWeight.bold, color: textWhite)),
+                                ],
+                              ),
+                              Column(
+                                children: [
+                                  Text('المسدد', style: TextStyle(fontFamily: 'Cairo', fontSize: 10, color: textMuted)),
+                                  Text('${_formatCurrency(debt.originalAmount - debt.remainingAmount)} ₪', style: TextStyle(fontFamily: 'Cairo', fontSize: 11, fontWeight: FontWeight.bold, color: brandGreen)),
+                                ],
+                              ),
+                              Column(
+                                children: [
+                                  Text('المتبقي', style: TextStyle(fontFamily: 'Cairo', fontSize: 10, color: textMuted)),
+                                  Text('${_formatCurrency(debt.remainingAmount)} ₪', style: TextStyle(fontFamily: 'Cairo', fontSize: 11, fontWeight: FontWeight.bold, color: brandRed)),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+
+                  // 3. بطاقة Bento 2: تفاصيل المعاملة (التاريخ + وسيلة الدفع)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: surfaceMain,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: surfaceBorder),
+                    ),
+                    child: Column(
+                      children: [
+                        // التاريخ
+                        Row(
+                          children: [
+                            Icon(Remix.calendar_2_line, color: brandYellow, size: 14),
+                            const SizedBox(width: 8),
+                            Text(
+                              'تاريخ المعاملة:',
+                              style: TextStyle(fontFamily: 'Cairo', color: textMuted, fontSize: 11),
+                            ),
+                            const Spacer(),
+                            Text(
+                              ArabicDateHelper.formatArabicDateWithWeekdayFromString(debt.transactionDate),
+                              style: TextStyle(fontFamily: 'Cairo', color: textWhite, fontSize: 11, fontWeight: FontWeight.bold),
+                            ),
+                          ],
+                        ),
+                        Divider(color: surfaceBorder.withValues(alpha: 0.6), height: 12),
+                        // وسيلة الدفع
+                        Row(
+                          children: [
+                            Icon(_getPaymentMethodIcon(debt.paymentMethod), color: _getPaymentMethodColor(debt.paymentMethod), size: 14),
+                            const SizedBox(width: 8),
+                            Text(
+                              'طريقة الدفع:',
+                              style: TextStyle(fontFamily: 'Cairo', color: textMuted, fontSize: 11),
+                            ),
+                            const Spacer(),
+                            Text(
+                              debt.paymentMethodTitle,
+                              style: TextStyle(fontFamily: 'Cairo', color: textWhite, fontSize: 11, fontWeight: FontWeight.bold),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // 4. ملاحظات المعاملة إن وجدت
+                  if (debt.notes != null && debt.notes!.trim().isNotEmpty) ...[
+                    const SizedBox(height: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: surfaceMain,
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: surfaceBorder),
+                      ),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Icon(Remix.file_text_line, color: textMuted, size: 13),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              debt.notes!,
+                              style: TextStyle(fontFamily: 'Cairo', color: textWhite, fontSize: 11, height: 1.3),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+
+                  const SizedBox(height: 14),
+
+                  // 5. أزرار الإجراءات داخل النافذة المنبثقة
+                  // زر سداد دفعة إذا كانت المعاملة فعالة
+                  if (!isSettled && !isReceived) ...[
+                    InkWell(
+                      onTap: () {
+                        Navigator.pop(dialogCtx);
+                        _showRepaymentSheet(debt);
+                      },
+                      borderRadius: BorderRadius.circular(10),
+                      child: Container(
+                        height: 38,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF2563EB),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        alignment: Alignment.center,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(debt.isPayLater ? Remix.checkbox_circle_line : Remix.cash_line, size: 15, color: Colors.white),
+                            const SizedBox(width: 6),
+                            Text(
+                              debt.isPayLater ? 'تأكيد دفع المعاملة' : 'تسجيل سداد دفعة',
+                              style: const TextStyle(
+                                fontFamily: 'Cairo',
+                                color: Colors.white,
+                                fontSize: 12,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
@@ -1197,27 +1400,120 @@ class _FinanceScreenState extends State<FinanceScreen> {
                         ),
                       ),
                     ),
+                    const SizedBox(height: 8),
                   ],
+
+                  // زر مشاركة عبر واتساب
+                  InkWell(
+                    onTap: () {
+                      Navigator.pop(dialogCtx);
+                      _shareDebtViaWhatsApp(debt);
+                    },
+                    borderRadius: BorderRadius.circular(10),
+                    child: Container(
+                      height: 38,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF10B981).withValues(alpha: 0.14),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.4)),
+                      ),
+                      alignment: Alignment.center,
+                      child: const Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Remix.whatsapp_line, size: 16, color: Color(0xFF10B981)),
+                          SizedBox(width: 6),
+                          Text(
+                            'مشاركة كشف الحساب عبر واتساب',
+                            style: TextStyle(
+                              fontFamily: 'Cairo',
+                              color: Color(0xFF10B981),
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+
+                  // صفا زر التعديل والحذف
+                  Row(
+                    children: [
+                      Expanded(
+                        child: InkWell(
+                          onTap: () {
+                            Navigator.pop(dialogCtx);
+                            _showEditDebtSheet(debt);
+                          },
+                          borderRadius: BorderRadius.circular(8),
+                          child: Container(
+                            height: 34,
+                            decoration: BoxDecoration(
+                              color: surfaceMain,
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: surfaceBorder),
+                            ),
+                            alignment: Alignment.center,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Remix.pencil_line, size: 13, color: textMuted),
+                                const SizedBox(width: 5),
+                                Text(
+                                  'تعديل المعاملة',
+                                  style: TextStyle(fontFamily: 'Cairo', color: textWhite, fontSize: 11, fontWeight: FontWeight.w600),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: InkWell(
+                          onTap: () {
+                            Navigator.pop(dialogCtx);
+                            _confirmDelete(debt);
+                          },
+                          borderRadius: BorderRadius.circular(8),
+                          child: Container(
+                            height: 34,
+                            decoration: BoxDecoration(
+                              color: brandRed.withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: brandRed.withValues(alpha: 0.35)),
+                            ),
+                            alignment: Alignment.center,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Remix.delete_bin_line, size: 13, color: brandRed),
+                                const SizedBox(width: 5),
+                                Text(
+                                  'حذف المعاملة',
+                                  style: TextStyle(fontFamily: 'Cairo', color: brandRed, fontSize: 11, fontWeight: FontWeight.bold),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ],
               ),
-
-              // زر الحذف بدون أي خلفية مربعة
-              InkWell(
-                onTap: () => _confirmDelete(debt),
-                borderRadius: BorderRadius.circular(6),
-                child: const Padding(
-                  padding: EdgeInsets.all(4),
-                  child: Icon(
-                    Remix.delete_bin_6_line,
-                    size: 16,
-                    color: Color(0xFF71717A),
-                  ),
-                ),
-              ),
-            ],
+            ),
           ),
-        ],
-      ),
+        );
+      },
+      transitionBuilder: (ctx, anim1, anim2, child) {
+        return ScaleTransition(
+          scale: CurvedAnimation(parent: anim1, curve: Curves.easeOutBack),
+          child: FadeTransition(opacity: anim1, child: child),
+        );
+      },
     );
   }
 
