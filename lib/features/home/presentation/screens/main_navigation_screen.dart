@@ -236,9 +236,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen>
               isDark ? const Color(0xFF121215) : const Color(0xFFFFFFFF);
           final navBorder =
               isDark ? const Color(0xFF1E1E24) : const Color(0xFFE5E7EB);
-          final shadowColor =
-              isDark ? const Color(0x66000000) : const Color(0x12000000);
-          const activeColor = Color(0xFF2563EB); // Electric Royal Blue
+
 
           return Container(
             margin: const EdgeInsets.fromLTRB(10, 0, 10, 8),
@@ -246,13 +244,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen>
               color: navBg,
               borderRadius: BorderRadius.circular(16),
               border: Border.all(color: navBorder, width: 1.0),
-              boxShadow: [
-                BoxShadow(
-                  color: shadowColor,
-                  blurRadius: 16,
-                  offset: const Offset(0, 4),
-                ),
-              ],
+
             ),
             padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 3),
             child: LayoutBuilder(
@@ -264,7 +256,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen>
                 return Stack(
                   alignment: Alignment.center,
                   children: [
-                    // Physical Banking Sliding Glass Pill & Top Electric Royal Blue Indicator
+                    // Matte neutral selection indicator, without glow or shadows.
                     AnimatedPositioned(
                       duration: const Duration(milliseconds: 200),
                       curve: Curves.easeOutCubic,
@@ -272,46 +264,15 @@ class _MainNavigationScreenState extends State<MainNavigationScreen>
                       top: 1,
                       bottom: 1,
                       width: itemWidth - 6,
-                      child: Container(
+                      child: DecoratedBox(
                         decoration: BoxDecoration(
-                          color: activeColor.withValues(
-                              alpha: isDark ? 0.16 : 0.10),
+                          color: isDark
+                              ? const Color(0xFF27272A)
+                              : const Color(0xFFF0F1F3),
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: activeColor.withValues(
-                                alpha: isDark ? 0.38 : 0.22),
-                            width: 0.9,
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: activeColor.withValues(
-                                  alpha: isDark ? 0.20 : 0.10),
-                              blurRadius: 8,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
-                        ),
-                        child: Align(
-                          alignment: Alignment.topCenter,
-                          child: Container(
-                            width: 24,
-                            height: 2.5,
-                            decoration: BoxDecoration(
-                              color: activeColor,
-                              borderRadius: BorderRadius.circular(99),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: activeColor.withValues(alpha: 0.65),
-                                  blurRadius: 6,
-                                  offset: const Offset(0, 1),
-                                ),
-                              ],
-                            ),
-                          ),
                         ),
                       ),
                     ),
-
                     // Navigation Items Row
                     Row(
                       children: [
@@ -341,7 +302,8 @@ class _MainNavigationScreenState extends State<MainNavigationScreen>
       IconData lineIcon, IconData fillIcon) {
     final isSelected = _currentIndex == index;
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    const activeColor = Color(0xFF2563EB);
+    final activeColor = isDark
+        ? const Color(0xFFF4F4F5) : const Color(0xFF27272A);
     final color = isSelected ? activeColor
         : (isDark ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280));
 
