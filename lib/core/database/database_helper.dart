@@ -40,6 +40,7 @@ class DatabaseHelper {
         national_id TEXT,
         bank TEXT,
         account_number TEXT,
+        avatar_path TEXT,
         is_pinned INTEGER NOT NULL DEFAULT 0,
         hourly_rate REAL DEFAULT 0.0,
         daily_rate REAL DEFAULT 0.0,
@@ -48,6 +49,10 @@ class DatabaseHelper {
         updated_at TEXT NOT NULL
       )
     ''');
+
+    try {
+      await db.execute("ALTER TABLE people ADD COLUMN avatar_path TEXT");
+    } catch (_) {}
 
     await db.execute('''
       CREATE TABLE IF NOT EXISTS workplaces (

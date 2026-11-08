@@ -1,13 +1,18 @@
-import 'package:sanad_app/core/theme/app_theme.dart';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:remixicon/remixicon.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:sanad_app/core/theme/app_theme.dart';
+import 'package:sanad_app/core/utils/spendo_haptic_feedback.dart';
 import 'package:sanad_app/features/people/models/person_model.dart';
 import 'package:sanad_app/features/people/repositories/people_repository.dart';
 import 'package:sanad_app/features/people/presentation/widgets/person_accounts_modal_sheet.dart';
 
-/// Modal Popup for Person Details (بطاقة الملف الشخصي - My profile).
-/// Fully replicates the Obsidian Dark Clean Grid Prototype (Image 2).
+/// Luxury FinTech Bento Modal Sheet for Person Details.
+/// Opens upon tapping any PersonCard in the people directory.
+/// Features high-contrast obsidian styling, photo avatar support,
+/// quick actions (Call, WhatsApp, Copy, Email, Vault), and Plus Jakarta Sans figures.
 class PersonDetailsModalSheet extends StatefulWidget {
   final PersonModel person;
   final VoidCallback onEdit;
@@ -36,7 +41,7 @@ class PersonDetailsModalSheet extends StatefulWidget {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      barrierColor: Colors.black.withValues(alpha: 0.8),
+      barrierColor: Colors.black.withValues(alpha: 0.75),
       builder: (_) => PersonDetailsModalSheet(
         person: person,
         onEdit: onEdit,
@@ -48,19 +53,26 @@ class PersonDetailsModalSheet extends StatefulWidget {
   }
 
   @override
-  State<PersonDetailsModalSheet> createState() => _PersonDetailsModalSheetState();
+  State<PersonDetailsModalSheet> createState() =>
+      _PersonDetailsModalSheetState();
 }
 
 class _PersonDetailsModalSheetState extends State<PersonDetailsModalSheet> {
-  // Theme Design Tokens
   static bool get _isDark => AppTheme.isDarkMode;
-  static Color get surfaceMain => _isDark ? const Color(0xFF121417) : const Color(0xFFFFFFFF);
-  static Color get surfaceCell => _isDark ? const Color(0xFF16191E) : const Color(0xFFF9FAFB);
-  static Color get surfaceBorder => _isDark ? const Color(0xFF22262E) : const Color(0xFFE5E7EB);
-  static const Color brandGreen = Color(0xFF2563EB);
+  static Color get surfaceMain =>
+      _isDark ? const Color(0xFF121215) : const Color(0xFFFFFFFF);
+  static Color get surfaceCard =>
+      _isDark ? const Color(0xFF16161A) : const Color(0xFFF9FAFB);
+  static Color get surfaceBorder =>
+      _isDark ? const Color(0xFF222229) : const Color(0xFFE5E7EB);
+  static const Color brandBlue = Color(0xFF2563EB);
   static const Color brandYellow = Color(0xFFFFD600);
   static const Color brandRed = Color(0xFFEF4444);
-  static Color get textWhite => _isDark ? Colors.white : const Color(0xFF111827);
+  static const Color brandGreen = Color(0xFF10B981);
+  static Color get textWhite =>
+      _isDark ? Colors.white : const Color(0xFF111827);
+  static Color get textMuted =>
+      _isDark ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280);
 
   final PeopleRepository _repository = PeopleRepository();
   int _accountsCount = 0;
@@ -85,24 +97,30 @@ class _PersonDetailsModalSheetState extends State<PersonDetailsModalSheet> {
   void _copy(String text, String message) {
     if (text.trim().isEmpty || text == '—') return;
     Clipboard.setData(ClipboardData(text: text));
-    HapticFeedback.lightImpact();
+    SpendoHaptics.selection();
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        backgroundColor: surfaceCell,
+        backgroundColor: surfaceCard,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10),
-          side: const BorderSide(color: brandGreen, width: 0.8),
+          side: const BorderSide(color: brandBlue, width: 0.8),
         ),
         duration: const Duration(seconds: 2),
         content: Row(
           children: [
-            const Icon(Remix.checkbox_circle_line, color: brandYellow, size: 15),
+            const Icon(Remix.checkbox_circle_line,
+                color: brandYellow, size: 16),
             const SizedBox(width: 8),
             Text(
               message,
-              style: TextStyle(color: textWhite, fontSize: 11.5, fontWeight: FontWeight.w600),
+              style: TextStyle(
+                fontFamily: 'Cairo',
+                color: textWhite,
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ],
         ),
@@ -113,21 +131,51 @@ class _PersonDetailsModalSheetState extends State<PersonDetailsModalSheet> {
   void _copyAll() {
     final p = widget.person;
     final buffer = StringBuffer();
-    buffer.writeln(p.name);
+    buffer.writeln('الاسم: ${p.name}');
     if (p.phone != null && p.phone!.trim().isNotEmpty) {
       buffer.writeln('الهاتف: ${p.phone}');
     }
     if (p.nationalId != null && p.nationalId!.trim().isNotEmpty) {
-      buffer.writeln('الهوية: ${p.nationalId}');
+      buffer.writeln('رقم الهوية: ${p.nationalId}');
+    }
+    if (p.birthdate != null) {
+      buffer.writeln(
+          'تاريخ الميلاد: ${p.birthdate!.day}/${p.birthdate!.month}/${p.birthdate!.year}');
     }
     if (p.email != null && p.email!.trim().isNotEmpty) {
-      buffer.writeln('الإيميل: ${p.email}');
+      buffer.writeln('البريد الإلكتروني: ${p.email}');
     }
     if (p.notes != null && p.notes!.trim().isNotEmpty) {
       buffer.writeln('ملاحظات: ${p.notes}');
     }
 
-    _copy(buffer.toString().trim(), 'تم نسخ كافة بيانات الملف الشخصي');
+    _copy(buffer.toString().trim(), 'تم نسخ كافة بيانات الشخص');
+  }
+
+  Future<void> _makeCall(String phone) async {
+    final clean = phone.replaceAll(RegExp(r'[^\d+]'), '');
+    final uri = Uri.parse('tel:$clean');
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri);
+    }
+  }
+
+  Future<void> _openWhatsApp(String phone) async {
+    var clean = phone.replaceAll(RegExp(r'[^\d]'), '');
+    if (clean.startsWith('0')) {
+      clean = '972${clean.substring(1)}';
+    }
+    final uri = Uri.parse('https://wa.me/$clean');
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    }
+  }
+
+  Future<void> _sendEmail(String email) async {
+    final uri = Uri.parse('mailto:$email');
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri);
+    }
   }
 
   void _openAccountsVault() {
@@ -149,165 +197,273 @@ class _PersonDetailsModalSheetState extends State<PersonDetailsModalSheet> {
         ? p.phone!.trim()
         : (p.whatsapp != null && p.whatsapp!.trim().isNotEmpty)
             ? p.whatsapp!.trim()
-            : '0505870690';
+            : null;
     final nationalId = (p.nationalId != null && p.nationalId!.trim().isNotEmpty)
         ? p.nationalId!.trim()
-        : '12346790';
+        : null;
     final email = (p.email != null && p.email!.trim().isNotEmpty)
         ? p.email!.trim()
-        : 'yasenlafe972@gmail.com';
+        : null;
     final notes = (p.notes != null && p.notes!.trim().isNotEmpty)
         ? p.notes!.trim()
-        : 'الملف الشخصي الأساسي';
+        : null;
 
-    final birthAndAge = (p.formattedBirthdateAndAge?.isNotEmpty ?? false)
-        ? p.formattedBirthdateAndAge!
-        : '24/10/1998 • 28y';
+    final hasAvatarPhoto = p.avatarPath != null &&
+        p.avatarPath!.trim().isNotEmpty &&
+        File(p.avatarPath!).existsSync();
 
-    final servicesPreview = _accountServices.isNotEmpty
-        ? _accountServices.take(5).join(', ')
-        : 'Apple, DaVinci AI, Mapbox, PayPal, cloud.oracle...';
+    final isHighlighted = p.isPinned || p.isUser;
+    final highlightColor = p.isUser ? brandBlue : brandYellow;
 
-    return Container(
-      decoration: BoxDecoration(
-        color: surfaceMain,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-        border: Border(
-          top: BorderSide(color: surfaceBorder, width: 1.0),
-          left: BorderSide(color: surfaceBorder, width: 1.0),
-          right: BorderSide(color: surfaceBorder, width: 1.0),
+    return Directionality(
+      textDirection: TextDirection.rtl,
+      child: Container(
+        decoration: BoxDecoration(
+          color: surfaceMain,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(22)),
+          border: Border.all(color: surfaceBorder),
         ),
-      ),
-      child: SafeArea(
-        top: false,
-        child: Padding(
-          padding: const EdgeInsets.only(bottom: 16),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // 1. Top Action & Info Bar (Without large circular avatar)
-              Directionality(
-                textDirection: TextDirection.ltr,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                  decoration: BoxDecoration(
-                    color: surfaceCell,
-                    border: Border(bottom: BorderSide(color: surfaceBorder)),
+        child: SafeArea(
+          top: false,
+          child: Padding(
+            padding: const EdgeInsets.only(bottom: 16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // 1. مقبض السحب العلوي
+                const SizedBox(height: 8),
+                Center(
+                  child: Container(
+                    width: 36,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: surfaceBorder,
+                      borderRadius: BorderRadius.circular(99),
+                    ),
                   ),
+                ),
+                const SizedBox(height: 10),
+
+                // 2. ترويسة الملف الشخصي (Hero Profile Header)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      // Left: Close (X) + Divider + Edit + Delete
-                      Row(
-                        children: [
-                          InkWell(
-                            onTap: () => Navigator.pop(context),
-                            child: const Padding(
-                              padding: EdgeInsets.all(3),
-                              child: Icon(Remix.close_line, size: 18, color: Color(0xFFA1A1AA)),
-                            ),
+                      // صورة البروفايل أو المونوغرام الفخم
+                      Container(
+                        width: 54,
+                        height: 54,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: isHighlighted
+                              ? highlightColor.withValues(alpha: 0.16)
+                              : brandYellow.withValues(alpha: 0.14),
+                          border: Border.all(
+                            color: isHighlighted
+                                ? highlightColor.withValues(alpha: 0.6)
+                                : brandYellow.withValues(alpha: 0.5),
+                            width: 1.8,
                           ),
-                          const SizedBox(width: 6),
-                          Container(width: 1, height: 14, color: surfaceBorder),
-                          const SizedBox(width: 6),
+                          boxShadow: [
+                            BoxShadow(
+                              color: isHighlighted
+                                  ? highlightColor.withValues(alpha: 0.18)
+                                  : brandYellow.withValues(alpha: 0.15),
+                              blurRadius: 10,
+                              spreadRadius: 1,
+                            ),
+                          ],
+                        ),
+                        child: ClipOval(
+                          child: hasAvatarPhoto
+                              ? Image.file(
+                                  File(p.avatarPath!),
+                                  width: 54,
+                                  height: 54,
+                                  fit: BoxFit.cover,
+                                )
+                              : Center(
+                                  child: Text(
+                                    p.name.trim().isNotEmpty
+                                        ? p.name.trim().characters.first
+                                        : '؟',
+                                    style: TextStyle(
+                                      fontFamily: 'Cairo',
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.bold,
+                                      color: isHighlighted
+                                          ? highlightColor
+                                          : brandYellow,
+                                    ),
+                                  ),
+                                ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+
+                      // اسم الشخص والبادجات
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Flexible(
+                                  child: Text(
+                                    p.name,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      fontFamily: 'Cairo',
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                      color: textWhite,
+                                      height: 1.2,
+                                    ),
+                                  ),
+                                ),
+                                if (p.isUser) ...[
+                                  const SizedBox(width: 6),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 6, vertical: 1.5),
+                                    decoration: BoxDecoration(
+                                      color: brandBlue.withValues(alpha: 0.16),
+                                      borderRadius: BorderRadius.circular(4),
+                                      border: Border.all(
+                                          color: brandBlue
+                                              .withValues(alpha: 0.45)),
+                                    ),
+                                    child: const Text(
+                                      'أنت',
+                                      style: TextStyle(
+                                        fontFamily: 'Cairo',
+                                        fontSize: 9.5,
+                                        fontWeight: FontWeight.bold,
+                                        color: brandBlue,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                                if (p.isPinned) ...[
+                                  const SizedBox(width: 4),
+                                  const Icon(Remix.pushpin_fill,
+                                      size: 13, color: brandYellow),
+                                ],
+                              ],
+                            ),
+                            const SizedBox(height: 3),
+
+                            // تاريخ الميلاد والعمر المحسوب
+                            if (p.birthdate != null)
+                              Row(
+                                children: [
+                                  const Icon(Remix.cake_2_line,
+                                      size: 12, color: brandYellow),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    '${p.birthdate!.day}/${p.birthdate!.month}/${p.birthdate!.year}',
+                                    style: const TextStyle(
+                                      fontFamily: 'PlusJakartaSans',
+                                      fontFamilyFallback: ['Cairo', 'Heebo'],
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w600,
+                                      color: brandYellow,
+                                    ),
+                                    textDirection: TextDirection.ltr,
+                                  ),
+                                  if (p.calculatedAge != null) ...[
+                                    const SizedBox(width: 6),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 5, vertical: 1),
+                                      decoration: BoxDecoration(
+                                        color:
+                                            brandYellow.withValues(alpha: 0.15),
+                                        borderRadius: BorderRadius.circular(4),
+                                      ),
+                                      child: Text(
+                                        '${p.calculatedAge} سنة',
+                                        style: const TextStyle(
+                                          fontFamily: 'Cairo',
+                                          fontSize: 9.5,
+                                          fontWeight: FontWeight.bold,
+                                          color: brandYellow,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ],
+                              )
+                            else
+                              Text(
+                                'بدون تاريخ ميلاد',
+                                style: TextStyle(
+                                  fontFamily: 'Cairo',
+                                  fontSize: 10,
+                                  color: textMuted,
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+
+                      // أزرار التحكم العلوية (تعديل وحذف وتثبيت)
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (widget.onTogglePin != null)
+                            InkWell(
+                              onTap: () {
+                                SpendoHaptics.light();
+                                widget.onTogglePin!();
+                                Navigator.pop(context);
+                              },
+                              borderRadius: BorderRadius.circular(8),
+                              child: Padding(
+                                padding: const EdgeInsets.all(5),
+                                child: Icon(
+                                  p.isPinned
+                                      ? Remix.pushpin_fill
+                                      : Remix.pushpin_line,
+                                  size: 16,
+                                  color: p.isPinned ? brandYellow : textMuted,
+                                ),
+                              ),
+                            ),
                           InkWell(
                             onTap: () {
                               Navigator.pop(context);
                               widget.onEdit();
                             },
-                            child: const Padding(
-                              padding: EdgeInsets.all(3),
-                              child: Icon(Remix.pencil_line, size: 14, color: Color(0xFFA1A1AA)),
+                            borderRadius: BorderRadius.circular(8),
+                            child: Padding(
+                              padding: const EdgeInsets.all(5),
+                              child: Icon(Remix.pencil_line,
+                                  size: 16, color: brandBlue),
                             ),
                           ),
-                          const SizedBox(width: 4),
                           InkWell(
                             onTap: () {
                               Navigator.pop(context);
                               widget.onDelete();
                             },
+                            borderRadius: BorderRadius.circular(8),
                             child: const Padding(
-                              padding: EdgeInsets.all(3),
-                              child: Icon(Remix.delete_bin_6_line, size: 14, color: brandRed),
+                              padding: EdgeInsets.all(5),
+                              child: Icon(Remix.delete_bin_line,
+                                  size: 16, color: brandRed),
                             ),
                           ),
-                        ],
-                      ),
-
-                      // Right: Profile Name + DOB + Copy All Button
-                      Row(
-                        children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  const Icon(Remix.shield_user_line, size: 13, color: brandGreen),
-                                  const SizedBox(width: 5),
-                                  Text(
-                                    p.name.isNotEmpty ? p.name : 'My profile',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.bold,
-                                      color: textWhite,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 5),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
-                                    decoration: BoxDecoration(
-                                      border: Border.all(color: brandYellow.withValues(alpha: 0.4)),
-                                      borderRadius: BorderRadius.circular(4),
-                                    ),
-                                    child: const Text(
-                                      'You',
-                                      style: TextStyle(
-                                        fontSize: 9,
-                                        fontWeight: FontWeight.bold,
-                                        color: brandYellow,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 2),
-                              Text(
-                                birthAndAge,
-                                style: const TextStyle(
-                                  fontSize: 10,
-                                  fontFamily: 'monospace',
-                                  color: Color(0xFFA1A1AA),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(width: 10),
                           InkWell(
-                            onTap: _copyAll,
+                            onTap: () => Navigator.pop(context),
                             borderRadius: BorderRadius.circular(8),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
-                              decoration: BoxDecoration(
-                                color: surfaceMain,
-                                borderRadius: BorderRadius.circular(8),
-                                border: Border.all(color: surfaceBorder),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  const Icon(Remix.file_copy_2_line, size: 11, color: brandGreen),
-                                  SizedBox(width: 4),
-                                  Text(
-                                    'نسخ الكل',
-                                    style: TextStyle(
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.bold,
-                                      color: textWhite,
-                                    ),
-                                  ),
-                                ],
-                              ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(5),
+                              child: Icon(Remix.close_line,
+                                  size: 18, color: textMuted),
                             ),
                           ),
                         ],
@@ -315,229 +471,335 @@ class _PersonDetailsModalSheetState extends State<PersonDetailsModalSheet> {
                     ],
                   ),
                 ),
-              ),
+                const SizedBox(height: 12),
+                Divider(color: surfaceBorder, height: 1),
+                const SizedBox(height: 10),
 
-              // 2. Profile Details Grid (Aligned side-by-side without wasted space)
-              Padding(
-                padding: const EdgeInsets.all(10),
-                child: Column(
-                  children: [
-                    // Row 1: ID / رقم الهوية + WHATSAPP / الهاتف
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _buildInfoCell(
-                            label: 'ID / رقم الهوية',
-                            value: nationalId,
-                            isMonospace: true,
-                            onCopy: () => _copy(nationalId, 'تم نسخ رقم الهوية'),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: _buildInfoCell(
-                            label: 'WHATSAPP / الهاتف',
-                            value: phone,
-                            isMonospace: true,
-                            onCopy: () => _copy(phone, 'تم نسخ رقم الهاتف'),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
+                // 3. شبكة بطاقات المعلومات التفصيلية (FinTech Bento Cells)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 14),
+                  child: Column(
+                    children: [
+                      // بطاقة الهاتف مع خيارات اتصال واتساب ونسخ
+                      _buildDetailTile(
+                        icon: Remix.phone_line,
+                        iconColor: brandBlue,
+                        title: 'رقم الهاتف / الواتساب',
+                        value: phone ?? 'غير مسجل',
+                        isLtrValue: phone != null,
+                        actions: phone != null
+                            ? [
+                                _buildActionIcon(
+                                  icon: Remix.phone_fill,
+                                  color: brandBlue,
+                                  tooltip: 'اتصال',
+                                  onTap: () => _makeCall(phone),
+                                ),
+                                const SizedBox(width: 4),
+                                _buildActionIcon(
+                                  icon: Remix.whatsapp_fill,
+                                  color: brandGreen,
+                                  tooltip: 'واتساب',
+                                  onTap: () => _openWhatsApp(phone),
+                                ),
+                                const SizedBox(width: 4),
+                                _buildActionIcon(
+                                  icon: Remix.file_copy_line,
+                                  color: textMuted,
+                                  tooltip: 'نسخ',
+                                  onTap: () =>
+                                      _copy(phone, 'تم نسخ رقم الهاتف'),
+                                ),
+                              ]
+                            : null,
+                      ),
+                      const SizedBox(height: 8),
 
-                    // Row 2: ملاحظات + GMAIL / البريد الإلكتروني
-                    Row(
-                      children: [
-                        Expanded(
-                          flex: 5,
-                          child: _buildInfoCell(
-                            label: 'ملاحظات',
-                            value: notes,
-                            isMonospace: false,
-                            onCopy: () => _copy(notes, 'تم نسخ الملاحظات'),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          flex: 7,
-                          child: _buildInfoCell(
-                            label: 'GMAIL / البريد الإلكتروني',
-                            value: email,
-                            isMonospace: true,
-                            onCopy: () => _copy(email, 'تم نسخ البريد الإلكتروني'),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
+                      // بطاقة رقم الهوية
+                      _buildDetailTile(
+                        icon: Remix.id_card_line,
+                        iconColor: brandYellow,
+                        title: 'رقم الهوية الوطنية',
+                        value: nationalId ?? 'غير مسجل',
+                        isLtrValue: nationalId != null,
+                        actions: nationalId != null
+                            ? [
+                                _buildActionIcon(
+                                  icon: Remix.file_copy_line,
+                                  color: textMuted,
+                                  tooltip: 'نسخ',
+                                  onTap: () => _copy(
+                                      nationalId, 'تم نسخ رقم الهوية'),
+                                ),
+                              ]
+                            : null,
+                      ),
+                      const SizedBox(height: 8),
 
-                    // Row 3: Banner Button to Accounts & Passwords Section
-                    InkWell(
-                      onTap: _openAccountsVault,
-                      borderRadius: BorderRadius.circular(12),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                        decoration: BoxDecoration(
-                          color: surfaceCell,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: brandGreen.withValues(alpha: 0.5)),
-                        ),
-                        child: Directionality(
-                          textDirection: TextDirection.ltr,
+                      // بطاقة البريد الإلكتروني
+                      _buildDetailTile(
+                        icon: Remix.mail_line,
+                        iconColor: brandBlue,
+                        title: 'البريد الإلكتروني',
+                        value: email ?? 'غير مسجل',
+                        isLtrValue: email != null,
+                        actions: email != null
+                            ? [
+                                _buildActionIcon(
+                                  icon: Remix.send_plane_fill,
+                                  color: brandBlue,
+                                  tooltip: 'إرسال إيميل',
+                                  onTap: () => _sendEmail(email),
+                                ),
+                                const SizedBox(width: 4),
+                                _buildActionIcon(
+                                  icon: Remix.file_copy_line,
+                                  color: textMuted,
+                                  tooltip: 'نسخ',
+                                  onTap: () => _copy(
+                                      email, 'تم نسخ البريد الإلكتروني'),
+                                ),
+                              ]
+                            : null,
+                      ),
+                      const SizedBox(height: 8),
+
+                      // بطاقة خزنة الحسابات وكلمات المرور المرتبطة
+                      InkWell(
+                        onTap: _openAccountsVault,
+                        borderRadius: BorderRadius.circular(12),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 10),
+                          decoration: BoxDecoration(
+                            color: surfaceCard,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: brandYellow.withValues(alpha: 0.45),
+                            ),
+                          ),
                           child: Row(
                             children: [
-                              // Count Badge + Arrow on Left
-                              Row(
-                                children: [
-                                  const Icon(Remix.arrow_left_s_line, size: 14, color: Color(0xFFA1A1AA)),
-                                  const SizedBox(width: 4),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                    decoration: BoxDecoration(
-                                      color: surfaceMain,
-                                      borderRadius: BorderRadius.circular(6),
-                                      border: Border.all(color: surfaceBorder),
-                                    ),
-                                    child: Text(
-                                      '$_accountsCount',
-                                      style: const TextStyle(
-                                        fontSize: 10,
-                                        fontFamily: 'monospace',
-                                        fontWeight: FontWeight.bold,
-                                        color: brandGreen,
-                                      ),
-                                    ),
-                                  ),
-                                ],
+                              Container(
+                                width: 32,
+                                height: 32,
+                                decoration: BoxDecoration(
+                                  color: brandYellow.withValues(alpha: 0.15),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: const Icon(Remix.key_2_line,
+                                    size: 16, color: brandYellow),
                               ),
                               const SizedBox(width: 10),
-
-                              // Text Section
                               Expanded(
                                 child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Row(
-                                      mainAxisAlignment: MainAxisAlignment.end,
-                                      children: [
-                                        const Text(
-                                          '(Accounts & passwords)',
-                                          style: TextStyle(
-                                            fontSize: 9.5,
-                                            color: Color(0xFFA1A1AA),
-                                          ),
-                                        ),
-                                        const SizedBox(width: 5),
-                                        Text(
-                                          'قسم الإيميلات والحسابات',
-                                          style: TextStyle(
-                                            fontSize: 11.5,
-                                            fontWeight: FontWeight.bold,
-                                            color: textWhite,
-                                          ),
-                                        ),
-                                      ],
+                                    Text(
+                                      'خزنة الحسابات وكلمات المرور',
+                                      style: TextStyle(
+                                        fontFamily: 'Cairo',
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold,
+                                        color: textWhite,
+                                      ),
                                     ),
                                     const SizedBox(height: 1),
                                     Text(
-                                      servicesPreview,
+                                      _accountServices.isNotEmpty
+                                          ? _accountServices
+                                              .take(4)
+                                              .join(' • ')
+                                          : 'إدارة كلمات المرور والحسابات التابعة',
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
-                                      style: const TextStyle(
-                                        fontSize: 9.5,
-                                        color: Color(0xFFA1A1AA),
+                                      style: TextStyle(
+                                        fontFamily: 'Cairo',
+                                        fontSize: 10,
+                                        color: textMuted,
                                       ),
                                     ),
                                   ],
                                 ),
                               ),
-                              const SizedBox(width: 8),
-
-                              // Yellow Key Icon on Right
-                              const Icon(Remix.key_2_line, color: brandYellow, size: 16),
+                              const SizedBox(width: 6),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 8, vertical: 3),
+                                decoration: BoxDecoration(
+                                  color: brandYellow.withValues(alpha: 0.18),
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      '$_accountsCount',
+                                      style: const TextStyle(
+                                        fontFamily: 'PlusJakartaSans',
+                                        fontFamilyFallback: [
+                                          'Cairo',
+                                          'Heebo'
+                                        ],
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.bold,
+                                        color: brandYellow,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 3),
+                                    const Icon(Remix.arrow_left_s_line,
+                                        size: 12, color: brandYellow),
+                                  ],
+                                ),
+                              ),
                             ],
                           ),
                         ),
                       ),
-                    ),
-                  ],
+
+                      if (notes != null) ...[
+                        const SizedBox(height: 8),
+                        _buildDetailTile(
+                          icon: Remix.file_text_line,
+                          iconColor: brandYellow,
+                          title: 'ملاحظات',
+                          value: notes,
+                          isLtrValue: false,
+                        ),
+                      ],
+                    ],
+                  ),
                 ),
-              ),
-            ],
+                const SizedBox(height: 14),
+
+                // 4. زر نسخ كافة البيانات
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 14),
+                  child: InkWell(
+                    onTap: _copyAll,
+                    borderRadius: BorderRadius.circular(11),
+                    child: Container(
+                      height: 42,
+                      decoration: BoxDecoration(
+                        color: surfaceCard,
+                        borderRadius: BorderRadius.circular(11),
+                        border: Border.all(color: surfaceBorder),
+                      ),
+                      alignment: Alignment.center,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Remix.file_copy_2_line,
+                              size: 15, color: textWhite),
+                          const SizedBox(width: 6),
+                          Text(
+                            'نسخ كافة بيانات الشخص',
+                            style: TextStyle(
+                              fontFamily: 'Cairo',
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              color: textWhite,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildInfoCell({
-    required String label,
+  Widget _buildDetailTile({
+    required IconData icon,
+    required Color iconColor,
+    required String title,
     required String value,
-    required bool isMonospace,
-    required VoidCallback onCopy,
+    required bool isLtrValue,
+    List<Widget>? actions,
   }) {
     return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
       decoration: BoxDecoration(
-        color: surfaceCell,
-        borderRadius: BorderRadius.circular(10),
+        color: surfaceCard,
+        borderRadius: BorderRadius.circular(12),
         border: Border.all(color: surfaceBorder),
       ),
-      clipBehavior: Clip.antiAlias,
-      child: Directionality(
-        textDirection: TextDirection.rtl,
-        child: Row(
-          children: [
-            // Copy button on side
-            InkWell(
-              onTap: onCopy,
-              child: Container(
-                width: 30,
-                height: 44,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  color: surfaceCell,
-                  border: Border(left: BorderSide(color: surfaceBorder)),
-                ),
-                child: const Icon(Remix.file_copy_line, size: 12, color: Color(0xFFA1A1AA)),
-              ),
+      child: Row(
+        children: [
+          Container(
+            width: 30,
+            height: 30,
+            decoration: BoxDecoration(
+              color: iconColor.withValues(alpha: 0.14),
+              borderRadius: BorderRadius.circular(8),
             ),
-
-            // Content
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      label,
-                      style: const TextStyle(
-                        fontSize: 8.5,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFFA1A1AA),
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      value,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      textDirection: TextDirection.ltr,
-                      style: TextStyle(
-                        fontSize: isMonospace ? 11 : 11,
-                        fontFamily: isMonospace ? 'monospace' : null,
-                        fontWeight: FontWeight.bold,
-                        color: textWhite,
-                      ),
-                    ),
-                  ],
+            child: Icon(icon, size: 15, color: iconColor),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontFamily: 'Cairo',
+                    fontSize: 10,
+                    color: textMuted,
+                  ),
                 ),
-              ),
+                const SizedBox(height: 1.5),
+                Text(
+                  value,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  textDirection:
+                      isLtrValue ? TextDirection.ltr : TextDirection.rtl,
+                  style: TextStyle(
+                    fontFamily: isLtrValue ? 'PlusJakartaSans' : 'Cairo',
+                    fontFamilyFallback: const ['Cairo', 'Heebo'],
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: textWhite,
+                  ),
+                ),
+              ],
             ),
+          ),
+          if (actions != null) ...[
+            const SizedBox(width: 6),
+            Row(mainAxisSize: MainAxisSize.min, children: actions),
           ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildActionIcon({
+    required IconData icon,
+    required Color color,
+    required String tooltip,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: () {
+        SpendoHaptics.light();
+        onTap();
+      },
+      borderRadius: BorderRadius.circular(6),
+      child: Container(
+        padding: const EdgeInsets.all(5),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(6),
+          border: Border.all(color: color.withValues(alpha: 0.3)),
         ),
+        child: Icon(icon, size: 13, color: color),
       ),
     );
   }

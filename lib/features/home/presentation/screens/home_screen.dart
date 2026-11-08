@@ -847,42 +847,16 @@ class _HomeScreenState extends State<HomeScreen> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(Remix.history_line, size: 15, color: brandGreen),
-                  const SizedBox(width: 4),
-                  Text(
-                    'آخر السجلات',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      color: textWhite,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(width: 4),
-
-              // الفلاتر المطلوبة: الكل | أكل | مشتريات | وقود (مضغوطة بـ FittedBox لمنع أي Overflow أو نزول لسطر ثانٍ)
-              Flexible(
-                child: FittedBox(
-                  fit: BoxFit.scaleDown,
-                  alignment: Alignment.centerLeft,
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      _buildFilterChip('all', 'الكل'),
-                      const SizedBox(width: 3),
-                      _buildFilterChip('food', 'أكل'),
-                      const SizedBox(width: 3),
-                      _buildFilterChip('shopping', 'مشتريات'),
-                      const SizedBox(width: 3),
-                      _buildFilterChip('fuel', 'وقود'),
-                    ],
-                  ),
+              const Icon(Remix.history_line, size: 15, color: brandGreen),
+              const SizedBox(width: 6),
+              Text(
+                'آخر السجلات',
+                style: TextStyle(
+                  fontFamily: 'Cairo',
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.bold,
+                  color: textWhite,
                 ),
               ),
             ],
@@ -1091,40 +1065,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildFilterChip(String key, String label) {
-    final isSelected = _selectedLogsFilter == key;
-    return GestureDetector(
-      onTap: () {
-        SpendoHaptics.selection();
-        setState(() => _selectedLogsFilter = key);
-      },
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 220),
-        curve: Curves.easeOutCubic,
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3.5),
-        decoration: BoxDecoration(
-          color: isSelected ? brandGreen : surfaceElevated,
-          borderRadius: BorderRadius.circular(6),
-          border: Border.all(
-            color: isSelected ? brandGreen : surfaceBorder,
-          ),
-        ),
-        child: AnimatedDefaultTextStyle(
-          duration: const Duration(milliseconds: 180),
-          curve: Curves.easeOutCubic,
-          style: TextStyle(
-            fontFamily: 'Cairo',
-            fontSize: 10,
-            fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
-            color: isSelected
-                ? (_isDark ? Colors.white : const Color(0xFF047857))
-                : textMuted,
-          ),
-          child: Text(label),
-        ),
-      ),
-    );
-  }
+
 
   /// نافذة تفاصيل العملية (المبلغ، التاريخ، الساعة، وسيلة الدفع، والموقع)
   void _showExpenseDetailsSheet(DailyExpenseModel initialExpense) {

@@ -92,6 +92,7 @@ class _AddEditPersonSheetState extends State<AddEditPersonSheet> {
       nationalId: _nationalIdController.text.trim().isEmpty ? null : _nationalIdController.text.trim(),
       bank: widget.person?.bank,
       accountNumber: widget.person?.accountNumber,
+      avatarPath: widget.person?.avatarPath,
       isPinned: _isPinned,
       dailyRate: widget.person?.dailyRate ?? 0.0,
       hourlyRate: widget.person?.hourlyRate ?? 0.0,

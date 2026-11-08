@@ -11,6 +11,7 @@ class PersonModel {
   final String? nationalId;
   final String? bank;
   final String? accountNumber;
+  final String? avatarPath;
   final bool isPinned;
   final double hourlyRate;
   final double dailyRate;
@@ -29,6 +30,7 @@ class PersonModel {
     this.nationalId,
     this.bank,
     this.accountNumber,
+    this.avatarPath,
     this.isPinned = false,
     this.hourlyRate = 0.0,
     this.dailyRate = 0.0,
@@ -82,6 +84,8 @@ class PersonModel {
     String? nationalId,
     String? bank,
     String? accountNumber,
+    String? avatarPath,
+    bool clearAvatar = false,
     bool? isPinned,
     double? hourlyRate,
     double? dailyRate,
@@ -100,6 +104,7 @@ class PersonModel {
       nationalId: nationalId ?? this.nationalId,
       bank: bank ?? this.bank,
       accountNumber: accountNumber ?? this.accountNumber,
+      avatarPath: clearAvatar ? null : (avatarPath ?? this.avatarPath),
       isPinned: isPinned ?? this.isPinned,
       hourlyRate: hourlyRate ?? this.hourlyRate,
       dailyRate: dailyRate ?? this.dailyRate,
@@ -121,6 +126,7 @@ class PersonModel {
       'national_id': nationalId,
       'bank': bank,
       'account_number': accountNumber,
+      'avatar_path': avatarPath,
       'is_pinned': isPinned ? 1 : 0,
       'hourly_rate': hourlyRate,
       'daily_rate': dailyRate,
@@ -144,6 +150,7 @@ class PersonModel {
       nationalId: map['national_id'] as String?,
       bank: map['bank'] as String?,
       accountNumber: map['account_number'] as String?,
+      avatarPath: map['avatar_path'] as String?,
       isPinned: (map['is_pinned'] as int? ?? 0) == 1,
       hourlyRate: (map['hourly_rate'] as num? ?? 0.0).toDouble(),
       dailyRate: (map['daily_rate'] as num? ?? 0.0).toDouble(),

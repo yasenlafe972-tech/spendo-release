@@ -1,3 +1,5 @@
+import 'dart:io';
+import 'package:image_picker/image_picker.dart';
 import 'package:sanad_app/core/widgets/banking_animations.dart';
 import 'package:sanad_app/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
@@ -143,6 +145,7 @@ class _PeopleScreenState extends State<PeopleScreen> {
     final idNumberCtrl =
         TextEditingController(text: person?.nationalId ?? '');
     final emailCtrl = TextEditingController(text: person?.email ?? '');
+    String? avatarPath = person?.avatarPath;
 
     DateTime? selectedDate = person?.birthdate;
 
@@ -204,42 +207,178 @@ class _PeopleScreenState extends State<PeopleScreen> {
                           ),
                           child: Row(
                             children: [
-                              // الصورة الرمزية مع إطار ذهبي لامع
-                              Container(
-                                width: 46,
-                                height: 46,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: brandYellow.withValues(alpha: 0.12),
-                                  border: Border.all(
-                                    color: brandYellow.withValues(alpha: 0.55),
-                                    width: 1.5,
-                                  ),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color:
-                                          brandYellow.withValues(alpha: 0.15),
-                                      blurRadius: 8,
-                                      spreadRadius: 1,
+                              // الصورة الرمزية مع خيار إضافة صورة شخصية
+                              InkWell(
+                                onTap: () async {
+                                  SpendoHaptics.light();
+                                  final source =
+                                      await showModalBottomSheet<ImageSource>(
+                                    context: ctx,
+                                    backgroundColor: surfaceMain,
+                                    shape: const RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.vertical(
+                                          top: Radius.circular(18)),
+                                    ),
+                                    builder: (sheetCtx) => SafeArea(
+                                      child: Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            vertical: 14, horizontal: 16),
+                                        child: Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Text(
+                                              'الصورة الشخصية',
+                                              style: TextStyle(
+                                                fontFamily: 'Cairo',
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.bold,
+                                                color: textPrimary,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 12),
+                                            ListTile(
+                                              leading: const Icon(
+                                                  Remix.image_line,
+                                                  color: brandYellow),
+                                              title: Text('اختيار من المعرض',
+                                                  style: TextStyle(
+                                                      fontFamily: 'Cairo',
+                                                      color: textPrimary)),
+                                              onTap: () => Navigator.pop(
+                                                  sheetCtx,
+                                                  ImageSource.gallery),
+                                            ),
+                                            ListTile(
+                                              leading: const Icon(
+                                                  Remix.camera_line,
+                                                  color: brandGreen),
+                                              title: Text('التقاط بالكاميرا',
+                                                  style: TextStyle(
+                                                      fontFamily: 'Cairo',
+                                                      color: textPrimary)),
+                                              onTap: () => Navigator.pop(
+                                                  sheetCtx,
+                                                  ImageSource.camera),
+                                            ),
+                                            if (avatarPath != null)
+                                              ListTile(
+                                                leading: const Icon(
+                                                    Remix.delete_bin_line,
+                                                    color: Color(0xFFEF4444)),
+                                                title: const Text('إزالة الصورة',
+                                                    style: TextStyle(
+                                                        fontFamily: 'Cairo',
+                                                        color:
+                                                            Color(0xFFEF4444))),
+                                                onTap: () {
+                                                  Navigator.pop(sheetCtx);
+                                                  setModalState(
+                                                      () => avatarPath = null);
+                                                },
+                                              ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  );
+
+                                  if (source != null) {
+                                    final picked = await ImagePicker()
+                                        .pickImage(
+                                      source: source,
+                                      maxWidth: 600,
+                                      maxHeight: 600,
+                                      imageQuality: 85,
+                                    );
+                                    if (picked != null) {
+                                      setModalState(
+                                          () => avatarPath = picked.path);
+                                    }
+                                  }
+                                },
+                                borderRadius: BorderRadius.circular(99),
+                                child: Stack(
+                                  clipBehavior: Clip.none,
+                                  children: [
+                                    Container(
+                                      width: 48,
+                                      height: 48,
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        color:
+                                            brandYellow.withValues(alpha: 0.12),
+                                        border: Border.all(
+                                          color: brandYellow
+                                              .withValues(alpha: 0.55),
+                                          width: 1.5,
+                                        ),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: brandYellow
+                                                .withValues(alpha: 0.15),
+                                            blurRadius: 8,
+                                            spreadRadius: 1,
+                                          ),
+                                        ],
+                                      ),
+                                      child: ClipOval(
+                                        child: avatarPath != null &&
+                                                avatarPath!.trim().isNotEmpty &&
+                                                File(avatarPath!).existsSync()
+                                            ? Image.file(
+                                                File(avatarPath!),
+                                                width: 48,
+                                                height: 48,
+                                                fit: BoxFit.cover,
+                                              )
+                                            : Center(
+                                                child: isEdit &&
+                                                        person.name
+                                                            .trim()
+                                                            .isNotEmpty
+                                                    ? Text(
+                                                        person.name
+                                                            .trim()
+                                                            .characters
+                                                            .first,
+                                                        style: const TextStyle(
+                                                          fontFamily: 'Cairo',
+                                                          fontSize: 20,
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                          color: brandYellow,
+                                                        ),
+                                                      )
+                                                    : const Icon(
+                                                        Remix.user_add_line,
+                                                        size: 22,
+                                                        color: brandYellow,
+                                                      ),
+                                              ),
+                                      ),
+                                    ),
+                                    Positioned(
+                                      left: -2,
+                                      bottom: -2,
+                                      child: Container(
+                                        padding: const EdgeInsets.all(3.5),
+                                        decoration: BoxDecoration(
+                                          color: brandYellow,
+                                          shape: BoxShape.circle,
+                                          border: Border.all(
+                                            color: surfaceMain,
+                                            width: 1.5,
+                                          ),
+                                        ),
+                                        child: const Icon(
+                                          Remix.camera_fill,
+                                          size: 10,
+                                          color: Color(0xFF0A0B0B),
+                                        ),
+                                      ),
                                     ),
                                   ],
                                 ),
-                                alignment: Alignment.center,
-                                child: isEdit && person.name.trim().isNotEmpty
-                                    ? Text(
-                                        person.name.trim().characters.first,
-                                        style: const TextStyle(
-                                          fontFamily: 'Cairo',
-                                          fontSize: 20,
-                                          fontWeight: FontWeight.bold,
-                                          color: brandYellow,
-                                        ),
-                                      )
-                                    : const Icon(
-                                        Remix.user_add_line,
-                                        size: 22,
-                                        color: brandYellow,
-                                      ),
                               ),
                               const SizedBox(width: 10),
 
@@ -694,6 +833,7 @@ class _PeopleScreenState extends State<PeopleScreen> {
                                                 bank: person.bank,
                                                 accountNumber:
                                                     person.accountNumber,
+                                                avatarPath: avatarPath,
                                                 isPinned: person.isPinned,
                                                 hourlyRate: person.hourlyRate,
                                                 dailyRate: person.dailyRate,
@@ -719,6 +859,7 @@ class _PeopleScreenState extends State<PeopleScreen> {
                                                 nationalId: cleanId.isEmpty
                                                     ? null
                                                     : cleanId,
+                                                avatarPath: avatarPath,
                                                 createdAt: DateTime.now(),
                                                 updatedAt: DateTime.now(),
                                               );
@@ -1223,10 +1364,10 @@ class _PeopleScreenState extends State<PeopleScreen> {
                               crossAxisCount: 2,
                               mainAxisSpacing: 10,
                               crossAxisSpacing: 10,
-                              childAspectRatio: (1.48 /
+                              childAspectRatio: (2.65 /
                                       AppTheme.fontScaleNotifier.value
                                           .clamp(0.85, 1.25))
-                                  .clamp(1.22, 1.55),
+                                  .clamp(2.10, 2.95),
                             ),
                             itemCount: filtered.length,
                             itemBuilder: (context, index) {
