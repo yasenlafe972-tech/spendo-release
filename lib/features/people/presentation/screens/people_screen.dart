@@ -447,7 +447,7 @@ class _PeopleScreenState extends State<PeopleScreen> {
                                     // رقم الهاتف مع زر لصق أصفر
                                     _buildBentoRow(
                                       icon: Remix.phone_line,
-                                      iconColor: brandYellow,
+                                      iconColor: brandGreen,
                                       child: TextField(
                                         controller: phoneCtrl,
                                         keyboardType: TextInputType.phone,
@@ -493,6 +493,7 @@ class _PeopleScreenState extends State<PeopleScreen> {
                                         ),
                                       ),
                                       trailing: _buildAmberPasteChip(
+                                        iconColor: brandGreen,
                                         onPaste: () async {
                                           final data = await Clipboard
                                               .getData(Clipboard.kTextPlain);
@@ -982,33 +983,16 @@ class _PeopleScreenState extends State<PeopleScreen> {
     );
   }
 
-  Widget _buildAmberPasteChip({required VoidCallback onPaste}) {
+  Widget _buildAmberPasteChip({
+    required VoidCallback onPaste,
+    Color iconColor = brandYellow,
+  }) {
     return InkWell(
       onTap: onPaste,
       borderRadius: BorderRadius.circular(6),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-        decoration: BoxDecoration(
-          color: brandYellow.withValues(alpha: 0.12),
-          borderRadius: BorderRadius.circular(6),
-          border: Border.all(color: brandYellow.withValues(alpha: 0.35)),
-        ),
-        child: const Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Remix.clipboard_line, size: 11, color: brandYellow),
-            SizedBox(width: 3),
-            Text(
-              'لصق',
-              style: TextStyle(
-                fontFamily: 'Cairo',
-                color: brandYellow,
-                fontSize: 10,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ],
-        ),
+      child: Padding(
+        padding: const EdgeInsets.all(4),
+        child: Icon(Remix.clipboard_line, size: 17, color: iconColor),
       ),
     );
   }

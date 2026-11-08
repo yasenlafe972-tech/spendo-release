@@ -92,7 +92,7 @@ class _WorkLogsScreenState extends State<WorkLogsScreen> {
     _loadData();
   }
 
-  Future<void> _openEmployerModal([WorkplaceModel? existing]) async {
+Future<void> _openEmployerModal([WorkplaceModel? existing]) async {
     SpendoHaptics.light();
     final isEdit = existing != null;
     final nameCtrl = TextEditingController(text: existing?.name ?? '');
@@ -111,7 +111,7 @@ class _WorkLogsScreenState extends State<WorkLogsScreen> {
       isScrollControlled: true,
       backgroundColor: surfaceMain,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
       ),
       builder: (ctx) {
         final media = MediaQuery.of(ctx);
@@ -122,6 +122,8 @@ class _WorkLogsScreenState extends State<WorkLogsScreen> {
 
         return StatefulBuilder(
           builder: (context, setModalState) {
+            final isActive = currentStatus == 'active';
+
             return Directionality(
               textDirection: TextDirection.rtl,
               child: SafeArea(
@@ -129,309 +131,597 @@ class _WorkLogsScreenState extends State<WorkLogsScreen> {
                 bottom: true,
                 child: Padding(
                   padding: EdgeInsets.only(
-                    left: 14,
-                    right: 14,
-                    top: 10,
                     bottom: keyboardInset > 0
-                        ? keyboardInset + 8
+                        ? keyboardInset
                         : (bottomNavPadding > 0 ? bottomNavPadding + 8 : 16),
                   ),
-                  child: SingleChildScrollView(
-                    physics: const BouncingScrollPhysics(),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        // مؤشر السحب
-                        Center(
-                          child: Container(
-                            width: 32,
-                            height: 3.5,
-                            margin: const EdgeInsets.only(bottom: 12),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF404040),
-                              borderRadius: BorderRadius.circular(99),
-                            ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      // مقبض السحب العلوي
+                      const SizedBox(height: 8),
+                      Center(
+                        child: Container(
+                          width: 36,
+                          height: 4,
+                          decoration: BoxDecoration(
+                            color: surfaceBorder,
+                            borderRadius: BorderRadius.circular(99),
                           ),
                         ),
+                      ),
+                      const SizedBox(height: 8),
 
-                        // صندوق الحقول الرئيسي
-                        Container(
-                          padding: const EdgeInsets.all(14),
+                      // ترويسة الهوية والمشغّل (Hero Profile Header)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Container(
+                          padding: const EdgeInsets.only(bottom: 10),
                           decoration: BoxDecoration(
-                            color: surfaceField,
-                            borderRadius: BorderRadius.circular(14),
-                            border: Border.all(color: surfaceBorder),
+                            border: Border(
+                              bottom: BorderSide(
+                                  color: surfaceBorder, width: 1.0),
+                            ),
                           ),
+                          child: Row(
+                            children: [
+                              // أيقونة المشغّل أو حرفه الأول مع إطار ذهبي
+                              Container(
+                                width: 46,
+                                height: 46,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: brandYellow.withValues(alpha: 0.12),
+                                  border: Border.all(
+                                    color: brandYellow.withValues(alpha: 0.55),
+                                    width: 1.5,
+                                  ),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color:
+                                          brandYellow.withValues(alpha: 0.15),
+                                      blurRadius: 8,
+                                      spreadRadius: 1,
+                                    ),
+                                  ],
+                                ),
+                                alignment: Alignment.center,
+                                child: isEdit && existing.name.trim().isNotEmpty
+                                    ? Text(
+                                        existing.name.trim().characters.first,
+                                        style: const TextStyle(
+                                          fontFamily: 'Cairo',
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.bold,
+                                          color: brandYellow,
+                                        ),
+                                      )
+                                    : const Icon(
+                                        Remix.building_4_line,
+                                        size: 22,
+                                        color: brandYellow,
+                                      ),
+                              ),
+                              const SizedBox(width: 10),
+
+                              // اسم المشغّل وشارة الحالة
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      isEdit
+                                          ? (existing.name.isNotEmpty
+                                              ? existing.name
+                                              : 'تعديل بيانات المشغّل')
+                                          : 'إضافة مشغّل جديد',
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        fontFamily: 'Cairo',
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.bold,
+                                        color: textPrimary,
+                                        height: 1.2,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 7, vertical: 2),
+                                      decoration: BoxDecoration(
+                                        color: isActive
+                                            ? brandGreen.withValues(alpha: 0.14)
+                                            : surfaceBorder
+                                                .withValues(alpha: 0.5),
+                                        borderRadius: BorderRadius.circular(6),
+                                        border: Border.all(
+                                          color: isActive
+                                              ? brandGreen
+                                                  .withValues(alpha: 0.4)
+                                              : surfaceBorder,
+                                        ),
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Container(
+                                            width: 6,
+                                            height: 6,
+                                            decoration: BoxDecoration(
+                                              shape: BoxShape.circle,
+                                              color: isActive
+                                                  ? brandGreen
+                                                  : textSubtle,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 4),
+                                          Text(
+                                            isActive
+                                                ? 'مشغّل نشط حالياً'
+                                                : 'غير نشط / مكتمل',
+                                            style: TextStyle(
+                                              fontFamily: 'Cairo',
+                                              fontSize: 10,
+                                              fontWeight: FontWeight.bold,
+                                              color: isActive
+                                                  ? brandGreen
+                                                  : textMuted,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+
+                              // زر الإغلاق
+                              InkWell(
+                                onTap: () => Navigator.pop(ctx),
+                                borderRadius: BorderRadius.circular(20),
+                                child: Container(
+                                  padding: const EdgeInsets.all(6),
+                                  decoration: BoxDecoration(
+                                    color: surfaceBorder.withValues(alpha: 0.4),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Icon(
+                                    Remix.close_line,
+                                    size: 16,
+                                    color: textMuted,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+
+                      // محتوى البطاقات (Bento Cards)
+                      Flexible(
+                        child: SingleChildScrollView(
+                          physics: const BouncingScrollPhysics(),
+                          padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
-                              // ترويسة النافذة
+                              // وسم البطاقة 1: بيانات المنشأة
                               Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Row(
-                                    children: [
-                                      const Icon(
-                                        Remix.building_4_line,
-                                        size: 16,
-                                        color: brandYellow,
-                                      ),
-                                      const SizedBox(width: 6),
-                                      Text(
-                                        isEdit
-                                            ? 'تعديل بيانات المشغّل'
-                                            : 'إضافة مشغّل جديد',
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.bold,
-                                          color: textWhite,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  GestureDetector(
-                                    onTap: () => Navigator.pop(ctx),
-                                    behavior: HitTestBehavior.opaque,
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(4),
-                                      child: Icon(
-                                        Remix.close_line,
-                                        size: 18,
-                                        color: textMuted,
-                                      ),
+                                  const Icon(Remix.building_line,
+                                      size: 12, color: brandYellow),
+                                  const SizedBox(width: 5),
+                                  Text(
+                                    'بيانات المشغّل والمنشأة',
+                                    style: TextStyle(
+                                      fontFamily: 'Cairo',
+                                      fontSize: 10.5,
+                                      fontWeight: FontWeight.bold,
+                                      color: textMuted,
                                     ),
                                   ),
                                 ],
+                              ),
+                              const SizedBox(height: 5),
+
+                              // بطاقة Bento 1: الاسم + المدينة
+                              Container(
+                                decoration: BoxDecoration(
+                                  color: surfaceField,
+                                  borderRadius: BorderRadius.circular(14),
+                                  border: Border.all(color: surfaceBorder),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withValues(
+                                          alpha: _isDark ? 0.2 : 0.03),
+                                      blurRadius: 6,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ],
+                                ),
+                                child: Column(
+                                  children: [
+                                    // حقل اسم المشغّل
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 12, vertical: 3),
+                                      child: Row(
+                                        children: [
+                                          const Icon(Remix.briefcase_line,
+                                              color: brandYellow, size: 17),
+                                          const SizedBox(width: 10),
+                                          Expanded(
+                                            child: TextField(
+                                              controller: nameCtrl,
+                                              style: TextStyle(
+                                                fontFamily: 'Cairo',
+                                                fontSize: 12.5,
+                                                fontWeight: FontWeight.bold,
+                                                color: textPrimary,
+                                              ),
+                                              decoration: InputDecoration(
+                                                isDense: true,
+                                                hintText:
+                                                    'اسم المشغّل أو الشركة (مثال: מזגני אלנور) *',
+                                                hintStyle: TextStyle(
+                                                  fontFamily: 'Cairo',
+                                                  color: textSubtle,
+                                                  fontSize: 11.5,
+                                                ),
+                                                border: InputBorder.none,
+                                                contentPadding:
+                                                    const EdgeInsets.symmetric(
+                                                        vertical: 8),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    Divider(
+                                      height: 1,
+                                      thickness: 0.8,
+                                      color: surfaceBorder
+                                          .withValues(alpha: 0.7),
+                                      indent: 38,
+                                      endIndent: 12,
+                                    ),
+                                    // حقل المدينة أو موقع العمل
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 12, vertical: 3),
+                                      child: Row(
+                                        children: [
+                                          const Icon(Remix.map_pin_line,
+                                              color: brandGreen, size: 17),
+                                          const SizedBox(width: 10),
+                                          Expanded(
+                                            child: TextField(
+                                              controller: cityCtrl,
+                                              style: TextStyle(
+                                                fontFamily: 'Cairo',
+                                                fontSize: 12.5,
+                                                fontWeight: FontWeight.w600,
+                                                color: textPrimary,
+                                              ),
+                                              decoration: InputDecoration(
+                                                isDense: true,
+                                                hintText:
+                                                    'المدينة أو موقع العمل (مثال: القدس)',
+                                                hintStyle: TextStyle(
+                                                  fontFamily: 'Cairo',
+                                                  color: textSubtle,
+                                                  fontSize: 11.5,
+                                                ),
+                                                border: InputBorder.none,
+                                                contentPadding:
+                                                    const EdgeInsets.symmetric(
+                                                        vertical: 8),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
                               const SizedBox(height: 12),
 
-                              // اسم المشغّل / الشركة
-                              Text(
-                                'اسم المشغّل / الشركة',
-                                style: TextStyle(
-                                  fontSize: 10,
-                                  color: textMuted,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Container(
-                                decoration: BoxDecoration(
-                                  color: surfaceMain,
-                                  borderRadius: BorderRadius.circular(8),
-                                  border: Border.all(color: surfaceBorder),
-                                ),
-                                child: TextField(
-                                  controller: nameCtrl,
-                                  style: TextStyle(
-                                      color: textPrimary, fontSize: 12),
-                                  decoration: InputDecoration(
-                                    hintText: 'مثال: מזגני אלנור',
-                                    hintStyle: TextStyle(
-                                        color: textSubtle, fontSize: 12),
-                                    border: InputBorder.none,
-                                    contentPadding: EdgeInsets.symmetric(
-                                        horizontal: 10, vertical: 8),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: 10),
-
-                              // شبكة عمودين: سعر اليومية + المدينة / ملاحظة
+                              // وسم البطاقة 2: الأجور وحالة النشاط
                               Row(
                                 children: [
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          'سعر اليومية (₪)',
-                                          style: TextStyle(
-                                            fontSize: 10,
-                                            color: textMuted,
-                                          ),
-                                        ),
-                                        const SizedBox(height: 4),
-                                        Container(
-                                          decoration: BoxDecoration(
-                                            color: surfaceMain,
-                                            borderRadius:
-                                                BorderRadius.circular(8),
-                                            border: Border.all(
-                                                color: surfaceBorder),
-                                          ),
-                                          child: TextField(
-                                            controller: rateCtrl,
-                                            keyboardType: const TextInputType
-                                                .numberWithOptions(
-                                                decimal: true),
-                                            style: TextStyle(
-                                                color: textPrimary,
-                                                fontSize: 12),
-                                            decoration: InputDecoration(
-                                              hintText: '0',
-                                              hintStyle: TextStyle(
-                                                  color: textSubtle,
-                                                  fontSize: 12),
-                                              border: InputBorder.none,
-                                              contentPadding:
-                                                  EdgeInsets.symmetric(
-                                                      horizontal: 10,
-                                                      vertical: 8),
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          'المدينة / ملاحظة (اختياري)',
-                                          style: TextStyle(
-                                            fontSize: 10,
-                                            color: textMuted,
-                                          ),
-                                        ),
-                                        const SizedBox(height: 4),
-                                        Container(
-                                          decoration: BoxDecoration(
-                                            color: surfaceMain,
-                                            borderRadius:
-                                                BorderRadius.circular(8),
-                                            border: Border.all(
-                                                color: surfaceBorder),
-                                          ),
-                                          child: TextField(
-                                            controller: cityCtrl,
-                                            style: TextStyle(
-                                                color: textPrimary,
-                                                fontSize: 12),
-                                            decoration: InputDecoration(
-                                              hintText: 'مثال: القدس',
-                                              hintStyle: TextStyle(
-                                                  color: textSubtle,
-                                                  fontSize: 12),
-                                              border: InputBorder.none,
-                                              contentPadding:
-                                                  EdgeInsets.symmetric(
-                                                      horizontal: 10,
-                                                      vertical: 8),
-                                            ),
-                                          ),
-                                        ),
-                                      ],
+                                  const Icon(Remix.money_dollar_circle_line,
+                                      size: 12, color: brandGreen),
+                                  const SizedBox(width: 5),
+                                  Text(
+                                    'الأجر اليومي وحالة العمل',
+                                    style: TextStyle(
+                                      fontFamily: 'Cairo',
+                                      fontSize: 10.5,
+                                      fontWeight: FontWeight.bold,
+                                      color: textMuted,
                                     ),
                                   ),
                                 ],
                               ),
-                              const SizedBox(height: 10),
+                              const SizedBox(height: 5),
 
-                              // حالة المشغّل: نشط / غير نشط (مدمج في سطر واحد)
+                              // بطاقة Bento 2: الأجر اليومي + حالة العمل
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                                 decoration: BoxDecoration(
-                                  color: surfaceMain,
-                                  borderRadius: BorderRadius.circular(8),
+                                  color: surfaceField,
+                                  borderRadius: BorderRadius.circular(14),
                                   border: Border.all(color: surfaceBorder),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withValues(
+                                          alpha: _isDark ? 0.2 : 0.03),
+                                      blurRadius: 6,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ],
                                 ),
-                                child: Row(
+                                child: Column(
                                   children: [
-                                    Text(
-                                      'حالة العمل مع المشغّل',
-                                      style: TextStyle(
-                                        fontSize: 10.5,
-                                        color: textMuted,
+                                    // صف سعر اليومية
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 12, vertical: 6),
+                                      child: Row(
+                                        children: [
+                                          const Icon(Remix.coin_line,
+                                              color: brandYellow, size: 17),
+                                          const SizedBox(width: 10),
+                                          Text(
+                                            'سعر اليومية الافتراضي',
+                                            style: TextStyle(
+                                              fontFamily: 'Cairo',
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.bold,
+                                              color: textPrimary,
+                                            ),
+                                          ),
+                                          const Spacer(),
+                                          Container(
+                                            width: 105,
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 8, vertical: 2),
+                                            decoration: BoxDecoration(
+                                              color: surfaceMain,
+                                              borderRadius:
+                                                  BorderRadius.circular(8),
+                                              border: Border.all(
+                                                color: brandYellow
+                                                    .withValues(alpha: 0.35),
+                                              ),
+                                            ),
+                                            child: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              children: [
+                                                Expanded(
+                                                  child: TextField(
+                                                    controller: rateCtrl,
+                                                    keyboardType:
+                                                        const TextInputType
+                                                            .numberWithOptions(
+                                                            decimal: true),
+                                                    textAlign: TextAlign.center,
+                                                    style: const TextStyle(
+                                                      fontFamily: 'Cairo',
+                                                      fontSize: 13,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      color: brandYellow,
+                                                    ),
+                                                    decoration:
+                                                        InputDecoration(
+                                                      hintText: '0',
+                                                      hintStyle: TextStyle(
+                                                          color: textMuted,
+                                                          fontSize: 12),
+                                                      border:
+                                                          InputBorder.none,
+                                                      isDense: true,
+                                                      contentPadding:
+                                                          const EdgeInsets.symmetric(
+                                                              vertical: 4),
+                                                    ),
+                                                  ),
+                                                ),
+                                                const SizedBox(width: 4),
+                                                const Text(
+                                                  '₪',
+                                                  style: TextStyle(
+                                                    fontFamily: 'Cairo',
+                                                    fontSize: 12,
+                                                    fontWeight:
+                                                        FontWeight.bold,
+                                                    color: brandYellow,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ),
-                                    const Spacer(),
-                                    GestureDetector(
-                                      onTap: () => setModalState(() => currentStatus = 'active'),
-                                      child: Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
-                                        decoration: BoxDecoration(
-                                          color: currentStatus == 'active'
-                                              ? brandGreen.withValues(alpha: 0.15)
-                                              : surfaceField,
-                                          borderRadius: BorderRadius.circular(6),
-                                          border: Border.all(
-                                            color: currentStatus == 'active'
-                                                ? brandGreen
-                                                : surfaceBorder,
-                                          ),
-                                        ),
-                                        child: Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            Container(
-                                              width: 5,
-                                              height: 5,
-                                              decoration: const BoxDecoration(
-                                                shape: BoxShape.circle,
-                                                color: brandGreen,
-                                              ),
-                                            ),
-                                            const SizedBox(width: 4),
-                                            Text(
-                                              'نشط',
-                                              style: TextStyle(
-                                                fontSize: 10,
-                                                fontWeight: FontWeight.bold,
-                                                color: currentStatus == 'active'
-                                                    ? brandGreen
-                                                    : textMuted,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
+                                    Divider(
+                                      height: 1,
+                                      thickness: 0.8,
+                                      color: surfaceBorder
+                                          .withValues(alpha: 0.7),
+                                      indent: 38,
+                                      endIndent: 12,
                                     ),
-                                    const SizedBox(width: 6),
-                                    GestureDetector(
-                                      onTap: () => setModalState(() => currentStatus = 'completed'),
-                                      child: Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
-                                        decoration: BoxDecoration(
-                                          color: currentStatus == 'completed'
-                                              ? (_isDark ? Colors.white.withValues(alpha: 0.1) : const Color(0xFFE5E7EB))
-                                              : surfaceField,
-                                          borderRadius: BorderRadius.circular(6),
-                                          border: Border.all(
-                                            color: currentStatus == 'completed'
-                                                ? (_isDark ? Colors.white.withValues(alpha: 0.6) : const Color(0xFF9CA3AF))
-                                                : surfaceBorder,
+                                    // صف حالة المشغّل مع مفتاح تبديل مدمج
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 12, vertical: 6),
+                                      child: Row(
+                                        children: [
+                                          const Icon(Remix.toggle_line,
+                                              color: brandGreen, size: 17),
+                                          const SizedBox(width: 10),
+                                          Text(
+                                            'حالة العمل مع المشغّل',
+                                            style: TextStyle(
+                                              fontFamily: 'Cairo',
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.bold,
+                                              color: textPrimary,
+                                            ),
                                           ),
-                                        ),
-                                        child: Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            Container(
-                                              width: 5,
-                                              height: 5,
-                                              decoration: BoxDecoration(
-                                                shape: BoxShape.circle,
-                                                color: textSubtle,
+                                          const Spacer(),
+                                          // مفتاح التبديل نشط / غير نشط
+                                          Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              GestureDetector(
+                                                onTap: () {
+                                                  SpendoHaptics.selection();
+                                                  setModalState(() =>
+                                                      currentStatus = 'active');
+                                                },
+                                                child: AnimatedContainer(
+                                                  duration: const Duration(
+                                                      milliseconds: 150),
+                                                  padding:
+                                                      const EdgeInsets
+                                                          .symmetric(
+                                                          horizontal: 9,
+                                                          vertical: 4),
+                                                  decoration: BoxDecoration(
+                                                    color: isActive
+                                                        ? brandGreen
+                                                            .withValues(
+                                                                alpha: 0.16)
+                                                        : surfaceMain,
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            7),
+                                                    border: Border.all(
+                                                      color: isActive
+                                                          ? brandGreen
+                                                          : surfaceBorder,
+                                                      width:
+                                                          isActive ? 1.2 : 1.0,
+                                                    ),
+                                                  ),
+                                                  child: Row(
+                                                    mainAxisSize:
+                                                        MainAxisSize.min,
+                                                    children: [
+                                                      Container(
+                                                        width: 6,
+                                                        height: 6,
+                                                        decoration:
+                                                            const BoxDecoration(
+                                                          shape:
+                                                              BoxShape.circle,
+                                                          color: brandGreen,
+                                                        ),
+                                                      ),
+                                                      const SizedBox(width: 4),
+                                                      Text(
+                                                        'نشط',
+                                                        style: TextStyle(
+                                                          fontFamily: 'Cairo',
+                                                          fontSize: 11,
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                          color: isActive
+                                                              ? brandGreen
+                                                              : textMuted,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
                                               ),
-                                            ),
-                                            const SizedBox(width: 4),
-                                            Text(
-                                              'غير نشط',
-                                              style: TextStyle(
-                                                fontSize: 10,
-                                                fontWeight: FontWeight.bold,
-                                                color: currentStatus == 'completed'
-                                                    ? (_isDark ? Colors.white : const Color(0xFF1F2937))
-                                                    : textMuted,
+                                              const SizedBox(width: 6),
+                                              GestureDetector(
+                                                onTap: () {
+                                                  SpendoHaptics.selection();
+                                                  setModalState(() =>
+                                                      currentStatus =
+                                                          'completed');
+                                                },
+                                                child: AnimatedContainer(
+                                                  duration: const Duration(
+                                                      milliseconds: 150),
+                                                  padding:
+                                                      const EdgeInsets
+                                                          .symmetric(
+                                                          horizontal: 9,
+                                                          vertical: 4),
+                                                  decoration: BoxDecoration(
+                                                    color: !isActive
+                                                        ? (_isDark
+                                                            ? Colors.white
+                                                                .withValues(
+                                                                    alpha: 0.1)
+                                                            : const Color(
+                                                                0xFFE5E7EB))
+                                                        : surfaceMain,
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            7),
+                                                    border: Border.all(
+                                                      color: !isActive
+                                                          ? (_isDark
+                                                              ? Colors.white
+                                                                  .withValues(
+                                                                      alpha:
+                                                                          0.5)
+                                                              : const Color(
+                                                                  0xFF9CA3AF))
+                                                          : surfaceBorder,
+                                                      width:
+                                                          !isActive ? 1.2 : 1.0,
+                                                    ),
+                                                  ),
+                                                  child: Row(
+                                                    mainAxisSize:
+                                                        MainAxisSize.min,
+                                                    children: [
+                                                      Container(
+                                                        width: 6,
+                                                        height: 6,
+                                                        decoration:
+                                                            BoxDecoration(
+                                                          shape:
+                                                              BoxShape.circle,
+                                                          color: textSubtle,
+                                                        ),
+                                                      ),
+                                                      const SizedBox(width: 4),
+                                                      Text(
+                                                        'غير نشط',
+                                                        style: TextStyle(
+                                                          fontFamily: 'Cairo',
+                                                          fontSize: 11,
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                          color: !isActive
+                                                              ? (_isDark
+                                                                  ? Colors.white
+                                                                  : const Color(
+                                                                      0xFF1F2937))
+                                                              : textMuted,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
                                               ),
-                                            ),
-                                          ],
-                                        ),
+                                            ],
+                                          ),
+                                        ],
                                       ),
                                     ),
                                   ],
@@ -439,29 +729,19 @@ class _WorkLogsScreenState extends State<WorkLogsScreen> {
                               ),
                               const SizedBox(height: 14),
 
-                              // أزرار الحفظ والإلغاء
+                              // أزرار الحفظ والإلغاء (زر أخضر فينتك مشع)
                               Row(
                                 children: [
                                   Expanded(
-                                    child: ElevatedButton.icon(
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: brandGreen,
-                                        foregroundColor: Colors.white,
-                                        shape: RoundedRectangleBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(8)),
-                                        padding: const EdgeInsets.symmetric(
-                                            vertical: 9),
-                                        elevation: 0,
-                                      ),
-                                      onPressed: () async {
+                                    child: InkWell(
+                                      onTap: () async {
                                         final name = nameCtrl.text.trim();
                                         if (name.isEmpty) {
                                           ScaffoldMessenger.of(context)
                                               .showSnackBar(
                                             const SnackBar(
                                               content: Text(
-                                                  'يرجى إدخال اسم المشغّل'),
+                                                  'يرجى إدخال اسم المشغّل أولاً'),
                                               backgroundColor:
                                                   Color(0xFFEF4444),
                                               duration: Duration(seconds: 2),
@@ -503,41 +783,83 @@ class _WorkLogsScreenState extends State<WorkLogsScreen> {
                                         }
                                         _loadData();
                                       },
-                                      icon: const Icon(Remix.check_line, size: 16),
-                                      label: Text(
-                                        isEdit
-                                            ? 'حفظ التعديلات'
-                                            : 'حفظ المشغّل',
-                                        style: const TextStyle(
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.bold),
+                                      borderRadius: BorderRadius.circular(11),
+                                      child: Container(
+                                        height: 42,
+                                        decoration: BoxDecoration(
+                                          color: brandGreen,
+                                          borderRadius:
+                                              BorderRadius.circular(11),
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: brandGreen.withValues(
+                                                  alpha: 0.28),
+                                              blurRadius: 8,
+                                              offset: const Offset(0, 3),
+                                            ),
+                                          ],
+                                        ),
+                                        alignment: Alignment.center,
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            const Icon(
+                                              Remix.check_line,
+                                              size: 17,
+                                              color: Color(0xFF0A0B0B),
+                                            ),
+                                            const SizedBox(width: 6),
+                                            Text(
+                                              isEdit
+                                                  ? 'حفظ التعديلات'
+                                                  : 'إضافة المشغّل',
+                                              style: const TextStyle(
+                                                fontFamily: 'Cairo',
+                                                color: Color(0xFF0A0B0B),
+                                                fontSize: 12.5,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
                                       ),
                                     ),
                                   ),
                                   const SizedBox(width: 8),
-                                  OutlinedButton(
-                                    style: OutlinedButton.styleFrom(
-                                      foregroundColor: textMuted,
-                                      backgroundColor: surfaceMain,
-                                      side: BorderSide(
-                                          color: surfaceBorder),
-                                      shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(8)),
+                                  InkWell(
+                                    onTap: () => Navigator.pop(ctx),
+                                    borderRadius: BorderRadius.circular(11),
+                                    child: Container(
+                                      height: 42,
                                       padding: const EdgeInsets.symmetric(
-                                          horizontal: 16, vertical: 9),
+                                          horizontal: 18),
+                                      decoration: BoxDecoration(
+                                        color: surfaceField,
+                                        borderRadius:
+                                            BorderRadius.circular(11),
+                                        border:
+                                            Border.all(color: surfaceBorder),
+                                      ),
+                                      alignment: Alignment.center,
+                                      child: Text(
+                                        'إلغاء',
+                                        style: TextStyle(
+                                          fontFamily: 'Cairo',
+                                          color: textMuted,
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
                                     ),
-                                    onPressed: () => Navigator.pop(ctx),
-                                    child: const Text('إلغاء',
-                                        style: TextStyle(fontSize: 12)),
                                   ),
                                 ],
                               ),
                             ],
                           ),
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
               ),

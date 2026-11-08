@@ -162,6 +162,7 @@ class _SpendoDatePickerSheetState extends State<_SpendoDatePickerSheet> {
   late FixedExtentScrollController _yearController;
 
   static const Color brandYellow = Color(0xFFF59E0B);
+  static const Color brandGreen = Color(0xFF10B981);
 
   bool get _isDark => Theme.of(context).brightness == Brightness.dark;
   Color get surfaceMain =>
@@ -339,15 +340,15 @@ class _SpendoDatePickerSheetState extends State<_SpendoDatePickerSheet> {
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Row(
                   children: [
-                    // أيقونة ذهبية
+                    // أيقونة خضراء
                     Container(
                       width: 38,
                       height: 38,
                       decoration: BoxDecoration(
-                        color: brandYellow.withValues(alpha: 0.14),
+                        color: brandGreen.withValues(alpha: 0.14),
                         borderRadius: BorderRadius.circular(10),
                         border: Border.all(
-                          color: brandYellow.withValues(alpha: 0.35),
+                          color: brandGreen.withValues(alpha: 0.35),
                         ),
                       ),
                       child: Icon(
@@ -355,7 +356,7 @@ class _SpendoDatePickerSheetState extends State<_SpendoDatePickerSheet> {
                             ? Remix.cake_2_line
                             : Remix.calendar_2_line,
                         size: 18,
-                        color: brandYellow,
+                        color: brandGreen,
                       ),
                     ),
                     const SizedBox(width: 10),
@@ -449,7 +450,7 @@ class _SpendoDatePickerSheetState extends State<_SpendoDatePickerSheet> {
               ),
               const SizedBox(height: 10),
 
-              // 3. بطاقة المعاينة الذهبية (Hero Bento Date & Age Card)
+              // 3. بطاقة المعاينة الفينتك (Hero Bento Date & Age Card)
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Container(
@@ -459,12 +460,12 @@ class _SpendoDatePickerSheetState extends State<_SpendoDatePickerSheet> {
                     color: surfaceField,
                     borderRadius: BorderRadius.circular(14),
                     border: Border.all(
-                      color: brandYellow.withValues(alpha: 0.4),
+                      color: brandGreen.withValues(alpha: 0.35),
                       width: 1.2,
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: brandYellow.withValues(alpha: 0.10),
+                        color: brandGreen.withValues(alpha: 0.08),
                         blurRadius: 8,
                         offset: const Offset(0, 2),
                       ),
@@ -492,7 +493,7 @@ class _SpendoDatePickerSheetState extends State<_SpendoDatePickerSheet> {
                                 fontFamily: 'Cairo',
                                 fontSize: 11,
                                 fontWeight: FontWeight.w600,
-                                color: brandYellow,
+                                color: brandGreen,
                                 letterSpacing: 0.5,
                               ),
                             ),
@@ -533,30 +534,9 @@ class _SpendoDatePickerSheetState extends State<_SpendoDatePickerSheet> {
                 ),
               ),
 
-              // 4. شرائح القفز السريع للأعمار والسنوات (Quick Jump Presets)
-              if (widget.isBirthDate) ...[
-                const SizedBox(height: 8),
-                SizedBox(
-                  height: 28,
-                  child: ListView(
-                    scrollDirection: Axis.horizontal,
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    physics: const BouncingScrollPhysics(),
-                    children: [
-                      _buildPresetChip('18 سنة', DateTime.now().year - 18),
-                      _buildPresetChip('20 سنة', DateTime.now().year - 20),
-                      _buildPresetChip('25 سنة', DateTime.now().year - 25),
-                      _buildPresetChip('30 سنة', DateTime.now().year - 30),
-                      _buildPresetChip('35 سنة', DateTime.now().year - 35),
-                      _buildPresetChip('40 سنة', DateTime.now().year - 40),
-                      _buildPresetChip('50 سنة', DateTime.now().year - 50),
-                    ],
-                  ),
-                ),
-              ],
               const SizedBox(height: 10),
 
-              // 5. جسم المنتقي الرئيسي: عجلات دوارة ثلاثية أو تقويم شهري
+              // 4. جسم المنتقي الرئيسي: عجلات دوارة ثلاثية أو تقويم شهري
               AnimatedSwitcher(
                 duration: const Duration(milliseconds: 220),
                 child: _useWheelMode
@@ -566,7 +546,7 @@ class _SpendoDatePickerSheetState extends State<_SpendoDatePickerSheet> {
 
               const SizedBox(height: 12),
 
-              // 6. أزرار التأكيد والإلغاء (زر ذهبي فينتك مميز)
+              // 5. أزرار التأكيد والإلغاء (زر فينتك مميز)
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Row(
@@ -581,11 +561,11 @@ class _SpendoDatePickerSheetState extends State<_SpendoDatePickerSheet> {
                         child: Container(
                           height: 44,
                           decoration: BoxDecoration(
-                            color: brandYellow,
+                            color: brandGreen,
                             borderRadius: BorderRadius.circular(12),
                             boxShadow: [
                               BoxShadow(
-                                color: brandYellow.withValues(alpha: 0.3),
+                                color: brandGreen.withValues(alpha: 0.3),
                                 blurRadius: 10,
                                 offset: const Offset(0, 3),
                               ),
@@ -643,43 +623,6 @@ class _SpendoDatePickerSheetState extends State<_SpendoDatePickerSheet> {
                 ),
               ),
             ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPresetChip(String label, int year) {
-    final isSelected = _selectedDate.year == year;
-    return Padding(
-      padding: const EdgeInsets.only(left: 6),
-      child: InkWell(
-        onTap: () {
-          _jumpToDate(DateTime(year, _selectedDate.month, _selectedDate.day));
-        },
-        borderRadius: BorderRadius.circular(16),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
-          decoration: BoxDecoration(
-            color: isSelected
-                ? brandYellow.withValues(alpha: 0.22)
-                : surfaceField,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: isSelected
-                  ? brandYellow
-                  : surfaceBorder,
-              width: isSelected ? 1.2 : 1.0,
-            ),
-          ),
-          child: Text(
-            '$label ($year)',
-            style: TextStyle(
-              fontFamily: 'Cairo',
-              fontSize: 10,
-              fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-              color: isSelected ? brandYellow : textMuted,
-            ),
           ),
         ),
       ),
@@ -745,7 +688,7 @@ class _SpendoDatePickerSheetState extends State<_SpendoDatePickerSheet> {
                           fontSize: isSel ? 16 : 13,
                           fontWeight:
                               isSel ? FontWeight.bold : FontWeight.normal,
-                          color: isSel ? brandYellow : textMuted,
+                          color: isSel ? brandGreen : textMuted,
                         ),
                       ),
                     );
@@ -815,7 +758,7 @@ class _SpendoDatePickerSheetState extends State<_SpendoDatePickerSheet> {
                           fontSize: isSel ? 16 : 13,
                           fontWeight:
                               isSel ? FontWeight.bold : FontWeight.normal,
-                          color: isSel ? brandYellow : textMuted,
+                          color: isSel ? brandGreen : textMuted,
                         ),
                       ),
                     );
@@ -858,7 +801,7 @@ class _SpendoDatePickerSheetState extends State<_SpendoDatePickerSheet> {
                   });
                 },
                 icon: const Icon(Remix.arrow_right_s_line, size: 20),
-                color: brandYellow,
+                color: brandGreen,
                 tooltip: 'الشهر السابق',
               ),
               Text(
@@ -878,7 +821,7 @@ class _SpendoDatePickerSheetState extends State<_SpendoDatePickerSheet> {
                   });
                 },
                 icon: const Icon(Remix.arrow_left_s_line, size: 20),
-                color: brandYellow,
+                color: brandGreen,
                 tooltip: 'الشهر القادم',
               ),
             ],
@@ -940,7 +883,7 @@ class _SpendoDatePickerSheetState extends State<_SpendoDatePickerSheet> {
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
                     color: isSelected
-                        ? brandYellow
+                        ? brandGreen
                         : (isToday
                             ? brandYellow.withValues(alpha: 0.15)
                             : Colors.transparent),
