@@ -63,7 +63,7 @@ class _MultiFuelImportSheetState extends State<MultiFuelImportSheet> {
   static Color get surfaceField => _isDark ? const Color(0xFF171A19) : const Color(0xFFF9FAFB);
   static Color get surfaceBorder => _isDark ? const Color(0xFF242927) : const Color(0xFFE5E7EB);
   static const brandGreen = Color(0xFF2563EB);
-  static const brandYellow = Color(0xFFFFD600);
+  static const Color brandYellow = Color(0xFFFFD600);
   static Color get textMuted => _isDark ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280);
   static Color get textWhite => _isDark ? Colors.white : const Color(0xFF111827);
 
@@ -307,7 +307,7 @@ class _MultiFuelImportSheetState extends State<MultiFuelImportSheet> {
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(color: brandYellow.withAlpha(100), width: 1.2),
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.receipt_long_rounded,
                         color: brandYellow,
                         size: 24,
@@ -594,7 +594,7 @@ class _MultiFuelImportSheetState extends State<MultiFuelImportSheet> {
                                                     width: 0.8,
                                                   ),
                                                 ),
-                                                child: const Text(
+                                                child: Text(
                                                   'مسجلة مسبقاً',
                                                   style: TextStyle(
                                                     color: brandYellow,

@@ -1,4 +1,4 @@
-import 'package:flutter/cupertino.dart';
+﻿import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:remixicon/remixicon.dart';
 import 'package:sanad_app/core/utils/spendo_haptic_feedback.dart';
@@ -161,7 +161,8 @@ class _SpendoDatePickerSheetState extends State<_SpendoDatePickerSheet> {
   late FixedExtentScrollController _monthController;
   late FixedExtentScrollController _yearController;
 
-  static const Color brandYellow = Color(0xFFFFD600);
+  Color get brandYellow =>
+      const Color(0xFFFFD600);
   static const Color brandGreen = Color(0xFF2563EB);
 
   bool get _isDark => Theme.of(context).brightness == Brightness.dark;
@@ -419,7 +420,7 @@ class _SpendoDatePickerSheetState extends State<_SpendoDatePickerSheet> {
                             const SizedBox(width: 4),
                             Text(
                               _useWheelMode ? 'تقويم' : 'عجلات',
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontFamily: 'Cairo',
                                 fontSize: 10.5,
                                 fontWeight: FontWeight.bold,
@@ -515,14 +516,14 @@ class _SpendoDatePickerSheetState extends State<_SpendoDatePickerSheet> {
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Icon(Remix.cake_2_line,
+                              Icon(Remix.cake_2_line,
                                   size: 13, color: brandYellow),
                               const SizedBox(width: 4),
                               Text(
                                 '${_calculateAge(_selectedDate)} سنة',
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontFamily: 'PlusJakartaSans',
-                                  fontFamilyFallback: ['Cairo', 'Heebo'],
+                                  fontFamilyFallback: const ['Cairo', 'Heebo'],
                                   fontSize: 12,
                                   fontWeight: FontWeight.bold,
                                   color: brandYellow,
@@ -906,7 +907,7 @@ class _SpendoDatePickerSheetState extends State<_SpendoDatePickerSheet> {
                       fontWeight:
                           isSelected || isToday ? FontWeight.bold : FontWeight.w600,
                       color: isSelected
-                          ? const Color(0xFF0A0B0B)
+                          ? Colors.white
                           : (isDisabled ? textSubtle : textPrimary),
                     ),
                   ),

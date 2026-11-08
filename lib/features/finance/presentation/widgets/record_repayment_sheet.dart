@@ -42,7 +42,7 @@ class _RecordRepaymentSheetState extends State<RecordRepaymentSheet> {
   static Color get textWhite => _isDark ? Colors.white : const Color(0xFF111827);
   static Color get textMuted => _isDark ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280);
 
-  static const List<Map<String, dynamic>> _methods = [
+  static List<Map<String, dynamic>> get _methods => [
     {'key': 'bit', 'title': 'Bit', 'icon': Remix.smartphone_line, 'color': brandYellow},
     {'key': 'cash', 'title': 'كاش', 'icon': Remix.money_dollar_box_line, 'color': brandGreen},
     {'key': 'bank_transfer', 'title': 'تحويل بنكي', 'icon': Remix.bank_line, 'color': brandYellow},
@@ -158,7 +158,7 @@ class _RecordRepaymentSheetState extends State<RecordRepaymentSheet> {
                     children: [
                       Row(
                         children: [
-                          const Icon(Remix.cash_line, color: brandYellow, size: 22),
+                          Icon(Remix.cash_line, color: brandYellow, size: 22),
                           const SizedBox(width: 8),
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -251,7 +251,7 @@ class _RecordRepaymentSheetState extends State<RecordRepaymentSheet> {
                                 const SizedBox(height: 2),
                                 Text(
                                   '${d.remainingAmount.toStringAsFixed(0)} ₪',
-                                  style: const TextStyle(fontFamily: 'Cairo', color: brandYellow, fontWeight: FontWeight.w900, fontSize: 14),
+                                  style: TextStyle(fontFamily: 'Cairo', color: brandYellow, fontWeight: FontWeight.w900, fontSize: 14),
                                 ),
                               ],
                             ),
@@ -270,7 +270,7 @@ class _RecordRepaymentSheetState extends State<RecordRepaymentSheet> {
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
                         child: Row(
                           children: [
-                            const Icon(Remix.cash_line, color: brandYellow, size: 18),
+                            Icon(Remix.cash_line, color: brandYellow, size: 18),
                             const SizedBox(width: 10),
                             Expanded(
                               child: TextField(
@@ -295,7 +295,7 @@ class _RecordRepaymentSheetState extends State<RecordRepaymentSheet> {
                                 ),
                               ),
                             ),
-                            const Text(
+                            Text(
                               '₪',
                               style: TextStyle(
                                 fontFamily: 'Cairo',

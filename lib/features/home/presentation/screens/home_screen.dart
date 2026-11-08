@@ -1,4 +1,4 @@
-import 'package:sanad_app/core/widgets/banking_animations.dart';
+﻿import 'package:sanad_app/core/widgets/banking_animations.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:remixicon/remixicon.dart';
@@ -807,7 +807,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Remix.gas_station_line,
+                    Icon(Remix.gas_station_line,
                         size: 12, color: brandYellow),
                     const SizedBox(width: 4),
                     Flexible(
@@ -1165,7 +1165,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ),
                                 Text(
                                   '₪${expense.amount.toStringAsFixed(2)}',
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     color: brandYellow,
                                     fontSize: 14,
                                     fontWeight: FontWeight.bold,
@@ -1189,7 +1189,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             const SizedBox(height: 6),
                             Row(
                               children: [
-                                const Icon(Remix.time_line,
+                                Icon(Remix.time_line,
                                     size: 13, color: brandYellow),
                                 const SizedBox(width: 6),
                                 Text(
@@ -1359,7 +1359,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       child: TextField(
                         controller: amountCtrl,
                         keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                        style: const TextStyle(color: brandYellow, fontSize: 12, fontWeight: FontWeight.bold),
+                        style: TextStyle(color: brandYellow, fontSize: 12, fontWeight: FontWeight.bold),
                         decoration: InputDecoration(
                           labelText: 'المبلغ (₪)',
                           labelStyle: TextStyle(color: textMuted, fontSize: 11),
@@ -1461,7 +1461,7 @@ class _HomeScreenState extends State<HomeScreen> {
             children: [
               Text(
                 'المبلغ: ₪${record.amount.toStringAsFixed(2)}',
-                style: const TextStyle(
+                style: TextStyle(
                   color: brandYellow,
                   fontWeight: FontWeight.bold,
                   fontSize: 12,
@@ -1530,7 +1530,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 Navigator.pop(dCtx);
                 _showEditFuelDialog(record);
               },
-              child: const Text(
+              child: Text(
                 'تعديل',
                 style: TextStyle(
                   color: brandYellow,

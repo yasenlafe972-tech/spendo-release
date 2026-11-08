@@ -62,7 +62,7 @@ class FuelExpenseSheet {
     final surfaceField = FuelExpenseSheet.surfaceField;
     final surfaceBorder = FuelExpenseSheet.surfaceBorder;
     const brandGreen = FuelExpenseSheet.brandGreen;
-    const brandYellow = FuelExpenseSheet.brandYellow;
+    final brandYellow = FuelExpenseSheet.brandYellow;
     final textMuted = FuelExpenseSheet.textMuted;
     final textWhite = FuelExpenseSheet.textWhite;
 
@@ -466,7 +466,7 @@ class FuelExpenseSheet {
                                   ),
                                 ),
                                 if (isScanning)
-                                  const Text(
+                                  Text(
                                     'جاري القراءة...',
                                     style: TextStyle(
                                       fontSize: 10,
@@ -517,7 +517,7 @@ class FuelExpenseSheet {
                                               children: [
                                                 Row(
                                                   children: [
-                                                    const Icon(
+                                                    Icon(
                                                       Icons.picture_as_pdf_rounded,
                                                       color: brandYellow,
                                                       size: 20,
@@ -537,7 +537,7 @@ class FuelExpenseSheet {
                                                           ),
                                                         ),
                                                         const SizedBox(height: 2),
-                                                        const Text(
+                                                        Text(
                                                           'من تطبيق Yellow / פז',
                                                           style: TextStyle(
                                                             fontSize: 9.5,
@@ -585,7 +585,7 @@ class FuelExpenseSheet {
                           ),
                           child: Row(
                             children: [
-                              const Icon(Icons.picture_as_pdf_rounded,
+                              Icon(Icons.picture_as_pdf_rounded,
                                   color: brandYellow, size: 22),
                               const SizedBox(width: 8),
                               Expanded(
@@ -851,7 +851,7 @@ class FuelExpenseSheet {
                                           ),
                                           child: Text(
                                             'بنزين 95 الرسمي: ${officialFuelPrice.toStringAsFixed(2)} ₪/لتر',
-                                            style: const TextStyle(
+                                            style: TextStyle(
                                               fontSize: 9.5,
                                               fontWeight: FontWeight.w600,
                                               color: brandYellow,
@@ -891,7 +891,7 @@ class FuelExpenseSheet {
                                           ),
                                         ),
                                         const SizedBox(width: 6),
-                                        const Text(
+                                        Text(
                                           '₪',
                                           style: TextStyle(
                                             fontSize: 16,
@@ -1130,7 +1130,7 @@ class FuelExpenseSheet {
                           ),
                           style: OutlinedButton.styleFrom(
                             foregroundColor: brandYellow,
-                            side: const BorderSide(color: brandYellow),
+                            side: BorderSide(color: brandYellow),
                             minimumSize: const Size(double.infinity, 40),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),

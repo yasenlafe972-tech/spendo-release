@@ -1,4 +1,4 @@
-import 'package:sanad_app/core/theme/app_theme.dart';
+﻿import 'package:sanad_app/core/theme/app_theme.dart';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart' hide TextDirection;
@@ -100,7 +100,8 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
   static Color get surfaceField => _isDark ? const Color(0xFF171A19) : const Color(0xFFF9FAFB);
   static Color get surfaceBorder => _isDark ? const Color(0xFF242927) : const Color(0xFFE5E7EB);
   static const Color brandGreen = Color(0xFF2563EB);
-  static const Color brandYellow = Color(0xFFFFD600);
+  static Color get brandYellow =>
+      const Color(0xFFFFD600);
   static Color get textMuted => _isDark ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280);
   static Color get textSubtle => _isDark ? const Color(0xFF71717A) : const Color(0xFF6B7280);
   static Color get textWhite => _isDark ? Colors.white : const Color(0xFF111827);
@@ -216,7 +217,7 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
                   children: [
                     Row(
                       children: [
-                        const Icon(Remix.money_dollar_circle_line,
+                        Icon(Remix.money_dollar_circle_line,
                             color: brandYellow, size: 18),
                         const SizedBox(width: 8),
                         Text(
@@ -270,7 +271,7 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
                       hintText: 'مثال: 350',
                       hintStyle: TextStyle(color: textSubtle, fontSize: 13),
                       suffixText: '₪ / يوم',
-                      suffixStyle: const TextStyle(
+                      suffixStyle: TextStyle(
                         color: brandYellow,
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
@@ -667,7 +668,7 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
                                   ),
                                   child: Text(
                                     '${wp.dailyRate.toInt()} ₪ / يوم',
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       color: brandYellow,
                                       fontSize: 10.5,
                                       fontWeight: FontWeight.bold,
@@ -868,7 +869,7 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
                       children: [
                         Row(
                           children: [
-                            const Icon(Remix.building_2_line,
+                            Icon(Remix.building_2_line,
                                 size: 13, color: brandYellow),
                             const SizedBox(width: 5),
                             Text(
@@ -887,14 +888,14 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
                             children: [
                               Text(
                                 '(${_allWorkplaces.length} مشغّلين)',
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 10,
                                   color: brandYellow,
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
                               const SizedBox(width: 2),
-                              const Icon(Remix.arrow_down_s_line,
+                              Icon(Remix.arrow_down_s_line,
                                   size: 12, color: brandYellow),
                             ],
                           ),
@@ -1083,7 +1084,7 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
                               children: [
                                 Text(
                                   '$_formattedRate ₪',
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontSize: 11,
                                     fontWeight: FontWeight.bold,
                                     color: brandYellow,
@@ -1129,7 +1130,7 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
                     ),
                     child: Row(
                       children: [
-                        const Icon(
+                        Icon(
                           Remix.map_pin_2_line,
                           size: 16,
                           color: brandYellow,
@@ -1231,7 +1232,7 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
                                     fontSize: 10,
                                     fontWeight: FontWeight.w600,
                                     color: isSelected
-                                        ? (_isDark ? brandYellow : const Color(0xFFB45309))
+                                        ? (brandYellow)
                                         : textMuted,
                                   ),
                                 ),
@@ -1296,7 +1297,7 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
                                   ),
                                   child: Text(
                                     relativeDay,
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontSize: 9,
                                       fontWeight: FontWeight.w600,
                                       color: brandYellow,
@@ -1334,7 +1335,7 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(
+                            Icon(
                               Remix.calendar_event_line,
                               size: 12,
                               color: brandYellow,
@@ -1416,7 +1417,7 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
                               crossAxisAlignment: CrossAxisAlignment.baseline,
                               textBaseline: TextBaseline.alphabetic,
                               children: [
-                                const Text(
+                                Text(
                                   '₪',
                                   style: TextStyle(
                                     fontSize: 12,
@@ -1654,7 +1655,7 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Icon(Remix.crosshair_2_line, size: 13, color: brandYellow),
+                          Icon(Remix.crosshair_2_line, size: 13, color: brandYellow),
                           const SizedBox(width: 5),
                           Text(
                             'موقعي الحالي',
@@ -1688,7 +1689,7 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Icon(Remix.edit_line, size: 12, color: brandYellow),
+                          Icon(Remix.edit_line, size: 12, color: brandYellow),
                           const SizedBox(width: 4),
                           Text(
                             'تعديل المكان من الخريطة',
@@ -1823,7 +1824,7 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(Remix.camera_line, size: 13, color: brandYellow),
+                        Icon(Remix.camera_line, size: 13, color: brandYellow),
                         const SizedBox(width: 4),
                         Text(
                           'تصوير كاميرا',

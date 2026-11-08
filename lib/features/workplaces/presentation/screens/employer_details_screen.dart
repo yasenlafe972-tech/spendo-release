@@ -1,4 +1,4 @@
-import 'package:sanad_app/core/theme/app_theme.dart';
+﻿import 'package:sanad_app/core/theme/app_theme.dart';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -51,7 +51,8 @@ class EmployerDetailsScreen extends StatefulWidget {
   static Color get surfaceHover => _isDark ? const Color(0xFF16161A) : const Color(0xFFF1F3F5);
   static Color get surfaceBorder => _isDark ? const Color(0xFF1E1E24) : const Color(0xFFE5E7EB);
   static const Color brandGreen = Color(0xFF2563EB);
-  static const Color brandYellow = Color(0xFFFFD600);
+  static Color get brandYellow =>
+      const Color(0xFFFFD600);
   static Color get textPrimary => _isDark ? const Color(0xFFFFFFFF) : const Color(0xFF111827);
   static Color get textMuted => _isDark ? const Color(0xFF71717A) : const Color(0xFF6B7280);
   static Color get textSubtle => _isDark ? const Color(0xFF52525B) : const Color(0xFF9CA3AF);
@@ -201,7 +202,7 @@ class _EmployerDetailsScreenState extends State<EmployerDetailsScreen> {
                   children: [
                     Row(
                       children: [
-                        const Icon(Remix.toggle_line, color: EmployerDetailsScreen.brandYellow, size: 20),
+                        Icon(Remix.toggle_line, color: EmployerDetailsScreen.brandYellow, size: 20),
                         SizedBox(width: 8),
                         Text(
                           'حالة المشغّل',
@@ -680,7 +681,7 @@ class _EmployerDetailsScreenState extends State<EmployerDetailsScreen> {
                   children: [
                     Row(
                       children: [
-                        const Icon(Remix.money_dollar_circle_line,
+                        Icon(Remix.money_dollar_circle_line,
                             color: EmployerDetailsScreen.brandYellow, size: 18),
                         const SizedBox(width: 8),
                         Text(
@@ -738,7 +739,7 @@ class _EmployerDetailsScreenState extends State<EmployerDetailsScreen> {
                           color: EmployerDetailsScreen.textSubtle,
                           fontSize: 13),
                       suffixText: '₪ / يوم',
-                      suffixStyle: const TextStyle(
+                      suffixStyle: TextStyle(
                         color: EmployerDetailsScreen.brandYellow,
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
@@ -919,7 +920,7 @@ class _EmployerDetailsScreenState extends State<EmployerDetailsScreen> {
                   children: [
                     Row(
                       children: [
-                        const Icon(Remix.share_forward_line, color: EmployerDetailsScreen.brandYellow, size: 20),
+                        Icon(Remix.share_forward_line, color: EmployerDetailsScreen.brandYellow, size: 20),
                         SizedBox(width: 8),
                         Text(
                           'مشاركة كشف حساب رسمي معتمد (PDF)',
@@ -1228,7 +1229,7 @@ class _EmployerDetailsScreenState extends State<EmployerDetailsScreen> {
                         ),
                         child: Text(
                           '${log.totalEarned.toStringAsFixed(0)} ₪',
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: EmployerDetailsScreen.brandYellow,
                             fontSize: 11.5,
                             fontWeight: FontWeight.w800,
@@ -1587,7 +1588,7 @@ class _EmployerDetailsScreenState extends State<EmployerDetailsScreen> {
                                   _showToast('تم تثبيت مكان العمل بنجاح');
                                 }
                               },
-                              child: const Text(
+                              child: Text(
                                 'تثبيت على الخريطة',
                                 style: TextStyle(
                                   color: EmployerDetailsScreen.brandYellow,
@@ -1849,7 +1850,7 @@ class _EmployerDetailsScreenState extends State<EmployerDetailsScreen> {
             children: [
               InkWell(
                 onTap: _showStatementOptionsSheet,
-                child: const Padding(
+                child: Padding(
                   padding: EdgeInsets.symmetric(horizontal: 4, vertical: 4),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -2109,7 +2110,7 @@ class _EmployerDetailsScreenState extends State<EmployerDetailsScreen> {
               children: [
                 Row(
                   children: [
-                    const Icon(Remix.calendar_line, size: 12, color: EmployerDetailsScreen.brandYellow),
+                    Icon(Remix.calendar_line, size: 12, color: EmployerDetailsScreen.brandYellow),
                     const SizedBox(width: 4),
                     Text('الشهر:', style: TextStyle(color: EmployerDetailsScreen.textMuted, fontSize: 10)),
                   ],
@@ -2304,7 +2305,7 @@ class _EmployerDetailsScreenState extends State<EmployerDetailsScreen> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Remix.calendar_check_line, color: EmployerDetailsScreen.brandYellow, size: 16),
+                  Icon(Remix.calendar_check_line, color: EmployerDetailsScreen.brandYellow, size: 16),
                   SizedBox(width: 6),
                   Text(
                     'تسجيل يوم عمل',
@@ -2556,7 +2557,7 @@ class _EmployerDetailsScreenState extends State<EmployerDetailsScreen> {
           children: [
             Row(
               children: [
-                const Icon(Remix.file_list_3_line, size: 14, color: EmployerDetailsScreen.brandYellow),
+                Icon(Remix.file_list_3_line, size: 14, color: EmployerDetailsScreen.brandYellow),
                 const SizedBox(width: 6),
                 Text(
                   'سجل أيام وتواريخ العمل',
@@ -2812,11 +2813,11 @@ class _EmployerDetailsScreenState extends State<EmployerDetailsScreen> {
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    const Icon(Remix.camera_3_line, size: 9, color: EmployerDetailsScreen.brandYellow),
+                                    Icon(Remix.camera_3_line, size: 9, color: EmployerDetailsScreen.brandYellow),
                                     const SizedBox(width: 2),
                                     Text(
                                       '${log.attachments.length}',
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                         color: EmployerDetailsScreen.brandYellow,
                                         fontSize: 8.5,
                                         fontWeight: FontWeight.bold,
@@ -2844,14 +2845,14 @@ class _EmployerDetailsScreenState extends State<EmployerDetailsScreen> {
                           children: [
                             Text(
                               log.totalEarned.toStringAsFixed(0),
-                              style: const TextStyle(
+                              style: TextStyle(
                                 color: EmployerDetailsScreen.brandYellow,
                                 fontSize: 11.5,
                                 fontWeight: FontWeight.w800,
                               ),
                             ),
                             const SizedBox(width: 2),
-                            const Text(
+                            Text(
                               '₪',
                               style: TextStyle(
                                 color: EmployerDetailsScreen.brandYellow,
@@ -2909,7 +2910,7 @@ class _EmployerDetailsScreenState extends State<EmployerDetailsScreen> {
                 child: Row(
                   children: [
                     if (hasNote) ...[
-                      const Icon(
+                      Icon(
                         Remix.sticky_note_line,
                         size: 11,
                         color: EmployerDetailsScreen.brandYellow,

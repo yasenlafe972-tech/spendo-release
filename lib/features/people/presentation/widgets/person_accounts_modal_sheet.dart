@@ -1,4 +1,4 @@
-import 'package:sanad_app/core/theme/app_theme.dart';
+﻿import 'package:sanad_app/core/theme/app_theme.dart';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -92,7 +92,8 @@ class _PersonAccountsModalSheetState extends State<PersonAccountsModalSheet> {
   static Color get surfaceCell => _isDark ? const Color(0xFF16191E) : const Color(0xFFF9FAFB);
   static Color get surfaceBorder => _isDark ? const Color(0xFF22262E) : const Color(0xFFE5E7EB);
   static const Color brandGreen = Color(0xFF2563EB);
-  static const Color brandYellow = Color(0xFFFFD600);
+  static Color get brandYellow =>
+      const Color(0xFFFFD600);
   static Color get textWhite => _isDark ? Colors.white : const Color(0xFF111827);
   static Color get textMuted => _isDark ? const Color(0xFF9CA3AF) : const Color(0xFF4B5563);
 
@@ -160,7 +161,7 @@ class _PersonAccountsModalSheetState extends State<PersonAccountsModalSheet> {
         duration: const Duration(seconds: 2),
         content: Row(
           children: [
-            const Icon(Remix.checkbox_circle_line, color: brandYellow, size: 15),
+            Icon(Remix.checkbox_circle_line, color: brandYellow, size: 15),
             const SizedBox(width: 8),
             Text(
               message,
@@ -320,7 +321,7 @@ class _PersonAccountsModalSheetState extends State<PersonAccountsModalSheet> {
                     const SizedBox(width: 8),
 
                     // Yellow Key Icon
-                    const Icon(Remix.key_2_line, color: brandYellow, size: 16),
+                    Icon(Remix.key_2_line, color: brandYellow, size: 16),
                     const SizedBox(width: 8),
 
                     // Title
@@ -483,7 +484,7 @@ class _PersonAccountsModalSheetState extends State<PersonAccountsModalSheet> {
                         children: [
                           Text(
                             '${filtered.length}',
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.bold,
                               color: brandYellow,
@@ -831,7 +832,7 @@ class _PersonAccountsModalSheetState extends State<PersonAccountsModalSheet> {
                         padding: const EdgeInsets.symmetric(horizontal: 8),
                         child: Row(
                           children: [
-                            const Icon(Remix.key_2_line, size: 11, color: brandYellow),
+                            Icon(Remix.key_2_line, size: 11, color: brandYellow),
                             const SizedBox(width: 5),
                             Expanded(
                               child: Text(
@@ -915,7 +916,8 @@ class _AddEditAccountSheetState extends State<_AddEditAccountSheet> {
   static Color get surfaceCell => _isDark ? const Color(0xFF16191E) : const Color(0xFFF9FAFB);
   static Color get surfaceBorder => _isDark ? const Color(0xFF22262E) : const Color(0xFFE5E7EB);
   static const Color brandGreen = Color(0xFF2563EB);
-  static const Color brandYellow = Color(0xFFFFD600);
+  static Color get brandYellow =>
+      const Color(0xFFFFD600);
   static Color get textWhite => _isDark ? Colors.white : const Color(0xFF111827);
   static Color get textMuted => _isDark ? const Color(0xFF9CA3AF) : const Color(0xFF4B5563);
 
@@ -1189,7 +1191,7 @@ class _AddEditAccountSheetState extends State<_AddEditAccountSheet> {
                               const SizedBox(height: 4),
                               Row(
                                 children: [
-                                  const Icon(Remix.mail_line, size: 13, color: brandYellow),
+                                  Icon(Remix.mail_line, size: 13, color: brandYellow),
                                   const SizedBox(width: 8),
                                   Expanded(
                                     child: TextFormField(
@@ -1245,7 +1247,7 @@ class _AddEditAccountSheetState extends State<_AddEditAccountSheet> {
                               const SizedBox(width: 6),
                               InkWell(
                                 onTap: () => setState(() => _emailController.text = 'yasenlafe972@gmail.com'),
-                                child: const Text(
+                                child: Text(
                                   'yasenlafe972@gmail.com',
                                   style: TextStyle(
                                     fontSize: 9.5,
@@ -1289,7 +1291,7 @@ class _AddEditAccountSheetState extends State<_AddEditAccountSheet> {
                         const SizedBox(height: 4),
                         Row(
                           children: [
-                            const Icon(Remix.key_2_line, size: 13, color: brandYellow),
+                            Icon(Remix.key_2_line, size: 13, color: brandYellow),
                             const SizedBox(width: 8),
                             Expanded(
                               child: TextFormField(
@@ -1333,7 +1335,7 @@ hintText: 'Enter password...',
                                   borderRadius: BorderRadius.circular(6),
                                   border: Border.all(color: surfaceBorder),
                                 ),
-                                child: const Text(
+                                child: Text(
                                   'توليد قوي',
                                   style: TextStyle(
                                     fontSize: 9.5,

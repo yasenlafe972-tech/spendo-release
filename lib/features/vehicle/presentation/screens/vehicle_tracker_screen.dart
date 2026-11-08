@@ -1,4 +1,4 @@
-import 'package:sanad_app/core/widgets/banking_animations.dart';
+﻿import 'package:sanad_app/core/widgets/banking_animations.dart';
 import 'package:sanad_app/core/theme/app_theme.dart';
 import 'dart:convert';
 import 'dart:io';
@@ -47,7 +47,8 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
   Color get surfaceField => _isDark ? const Color(0xFF121215) : const Color(0xFFFFFFFF);
   Color get surfaceBorder => _isDark ? const Color(0xFF1E1E24) : const Color(0xFFE5E7EB);
   static const Color brandGreen = Color(0xFF2563EB);
-  static const Color brandYellow = Color(0xFFFFD600);
+  Color get brandYellow =>
+      const Color(0xFFFFD600);
   static const Color brandRed = Color(0xFFEF4444);
   Color get textWhite => _isDark ? Colors.white : const Color(0xFF111827);
   Color get textMuted => _isDark ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280);
@@ -516,7 +517,7 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                         ),
                       ),
                       const SizedBox(width: 4),
-                      const Text(
+                      Text(
                         'كم',
                         style: TextStyle(
                           fontSize: 11,
@@ -673,7 +674,7 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                     ),
                     child: Text(
                       'بنزين 95: ${_officialFuelPrice.toStringAsFixed(2)} ₪/لتر',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 9.5,
                         fontWeight: FontWeight.bold,
                         color: brandYellow,
@@ -797,7 +798,7 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                                 ),
                                 child: Row(
                                   children: [
-                                    const Text(
+                                    Text(
                                       'IL',
                                       style: TextStyle(
                                         fontSize: 10,
@@ -1400,7 +1401,7 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(
+                  Icon(
                     Remix.tools_line,
                     size: 15,
                     color: brandYellow,
@@ -1612,7 +1613,7 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         textDirection: TextDirection.ltr,
                         children: [
-                          const Text(
+                          Text(
                             '₪',
                             style: TextStyle(
                               fontSize: 10,
@@ -1625,7 +1626,7 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                             tabIndex: 2,
                             value: maintenanceTotal,
                             formatter: (val) => _formatNumber(val.round()),
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w900,
                               color: brandYellow,
@@ -2422,7 +2423,7 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
             children: [
               Row(
                 children: [
-                  const Icon(
+                  Icon(
                     Remix.tools_line,
                     color: brandYellow,
                     size: 20,
@@ -3220,7 +3221,7 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                       child: TextField(
                         controller: amountCtrl,
                         keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                        style: const TextStyle(color: brandYellow, fontSize: 12, fontWeight: FontWeight.bold),
+                        style: TextStyle(color: brandYellow, fontSize: 12, fontWeight: FontWeight.bold),
                         decoration: InputDecoration(
                           labelText: 'المبلغ (₪)',
                           labelStyle: TextStyle(color: textMuted, fontSize: 11),
@@ -3310,7 +3311,7 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
             children: [
               Text(
                 'المبلغ: ₪${record.amount.toStringAsFixed(2)}',
-                style: const TextStyle(
+                style: TextStyle(
                   color: brandYellow,
                   fontWeight: FontWeight.bold,
                   fontSize: 12,
@@ -3367,7 +3368,7 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                 Navigator.pop(dCtx);
                 _showEditFuelDialog(record);
               },
-              child: const Text(
+              child: Text(
                 'تعديل',
                 style: TextStyle(
                   color: brandYellow,

@@ -55,7 +55,7 @@ class _AddDebtSheetState extends State<AddDebtSheet> {
   static Color get textMuted => _isDark ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280);
   static Color get textWhite => _isDark ? Colors.white : const Color(0xFF111827);
 
-  static const List<Map<String, dynamic>> _paymentMethods = [
+  static List<Map<String, dynamic>> get _paymentMethods => [
     {'key': 'bit', 'title': 'Bit', 'icon': Remix.smartphone_line, 'color': brandYellow},
     {'key': 'cash', 'title': 'كاش', 'icon': Remix.money_dollar_box_line, 'color': Color(0xFF10B981)},
     {'key': 'bank_transfer', 'title': 'تحويل بنكي', 'icon': Remix.bank_line, 'color': brandYellow},
@@ -273,7 +273,7 @@ class _AddDebtSheetState extends State<AddDebtSheet> {
                     children: [
                       Row(
                         children: [
-                          const Icon(Remix.hand_coin_line, color: brandYellow, size: 19),
+                          Icon(Remix.hand_coin_line, color: brandYellow, size: 19),
                           const SizedBox(width: 7),
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -349,7 +349,7 @@ class _AddDebtSheetState extends State<AddDebtSheet> {
                             ),
                             child: Row(
                               children: [
-                                const Icon(Remix.time_line, color: brandYellow, size: 14),
+                                Icon(Remix.time_line, color: brandYellow, size: 14),
                                 const SizedBox(width: 6),
                                 Expanded(
                                   child: Text(
@@ -654,7 +654,7 @@ class _AddDebtSheetState extends State<AddDebtSheet> {
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 0),
       child: Row(
         children: [
-          const Icon(Remix.cash_line, color: brandYellow, size: 16),
+          Icon(Remix.cash_line, color: brandYellow, size: 16),
           const SizedBox(width: 8),
           Expanded(
             child: TextFormField(
@@ -689,7 +689,7 @@ class _AddDebtSheetState extends State<AddDebtSheet> {
               },
             ),
           ),
-          const Text(
+          Text(
             '₪',
             style: TextStyle(
               fontFamily: 'Cairo',
@@ -926,7 +926,7 @@ class _AddDebtSheetState extends State<AddDebtSheet> {
                       ],
                     ),
                   ),
-                  const Icon(Remix.calendar_check_line, color: brandYellow, size: 14),
+                  Icon(Remix.calendar_check_line, color: brandYellow, size: 14),
                 ],
               ),
             ),

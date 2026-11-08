@@ -1,4 +1,4 @@
-import 'package:sanad_app/core/theme/app_theme.dart';
+﻿import 'package:sanad_app/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:remixicon/remixicon.dart';
@@ -29,7 +29,8 @@ class RecordWorkplacePaymentSheet extends StatefulWidget {
   static Color get surfaceHover => _isDark ? const Color(0xFF1D211F) : const Color(0xFFF1F3F5);
   static Color get surfaceBorder => _isDark ? const Color(0xFF242927) : const Color(0xFFE5E7EB);
   static const Color brandGreen = Color(0xFF2563EB);
-  static const Color brandYellow = Color(0xFFFFD600);
+  static Color get brandYellow =>
+      const Color(0xFFFFD600);
   static Color get textPrimary => _isDark ? const Color(0xFFF3F4F6) : const Color(0xFF111827);
   static Color get textMuted => _isDark ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280);
   static Color get textWhite => _isDark ? Colors.white : const Color(0xFF111827);
@@ -256,7 +257,7 @@ class _RecordWorkplacePaymentSheetState extends State<RecordWorkplacePaymentShee
                                 ),
                                 Text(
                                   widget.workplace.name,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     color: RecordWorkplacePaymentSheet.brandYellow,
                                     fontSize: 10.5,
                                     fontWeight: FontWeight.w700,
@@ -304,7 +305,7 @@ class _RecordWorkplacePaymentSheetState extends State<RecordWorkplacePaymentShee
                             ),
                             Row(
                               children: [
-                                const Text(
+                                Text(
                                   'المتبقي حالياً: ',
                                   style: TextStyle(
                                     color: RecordWorkplacePaymentSheet.brandYellow,
@@ -313,7 +314,7 @@ class _RecordWorkplacePaymentSheetState extends State<RecordWorkplacePaymentShee
                                 ),
                                 Text(
                                   remainingFormatted,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     color: RecordWorkplacePaymentSheet.brandYellow,
                                     fontSize: 10,
                                     fontWeight: FontWeight.w800,
@@ -353,7 +354,7 @@ class _RecordWorkplacePaymentSheetState extends State<RecordWorkplacePaymentShee
                                 ),
                               ),
                             ),
-                            const Text(
+                            Text(
                               '₪ شيكل',
                               style: TextStyle(
                                 color: RecordWorkplacePaymentSheet.brandYellow,
@@ -499,7 +500,7 @@ class _RecordWorkplacePaymentSheetState extends State<RecordWorkplacePaymentShee
                   ),
                   child: Row(
                     children: [
-                      const Icon(
+                      Icon(
                         Remix.sticky_note_line,
                         size: 15,
                         color: RecordWorkplacePaymentSheet.brandYellow,

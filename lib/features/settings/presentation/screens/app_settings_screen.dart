@@ -1,4 +1,4 @@
-import 'dart:io';
+﻿import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -37,7 +37,8 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
   Color get surfaceCell => _isDark ? const Color(0xFF16161A) : const Color(0xFFF1F3F5);
   Color get surfaceBorder => _isDark ? const Color(0xFF1E1E24) : const Color(0xFFE5E7EB);
   static const Color brandGreen = Color(0xFF2563EB);
-  static const Color brandYellow = Color(0xFFFFD600);
+  Color get brandYellow =>
+      const Color(0xFFFFD600);
   static const Color brandRed = Color(0xFFEF4444);
   Color get textWhite => _isDark ? const Color(0xFFFFFFFF) : const Color(0xFF111827);
   Color get textMuted => _isDark ? const Color(0xFF71717A) : const Color(0xFF6B7280);
@@ -131,7 +132,7 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
         duration: const Duration(seconds: 2),
         content: Row(
           children: [
-            const Icon(Remix.checkbox_circle_line, color: brandYellow, size: 15),
+            Icon(Remix.checkbox_circle_line, color: brandYellow, size: 15),
             const SizedBox(width: 8),
             Text(
               message,
@@ -382,7 +383,7 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                 ),
                 child: Row(
                   children: [
-                    const Icon(Remix.file_upload_line, color: brandYellow, size: 20),
+                    Icon(Remix.file_upload_line, color: brandYellow, size: 20),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Column(
@@ -686,7 +687,7 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                           children: [
                             Row(
                               children: [
-                                const Icon(Remix.lock_password_line, color: brandYellow, size: 18),
+                                Icon(Remix.lock_password_line, color: brandYellow, size: 18),
                                 SizedBox(width: 8),
                                 Text(
                                   'تغيير كلمة المرور',
@@ -853,7 +854,7 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                               minimumSize: Size.zero,
                               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                             ),
-                            child: const Text(
+                            child: Text(
                               'نسيت كلمة المرور؟ إرسال رابط للإيميل',
                               style: TextStyle(color: brandYellow, fontSize: 11, fontWeight: FontWeight.w600),
                             ),
@@ -1248,7 +1249,7 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                                       await DailyExpenseService
                                           .openDeviceWalletApp();
                                     },
-                                    icon: const Icon(Remix.bank_card_line,
+                                    icon: Icon(Remix.bank_card_line,
                                         size: 14, color: brandYellow),
                                     label: const Text(
                                       'فتح محفظة البطاقات',
@@ -1405,7 +1406,7 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                                   'تم نسخ رابط الإرسال الصامت بالخلفية (Webhook)',
                                 );
                               },
-                              icon: const Icon(Remix.cloud_line,
+                              icon: Icon(Remix.cloud_line,
                                   size: 14, color: brandYellow),
                               label: const Text(
                                 'نسخ رابط الخلفية الصامت',
@@ -1456,7 +1457,7 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                 children: [
                   Row(
                     children: [
-                      const Icon(Remix.font_size_2, size: 15, color: brandYellow),
+                      Icon(Remix.font_size_2, size: 15, color: brandYellow),
                       const SizedBox(width: 6),
                       Text(
                         'تكبير الخط وأبعاد الشاشة',
@@ -1814,7 +1815,7 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                                           border: Border.all(color: brandYellow.withValues(alpha: 0.3)),
                                           borderRadius: BorderRadius.circular(4),
                                         ),
-                                        child: const Text(
+                                        child: Text(
                                           'إعدادات عامة',
                                           style: TextStyle(
                                             fontSize: 9,
@@ -1993,7 +1994,7 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                                                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                                                       child: Row(
                                                         children: [
-                                                          const Icon(Remix.lock_password_line, size: 14, color: brandYellow),
+                                                          Icon(Remix.lock_password_line, size: 14, color: brandYellow),
                                                           const SizedBox(width: 8),
                                                           Expanded(
                                                             child: Column(
@@ -2048,7 +2049,7 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                                           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
                                           child: Row(
                                             children: [
-                                              const Icon(Remix.mail_line, size: 14, color: brandYellow),
+                                              Icon(Remix.mail_line, size: 14, color: brandYellow),
                                               const SizedBox(width: 8),
                                               Expanded(
                                                 child: Column(
@@ -2134,7 +2135,7 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                                     child: Row(
                                       children: [
-                                        const Icon(Remix.notification_3_line, size: 15, color: brandYellow),
+                                        Icon(Remix.notification_3_line, size: 15, color: brandYellow),
                                         const SizedBox(width: 8),
                                         Expanded(
                                           child: Column(
@@ -2173,11 +2174,11 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                                             child: Row(
                                               mainAxisSize: MainAxisSize.min,
                                               children: [
-                                                const Icon(Remix.time_line, size: 10, color: brandYellow),
+                                                Icon(Remix.time_line, size: 10, color: brandYellow),
                                                 const SizedBox(width: 3),
                                                 Text(
                                                   _formatTimeOfDay(_reminderTime),
-                                                  style: const TextStyle(
+                                                  style: TextStyle(
                                                     color: brandYellow,
                                                     fontSize: 10,
                                                     fontFamily: 'monospace',
@@ -2383,7 +2384,7 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                                         ),
                                         child: Row(
                                           children: [
-                                            const Icon(Remix.upload_cloud_2_line, size: 14, color: brandYellow),
+                                            Icon(Remix.upload_cloud_2_line, size: 14, color: brandYellow),
                                             const SizedBox(width: 6),
                                             Expanded(
                                               child: Column(

@@ -18,6 +18,7 @@ class AppColors {
 
   // Spendo Primary Brand Accent (Electric Royal Blue #2563EB)
   static const Color spendoBlue = Color(0xFF2563EB);
+
   static const Color spendoBlueLight = Color(0xFF3B82F6);
   static const Color spendoBlueGlow = Color(0x332563EB);
   static const Color spendoBlueSurface = Color(0x1A2563EB);
@@ -35,7 +36,7 @@ class AppColors {
   static const Color cashGreen = Color(0xFF10B981);
   static const Color whatsappGreen = Color(0xFF10B981);
   static const Color successGreen = Color(0xFF10B981);
-  static const Color spendoGreen = Color(0xFF10B981);
+  static const Color spendoGreen = Color(0xFF2563EB); // Electric Royal Blue
 
   // Text Colors
   static const Color textPrimary = Color(0xFFFFFFFF);

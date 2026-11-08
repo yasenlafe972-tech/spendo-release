@@ -1,4 +1,4 @@
-import 'dart:io';
+﻿import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:remixicon/remixicon.dart';
@@ -66,7 +66,8 @@ class _PersonDetailsModalSheetState extends State<PersonDetailsModalSheet> {
   static Color get surfaceBorder =>
       _isDark ? const Color(0xFF222229) : const Color(0xFFE5E7EB);
   static const Color brandBlue = Color(0xFF2563EB);
-  static const Color brandYellow = Color(0xFFFFD600);
+  static Color get brandYellow =>
+      const Color(0xFFFFD600);
   static const Color brandRed = Color(0xFFEF4444);
   static const Color brandGreen = Color(0xFF10B981);
   static Color get textWhite =>
@@ -110,7 +111,7 @@ class _PersonDetailsModalSheetState extends State<PersonDetailsModalSheet> {
         duration: const Duration(seconds: 2),
         content: Row(
           children: [
-            const Icon(Remix.checkbox_circle_line,
+            Icon(Remix.checkbox_circle_line,
                 color: brandYellow, size: 16),
             const SizedBox(width: 8),
             Text(
@@ -348,7 +349,7 @@ class _PersonDetailsModalSheetState extends State<PersonDetailsModalSheet> {
                                 ],
                                 if (p.isPinned) ...[
                                   const SizedBox(width: 4),
-                                  const Icon(Remix.pushpin_fill,
+                                  Icon(Remix.pushpin_fill,
                                       size: 13, color: brandYellow),
                                 ],
                               ],
@@ -359,14 +360,14 @@ class _PersonDetailsModalSheetState extends State<PersonDetailsModalSheet> {
                             if (p.birthdate != null)
                               Row(
                                 children: [
-                                  const Icon(Remix.cake_2_line,
+                                  Icon(Remix.cake_2_line,
                                       size: 12, color: brandYellow),
                                   const SizedBox(width: 4),
                                   Text(
                                     '${p.birthdate!.day}/${p.birthdate!.month}/${p.birthdate!.year}',
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontFamily: 'PlusJakartaSans',
-                                      fontFamilyFallback: ['Cairo', 'Heebo'],
+                                      fontFamilyFallback: const ['Cairo', 'Heebo'],
                                       fontSize: 11,
                                       fontWeight: FontWeight.w600,
                                       color: brandYellow,
@@ -385,7 +386,7 @@ class _PersonDetailsModalSheetState extends State<PersonDetailsModalSheet> {
                                       ),
                                       child: Text(
                                         '${p.calculatedAge} سنة',
-                                        style: const TextStyle(
+                                        style: TextStyle(
                                           fontFamily: 'Cairo',
                                           fontSize: 9.5,
                                           fontWeight: FontWeight.bold,
@@ -587,7 +588,7 @@ class _PersonDetailsModalSheetState extends State<PersonDetailsModalSheet> {
                                   color: brandYellow.withValues(alpha: 0.15),
                                   borderRadius: BorderRadius.circular(8),
                                 ),
-                                child: const Icon(Remix.key_2_line,
+                                child: Icon(Remix.key_2_line,
                                     size: 16, color: brandYellow),
                               ),
                               const SizedBox(width: 10),
@@ -635,7 +636,7 @@ class _PersonDetailsModalSheetState extends State<PersonDetailsModalSheet> {
                                   children: [
                                     Text(
                                       '$_accountsCount',
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                         fontFamily: 'PlusJakartaSans',
                                         fontFamilyFallback: [
                                           'Cairo',
@@ -647,7 +648,7 @@ class _PersonDetailsModalSheetState extends State<PersonDetailsModalSheet> {
                                       ),
                                     ),
                                     const SizedBox(width: 3),
-                                    const Icon(Remix.arrow_left_s_line,
+                                    Icon(Remix.arrow_left_s_line,
                                         size: 12, color: brandYellow),
                                   ],
                                 ),

@@ -1,4 +1,4 @@
-import 'dart:io';
+﻿import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart' hide TextDirection;
 import 'package:remixicon/remixicon.dart';
@@ -26,7 +26,8 @@ class PersonCard extends StatelessWidget {
   static Color get surfaceBorder =>
       _isDark ? const Color(0xFF222229) : const Color(0xFFE5E7EB);
   static const Color brandBlue = Color(0xFF2563EB);
-  static const Color brandYellow = Color(0xFFFFD600);
+  static Color get brandYellow =>
+      const Color(0xFFFFD600);
   static Color get textPrimary =>
       _isDark ? const Color(0xFFFFFFFF) : const Color(0xFF111827);
   static Color get textMuted =>
@@ -201,7 +202,7 @@ class PersonCard extends StatelessWidget {
                           ],
                           if (person.isPinned) ...[
                             const SizedBox(width: 3),
-                            const Icon(Remix.pushpin_fill,
+                            Icon(Remix.pushpin_fill,
                                 size: 10, color: brandYellow),
                           ],
                         ],
@@ -216,12 +217,12 @@ class PersonCard extends StatelessWidget {
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Icon(Remix.cake_2_line,
+                              Icon(Remix.cake_2_line,
                                   size: 10.5, color: brandYellow),
                               const SizedBox(width: 4),
                               Text(
                                 birthdayStr,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontFamily: 'PlusJakartaSans',
                                   fontFamilyFallback: ['Cairo', 'Heebo'],
                                   fontSize: 10,

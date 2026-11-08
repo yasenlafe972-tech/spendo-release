@@ -1,4 +1,4 @@
-import 'dart:io';
+﻿import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 import 'package:sanad_app/core/widgets/banking_animations.dart';
 import 'package:sanad_app/core/theme/app_theme.dart';
@@ -39,7 +39,8 @@ class _PeopleScreenState extends State<PeopleScreen> {
   Color get surfaceField => _isDark ? const Color(0xFF121215) : const Color(0xFFFFFFFF);
   Color get surfaceBorder => _isDark ? const Color(0xFF1E1E24) : const Color(0xFFE5E7EB);
   static const Color brandGreen = Color(0xFF2563EB);
-  static const Color brandYellow = Color(0xFFFFD600);
+  Color get brandYellow =>
+      const Color(0xFFFFD600);
   Color get textPrimary => _isDark ? const Color(0xFFFFFFFF) : const Color(0xFF111827);
   Color get textMuted => _isDark ? const Color(0xFF71717A) : const Color(0xFF6B7280);
   Color get textSubtle => _isDark ? const Color(0xFF52525B) : const Color(0xFF9CA3AF);
@@ -237,7 +238,7 @@ class _PeopleScreenState extends State<PeopleScreen> {
                                             ),
                                             const SizedBox(height: 12),
                                             ListTile(
-                                              leading: const Icon(
+                                              leading: Icon(
                                                   Remix.image_line,
                                                   color: brandYellow),
                                               title: Text('اختيار من المعرض',
@@ -341,19 +342,9 @@ class _PeopleScreenState extends State<PeopleScreen> {
                                                             .trim()
                                                             .characters
                                                             .first,
-                                                        style: const TextStyle(
-                                                          fontFamily: 'Cairo',
-                                                          fontSize: 20,
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          color: brandYellow,
-                                                        ),
+                                                        style: TextStyle(fontFamily: 'Cairo', fontSize: 20, fontWeight: FontWeight.bold, color: brandYellow),
                                                       )
-                                                    : const Icon(
-                                                        Remix.user_add_line,
-                                                        size: 22,
-                                                        color: brandYellow,
-                                                      ),
+                                                    : Icon(Remix.user_add_line, size: 22, color: brandYellow),
                                               ),
                                       ),
                                     ),
@@ -421,22 +412,13 @@ class _PeopleScreenState extends State<PeopleScreen> {
                                       child: Row(
                                         mainAxisSize: MainAxisSize.min,
                                         children: [
-                                          const Icon(
-                                            Remix.shield_user_line,
-                                            size: 11,
-                                            color: brandYellow,
-                                          ),
+                                          Icon(Remix.shield_user_line, size: 11, color: brandYellow),
                                           const SizedBox(width: 4),
                                           Text(
                                             isEdit
                                                 ? 'بطاقة شخصية مسجلة'
                                                 : 'ملف جهة اتصال جديد',
-                                            style: const TextStyle(
-                                              fontFamily: 'Cairo',
-                                              fontSize: 10,
-                                              fontWeight: FontWeight.bold,
-                                              color: brandYellow,
-                                            ),
+                                            style: TextStyle(fontFamily: 'Cairo', fontSize: 10, fontWeight: FontWeight.bold, color: brandYellow),
                                           ),
                                         ],
                                       ),
@@ -898,19 +880,23 @@ class _PeopleScreenState extends State<PeopleScreen> {
                                           mainAxisAlignment:
                                               MainAxisAlignment.center,
                                           children: [
-                                            const Icon(
+                                            Icon(
                                               Remix.check_line,
                                               size: 17,
-                                              color: Color(0xFF0A0B0B),
+                                              color: _isDark
+                                                  ? const Color(0xFF0A0B0B)
+                                                  : Colors.white,
                                             ),
                                             const SizedBox(width: 6),
                                             Text(
                                               isEdit
                                                   ? 'حفظ التعديلات'
                                                   : 'إضافة الشخص',
-                                              style: const TextStyle(
+                                              style: TextStyle(
                                                 fontFamily: 'Cairo',
-                                                color: Color(0xFF0A0B0B),
+                                                color: _isDark
+                                                    ? const Color(0xFF0A0B0B)
+                                                    : Colors.white,
                                                 fontSize: 12.5,
                                                 fontWeight: FontWeight.bold,
                                               ),
@@ -1016,7 +1002,7 @@ class _PeopleScreenState extends State<PeopleScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         child: Row(
           children: [
-            const Icon(Remix.cake_2_line, color: brandYellow, size: 17),
+            Icon(Remix.cake_2_line, color: brandYellow, size: 17),
             const SizedBox(width: 10),
             Expanded(
               child: selectedDate != null
@@ -1055,12 +1041,7 @@ class _PeopleScreenState extends State<PeopleScreen> {
                                 ),
                                 child: Text(
                                   '$age سنة',
-                                  style: const TextStyle(
-                                    fontFamily: 'Cairo',
-                                    color: brandYellow,
-                                    fontSize: 10.5,
-                                    fontWeight: FontWeight.bold,
-                                  ),
+                                  style: TextStyle(fontFamily: 'Cairo', color: brandYellow, fontSize: 10.5, fontWeight: FontWeight.bold),
                                 ),
                               );
                             }
@@ -1100,12 +1081,12 @@ class _PeopleScreenState extends State<PeopleScreen> {
                   border:
                       Border.all(color: brandYellow.withValues(alpha: 0.35)),
                 ),
-                child: const Row(
+                child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(Remix.calendar_event_line,
                         size: 11, color: brandYellow),
-                    SizedBox(width: 4),
+                    const SizedBox(width: 4),
                     Text(
                       'تحديد',
                       style: TextStyle(
@@ -1126,17 +1107,19 @@ class _PeopleScreenState extends State<PeopleScreen> {
 
   Widget _buildAmberPasteChip({
     required VoidCallback onPaste,
-    Color iconColor = brandYellow,
+    Color? iconColor,
   }) {
+    final effectiveColor = iconColor ?? brandYellow;
     return InkWell(
       onTap: onPaste,
       borderRadius: BorderRadius.circular(6),
       child: Padding(
         padding: const EdgeInsets.all(4),
-        child: Icon(Remix.clipboard_line, size: 17, color: iconColor),
+        child: Icon(Remix.clipboard_line, size: 17, color: effectiveColor),
       ),
     );
   }
+
 
 
   Future<void> _confirmDelete(PersonModel person) async {
@@ -1211,11 +1194,7 @@ class _PeopleScreenState extends State<PeopleScreen> {
                             const SizedBox(width: 4),
                             Text(
                               '(${filtered.length})',
-                              style: const TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.bold,
-                                color: brandYellow,
-                              ),
+                              style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: brandYellow),
                             ),
                           ],
                         ),

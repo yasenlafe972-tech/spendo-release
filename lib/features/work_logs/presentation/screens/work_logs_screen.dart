@@ -1,4 +1,4 @@
-import 'package:sanad_app/core/widgets/banking_animations.dart';
+﻿import 'package:sanad_app/core/widgets/banking_animations.dart';
 import 'package:sanad_app/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:remixicon/remixicon.dart';
@@ -36,7 +36,8 @@ class _WorkLogsScreenState extends State<WorkLogsScreen> {
   Color get surfaceField => _isDark ? const Color(0xFF121215) : const Color(0xFFFFFFFF);
   Color get surfaceBorder => _isDark ? const Color(0xFF1E1E24) : const Color(0xFFE5E7EB);
   static const Color brandGreen = Color(0xFF2563EB);
-  static const Color brandYellow = Color(0xFFFFD600);
+  Color get brandYellow =>
+      const Color(0xFFFFD600);
   Color get textPrimary => _isDark ? const Color(0xFFF3F4F6) : const Color(0xFF111827);
   Color get textMuted => _isDark ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280);
   Color get textSubtle => _isDark ? const Color(0xFF71717A) : const Color(0xFF9CA3AF);
@@ -190,14 +191,14 @@ Future<void> _openEmployerModal([WorkplaceModel? existing]) async {
                                 child: isEdit && existing.name.trim().isNotEmpty
                                     ? Text(
                                         existing.name.trim().characters.first,
-                                        style: const TextStyle(
+                                        style: TextStyle(
                                           fontFamily: 'Cairo',
                                           fontSize: 20,
                                           fontWeight: FontWeight.bold,
                                           color: brandYellow,
                                         ),
                                       )
-                                    : const Icon(
+                                    : Icon(
                                         Remix.building_4_line,
                                         size: 22,
                                         color: brandYellow,
@@ -311,7 +312,7 @@ Future<void> _openEmployerModal([WorkplaceModel? existing]) async {
                               // وسم البطاقة 1: بيانات المنشأة
                               Row(
                                 children: [
-                                  const Icon(Remix.building_line,
+                                  Icon(Remix.building_line,
                                       size: 12, color: brandYellow),
                                   const SizedBox(width: 5),
                                   Text(
@@ -350,7 +351,7 @@ Future<void> _openEmployerModal([WorkplaceModel? existing]) async {
                                           horizontal: 12, vertical: 3),
                                       child: Row(
                                         children: [
-                                          const Icon(Remix.briefcase_line,
+                                          Icon(Remix.briefcase_line,
                                               color: brandYellow, size: 17),
                                           const SizedBox(width: 10),
                                           Expanded(
@@ -473,7 +474,7 @@ Future<void> _openEmployerModal([WorkplaceModel? existing]) async {
                                           horizontal: 12, vertical: 6),
                                       child: Row(
                                         children: [
-                                          const Icon(Remix.coin_line,
+                                          Icon(Remix.coin_line,
                                               color: brandYellow, size: 17),
                                           const SizedBox(width: 10),
                                           Text(
@@ -511,7 +512,7 @@ Future<void> _openEmployerModal([WorkplaceModel? existing]) async {
                                                             .numberWithOptions(
                                                             decimal: true),
                                                     textAlign: TextAlign.center,
-                                                    style: const TextStyle(
+                                                    style: TextStyle(
                                                       fontFamily: 'Cairo',
                                                       fontSize: 13,
                                                       fontWeight:
@@ -534,7 +535,7 @@ Future<void> _openEmployerModal([WorkplaceModel? existing]) async {
                                                   ),
                                                 ),
                                                 const SizedBox(width: 4),
-                                                const Text(
+                                                Text(
                                                   '₪',
                                                   style: TextStyle(
                                                     fontFamily: 'Cairo',
@@ -1101,7 +1102,7 @@ Future<void> _openEmployerModal([WorkplaceModel? existing]) async {
                               fontWeight: FontWeight.bold,
                               color: textWhite,
                             ),
-                            children: const [
+                            children: [
                               TextSpan(
                                 text: '(מעסיקים)',
                                 style: TextStyle(
@@ -1129,7 +1130,7 @@ Future<void> _openEmployerModal([WorkplaceModel? existing]) async {
                   ),
                   child: Text(
                     '$totalEmployers مشغّل مسجل',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 10,
                       fontWeight: FontWeight.w600,
                       color: brandYellow,
@@ -1225,7 +1226,7 @@ Future<void> _openEmployerModal([WorkplaceModel? existing]) async {
                             children: [
                               Text(
                                 '$totalDays',
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w800,
                                   color: brandYellow,
@@ -1244,7 +1245,7 @@ Future<void> _openEmployerModal([WorkplaceModel? existing]) async {
                           ),
                         ],
                       ),
-                      const Icon(
+                      Icon(
                         Remix.calendar_check_line,
                         color: brandYellow,
                         size: 20,
@@ -1283,7 +1284,7 @@ Future<void> _openEmployerModal([WorkplaceModel? existing]) async {
               const SizedBox(width: 4),
               Text(
                 '($count)',
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.bold,
                   color: brandYellow,
@@ -1409,7 +1410,7 @@ Future<void> _openEmployerModal([WorkplaceModel? existing]) async {
                                     ),
                                     child: Text(
                                       wp.city,
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                         fontSize: 9,
                                         fontWeight: FontWeight.w600,
                                         color: brandYellow,
@@ -1447,7 +1448,7 @@ Future<void> _openEmployerModal([WorkplaceModel? existing]) async {
                             Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                const Icon(
+                                Icon(
                                   Remix.time_line,
                                   size: 11,
                                   color: brandYellow,

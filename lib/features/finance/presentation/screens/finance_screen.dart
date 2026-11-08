@@ -1,4 +1,4 @@
-import 'package:sanad_app/core/widgets/banking_animations.dart';
+﻿import 'package:sanad_app/core/widgets/banking_animations.dart';
 import 'package:flutter/material.dart';
 import 'package:remixicon/remixicon.dart';
 import 'package:share_plus/share_plus.dart';
@@ -39,7 +39,8 @@ class _FinanceScreenState extends State<FinanceScreen> {
   Color get surfaceField => _isDark ? const Color(0xFF121215) : const Color(0xFFFFFFFF);
   Color get surfaceBorder => _isDark ? const Color(0xFF1E1E24) : const Color(0xFFE5E7EB);
   static const Color brandGreen = Color(0xFF2563EB);
-  static const Color brandYellow = Color(0xFFFFD600);
+  Color get brandYellow =>
+      const Color(0xFFFFD600);
   static const Color brandRed = Color(0xFFEF4444);
   Color get textWhite => _isDark ? const Color(0xFFFFFFFF) : const Color(0xFF111827);
   Color get textMuted => _isDark ? const Color(0xFF71717A) : const Color(0xFF6B7280);
@@ -139,7 +140,7 @@ class _FinanceScreenState extends State<FinanceScreen> {
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Remix.checkbox_circle_line, color: brandYellow, size: 16),
+              Icon(Remix.checkbox_circle_line, color: brandYellow, size: 16),
               const SizedBox(width: 8),
               Flexible(
                 child: Text(
@@ -515,7 +516,7 @@ class _FinanceScreenState extends State<FinanceScreen> {
             children: [
               Row(
                 children: [
-                  const Icon(Remix.scales_3_line, color: brandYellow, size: 16),
+                  Icon(Remix.scales_3_line, color: brandYellow, size: 16),
                   const SizedBox(width: 6),
                   Text(
                     'صافي الحسابات:',
@@ -538,7 +539,7 @@ class _FinanceScreenState extends State<FinanceScreen> {
                       fontWeight: FontWeight.w900,
                     ),
                   ),
-                  const Text(
+                  Text(
                     '₪',
                     style: TextStyle(
                       fontFamily: 'Cairo',
@@ -691,7 +692,7 @@ class _FinanceScreenState extends State<FinanceScreen> {
                   children: [
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
-                      children: const [
+                      children: [
                         Icon(Remix.checkbox_circle_line, color: brandYellow, size: 14),
                         SizedBox(width: 4),
                         Text(
@@ -712,7 +713,7 @@ class _FinanceScreenState extends State<FinanceScreen> {
                           tabIndex: 4,
                           value: _totalReceived,
                           formatter: (val) => '+${_formatCurrency(val)}',
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontFamily: 'Cairo',
                             color: brandYellow,
                             fontSize: 13,
@@ -720,7 +721,7 @@ class _FinanceScreenState extends State<FinanceScreen> {
                           ),
                         ),
                         const SizedBox(width: 3),
-                        const Text(
+                        Text(
                           '₪',
                           style: TextStyle(
                             fontFamily: 'Cairo',
@@ -765,7 +766,7 @@ class _FinanceScreenState extends State<FinanceScreen> {
               ),
               child: Text(
                 '${_filteredDebts.length}',
-                style: const TextStyle(
+                style: TextStyle(
                   fontFamily: 'Cairo',
                   color: brandYellow,
                   fontSize: 10,
