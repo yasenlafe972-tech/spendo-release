@@ -105,7 +105,7 @@ class PersonCard extends StatelessWidget {
                 borderRadius: BorderRadius.circular(12),
                 child: Padding(
                   padding: const EdgeInsets.symmetric(
-                      horizontal: 10, vertical: 8),
+                      horizontal: 9, vertical: 6.5),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -242,7 +242,7 @@ class PersonCard extends StatelessWidget {
                               ),
                             ],
                           ),
-                          const SizedBox(height: 7),
+                          const SizedBox(height: 5),
 
                           // خط فاصل رفيع هادئ
                           Container(
@@ -251,7 +251,7 @@ class PersonCard extends StatelessWidget {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 6),
+                      const SizedBox(height: 4),
 
                       // 2. الجزء السفلي: الهاتف، الهوية، الإيميل
                       Column(
@@ -291,7 +291,7 @@ class PersonCard extends StatelessWidget {
                               ),
                             ],
                           ),
-                          const SizedBox(height: 4),
+                          const SizedBox(height: 3),
 
                           // صف الهوية
                           Row(
@@ -340,7 +340,7 @@ class PersonCard extends StatelessWidget {
                               ),
                             ],
                           ),
-                          const SizedBox(height: 4),
+                          const SizedBox(height: 3),
 
                           // صف الإيميل
                           Row(

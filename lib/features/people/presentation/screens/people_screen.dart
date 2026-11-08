@@ -960,7 +960,7 @@ class _PeopleScreenState extends State<PeopleScreen> {
                               crossAxisCount: 2,
                               mainAxisSpacing: 10,
                               crossAxisSpacing: 10,
-                              childAspectRatio: (1.15 / AppTheme.fontScaleNotifier.value.clamp(1.0, 1.25)).clamp(0.88, 1.15),
+                              childAspectRatio: (1.46 / AppTheme.fontScaleNotifier.value.clamp(0.85, 1.25)).clamp(1.18, 1.50),
                             ),
                             itemCount: filtered.length,
                             itemBuilder: (context, index) {
