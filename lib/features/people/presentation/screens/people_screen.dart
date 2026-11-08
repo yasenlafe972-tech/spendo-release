@@ -133,7 +133,7 @@ class _PeopleScreenState extends State<PeopleScreen> {
     return cleaned;
   }
 
-  // نافذة الإضافة والتعديل المدمجة المطابقة لكود الـ HTML بنسبة 1:1
+  // نافذة الإضافة والتعديل بتصميم بطاقات Bento العصرية وثيم الذهب/الأصفر
   Future<void> _showAddEditModal([PersonModel? person]) async {
     SpendoHaptics.light();
     final isEdit = person != null;
@@ -151,7 +151,7 @@ class _PeopleScreenState extends State<PeopleScreen> {
       isScrollControlled: true,
       backgroundColor: surfaceMain,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
       ),
       builder: (ctx) {
         final media = MediaQuery.of(ctx);
@@ -169,393 +169,611 @@ class _PeopleScreenState extends State<PeopleScreen> {
                 bottom: true,
                 child: Padding(
                   padding: EdgeInsets.only(
-                    left: 14,
-                    right: 14,
-                    top: 10,
                     bottom: keyboardInset > 0
-                        ? keyboardInset + 8
+                        ? keyboardInset
                         : (bottomNavPadding > 0 ? bottomNavPadding + 8 : 16),
                   ),
-                  child: SingleChildScrollView(
-                    physics: const BouncingScrollPhysics(),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        // مؤشر السحب
-                        Center(
-                          child: Container(
-                            width: 32,
-                            height: 3.5,
-                            margin: const EdgeInsets.only(bottom: 12),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF404040),
-                              borderRadius: BorderRadius.circular(99),
-                            ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      // مقبض السحب العلوي
+                      const SizedBox(height: 8),
+                      Center(
+                        child: Container(
+                          width: 36,
+                          height: 4,
+                          decoration: BoxDecoration(
+                            color: surfaceBorder,
+                            borderRadius: BorderRadius.circular(99),
                           ),
                         ),
+                      ),
+                      const SizedBox(height: 8),
 
-                        // صندوق الحقول الرئيسي
-                        Container(
-                          padding: const EdgeInsets.all(14),
+                      // ترويسة الهوية (Hero Profile Header)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Container(
+                          padding: const EdgeInsets.only(bottom: 10),
                           decoration: BoxDecoration(
-                            color: surfaceField,
-                            borderRadius: BorderRadius.circular(14),
-                            border: Border.all(color: surfaceBorder),
+                            border: Border(
+                              bottom: BorderSide(
+                                  color: surfaceBorder, width: 1.0),
+                            ),
                           ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                          child: Row(
                             children: [
-                              // ترويسة النافذة
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Row(
-                                    children: [
-                                      Icon(
-                                        isEdit
-                                            ? Icons.edit_outlined
-                                            : Icons.person_add_outlined,
-                                        size: 16,
+                              // الصورة الرمزية مع إطار ذهبي لامع
+                              Container(
+                                width: 46,
+                                height: 46,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: brandYellow.withValues(alpha: 0.12),
+                                  border: Border.all(
+                                    color: brandYellow.withValues(alpha: 0.55),
+                                    width: 1.5,
+                                  ),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color:
+                                          brandYellow.withValues(alpha: 0.15),
+                                      blurRadius: 8,
+                                      spreadRadius: 1,
+                                    ),
+                                  ],
+                                ),
+                                alignment: Alignment.center,
+                                child: isEdit && person.name.trim().isNotEmpty
+                                    ? Text(
+                                        person.name.trim().characters.first,
+                                        style: const TextStyle(
+                                          fontFamily: 'Cairo',
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.bold,
+                                          color: brandYellow,
+                                        ),
+                                      )
+                                    : const Icon(
+                                        Remix.user_add_line,
+                                        size: 22,
                                         color: brandYellow,
                                       ),
-                                      const SizedBox(width: 6),
-                                      Text(
-                                        isEdit
-                                            ? 'تعديل بيانات الشخص'
-                                            : 'إضافة شخص جديد',
-                                        style: TextStyle(
-                                          fontSize: 13,
-                                          fontWeight: FontWeight.bold,
-                                          color: textPrimary,
-                                        ),
+                              ),
+                              const SizedBox(width: 10),
+
+                              // معلومات العنوان والشارة الذهبية
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      isEdit
+                                          ? (person.name.isNotEmpty
+                                              ? person.name
+                                              : 'تعديل بيانات الشخص')
+                                          : 'إضافة شخص جديد',
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        fontFamily: 'Cairo',
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.bold,
+                                        color: textPrimary,
+                                        height: 1.2,
                                       ),
-                                    ],
-                                  ),
-                                  InkWell(
-                                    onTap: () => Navigator.pop(ctx),
-                                    borderRadius: BorderRadius.circular(6),
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(3),
-                                      child: Icon(Icons.close_rounded,
-                                          size: 18, color: textMuted),
                                     ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 10),
-                              Container(height: 0.8, color: surfaceBorder),
-                              const SizedBox(height: 10),
-
-                              // 1. الاسم
-                              _buildFieldLabel('الاسم *'),
-                              _buildInputField(
-                                controller: nameCtrl,
-                                placeholder: 'الاسم الكامل',
-                              ),
-                              const SizedBox(height: 10),
-
-                              // 2. الهاتف (حقل كامل العرض مع زر لصق مخصص)
-                              _buildFieldLabel('الهاتف (اختياري)'),
-                              _buildInputField(
-                                controller: phoneCtrl,
-                                placeholder: '05X-XXXXXXX',
-                                isLtr: true,
-                                keyboardType: TextInputType.phone,
-                                showPasteButton: true,
-                                isPhone: true,
-                              ),
-                              const SizedBox(height: 10),
-
-                              // 3. رقم الهوية (حقل كامل العرض مع زر لصق مخصص)
-                              _buildFieldLabel('رقم الهوية (اختياري)'),
-                              _buildInputField(
-                                controller: idNumberCtrl,
-                                placeholder: '9 أرقام',
-                                isLtr: true,
-                                keyboardType: TextInputType.number,
-                                showPasteButton: true,
-                                digitsOnlyOnPaste: true,
-                              ),
-                              const SizedBox(height: 10),
-
-                              // 4. تاريخ الميلاد (بطاقة كبسولة تفاعلية أنيقة)
-                              _buildFieldLabel('تاريخ الميلاد (اختياري)'),
-                              InkWell(
-                                onTap: () async {
-                                  final picked =
-                                      await SpendoDatePicker.pickBirthDate(
-                                    context,
-                                    initialDate: selectedDate,
-                                  );
-                                  if (picked != null) {
-                                    selectedDate = picked;
-                                    setModalState(() {});
-                                  }
-                                },
-                                borderRadius: BorderRadius.circular(10),
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 12, vertical: 10),
-                                  decoration: BoxDecoration(
-                                    color: surfaceMain,
-                                    borderRadius: BorderRadius.circular(10),
-                                    border: Border.all(
-                                      color: selectedDate != null
-                                          ? brandGreen.withValues(alpha: 0.5)
-                                          : surfaceBorder,
-                                    ),
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      Container(
-                                        width: 32,
-                                        height: 32,
-                                        decoration: BoxDecoration(
-                                          color: (selectedDate != null
-                                                  ? brandGreen
-                                                  : brandYellow)
-                                              .withValues(alpha: 0.12),
-                                          borderRadius:
-                                              BorderRadius.circular(8),
-                                        ),
-                                        child: Icon(
-                                          Remix.cake_2_line,
-                                          size: 16,
-                                          color: selectedDate != null
-                                              ? brandGreen
-                                              : brandYellow,
+                                    const SizedBox(height: 2),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 7, vertical: 2),
+                                      decoration: BoxDecoration(
+                                        color: brandYellow
+                                            .withValues(alpha: 0.14),
+                                        borderRadius:
+                                            BorderRadius.circular(6),
+                                        border: Border.all(
+                                          color: brandYellow
+                                              .withValues(alpha: 0.35),
                                         ),
                                       ),
-                                      const SizedBox(width: 10),
-                                      Expanded(
-                                        child: selectedDate != null
-                                            ? Row(
-                                                children: [
-                                                  Text(
-                                                    DateFormat('dd/MM/yyyy')
-                                                        .format(selectedDate!),
-                                                    style: TextStyle(
-                                                      color: textPrimary,
-                                                      fontSize: 12,
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                      letterSpacing: 0.5,
-                                                    ),
-                                                  ),
-                                                  const SizedBox(width: 8),
-                                                  Builder(
-                                                    builder: (ctx) {
-                                                      final now =
-                                                          DateTime.now();
-                                                      int age = now.year -
-                                                          selectedDate!.year;
-                                                      if (now.month <
-                                                              selectedDate!
-                                                                  .month ||
-                                                          (now.month ==
-                                                                  selectedDate!
-                                                                      .month &&
-                                                              now.day <
-                                                                  selectedDate!
-                                                                      .day)) {
-                                                        age--;
-                                                      }
-                                                      if (age >= 0) {
-                                                        return Container(
-                                                          padding: const EdgeInsets
-                                                              .symmetric(
-                                                              horizontal: 6,
-                                                              vertical: 2),
-                                                          decoration:
-                                                              BoxDecoration(
-                                                            color: brandGreen
-                                                                .withValues(
-                                                                    alpha: 0.15),
-                                                            borderRadius:
-                                                                BorderRadius
-                                                                    .circular(
-                                                                        4),
-                                                          ),
-                                                          child: Text(
-                                                            '$age سنة',
-                                                            style:
-                                                                const TextStyle(
-                                                              color: brandGreen,
-                                                              fontSize: 10,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .bold,
-                                                            ),
-                                                          ),
-                                                        );
-                                                      }
-                                                      return const SizedBox
-                                                          .shrink();
-                                                    },
-                                                  ),
-                                                ],
-                                              )
-                                            : Text(
-                                                'انقر لاختيار تاريخ الميلاد',
-                                                style: TextStyle(
-                                                  color: textSubtle,
-                                                  fontSize: 11.5,
-                                                ),
-                                              ),
-                                      ),
-                                      if (selectedDate != null)
-                                        InkWell(
-                                          onTap: () {
-                                            selectedDate = null;
-                                            setModalState(() {});
-                                          },
-                                          borderRadius:
-                                              BorderRadius.circular(6),
-                                          child: Padding(
-                                            padding: const EdgeInsets.all(4),
-                                            child: Icon(Icons.close_rounded,
-                                                size: 16, color: textMuted),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          const Icon(
+                                            Remix.shield_user_line,
+                                            size: 11,
+                                            color: brandYellow,
                                           ),
-                                        )
-                                      else
-                                        Icon(Remix.calendar_event_line,
-                                            size: 16, color: textMuted),
-                                    ],
+                                          const SizedBox(width: 4),
+                                          Text(
+                                            isEdit
+                                                ? 'بطاقة شخصية مسجلة'
+                                                : 'ملف جهة اتصال جديد',
+                                            style: const TextStyle(
+                                              fontFamily: 'Cairo',
+                                              fontSize: 10,
+                                              fontWeight: FontWeight.bold,
+                                              color: brandYellow,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+
+                              // زر الإغلاق
+                              InkWell(
+                                onTap: () => Navigator.pop(ctx),
+                                borderRadius: BorderRadius.circular(20),
+                                child: Container(
+                                  padding: const EdgeInsets.all(6),
+                                  decoration: BoxDecoration(
+                                    color: surfaceBorder.withValues(alpha: 0.4),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Icon(
+                                    Remix.close_line,
+                                    size: 16,
+                                    color: textMuted,
                                   ),
                                 ),
                               ),
-                              const SizedBox(height: 10),
+                            ],
+                          ),
+                        ),
+                      ),
 
-                              // 5. الإيميل
-                              _buildFieldLabel('الإيميل (اختياري)'),
-                              _buildInputField(
-                                controller: emailCtrl,
-                                placeholder: 'example@gmail.com',
-                                isLtr: true,
-                                keyboardType: TextInputType.emailAddress,
+                      // محتوى البطاقات
+                      Flexible(
+                        child: SingleChildScrollView(
+                          physics: const BouncingScrollPhysics(),
+                          padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              // وسم البطاقة 1: الهوية الأساسية
+                              _buildSectionTag(
+                                icon: Remix.profile_line,
+                                title: 'البيانات التعريفية والسن',
+                              ),
+                              const SizedBox(height: 5),
+
+                              // بطاقة Bento 1: الاسم + تاريخ الميلاد
+                              Container(
+                                decoration: BoxDecoration(
+                                  color: surfaceField,
+                                  borderRadius: BorderRadius.circular(14),
+                                  border: Border.all(color: surfaceBorder),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withValues(
+                                          alpha: _isDark ? 0.2 : 0.03),
+                                      blurRadius: 6,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ],
+                                ),
+                                child: Column(
+                                  children: [
+                                    // حقل الاسم
+                                    _buildBentoRow(
+                                      icon: Remix.user_3_line,
+                                      iconColor: brandYellow,
+                                      child: TextField(
+                                        controller: nameCtrl,
+                                        style: TextStyle(
+                                          fontFamily: 'Cairo',
+                                          fontSize: 12.5,
+                                          fontWeight: FontWeight.bold,
+                                          color: textPrimary,
+                                        ),
+                                        decoration: InputDecoration(
+                                          isDense: true,
+                                          hintText:
+                                              'الاسم الكامل أو التجاري *',
+                                          hintStyle: TextStyle(
+                                            fontFamily: 'Cairo',
+                                            color: textSubtle,
+                                            fontSize: 11.5,
+                                          ),
+                                          border: InputBorder.none,
+                                          contentPadding:
+                                              const EdgeInsets.symmetric(
+                                                  vertical: 8),
+                                        ),
+                                      ),
+                                    ),
+                                    Divider(
+                                      height: 1,
+                                      thickness: 0.8,
+                                      color: surfaceBorder
+                                          .withValues(alpha: 0.7),
+                                      indent: 38,
+                                      endIndent: 12,
+                                    ),
+                                    // صف تاريخ الميلاد المدمج
+                                    _buildBirthdayRow(
+                                      selectedDate: selectedDate,
+                                      onPick: () async {
+                                        final picked = await SpendoDatePicker
+                                            .pickBirthDate(
+                                          context,
+                                          initialDate: selectedDate,
+                                        );
+                                        if (picked != null) {
+                                          selectedDate = picked;
+                                          setModalState(() {});
+                                        }
+                                      },
+                                      onClear: () {
+                                        selectedDate = null;
+                                        setModalState(() {});
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+
+                              // وسم البطاقة 2: الاتصال والتحقق
+                              _buildSectionTag(
+                                icon: Remix.shield_keyhole_line,
+                                title: 'معلومات الاتصال والتحقق',
+                              ),
+                              const SizedBox(height: 5),
+
+                              // بطاقة Bento 2: الهاتف + الهوية + الإيميل
+                              Container(
+                                decoration: BoxDecoration(
+                                  color: surfaceField,
+                                  borderRadius: BorderRadius.circular(14),
+                                  border: Border.all(color: surfaceBorder),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withValues(
+                                          alpha: _isDark ? 0.2 : 0.03),
+                                      blurRadius: 6,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ],
+                                ),
+                                child: Column(
+                                  children: [
+                                    // رقم الهاتف مع زر لصق أصفر
+                                    _buildBentoRow(
+                                      icon: Remix.phone_line,
+                                      iconColor: brandYellow,
+                                      child: TextField(
+                                        controller: phoneCtrl,
+                                        keyboardType: TextInputType.phone,
+                                        textDirection: TextDirection.ltr,
+                                        textAlign: TextAlign.right,
+                                        style: TextStyle(
+                                          fontFamily: 'Cairo',
+                                          fontSize: 12.5,
+                                          fontWeight: FontWeight.w600,
+                                          color: textPrimary,
+                                        ),
+                                        onChanged: (val) {
+                                          final cleaned = _cleanPastedNumber(
+                                            val,
+                                            isPhone: true,
+                                          );
+                                          if (cleaned != val) {
+                                            phoneCtrl.value =
+                                                TextEditingValue(
+                                              text: cleaned,
+                                              selection:
+                                                  TextSelection.collapsed(
+                                                      offset:
+                                                          cleaned.length),
+                                            );
+                                          }
+                                        },
+                                        decoration: InputDecoration(
+                                          isDense: true,
+                                          hintText:
+                                              'رقم الهاتف (05X-XXXXXXX)',
+                                          hintStyle: TextStyle(
+                                            fontFamily: 'Cairo',
+                                            color: textSubtle,
+                                            fontSize: 11.5,
+                                          ),
+                                          hintTextDirection:
+                                              TextDirection.rtl,
+                                          border: InputBorder.none,
+                                          contentPadding:
+                                              const EdgeInsets.symmetric(
+                                                  vertical: 8),
+                                        ),
+                                      ),
+                                      trailing: _buildAmberPasteChip(
+                                        onPaste: () async {
+                                          final data = await Clipboard
+                                              .getData(Clipboard.kTextPlain);
+                                          final text = data?.text ?? '';
+                                          if (text.trim().isNotEmpty) {
+                                            final cleaned =
+                                                _cleanPastedNumber(
+                                              text,
+                                              isPhone: true,
+                                            );
+                                            if (cleaned.isNotEmpty) {
+                                              phoneCtrl.text = cleaned;
+                                              phoneCtrl.selection =
+                                                  TextSelection.collapsed(
+                                                      offset:
+                                                          cleaned.length);
+                                              SpendoHaptics.light();
+                                              setModalState(() {});
+                                            }
+                                          }
+                                        },
+                                      ),
+                                    ),
+                                    Divider(
+                                      height: 1,
+                                      thickness: 0.8,
+                                      color: surfaceBorder
+                                          .withValues(alpha: 0.7),
+                                      indent: 38,
+                                      endIndent: 12,
+                                    ),
+                                    // رقم الهوية مع زر لصق أصفر
+                                    _buildBentoRow(
+                                      icon: Remix.id_card_line,
+                                      iconColor: brandYellow,
+                                      child: TextField(
+                                        controller: idNumberCtrl,
+                                        keyboardType: TextInputType.number,
+                                        textDirection: TextDirection.ltr,
+                                        textAlign: TextAlign.right,
+                                        style: TextStyle(
+                                          fontFamily: 'Cairo',
+                                          fontSize: 12.5,
+                                          fontWeight: FontWeight.w600,
+                                          color: textPrimary,
+                                        ),
+                                        onChanged: (val) {
+                                          final cleaned = _cleanPastedNumber(
+                                            val,
+                                            digitsOnly: true,
+                                          );
+                                          if (cleaned != val) {
+                                            idNumberCtrl.value =
+                                                TextEditingValue(
+                                              text: cleaned,
+                                              selection:
+                                                  TextSelection.collapsed(
+                                                      offset:
+                                                          cleaned.length),
+                                            );
+                                          }
+                                        },
+                                        decoration: InputDecoration(
+                                          isDense: true,
+                                          hintText:
+                                              'رقم الهوية الوطنية (9 أرقام)',
+                                          hintStyle: TextStyle(
+                                            fontFamily: 'Cairo',
+                                            color: textSubtle,
+                                            fontSize: 11.5,
+                                          ),
+                                          hintTextDirection:
+                                              TextDirection.rtl,
+                                          border: InputBorder.none,
+                                          contentPadding:
+                                              const EdgeInsets.symmetric(
+                                                  vertical: 8),
+                                        ),
+                                      ),
+                                      trailing: _buildAmberPasteChip(
+                                        onPaste: () async {
+                                          final data = await Clipboard
+                                              .getData(Clipboard.kTextPlain);
+                                          final text = data?.text ?? '';
+                                          if (text.trim().isNotEmpty) {
+                                            final cleaned =
+                                                _cleanPastedNumber(
+                                              text,
+                                              digitsOnly: true,
+                                            );
+                                            if (cleaned.isNotEmpty) {
+                                              idNumberCtrl.text = cleaned;
+                                              idNumberCtrl.selection =
+                                                  TextSelection.collapsed(
+                                                      offset:
+                                                          cleaned.length);
+                                              SpendoHaptics.light();
+                                              setModalState(() {});
+                                            }
+                                          }
+                                        },
+                                      ),
+                                    ),
+                                    Divider(
+                                      height: 1,
+                                      thickness: 0.8,
+                                      color: surfaceBorder
+                                          .withValues(alpha: 0.7),
+                                      indent: 38,
+                                      endIndent: 12,
+                                    ),
+                                    // البريد الإلكتروني
+                                    _buildBentoRow(
+                                      icon: Remix.mail_line,
+                                      iconColor: brandYellow,
+                                      child: TextField(
+                                        controller: emailCtrl,
+                                        keyboardType:
+                                            TextInputType.emailAddress,
+                                        textDirection: TextDirection.ltr,
+                                        textAlign: TextAlign.right,
+                                        style: TextStyle(
+                                          fontFamily: 'Cairo',
+                                          fontSize: 12.5,
+                                          fontWeight: FontWeight.w600,
+                                          color: textPrimary,
+                                        ),
+                                        decoration: InputDecoration(
+                                          isDense: true,
+                                          hintText:
+                                              'البريد الإلكتروني (اختياري)',
+                                          hintStyle: TextStyle(
+                                            fontFamily: 'Cairo',
+                                            color: textSubtle,
+                                            fontSize: 11.5,
+                                          ),
+                                          hintTextDirection:
+                                              TextDirection.rtl,
+                                          border: InputBorder.none,
+                                          contentPadding:
+                                              const EdgeInsets.symmetric(
+                                                  vertical: 8),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
                               const SizedBox(height: 14),
 
-                              // أزرار الحفظ والإلغاء
+                              // أزرار الحفظ والإلغاء (زر حفظ أصفر فينتك مميز)
                               Row(
                                 children: [
                                   Expanded(
-                                    child: Material(
-                                      color: brandGreen,
-                                      borderRadius: BorderRadius.circular(8),
-                                      child: InkWell(
-                                        onTap: () async {
-                                          final name = nameCtrl.text.trim();
-                                          if (name.isEmpty) {
-                                            ScaffoldMessenger.of(context)
-                                                .showSnackBar(
-                                              const SnackBar(
-                                                content: Text(
-                                                    'يرجى إدخال اسم الشخص أولاً'),
-                                              ),
-                                            );
-                                            return;
-                                          }
-
-                                          final cleanPhone = _cleanPastedNumber(
-                                            phoneCtrl.text.trim(),
-                                            isPhone: true,
+                                    child: InkWell(
+                                      onTap: () async {
+                                        final name = nameCtrl.text.trim();
+                                        if (name.isEmpty) {
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(
+                                            const SnackBar(
+                                              content: Text(
+                                                  'يرجى إدخال اسم الشخص أولاً'),
+                                            ),
                                           );
-                                          final cleanId = _cleanPastedNumber(
-                                            idNumberCtrl.text.trim(),
-                                            digitsOnly: true,
-                                          );
-                                          final cleanEmail =
-                                              emailCtrl.text.trim();
+                                          return;
+                                        }
 
-                                          final updated = isEdit
-                                              ? PersonModel(
-                                                  id: person.id,
-                                                  name: name,
-                                                  isUser: person.isUser,
-                                                  birthdate: selectedDate,
-                                                  email: cleanEmail.isEmpty
-                                                      ? null
-                                                      : cleanEmail,
-                                                  phone: cleanPhone.isEmpty
-                                                      ? null
-                                                      : cleanPhone,
-                                                  whatsapp: cleanPhone.isEmpty
-                                                      ? null
-                                                      : cleanPhone,
-                                                  nationalId: cleanId.isEmpty
-                                                      ? null
-                                                      : cleanId,
-                                                  bank: person.bank,
-                                                  accountNumber:
-                                                      person.accountNumber,
-                                                  isPinned: person.isPinned,
-                                                  hourlyRate: person.hourlyRate,
-                                                  dailyRate: person.dailyRate,
-                                                  notes: person.notes,
-                                                  createdAt: person.createdAt,
-                                                  updatedAt: DateTime.now(),
-                                                )
-                                              : PersonModel(
-                                                  id: DateTime.now()
-                                                      .millisecondsSinceEpoch
-                                                      .toString(),
-                                                  name: name,
-                                                  birthdate: selectedDate,
-                                                  email: cleanEmail.isEmpty
-                                                      ? null
-                                                      : cleanEmail,
-                                                  phone: cleanPhone.isEmpty
-                                                      ? null
-                                                      : cleanPhone,
-                                                  whatsapp: cleanPhone.isEmpty
-                                                      ? null
-                                                      : cleanPhone,
-                                                  nationalId: cleanId.isEmpty
-                                                      ? null
-                                                      : cleanId,
-                                                  createdAt: DateTime.now(),
-                                                  updatedAt: DateTime.now(),
-                                                );
+                                        final cleanPhone = _cleanPastedNumber(
+                                          phoneCtrl.text.trim(),
+                                          isPhone: true,
+                                        );
+                                        final cleanId = _cleanPastedNumber(
+                                          idNumberCtrl.text.trim(),
+                                          digitsOnly: true,
+                                        );
+                                        final cleanEmail =
+                                            emailCtrl.text.trim();
 
-                                          SpendoHaptics.success();
-                                          if (isEdit) {
-                                            await _repository
-                                                .updatePerson(updated);
-                                          } else {
-                                            await _repository
-                                                .addPerson(updated);
-                                          }
-                                          if (ctx.mounted) {
-                                            Navigator.pop(ctx);
-                                          }
-                                          _loadPeople();
-                                        },
-                                        borderRadius:
-                                            BorderRadius.circular(8),
-                                        child: Container(
-                                          height: 38,
-                                          alignment: Alignment.center,
-                                          child: const Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
-                                            children: [
-                                              Icon(Icons.check_rounded,
-                                                  size: 15,
-                                                  color: Colors.white),
-                                              SizedBox(width: 5),
-                                              Text(
-                                                'حفظ',
-                                                style: TextStyle(
-                                                  color: Colors.white,
-                                                  fontSize: 12,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
+                                        final updated = isEdit
+                                            ? PersonModel(
+                                                id: person.id,
+                                                name: name,
+                                                isUser: person.isUser,
+                                                birthdate: selectedDate,
+                                                email: cleanEmail.isEmpty
+                                                    ? null
+                                                    : cleanEmail,
+                                                phone: cleanPhone.isEmpty
+                                                    ? null
+                                                    : cleanPhone,
+                                                whatsapp: cleanPhone.isEmpty
+                                                    ? null
+                                                    : cleanPhone,
+                                                nationalId: cleanId.isEmpty
+                                                    ? null
+                                                    : cleanId,
+                                                bank: person.bank,
+                                                accountNumber:
+                                                    person.accountNumber,
+                                                isPinned: person.isPinned,
+                                                hourlyRate: person.hourlyRate,
+                                                dailyRate: person.dailyRate,
+                                                notes: person.notes,
+                                                createdAt: person.createdAt,
+                                                updatedAt: DateTime.now(),
+                                              )
+                                            : PersonModel(
+                                                id: DateTime.now()
+                                                    .millisecondsSinceEpoch
+                                                    .toString(),
+                                                name: name,
+                                                birthdate: selectedDate,
+                                                email: cleanEmail.isEmpty
+                                                    ? null
+                                                    : cleanEmail,
+                                                phone: cleanPhone.isEmpty
+                                                    ? null
+                                                    : cleanPhone,
+                                                whatsapp: cleanPhone.isEmpty
+                                                    ? null
+                                                    : cleanPhone,
+                                                nationalId: cleanId.isEmpty
+                                                    ? null
+                                                    : cleanId,
+                                                createdAt: DateTime.now(),
+                                                updatedAt: DateTime.now(),
+                                              );
+
+                                        SpendoHaptics.success();
+                                        if (isEdit) {
+                                          await _repository
+                                              .updatePerson(updated);
+                                        } else {
+                                          await _repository
+                                              .addPerson(updated);
+                                        }
+                                        if (ctx.mounted) {
+                                          Navigator.pop(ctx);
+                                        }
+                                        _loadPeople();
+                                      },
+                                      borderRadius: BorderRadius.circular(11),
+                                      child: Container(
+                                        height: 42,
+                                        decoration: BoxDecoration(
+                                          color: brandYellow,
+                                          borderRadius:
+                                              BorderRadius.circular(11),
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: brandYellow.withValues(
+                                                  alpha: 0.28),
+                                              blurRadius: 8,
+                                              offset: const Offset(0, 3),
+                                            ),
+                                          ],
+                                        ),
+                                        alignment: Alignment.center,
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            const Icon(
+                                              Remix.check_line,
+                                              size: 17,
+                                              color: Color(0xFF0A0B0B),
+                                            ),
+                                            const SizedBox(width: 6),
+                                            Text(
+                                              isEdit
+                                                  ? 'حفظ التعديلات'
+                                                  : 'إضافة الشخص',
+                                              style: const TextStyle(
+                                                fontFamily: 'Cairo',
+                                                color: Color(0xFF0A0B0B),
+                                                fontSize: 12.5,
+                                                fontWeight: FontWeight.bold,
                                               ),
-                                            ],
-                                          ),
+                                            ),
+                                          ],
                                         ),
                                       ),
                                     ),
@@ -563,14 +781,15 @@ class _PeopleScreenState extends State<PeopleScreen> {
                                   const SizedBox(width: 8),
                                   InkWell(
                                     onTap: () => Navigator.pop(ctx),
-                                    borderRadius: BorderRadius.circular(8),
+                                    borderRadius: BorderRadius.circular(11),
                                     child: Container(
-                                      height: 38,
+                                      height: 42,
                                       padding: const EdgeInsets.symmetric(
-                                          horizontal: 16),
+                                          horizontal: 18),
                                       decoration: BoxDecoration(
-                                        color: surfaceMain,
-                                        borderRadius: BorderRadius.circular(8),
+                                        color: surfaceField,
+                                        borderRadius:
+                                            BorderRadius.circular(11),
                                         border:
                                             Border.all(color: surfaceBorder),
                                       ),
@@ -578,8 +797,10 @@ class _PeopleScreenState extends State<PeopleScreen> {
                                       child: Text(
                                         'إلغاء',
                                         style: TextStyle(
+                                          fontFamily: 'Cairo',
                                           color: textMuted,
                                           fontSize: 12,
+                                          fontWeight: FontWeight.w600,
                                         ),
                                       ),
                                     ),
@@ -589,8 +810,8 @@ class _PeopleScreenState extends State<PeopleScreen> {
                             ],
                           ),
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
               ),
@@ -601,139 +822,197 @@ class _PeopleScreenState extends State<PeopleScreen> {
     );
   }
 
-  Widget _buildFieldLabel(String label) {
+  Widget _buildSectionTag({required IconData icon, required String title}) {
+    return Row(
+      children: [
+        Icon(icon, size: 12, color: brandYellow),
+        const SizedBox(width: 5),
+        Text(
+          title,
+          style: TextStyle(
+            fontFamily: 'Cairo',
+            fontSize: 10.5,
+            fontWeight: FontWeight.bold,
+            color: textMuted,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildBentoRow({
+    required IconData icon,
+    required Color iconColor,
+    required Widget child,
+    Widget? trailing,
+  }) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 4),
-      child: Text(
-        label,
-        style: TextStyle(
-          fontSize: 10,
-          color: textMuted,
-          fontWeight: FontWeight.w600,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 3),
+      child: Row(
+        children: [
+          Icon(icon, color: iconColor, size: 17),
+          const SizedBox(width: 10),
+          Expanded(child: child),
+          if (trailing != null) ...[
+            const SizedBox(width: 6),
+            trailing,
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBirthdayRow({
+    required DateTime? selectedDate,
+    required VoidCallback onPick,
+    required VoidCallback onClear,
+  }) {
+    return InkWell(
+      onTap: onPick,
+      borderRadius: const BorderRadius.vertical(bottom: Radius.circular(14)),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        child: Row(
+          children: [
+            const Icon(Remix.cake_2_line, color: brandYellow, size: 17),
+            const SizedBox(width: 10),
+            Expanded(
+              child: selectedDate != null
+                  ? Row(
+                      children: [
+                        Text(
+                          DateFormat('dd/MM/yyyy').format(selectedDate),
+                          style: TextStyle(
+                            fontFamily: 'Cairo',
+                            color: textPrimary,
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Builder(
+                          builder: (ctx) {
+                            final now = DateTime.now();
+                            int age = now.year - selectedDate.year;
+                            if (now.month < selectedDate.month ||
+                                (now.month == selectedDate.month &&
+                                    now.day < selectedDate.day)) {
+                              age--;
+                            }
+                            if (age >= 0) {
+                              return Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 7, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: brandYellow.withValues(alpha: 0.15),
+                                  borderRadius: BorderRadius.circular(6),
+                                  border: Border.all(
+                                    color: brandYellow.withValues(alpha: 0.45),
+                                  ),
+                                ),
+                                child: Text(
+                                  '$age سنة',
+                                  style: const TextStyle(
+                                    fontFamily: 'Cairo',
+                                    color: brandYellow,
+                                    fontSize: 10.5,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              );
+                            }
+                            return const SizedBox.shrink();
+                          },
+                        ),
+                      ],
+                    )
+                  : Text(
+                      'تاريخ الميلاد (اختياري)',
+                      style: TextStyle(
+                        fontFamily: 'Cairo',
+                        color: textSubtle,
+                        fontSize: 11.5,
+                      ),
+                    ),
+            ),
+            if (selectedDate != null)
+              InkWell(
+                onTap: onClear,
+                borderRadius: BorderRadius.circular(6),
+                child: const Padding(
+                  padding: EdgeInsets.all(4),
+                  child: Icon(
+                    Remix.close_circle_line,
+                    size: 16,
+                    color: Color(0xFF9CA3AF),
+                  ),
+                ),
+              )
+            else
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                decoration: BoxDecoration(
+                  color: brandYellow.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(6),
+                  border:
+                      Border.all(color: brandYellow.withValues(alpha: 0.35)),
+                ),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Remix.calendar_event_line,
+                        size: 11, color: brandYellow),
+                    SizedBox(width: 4),
+                    Text(
+                      'تحديد',
+                      style: TextStyle(
+                        fontFamily: 'Cairo',
+                        color: brandYellow,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildInputField({
-    required TextEditingController controller,
-    required String placeholder,
-    bool isLtr = false,
-    TextInputType keyboardType = TextInputType.text,
-    bool showPasteButton = false,
-    bool isPhone = false,
-    bool digitsOnlyOnPaste = false,
-    IconData? suffixIcon,
-    VoidCallback? onSuffixTap,
-    ValueChanged<String>? onChanged,
-  }) {
-    return Container(
-      constraints: const BoxConstraints(minHeight: 40),
-      decoration: BoxDecoration(
-        color: surfaceMain,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: surfaceBorder),
-      ),
-      child: TextField(
-        controller: controller,
-        keyboardType: keyboardType,
-        textDirection: isLtr ? TextDirection.ltr : TextDirection.rtl,
-        textAlign: isLtr ? TextAlign.right : TextAlign.start,
-        style: TextStyle(
-          color: textPrimary,
-          fontSize: 12,
-          fontWeight: isLtr ? FontWeight.w600 : FontWeight.normal,
+  Widget _buildAmberPasteChip({required VoidCallback onPaste}) {
+    return InkWell(
+      onTap: onPaste,
+      borderRadius: BorderRadius.circular(6),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+        decoration: BoxDecoration(
+          color: brandYellow.withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(6),
+          border: Border.all(color: brandYellow.withValues(alpha: 0.35)),
         ),
-        enableInteractiveSelection: true,
-        onChanged: (val) {
-          if (isPhone || digitsOnlyOnPaste) {
-            final cleaned = _cleanPastedNumber(
-              val,
-              isPhone: isPhone,
-              digitsOnly: digitsOnlyOnPaste,
-            );
-            if (cleaned != val) {
-              controller.value = TextEditingValue(
-                text: cleaned,
-                selection: TextSelection.collapsed(offset: cleaned.length),
-              );
-            }
-          }
-          onChanged?.call(val);
-        },
-        decoration: InputDecoration(
-          isDense: true,
-          hintText: placeholder,
-          hintStyle: TextStyle(color: textSubtle, fontSize: 11),
-          hintTextDirection: isLtr ? TextDirection.ltr : TextDirection.rtl,
-          border: InputBorder.none,
-          contentPadding:
-              const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-          suffixIconConstraints:
-              const BoxConstraints(minWidth: 40, minHeight: 36),
-          suffixIcon: showPasteButton
-              ? Padding(
-                  padding: const EdgeInsetsDirectional.only(end: 4),
-                  child: InkWell(
-                    onTap: () async {
-                      final data = await Clipboard.getData(Clipboard.kTextPlain);
-                      final text = data?.text ?? '';
-                      if (text.trim().isNotEmpty) {
-                        final cleaned = _cleanPastedNumber(
-                          text,
-                          isPhone: isPhone,
-                          digitsOnly: digitsOnlyOnPaste,
-                        );
-                        if (cleaned.isNotEmpty) {
-                          controller.text = cleaned;
-                          controller.selection =
-                              TextSelection.collapsed(offset: cleaned.length);
-                          SpendoHaptics.light();
-                          onChanged?.call(cleaned);
-                        }
-                      }
-                    },
-                    borderRadius: BorderRadius.circular(6),
-                    child: Container(
-                      margin:
-                          const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
-                      padding:
-                          const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: brandGreen.withValues(alpha: 0.12),
-                        borderRadius: BorderRadius.circular(6),
-                        border:
-                            Border.all(color: brandGreen.withValues(alpha: 0.3)),
-                      ),
-                      child: const Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.content_paste_rounded,
-                              size: 12, color: brandGreen),
-                          SizedBox(width: 4),
-                          Text(
-                            'لصق',
-                            style: TextStyle(
-                              color: brandGreen,
-                              fontSize: 10,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                )
-              : (suffixIcon != null
-                  ? InkWell(
-                      onTap: onSuffixTap,
-                      child: Icon(suffixIcon, size: 14, color: brandYellow),
-                    )
-                  : null),
+        child: const Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Remix.clipboard_line, size: 11, color: brandYellow),
+            SizedBox(width: 3),
+            Text(
+              'لصق',
+              style: TextStyle(
+                fontFamily: 'Cairo',
+                color: brandYellow,
+                fontSize: 10,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
+
 
   Future<void> _confirmDelete(PersonModel person) async {
     final confirmed = await SpendoConfirmDeleteDialog.show(
