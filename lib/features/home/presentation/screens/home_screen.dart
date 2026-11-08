@@ -14,6 +14,7 @@ import '../../../vehicle/models/vehicle_model.dart';
 import '../../../vehicle/presentation/widgets/fuel_expense_sheet.dart';
 import '../../../settings/presentation/screens/app_settings_screen.dart';
 import '../../models/daily_expense_model.dart';
+import '../../services/dashboard_period_preferences.dart';
 import '../../../../core/database/database_helper.dart';
 import '../../../../core/services/firebase_backup_service.dart';
 
@@ -44,6 +45,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // Filter state
   late String _selectedMonthKey; // e.g. '2026-10' or 'all'
+  bool _periodReady = false;
+  Future<void> _periodSave = Future<void>.value();
   String _selectedLogsFilter = 'all'; // 'all', 'food', 'shopping', 'fuel'
 
   bool get _isDark => Theme.of(context).brightness == Brightness.dark;
@@ -69,7 +72,36 @@ class _HomeScreenState extends State<HomeScreen> {
     DailyExpenseService.expensesChangedNotifier.addListener(_onAutoExpensesUpdated);
     DatabaseHelper.dataVersionNotifier.addListener(_onAutoExpensesUpdated);
     DailyExpenseService.initAutoSyncListener();
-    _loadData();
+    _initializeDashboard();
+  }
+
+  Future<void> _initializeDashboard() async {
+    try {
+      final saved = await DashboardPeriodPreferences.load();
+      if (!mounted) return;
+      _selectedMonthKey = saved;
+    } catch (error) {
+      debugPrint('Error restoring dashboard period: $error');
+    }
+    if (!mounted) return;
+    _periodReady = true;
+    await _loadData();
+  }
+
+  void _selectMonth(String key) {
+    setState(() {
+      _selectedMonthKey = key;
+      _showAllTimelineItems = false;
+    });
+    // Serialize writes so rapid selections persist the last selected period.
+    _periodSave = _periodSave.then((_) => DashboardPeriodPreferences.save(key))
+        .catchError((Object error) {
+      debugPrint('Error saving dashboard period: $error');
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text('تعذّر حفظ فترة العرض. يرجى المحاولة مرة أخرى.'),
+      ));
+    });
   }
 
   @override
@@ -80,7 +112,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _onAutoExpensesUpdated() {
-    if (mounted) {
+    if (mounted && _periodReady) {
       _loadData();
     }
   }
@@ -146,16 +178,6 @@ class _HomeScreenState extends State<HomeScreen> {
         _allDailyExpenses = expenses;
         _isLoading = false;
 
-        // If selected month has no records but records exist in other periods,
-        // automatically switch to 'all' (كافة الفترات) so the user immediately sees all records & totals!
-        if (_filteredWorkLogs.isEmpty &&
-            _filteredDailyExpenses.isEmpty &&
-            _filteredFuelRecords.isEmpty &&
-            (_allDailyExpenses.isNotEmpty ||
-                _allFuelRecords.isNotEmpty ||
-                _allWorkLogs.isNotEmpty)) {
-          _selectedMonthKey = 'all';
-        }
       });
     } catch (e) {
       debugPrint('Error loading dashboard: $e');
@@ -269,6 +291,10 @@ class _HomeScreenState extends State<HomeScreen> {
       final key = '${d.year}-${d.month.toString().padLeft(2, '0')}';
       months.add(key);
     }
+    if (_selectedMonthKey != 'all' && !months.contains(_selectedMonthKey)) {
+      months.add(_selectedMonthKey);
+      months.sort((a, b) => b.compareTo(a));
+    }
 
     showModalBottomSheet(
       context: context,
@@ -336,7 +362,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           : null,
                       onTap: () {
                         Navigator.pop(ctx);
-                        setState(() => _selectedMonthKey = 'all');
+                        _selectMonth('all');
                       },
                     ),
                     const SizedBox(height: 6),
@@ -369,7 +395,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               : null,
                           onTap: () {
                             Navigator.pop(ctx);
-                            setState(() => _selectedMonthKey = key);
+                            _selectMonth(key);
                           },
                         ),
                       );
