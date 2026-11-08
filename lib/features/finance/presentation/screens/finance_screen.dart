@@ -330,11 +330,12 @@ class _FinanceScreenState extends State<FinanceScreen> {
   Color _getPaymentMethodColor(String method) {
     switch (method.toLowerCase()) {
       case 'pending':
+        return brandYellow;
+      case 'cash':
+        return successColor;
       case 'bit':
       case 'bank_transfer':
       case 'bank':
-        return brandYellow;
-      case 'cash':
       case 'check':
       default:
         return brandBlue;
@@ -538,7 +539,7 @@ class _FinanceScreenState extends State<FinanceScreen> {
                     '₪',
                     style: TextStyle(
                       fontFamily: 'Cairo',
-                      color: brandYellow,
+                      color: textMuted,
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
                     ),
@@ -681,7 +682,7 @@ class _FinanceScreenState extends State<FinanceScreen> {
 
               Container(width: 1, height: 28, color: surfaceBorder),
 
-              // مبالغ مستلمة (باللون الأصفر الدافئ)
+              // Received amounts use the success color.
               Expanded(
                 child: Column(
                   children: [
@@ -710,7 +711,7 @@ class _FinanceScreenState extends State<FinanceScreen> {
                           formatter: (val) => '+${_formatCurrency(val)}',
                           style: TextStyle(
                             fontFamily: 'Cairo',
-                            color: brandYellow,
+                            color: successColor,
                             fontSize: 13,
                             fontWeight: FontWeight.w900,
                           ),
@@ -720,7 +721,7 @@ class _FinanceScreenState extends State<FinanceScreen> {
                           '₪',
                           style: TextStyle(
                             fontFamily: 'Cairo',
-                            color: brandYellow,
+                            color: successColor,
                             fontSize: 10,
                           ),
                         ),
@@ -1002,6 +1003,8 @@ class _FinanceScreenState extends State<FinanceScreen> {
       amountPrefix = '+';
       subStatus = 'خالص ومسدد';
     }
+
+    if (isSettled) badgeColor = successColor;
 
     final double displayAmount = isReceived
         ? debt.originalAmount

@@ -791,7 +791,7 @@ class _AddDebtSheetState extends State<AddDebtSheet> {
             '₪',
             style: TextStyle(
               fontFamily: 'Cairo',
-              color: brandYellow,
+              color: textMuted,
               fontSize: 13,
               fontWeight: FontWeight.w900,
             ),
