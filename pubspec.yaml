@@ -58,3 +58,6 @@ flutter:
     - family: Heebo
       fonts:
         - asset: assets/fonts/Heebo-Variable.ttf
+    - family: PlusJakartaSans
+      fonts:
+        - asset: assets/fonts/PlusJakartaSans-Variable.ttf

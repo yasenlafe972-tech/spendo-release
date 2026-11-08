@@ -29,7 +29,7 @@ class RecordWorkplacePaymentSheet extends StatefulWidget {
   static Color get surfaceHover => _isDark ? const Color(0xFF1D211F) : const Color(0xFFF1F3F5);
   static Color get surfaceBorder => _isDark ? const Color(0xFF242927) : const Color(0xFFE5E7EB);
   static const Color brandGreen = Color(0xFF00A86B);
-  static const Color brandYellow = Color(0xFFEAB308);
+  static const Color brandYellow = Color(0xFFFFD600);
   static Color get textPrimary => _isDark ? const Color(0xFFF3F4F6) : const Color(0xFF111827);
   static Color get textMuted => _isDark ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280);
   static Color get textWhite => _isDark ? Colors.white : const Color(0xFF111827);

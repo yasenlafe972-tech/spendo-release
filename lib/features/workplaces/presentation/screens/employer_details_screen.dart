@@ -51,7 +51,7 @@ class EmployerDetailsScreen extends StatefulWidget {
   static Color get surfaceHover => _isDark ? const Color(0xFF16161A) : const Color(0xFFF1F3F5);
   static Color get surfaceBorder => _isDark ? const Color(0xFF1E1E24) : const Color(0xFFE5E7EB);
   static const Color brandGreen = Color(0xFF10B981);
-  static const Color brandYellow = Color(0xFFF59E0B);
+  static const Color brandYellow = Color(0xFFFFD600);
   static Color get textPrimary => _isDark ? const Color(0xFFFFFFFF) : const Color(0xFF111827);
   static Color get textMuted => _isDark ? const Color(0xFF71717A) : const Color(0xFF6B7280);
   static Color get textSubtle => _isDark ? const Color(0xFF52525B) : const Color(0xFF9CA3AF);
@@ -1957,17 +1957,17 @@ class _EmployerDetailsScreenState extends State<EmployerDetailsScreen> {
                                         Container(
                                           padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
                                           decoration: BoxDecoration(
-                                            color: const Color(0xFFEAB308).withValues(alpha: 0.12),
+                                            color: const Color(0xFFFFD600).withValues(alpha: 0.12),
                                             borderRadius: BorderRadius.circular(6),
                                             border: Border.all(
-                                              color: const Color(0xFFEAB308).withValues(alpha: 0.4),
+                                              color: const Color(0xFFFFD600).withValues(alpha: 0.4),
                                               width: 0.8,
                                             ),
                                           ),
                                           child: const Text(
                                             'מעסיק',
                                             style: TextStyle(
-                                              color: Color(0xFFEAB308),
+                                              color: Color(0xFFFFD600),
                                               fontSize: 10.5,
                                               fontWeight: FontWeight.w700,
                                             ),

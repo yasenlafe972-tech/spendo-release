@@ -63,7 +63,7 @@ class QuickActionBar extends StatelessWidget {
             child: _QuickActionButton(
               label: 'دين أو سلفة',
               icon: Icons.receipt_long_rounded,
-              accentColor: const Color(0xFFF59E0B),
+              accentColor: const Color(0xFFFFD600),
               onTap: onAddDebt,
             ),
           ),

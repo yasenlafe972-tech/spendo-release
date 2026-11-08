@@ -47,7 +47,7 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
   Color get surfaceField => _isDark ? const Color(0xFF121215) : const Color(0xFFFFFFFF);
   Color get surfaceBorder => _isDark ? const Color(0xFF1E1E24) : const Color(0xFFE5E7EB);
   static const Color brandGreen = Color(0xFF10B981);
-  static const Color brandYellow = Color(0xFFF59E0B);
+  static const Color brandYellow = Color(0xFFFFD600);
   static const Color brandRed = Color(0xFFEF4444);
   Color get textWhite => _isDark ? Colors.white : const Color(0xFF111827);
   Color get textMuted => _isDark ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280);
@@ -2740,7 +2740,7 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                         children: [
                           const Icon(
                             Icons.picture_as_pdf_rounded,
-                            color: Color(0xFFF59E0B),
+                            color: Color(0xFFFFD600),
                             size: 22,
                           ),
                           const SizedBox(width: 10),
@@ -2788,7 +2788,7 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                             children: [
                               const Icon(
                                 Icons.picture_as_pdf_rounded,
-                                color: Color(0xFFF59E0B),
+                                color: Color(0xFFFFD600),
                                 size: 28,
                               ),
                               const SizedBox(width: 12),
@@ -3112,7 +3112,7 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                                             isDuplicateOverride: true);
                                       },
                                       style: ElevatedButton.styleFrom(
-                                        backgroundColor: const Color(0xFFF59E0B),
+                                        backgroundColor: const Color(0xFFFFD600),
                                         foregroundColor: Colors.black,
                                       ),
                                       child: const Text('نعم، إضافة مكررة'),
@@ -3128,8 +3128,8 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                               style: TextStyle(fontWeight: FontWeight.w800),
                             ),
                             style: OutlinedButton.styleFrom(
-                              foregroundColor: const Color(0xFFF59E0B),
-                              side: const BorderSide(color: Color(0xFFF59E0B)),
+                              foregroundColor: const Color(0xFFFFD600),
+                              side: const BorderSide(color: Color(0xFFFFD600)),
                               minimumSize: const Size(double.infinity, 48),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(16),

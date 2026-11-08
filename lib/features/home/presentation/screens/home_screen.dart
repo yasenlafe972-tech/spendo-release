@@ -50,7 +50,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // Static brand accents
   static const Color brandGreen = Color(0xFF10B981);
-  static const Color brandYellow = Color(0xFFF59E0B);
+  static const Color brandYellow = Color(0xFFFFD600);
   static const Color brandRed = Color(0xFFEF4444);
 
   // Dynamic surface & text tokens based on active theme

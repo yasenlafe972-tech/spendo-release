@@ -101,7 +101,7 @@ class _SpendoLogoPainter extends CustomPainter {
     }
 
     final yellowPaint = Paint()
-      ..color = topColor ?? const Color(0xFFEAB308)
+      ..color = topColor ?? const Color(0xFFFFD600)
       ..style = PaintingStyle.fill
       ..isAntiAlias = true;
 

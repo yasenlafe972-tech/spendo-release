@@ -56,6 +56,11 @@ class BankingRollingNumber extends StatelessWidget {
   }
 
   Widget _buildTween(Key tweenKey) {
+    final mergedStyle = style.copyWith(
+      fontFamily: 'PlusJakartaSans',
+      fontFamilyFallback: const ['Cairo', 'Heebo'],
+      fontFeatures: const [FontFeature.tabularFigures()],
+    );
     return TweenAnimationBuilder<double>(
       key: tweenKey,
       tween: Tween<double>(begin: 0.0, end: value),
@@ -67,7 +72,7 @@ class BankingRollingNumber extends StatelessWidget {
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
           textDirection: textDirection,
-          style: style,
+          style: mergedStyle,
         );
       },
     );

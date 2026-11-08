@@ -39,7 +39,7 @@ class _FinanceScreenState extends State<FinanceScreen> {
   Color get surfaceField => _isDark ? const Color(0xFF121215) : const Color(0xFFFFFFFF);
   Color get surfaceBorder => _isDark ? const Color(0xFF1E1E24) : const Color(0xFFE5E7EB);
   static const Color brandGreen = Color(0xFF10B981);
-  static const Color brandYellow = Color(0xFFF59E0B);
+  static const Color brandYellow = Color(0xFFFFD600);
   static const Color brandRed = Color(0xFFEF4444);
   Color get textWhite => _isDark ? const Color(0xFFFFFFFF) : const Color(0xFF111827);
   Color get textMuted => _isDark ? const Color(0xFF71717A) : const Color(0xFF6B7280);

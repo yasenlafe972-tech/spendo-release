@@ -110,7 +110,7 @@ class _AttachmentViewerModalState extends State<AttachmentViewerModal> {
           ),
           actions: [
             IconButton(
-              icon: const Icon(Remix.share_forward_line, color: Color(0xFFEAB308)),
+              icon: const Icon(Remix.share_forward_line, color: Color(0xFFFFD600)),
               tooltip: 'مشاركة',
               onPressed: () => _shareAttachment(context),
             ),

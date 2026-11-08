@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 /// Spendo Design System Color Tokens.
-/// High-precision obsidian dark theme matching the new design prototype.
+/// High-precision obsidian dark theme matching Boro UI & modern FinTech standards.
 class AppColors {
   AppColors._();
 
@@ -21,6 +21,11 @@ class AppColors {
   static const Color spendoMint = Color(0xFF34D399);
   static const Color spendoDarkGreen = Color(0xFF064E3B);
   static const Color spendoGlow = Color(0x3310B981);
+
+  // Boro UI Electric Yellow (#FFD600) & Glowing Accents
+  static const Color electricYellow = Color(0xFFFFD600);
+  static const Color electricYellowGlow = Color(0x33FFD600);
+  static const Color electricYellowSurface = Color(0x1AFFD600);
 
   // Text Colors
   static const Color textPrimary = Color(0xFFFFFFFF);
@@ -42,7 +47,7 @@ class AppColors {
   static const Color whatsappGreen = Color(0xFF10B981);
   static const Color accentBlue = Color(0xFF3B82F6);
   static const Color dangerRed = Color(0xFFEF4444);
-  static const Color warningYellow = Color(0xFFF59E0B);
+  static const Color warningYellow = Color(0xFFFFD600);
   static const Color successGreen = Color(0xFF10B981);
 
   // Avatar & Icons

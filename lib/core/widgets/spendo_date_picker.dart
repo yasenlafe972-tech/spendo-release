@@ -161,7 +161,7 @@ class _SpendoDatePickerSheetState extends State<_SpendoDatePickerSheet> {
   late FixedExtentScrollController _monthController;
   late FixedExtentScrollController _yearController;
 
-  static const Color brandYellow = Color(0xFFF59E0B);
+  static const Color brandYellow = Color(0xFFFFD600);
   static const Color brandGreen = Color(0xFF10B981);
 
   bool get _isDark => Theme.of(context).brightness == Brightness.dark;
@@ -490,9 +490,10 @@ class _SpendoDatePickerSheetState extends State<_SpendoDatePickerSheet> {
                             Text(
                               '${_selectedDate.day.toString().padLeft(2, '0')}/${_selectedDate.month.toString().padLeft(2, '0')}/${_selectedDate.year}',
                               style: TextStyle(
-                                fontFamily: 'Cairo',
-                                fontSize: 11,
-                                fontWeight: FontWeight.w600,
+                                fontFamily: 'PlusJakartaSans',
+                                fontFamilyFallback: const ['Cairo', 'Heebo'],
+                                fontSize: 11.5,
+                                fontWeight: FontWeight.w700,
                                 color: brandGreen,
                                 letterSpacing: 0.5,
                               ),
@@ -520,7 +521,8 @@ class _SpendoDatePickerSheetState extends State<_SpendoDatePickerSheet> {
                               Text(
                                 '${_calculateAge(_selectedDate)} سنة',
                                 style: const TextStyle(
-                                  fontFamily: 'Cairo',
+                                  fontFamily: 'PlusJakartaSans',
+                                  fontFamilyFallback: ['Cairo', 'Heebo'],
                                   fontSize: 12,
                                   fontWeight: FontWeight.bold,
                                   color: brandYellow,
@@ -684,7 +686,8 @@ class _SpendoDatePickerSheetState extends State<_SpendoDatePickerSheet> {
                       child: Text(
                         day.toString().padLeft(2, '0'),
                         style: TextStyle(
-                          fontFamily: 'Cairo',
+                          fontFamily: 'PlusJakartaSans',
+                          fontFamilyFallback: const ['Cairo', 'Heebo'],
                           fontSize: isSel ? 16 : 13,
                           fontWeight:
                               isSel ? FontWeight.bold : FontWeight.normal,
@@ -719,7 +722,8 @@ class _SpendoDatePickerSheetState extends State<_SpendoDatePickerSheet> {
                       child: Text(
                         '${(index + 1).toString().padLeft(2, '0')} - $monthName',
                         style: TextStyle(
-                          fontFamily: 'Cairo',
+                          fontFamily: 'PlusJakartaSans',
+                          fontFamilyFallback: const ['Cairo', 'Heebo'],
                           fontSize: isSel ? 14 : 12,
                           fontWeight:
                               isSel ? FontWeight.bold : FontWeight.normal,
@@ -754,7 +758,8 @@ class _SpendoDatePickerSheetState extends State<_SpendoDatePickerSheet> {
                       child: Text(
                         year.toString(),
                         style: TextStyle(
-                          fontFamily: 'Cairo',
+                          fontFamily: 'PlusJakartaSans',
+                          fontFamilyFallback: const ['Cairo', 'Heebo'],
                           fontSize: isSel ? 16 : 13,
                           fontWeight:
                               isSel ? FontWeight.bold : FontWeight.normal,
@@ -895,10 +900,11 @@ class _SpendoDatePickerSheetState extends State<_SpendoDatePickerSheet> {
                   child: Text(
                     dayNumber.toString(),
                     style: TextStyle(
-                      fontFamily: 'Cairo',
+                      fontFamily: 'PlusJakartaSans',
+                      fontFamilyFallback: const ['Cairo', 'Heebo'],
                       fontSize: 12,
                       fontWeight:
-                          isSelected || isToday ? FontWeight.bold : FontWeight.w500,
+                          isSelected || isToday ? FontWeight.bold : FontWeight.w600,
                       color: isSelected
                           ? const Color(0xFF0A0B0B)
                           : (isDisabled ? textSubtle : textPrimary),

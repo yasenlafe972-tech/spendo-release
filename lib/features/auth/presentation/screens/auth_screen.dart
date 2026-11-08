@@ -55,7 +55,7 @@ class _AuthScreenState extends State<AuthScreen> {
   static const Color surfaceField = Color(0xFF171A19);
   static const Color surfaceBorder = Color(0xFF242927);
   static const Color brandGreen = Color(0xFF00A86B);
-  static const Color brandYellow = Color(0xFFEAB308);
+  static const Color brandYellow = Color(0xFFFFD600);
 
   @override
   void initState() {

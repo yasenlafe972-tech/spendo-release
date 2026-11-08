@@ -36,7 +36,7 @@ class _WorkLogsScreenState extends State<WorkLogsScreen> {
   Color get surfaceField => _isDark ? const Color(0xFF121215) : const Color(0xFFFFFFFF);
   Color get surfaceBorder => _isDark ? const Color(0xFF1E1E24) : const Color(0xFFE5E7EB);
   static const Color brandGreen = Color(0xFF10B981);
-  static const Color brandYellow = Color(0xFFF59E0B);
+  static const Color brandYellow = Color(0xFFFFD600);
   Color get textPrimary => _isDark ? const Color(0xFFF3F4F6) : const Color(0xFF111827);
   Color get textMuted => _isDark ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280);
   Color get textSubtle => _isDark ? const Color(0xFF71717A) : const Color(0xFF9CA3AF);
