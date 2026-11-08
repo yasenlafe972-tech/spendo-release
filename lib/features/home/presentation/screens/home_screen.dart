@@ -1,4 +1,4 @@
-﻿import 'package:sanad_app/core/widgets/banking_animations.dart';
+import 'package:sanad_app/core/widgets/banking_animations.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:remixicon/remixicon.dart';
@@ -7,8 +7,6 @@ import '../../../../core/utils/arabic_date_helper.dart';
 import '../../../../core/utils/spendo_haptic_feedback.dart';
 import '../../../people/models/person_model.dart';
 import '../../../people/repositories/people_repository.dart';
-import '../../../work_logs/models/work_log_model.dart';
-import '../../../work_logs/repositories/work_logs_repository.dart';
 import '../../../work_logs/presentation/widgets/add_work_log_sheet.dart';
 import '../../../vehicle/models/vehicle_model.dart';
 import '../../../vehicle/presentation/widgets/fuel_expense_sheet.dart';
@@ -33,11 +31,9 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final PeopleRepository _peopleRepo = PeopleRepository();
-  final WorkLogsRepository _workLogsRepo = WorkLogsRepository();
 
   bool _isLoading = true;
   PersonModel? _userProfile;
-  List<WorkLogModel> _allWorkLogs = [];
   List<VehicleExpenseRecord> _allFuelRecords = [];
   List<VehicleExpenseRecord> _allMaintenanceRecords = [];
   List<DailyExpenseModel> _allDailyExpenses = [];
@@ -126,7 +122,6 @@ class _HomeScreenState extends State<HomeScreen> {
       FirebaseBackupService.instance.syncWithCloud(isSilent: true);
 
       final peopleFuture = _peopleRepo.getAllPeople().catchError((_) => <PersonModel>[]);
-      final logsFuture = _workLogsRepo.getAllLogs().catchError((_) => <WorkLogModel>[]);
       final expensesFuture = DailyExpenseService.getAllExpenses().catchError((_) => <DailyExpenseModel>[]);
 
       // Load vehicle state from SharedPreferences
@@ -150,12 +145,11 @@ class _HomeScreenState extends State<HomeScreen> {
         } catch (_) {}
       }
 
-      final results = await Future.wait([peopleFuture, logsFuture, expensesFuture]);
+      final results = await Future.wait([peopleFuture, expensesFuture]);
       if (!mounted) return;
 
       final people = results[0] as List<PersonModel>;
-      final logs = results[1] as List<WorkLogModel>;
-      final expenses = results[2] as List<DailyExpenseModel>;
+      final expenses = results[1] as List<DailyExpenseModel>;
 
       PersonModel? user;
       for (final p in people) {
@@ -172,7 +166,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
       setState(() {
         _userProfile = user;
-        _allWorkLogs = logs;
         _allFuelRecords = fuelRecords;
         _allMaintenanceRecords = maintenanceRecords;
         _allDailyExpenses = expenses;
@@ -206,19 +199,6 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   // Monthly filtered lists
-  List<WorkLogModel> get _filteredWorkLogs {
-    if (_selectedMonthKey == 'all') return _allWorkLogs;
-    return _allWorkLogs.where((l) {
-      try {
-        final d = DateTime.parse(l.date);
-        final key = '${d.year}-${d.month.toString().padLeft(2, '0')}';
-        return key == _selectedMonthKey;
-      } catch (_) {
-        return false;
-      }
-    }).toList();
-  }
-
   List<VehicleExpenseRecord> get _filteredFuelRecords {
     if (_selectedMonthKey == 'all') return _allFuelRecords;
     return _allFuelRecords.where((f) {
