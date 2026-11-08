@@ -162,7 +162,7 @@ class _SpendoDatePickerSheetState extends State<_SpendoDatePickerSheet> {
   late FixedExtentScrollController _yearController;
 
   static const Color brandYellow = Color(0xFFFFD600);
-  static const Color brandGreen = Color(0xFF10B981);
+  static const Color brandGreen = Color(0xFF2563EB);
 
   bool get _isDark => Theme.of(context).brightness == Brightness.dark;
   Color get surfaceMain =>
@@ -580,7 +580,7 @@ class _SpendoDatePickerSheetState extends State<_SpendoDatePickerSheet> {
                               const Icon(
                                 Remix.check_line,
                                 size: 18,
-                                color: Color(0xFF0A0B0B),
+                                color: Colors.white,
                               ),
                               const SizedBox(width: 6),
                               Text(
@@ -589,7 +589,7 @@ class _SpendoDatePickerSheetState extends State<_SpendoDatePickerSheet> {
                                   fontFamily: 'Cairo',
                                   fontSize: 13,
                                   fontWeight: FontWeight.bold,
-                                  color: Color(0xFF0A0B0B),
+                                  color: Colors.white,
                                 ),
                               ),
                             ],

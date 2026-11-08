@@ -139,8 +139,8 @@ class AppTheme {
       pageTransitionsTheme: _pageTransitionsTheme,
       colorScheme: const ColorScheme.dark(
         surface: AppColors.surface,
-        primary: AppColors.spendoGreen,
-        secondary: AppColors.spendoMint,
+        primary: AppColors.spendoBlue,
+        secondary: AppColors.spendoBlueLight,
         error: AppColors.dangerRed,
         onSurface: AppColors.textPrimary,
       ),
@@ -193,8 +193,8 @@ class AppTheme {
       pageTransitionsTheme: _pageTransitionsTheme,
       colorScheme: const ColorScheme.light(
         surface: Color(0xFFFFFFFF),
-        primary: AppColors.spendoGreen,
-        secondary: Color(0xFF059669),
+        primary: AppColors.spendoBlue,
+        secondary: Color(0xFF1D4ED8),
         error: AppColors.dangerRed,
         onSurface: Color(0xFF111827),
       ),

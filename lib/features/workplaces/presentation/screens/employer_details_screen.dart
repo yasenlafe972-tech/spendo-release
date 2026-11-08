@@ -50,7 +50,7 @@ class EmployerDetailsScreen extends StatefulWidget {
   static Color get surfaceField => _isDark ? const Color(0xFF121215) : const Color(0xFFFFFFFF);
   static Color get surfaceHover => _isDark ? const Color(0xFF16161A) : const Color(0xFFF1F3F5);
   static Color get surfaceBorder => _isDark ? const Color(0xFF1E1E24) : const Color(0xFFE5E7EB);
-  static const Color brandGreen = Color(0xFF10B981);
+  static const Color brandGreen = Color(0xFF2563EB);
   static const Color brandYellow = Color(0xFFFFD600);
   static Color get textPrimary => _isDark ? const Color(0xFFFFFFFF) : const Color(0xFF111827);
   static Color get textMuted => _isDark ? const Color(0xFF71717A) : const Color(0xFF6B7280);
@@ -2496,7 +2496,7 @@ class _EmployerDetailsScreenState extends State<EmployerDetailsScreen> {
             children: [
               Icon(
                 Remix.check_double_line,
-                color: EmployerDetailsScreen.brandGreen,
+                color: payment.paymentMethod.contains('كاش') || payment.paymentMethod.toLowerCase().contains('cash') ? const Color(0xFF10B981) : EmployerDetailsScreen.brandGreen,
                 size: 14,
               ),
               const SizedBox(width: 8),
@@ -2523,7 +2523,7 @@ class _EmployerDetailsScreenState extends State<EmployerDetailsScreen> {
               Text(
                 '+${payment.amount.toStringAsFixed(0)} ₪',
                 style: TextStyle(
-                  color: EmployerDetailsScreen.brandGreen,
+                  color: payment.paymentMethod.contains('كاش') || payment.paymentMethod.toLowerCase().contains('cash') ? const Color(0xFF10B981) : EmployerDetailsScreen.brandGreen,
                   fontSize: 12,
                   fontWeight: FontWeight.w800,
                 ),

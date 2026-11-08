@@ -38,7 +38,7 @@ class _FinanceScreenState extends State<FinanceScreen> {
   Color get surfaceMain => _isDark ? const Color(0xFF0A0A0C) : const Color(0xFFF8F9FA);
   Color get surfaceField => _isDark ? const Color(0xFF121215) : const Color(0xFFFFFFFF);
   Color get surfaceBorder => _isDark ? const Color(0xFF1E1E24) : const Color(0xFFE5E7EB);
-  static const Color brandGreen = Color(0xFF10B981);
+  static const Color brandGreen = Color(0xFF2563EB);
   static const Color brandYellow = Color(0xFFFFD600);
   static const Color brandRed = Color(0xFFEF4444);
   Color get textWhite => _isDark ? const Color(0xFFFFFFFF) : const Color(0xFF111827);
@@ -837,7 +837,7 @@ class _FinanceScreenState extends State<FinanceScreen> {
           const SizedBox(width: 6),
           _buildFilterChip('bit', 'Bit', icon: Remix.smartphone_line, iconColor: brandYellow),
           const SizedBox(width: 6),
-          _buildFilterChip('cash', 'كاش', icon: Remix.money_dollar_box_line, iconColor: brandGreen),
+          _buildFilterChip('cash', 'كاش', icon: Remix.money_dollar_box_line, iconColor: const Color(0xFF10B981)),
           const SizedBox(width: 6),
           _buildFilterChip('bank', 'تحويل بنكي', icon: Remix.bank_line, iconColor: brandYellow),
         ],
@@ -1141,7 +1141,7 @@ class _FinanceScreenState extends State<FinanceScreen> {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Remix.whatsapp_line, size: 12, color: brandGreen),
+                          Icon(Remix.whatsapp_line, size: 12, color: const Color(0xFF10B981)),
                           SizedBox(width: 4),
                           Text(
                             'واتساب',

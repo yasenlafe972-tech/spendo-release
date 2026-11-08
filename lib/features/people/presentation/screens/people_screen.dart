@@ -36,7 +36,7 @@ class _PeopleScreenState extends State<PeopleScreen> {
   Color get surfaceMain => _isDark ? const Color(0xFF0A0A0C) : const Color(0xFFF8F9FA);
   Color get surfaceField => _isDark ? const Color(0xFF121215) : const Color(0xFFFFFFFF);
   Color get surfaceBorder => _isDark ? const Color(0xFF1E1E24) : const Color(0xFFE5E7EB);
-  static const Color brandGreen = Color(0xFF10B981);
+  static const Color brandGreen = Color(0xFF2563EB);
   static const Color brandYellow = Color(0xFFFFD600);
   Color get textPrimary => _isDark ? const Color(0xFFFFFFFF) : const Color(0xFF111827);
   Color get textMuted => _isDark ? const Color(0xFF71717A) : const Color(0xFF6B7280);
@@ -1223,7 +1223,10 @@ class _PeopleScreenState extends State<PeopleScreen> {
                               crossAxisCount: 2,
                               mainAxisSpacing: 10,
                               crossAxisSpacing: 10,
-                              childAspectRatio: (1.46 / AppTheme.fontScaleNotifier.value.clamp(0.85, 1.25)).clamp(1.18, 1.50),
+                              childAspectRatio: (1.48 /
+                                      AppTheme.fontScaleNotifier.value
+                                          .clamp(0.85, 1.25))
+                                  .clamp(1.22, 1.55),
                             ),
                             itemCount: filtered.length,
                             itemBuilder: (context, index) {

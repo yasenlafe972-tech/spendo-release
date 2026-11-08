@@ -1,12 +1,14 @@
-import 'package:sanad_app/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart' hide TextDirection;
+import 'package:remixicon/remixicon.dart';
+import 'package:sanad_app/core/theme/app_theme.dart';
 import 'package:sanad_app/core/utils/spendo_haptic_feedback.dart';
 import 'package:sanad_app/features/people/models/person_model.dart';
 import 'package:sanad_app/features/people/presentation/widgets/person_details_modal_sheet.dart';
 
-/// Compact 2-Column Person Card strictly matching the user's HTML prototype 1:1.
-/// Features clean typography, subtle background watermark, and zero extra clutter.
+/// Compact Boro UI 2-Column Person Card with zero dead space, zero overflow,
+/// vibrant Canary Yellow (#FFD600) & Electric Royal Blue (#2563EB) accents,
+/// Plus Jakarta Sans numbers, and tight micro-bento ergonomics.
 class PersonCard extends StatelessWidget {
   final PersonModel person;
   final VoidCallback onEdit;
@@ -16,16 +18,21 @@ class PersonCard extends StatelessWidget {
   final VoidCallback? onOpenAccounts;
   final int accountCount;
 
-  // Design Tokens matching HTML specification
   static bool get _isDark => AppTheme.isDarkMode;
-  static Color get surfaceField => _isDark ? const Color(0xFF171A19) : const Color(0xFFFFFFFF);
-  static Color get surfaceBorder => _isDark ? const Color(0xFF242927) : const Color(0xFFE5E7EB);
-  static const brandGreen = Color(0xFF00A86B);
-  static const brandYellow = Color(0xFFFFD600);
-  static Color get textPrimary => _isDark ? const Color(0xFFF3F4F6) : const Color(0xFF111827);
-  static Color get textMuted => _isDark ? const Color(0xFF9CA3AF) : const Color(0xFF4B5563);
-  static Color get textSubtle => _isDark ? const Color(0xFF6B7280) : const Color(0xFF4B5563);
-  static Color get textDim => _isDark ? const Color(0xFF52525B) : const Color(0xFF6B7280);
+  static Color get surfaceCard =>
+      _isDark ? const Color(0xFF16161A) : const Color(0xFFFFFFFF);
+  static Color get surfaceBorder =>
+      _isDark ? const Color(0xFF222229) : const Color(0xFFE5E7EB);
+  static const Color brandBlue = Color(0xFF2563EB);
+  static const Color brandYellow = Color(0xFFFFD600);
+  static Color get textPrimary =>
+      _isDark ? const Color(0xFFFFFFFF) : const Color(0xFF111827);
+  static Color get textMuted =>
+      _isDark ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280);
+  static Color get textSubtle =>
+      _isDark ? const Color(0xFF71717A) : const Color(0xFF9CA3AF);
+  static Color get textDim =>
+      _isDark ? const Color(0xFF45454E) : const Color(0xFFD1D5DB);
 
   const PersonCard({
     super.key,
@@ -71,316 +78,361 @@ class PersonCard extends StatelessWidget {
         ? DateFormat('dd/MM/yyyy').format(person.birthdate!)
         : null;
 
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        decoration: BoxDecoration(
-          color: surfaceField,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: person.isPinned
-                ? brandYellow.withValues(alpha: 0.5)
-                : surfaceBorder,
-            width: 1.0,
-          ),
-        ),
-        child: Stack(
-          clipBehavior: Clip.antiAlias,
-          children: [
-            // أيقونة مدمجة هادئة في خلفية البطاقة
-            Positioned(
-              left: -4,
-              bottom: -4,
-              child: Icon(
-                Icons.person_outline_rounded,
-                size: 58,
-                color: Colors.white.withValues(alpha: 0.025),
-              ),
-            ),
+    final isHighlighted = person.isPinned || person.isUser;
+    final highlightColor = person.isUser ? brandBlue : brandYellow;
 
-            Material(
-              color: Colors.transparent,
-              child: InkWell(
-                onTap: () => _openDetails(context),
-                borderRadius: BorderRadius.circular(12),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 9, vertical: 6.5),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      // 1. الجزء العلوي: الاسم وعيد الميلاد مع أزرار التعديل والحذف
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
+    return Container(
+      decoration: BoxDecoration(
+        color: surfaceCard,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: isHighlighted
+              ? highlightColor.withValues(alpha: 0.5)
+              : surfaceBorder,
+          width: isHighlighted ? 1.2 : 1.0,
+        ),
+        boxShadow: [
+          if (_isDark)
+            BoxShadow(
+              color: isHighlighted
+                  ? highlightColor.withValues(alpha: 0.12)
+                  : Colors.black.withValues(alpha: 0.25),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            )
+          else
+            BoxShadow(
+              color: isHighlighted
+                  ? highlightColor.withValues(alpha: 0.15)
+                  : const Color(0x0A000000),
+              blurRadius: 6,
+              offset: const Offset(0, 2),
+            ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => _openDetails(context),
+          borderRadius: BorderRadius.circular(14),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 8),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // 1. الترويسة: الحرف الرمزي المضيء + الاسم والوسوم + أزرار الإجراءات
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    // الحرف الرمزي (Monogram) بالأصفر الكناري أو الأزرق الملكي
+                    Container(
+                      width: 30,
+                      height: 30,
+                      decoration: BoxDecoration(
+                        color: person.isUser
+                            ? brandBlue.withValues(alpha: 0.16)
+                            : brandYellow.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: person.isUser
+                              ? brandBlue.withValues(alpha: 0.45)
+                              : brandYellow.withValues(alpha: 0.5),
+                          width: 1.0,
+                        ),
+                      ),
+                      alignment: Alignment.center,
+                      child: Text(
+                        person.name.trim().isNotEmpty
+                            ? person.name.trim().characters.first
+                            : '؟',
+                        style: TextStyle(
+                          fontFamily: 'Cairo',
+                          fontSize: 13,
+                          fontWeight: FontWeight.bold,
+                          color: person.isUser ? brandBlue : brandYellow,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+
+                    // الاسم والشارات مع حماية ضد الـ Overflow
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
                         children: [
                           Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    // الاسم مع أيقونة الشخص الخضراء
-                                    Row(
-                                      children: [
-                                        const Icon(
-                                          Icons.person_outline_rounded,
-                                          size: 13,
-                                          color: brandGreen,
-                                        ),
-                                        const SizedBox(width: 4),
-                                        Expanded(
-                                          child: Text(
-                                            person.name,
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
-                                            style: TextStyle(
-                                              fontSize: 12,
-                                              fontWeight: FontWeight.bold,
-                                              color: textPrimary,
-                                            ),
-                                          ),
-                                        ),
-                                        if (person.isUser) ...[
-                                          const SizedBox(width: 3),
-                                          Container(
-                                            padding: const EdgeInsets.symmetric(
-                                                horizontal: 4, vertical: 1),
-                                            decoration: BoxDecoration(
-                                              color: brandGreen
-                                                  .withValues(alpha: 0.15),
-                                              borderRadius:
-                                                  BorderRadius.circular(4),
-                                              border: Border.all(
-                                                  color: brandGreen
-                                                      .withValues(alpha: 0.4)),
-                                            ),
-                                            child: const Text('أنت',
-                                                style: TextStyle(
-                                                    fontSize: 8.5,
-                                                    fontWeight: FontWeight.bold,
-                                                    color: brandGreen)),
-                                          ),
-                                        ],
-                                      ],
-                                    ),
-                                    const SizedBox(height: 3),
-
-                                    // عيد الميلاد (أصفر إذا كان مسجلاً، باهت إذا لم يسجل)
-                                    Row(
-                                      children: [
-                                        Icon(
-                                          Icons.cake_outlined,
-                                          size: 11,
-                                          color: birthdayStr != null
-                                              ? brandYellow
-                                              : textDim,
-                                        ),
-                                        const SizedBox(width: 4),
-                                        if (birthdayStr != null)
-                                          Text(
-                                            birthdayStr,
-                                            style: const TextStyle(
-                                              fontSize: 10,
-                                              fontWeight: FontWeight.w600,
-                                              color: brandYellow,
-                                            ),
-                                            textDirection: TextDirection.ltr,
-                                          )
-                                        else
-                                          Text(
-                                            'بدون ميلاد',
-                                            style: TextStyle(
-                                              fontSize: 9,
-                                              color: textSubtle,
-                                            ),
-                                          ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(width: 4),
-
-                              // أزرار التعديل والحذف بدون خلفية
-                              Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  InkWell(
-                                    onTap: () {
-                                      SpendoHaptics.light();
-                                      onEdit();
-                                    },
-                                    borderRadius: BorderRadius.circular(4),
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(2.5),
-                                      child: Icon(
-                                        Icons.edit_outlined,
-                                        size: 13,
-                                        color: textMuted,
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 3),
-                                  InkWell(
-                                    onTap: () {
-                                      SpendoHaptics.light();
-                                      onDelete();
-                                    },
-                                    borderRadius: BorderRadius.circular(4),
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(2.5),
-                                      child: Icon(
-                                        Icons.delete_outline_rounded,
-                                        size: 13,
-                                        color: textMuted,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 5),
-
-                          // خط فاصل رفيع هادئ
-                          Container(
-                            height: 0.8,
-                            color: surfaceBorder.withValues(alpha: 0.8),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 4),
-
-                      // 2. الجزء السفلي: الهاتف، الهوية، الإيميل
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          // صف الهاتف
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  const Icon(Icons.phone_outlined,
-                                      size: 11, color: brandGreen),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    'هاتف',
-                                    style: TextStyle(
-                                      color: textMuted,
-                                      fontSize: 10,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              Flexible(
                                 child: Text(
-                                  phone ?? '—',
+                                  person.name,
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
-                                  textDirection: TextDirection.ltr,
                                   style: TextStyle(
-                                    fontSize: 10.5,
-                                    fontWeight: FontWeight.bold,
+                                    fontFamily: 'Cairo',
+                                    fontSize: 11.5,
+                                    fontWeight: FontWeight.w700,
                                     color: textPrimary,
                                   ),
                                 ),
                               ),
+                              if (person.isUser) ...[
+                                const SizedBox(width: 3),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 3, vertical: 1),
+                                  decoration: BoxDecoration(
+                                    color: brandBlue.withValues(alpha: 0.16),
+                                    borderRadius: BorderRadius.circular(3),
+                                    border: Border.all(
+                                      color: brandBlue.withValues(alpha: 0.4),
+                                    ),
+                                  ),
+                                  child: const Text(
+                                    'أنت',
+                                    style: TextStyle(
+                                      fontFamily: 'Cairo',
+                                      fontSize: 8,
+                                      fontWeight: FontWeight.bold,
+                                      color: brandBlue,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                              if (person.isPinned) ...[
+                                const SizedBox(width: 2),
+                                const Icon(Remix.pushpin_fill,
+                                    size: 9.5, color: brandYellow),
+                              ],
                             ],
                           ),
-                          const SizedBox(height: 3),
+                          const SizedBox(height: 1),
 
-                          // صف الهوية
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Row(
+                          // تاريخ الميلاد بخط بلس جاكرتا الأصفر مع حماية كاملة
+                          if (birthdayStr != null)
+                            FittedBox(
+                              fit: BoxFit.scaleDown,
+                              alignment: Alignment.centerRight,
+                              child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Icon(
-                                    Icons.badge_outlined,
-                                    size: 11,
-                                    color: idNumber != null
-                                        ? brandYellow
-                                        : textDim,
-                                  ),
-                                  SizedBox(width: 4),
+                                  const Icon(Remix.cake_2_line,
+                                      size: 9.5, color: brandYellow),
+                                  const SizedBox(width: 3),
                                   Text(
-                                    'هوية',
-                                    style: TextStyle(
-                                      color: textMuted,
-                                      fontSize: 10,
+                                    birthdayStr,
+                                    style: const TextStyle(
+                                      fontFamily: 'PlusJakartaSans',
+                                      fontFamilyFallback: ['Cairo', 'Heebo'],
+                                      fontSize: 9,
+                                      fontWeight: FontWeight.w600,
+                                      color: brandYellow,
                                     ),
+                                    textDirection: TextDirection.ltr,
                                   ),
                                 ],
                               ),
-                              Flexible(
-                                child: idNumber != null
-                                    ? Text(
-                                        idNumber,
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                        textDirection: TextDirection.ltr,
-                                        style: TextStyle(
-                                          fontSize: 10,
-                                          fontWeight: FontWeight.w600,
-                                          color: textPrimary,
-                                        ),
-                                      )
-                                    : Text(
-                                        'غير مسجل',
-                                        style: TextStyle(
-                                          fontSize: 9,
-                                          color: textSubtle,
-                                        ),
-                                      ),
+                            )
+                          else
+                            Text(
+                              'بدون ميلاد',
+                              style: TextStyle(
+                                fontFamily: 'Cairo',
+                                fontSize: 8.5,
+                                color: textSubtle,
                               ),
-                            ],
-                          ),
-                          const SizedBox(height: 3),
-
-                          // صف الإيميل
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Icon(
-                                Icons.mail_outline_rounded,
-                                size: 11,
-                                color: email != null ? brandGreen : textDim,
-                              ),
-                              Flexible(
-                                child: email != null
-                                    ? Text(
-                                        email,
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                        textDirection: TextDirection.ltr,
-                                        style: TextStyle(
-                                          fontSize: 9.5,
-                                          color: textPrimary,
-                                        ),
-                                      )
-                                    : Text(
-                                        'بدون إيميل',
-                                        style: TextStyle(
-                                          fontSize: 9,
-                                          color: textSubtle,
-                                        ),
-                                      ),
-                              ),
-                            ],
-                          ),
+                            ),
                         ],
+                      ),
+                    ),
+                    const SizedBox(width: 3),
+
+                    // أزرار التعديل والحذف
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        InkWell(
+                          onTap: () {
+                            SpendoHaptics.light();
+                            onEdit();
+                          },
+                          borderRadius: BorderRadius.circular(4),
+                          child: Padding(
+                            padding: const EdgeInsets.all(2),
+                            child: Icon(Remix.edit_line,
+                                size: 12, color: textMuted),
+                          ),
+                        ),
+                        const SizedBox(width: 2),
+                        InkWell(
+                          onTap: () {
+                            SpendoHaptics.light();
+                            onDelete();
+                          },
+                          borderRadius: BorderRadius.circular(4),
+                          child: Padding(
+                            padding: const EdgeInsets.all(2),
+                            child: Icon(Remix.delete_bin_line,
+                                size: 12, color: textMuted),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 5),
+                Divider(
+                  height: 1,
+                  thickness: 0.7,
+                  color: surfaceBorder.withValues(alpha: 0.7),
+                ),
+                const SizedBox(height: 4.5),
+
+                // 2. الحقول السفلية المنظمة بإحكام (Micro-Bento بدون فراغ)
+                // صف الهاتف بالأزرق الملكي
+                Row(
+                  children: [
+                    const Icon(Remix.phone_line, size: 10.5, color: brandBlue),
+                    const SizedBox(width: 3.5),
+                    Text(
+                      'هاتف',
+                      style: TextStyle(
+                        fontFamily: 'Cairo',
+                        fontSize: 9,
+                        color: textMuted,
+                      ),
+                    ),
+                    const Spacer(),
+                    Flexible(
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          phone ?? '—',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          textDirection: TextDirection.ltr,
+                          style: TextStyle(
+                            fontFamily: 'PlusJakartaSans',
+                            fontFamilyFallback: const ['Cairo', 'Heebo'],
+                            fontSize: 10,
+                            fontWeight: FontWeight.w700,
+                            color: textPrimary,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 2.5),
+
+                // صف الهوية بالأصفر الكناري
+                Row(
+                  children: [
+                    Icon(
+                      Remix.id_card_line,
+                      size: 10.5,
+                      color: idNumber != null ? brandYellow : textDim,
+                    ),
+                    const SizedBox(width: 3.5),
+                    Text(
+                      'هوية',
+                      style: TextStyle(
+                        fontFamily: 'Cairo',
+                        fontSize: 9,
+                        color: textMuted,
+                      ),
+                    ),
+                    const Spacer(),
+                    Flexible(
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          idNumber ?? 'غير مسجل',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          textDirection: idNumber != null
+                              ? TextDirection.ltr
+                              : TextDirection.rtl,
+                          style: TextStyle(
+                            fontFamily:
+                                idNumber != null ? 'PlusJakartaSans' : 'Cairo',
+                            fontFamilyFallback: const ['Cairo', 'Heebo'],
+                            fontSize: idNumber != null ? 10 : 8.5,
+                            fontWeight: idNumber != null
+                                ? FontWeight.w600
+                                : FontWeight.normal,
+                            color: idNumber != null ? textPrimary : textSubtle,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+
+                // صف الإيميل أو الحسابات
+                const SizedBox(height: 2.5),
+                if (accountCount > 0 || email != null)
+                  Row(
+                    children: [
+                      if (accountCount > 0) ...[
+                        const Icon(Remix.key_2_line,
+                            size: 10, color: brandYellow),
+                        const SizedBox(width: 2.5),
+                        Text(
+                          '$accountCount حساب',
+                          style: const TextStyle(
+                            fontFamily: 'Cairo',
+                            fontSize: 8.5,
+                            fontWeight: FontWeight.bold,
+                            color: brandYellow,
+                          ),
+                        ),
+                        const SizedBox(width: 5),
+                      ],
+                      if (email != null) ...[
+                        Icon(Remix.mail_line,
+                            size: 10,
+                            color: accountCount > 0 ? textSubtle : brandBlue),
+                        const SizedBox(width: 2.5),
+                        Expanded(
+                          child: Text(
+                            email,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            textDirection: TextDirection.ltr,
+                            textAlign: TextAlign.left,
+                            style: TextStyle(
+                              fontFamily: 'PlusJakartaSans',
+                              fontFamilyFallback: const ['Cairo', 'Heebo'],
+                              fontSize: 8.5,
+                              color: textSubtle,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
+                  )
+                else
+                  Row(
+                    children: [
+                      Icon(Remix.mail_line, size: 10, color: textDim),
+                      const SizedBox(width: 3.5),
+                      Text(
+                        'بدون إيميل',
+                        style: TextStyle(
+                          fontFamily: 'Cairo',
+                          fontSize: 8.5,
+                          color: textSubtle,
+                        ),
                       ),
                     ],
                   ),
-                ),
-              ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );

@@ -238,7 +238,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen>
               isDark ? const Color(0xFF1E1E24) : const Color(0xFFE5E7EB);
           final shadowColor =
               isDark ? const Color(0x66000000) : const Color(0x12000000);
-          const activeColor = Color(0xFF10B981);
+          const activeColor = Color(0xFF2563EB); // Electric Royal Blue
 
           return Container(
             margin: const EdgeInsets.fromLTRB(10, 0, 10, 8),
@@ -264,7 +264,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen>
                 return Stack(
                   alignment: Alignment.center,
                   children: [
-                    // Physical Banking Sliding Glass Pill & Top Emerald Indicator
+                    // Physical Banking Sliding Glass Pill & Top Electric Royal Blue Indicator
                     AnimatedPositioned(
                       duration: const Duration(milliseconds: 360),
                       curve: Curves.easeOutBack,
@@ -275,12 +275,21 @@ class _MainNavigationScreenState extends State<MainNavigationScreen>
                       child: Container(
                         decoration: BoxDecoration(
                           color: activeColor.withValues(
-                              alpha: isDark ? 0.11 : 0.08),
+                              alpha: isDark ? 0.16 : 0.10),
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                            color: activeColor.withValues(alpha: 0.22),
-                            width: 0.8,
+                            color: activeColor.withValues(
+                                alpha: isDark ? 0.38 : 0.22),
+                            width: 0.9,
                           ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: activeColor.withValues(
+                                  alpha: isDark ? 0.20 : 0.10),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
                         ),
                         child: Align(
                           alignment: Alignment.topCenter,
@@ -292,7 +301,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen>
                               borderRadius: BorderRadius.circular(99),
                               boxShadow: [
                                 BoxShadow(
-                                  color: activeColor.withValues(alpha: 0.55),
+                                  color: activeColor.withValues(alpha: 0.65),
                                   blurRadius: 6,
                                   offset: const Offset(0, 1),
                                 ),
@@ -332,10 +341,10 @@ class _MainNavigationScreenState extends State<MainNavigationScreen>
       IconData lineIcon, IconData fillIcon) {
     final isSelected = _currentIndex == index;
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    const activeColor = Color(0xFF10B981);
+    const activeColor = Color(0xFF2563EB); // Electric Royal Blue
     final inactiveColor =
         isDark ? const Color(0xFF71717A) : const Color(0xFF9CA3AF);
-    final activeTextColor = isDark ? Colors.white : const Color(0xFF111827);
+    final activeTextColor = activeColor; // Royal Blue when selected instead of plain white
 
     return Expanded(
       child: InkWell(
@@ -346,7 +355,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen>
           }
         },
         borderRadius: BorderRadius.circular(12),
-        splashColor: const Color(0x1A10B981),
+        splashColor: const Color(0x1A2563EB),
         highlightColor: Colors.transparent,
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 4),

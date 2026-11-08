@@ -35,7 +35,7 @@ class _WorkLogsScreenState extends State<WorkLogsScreen> {
   Color get surfaceMain => _isDark ? const Color(0xFF0A0A0C) : const Color(0xFFF8F9FA);
   Color get surfaceField => _isDark ? const Color(0xFF121215) : const Color(0xFFFFFFFF);
   Color get surfaceBorder => _isDark ? const Color(0xFF1E1E24) : const Color(0xFFE5E7EB);
-  static const Color brandGreen = Color(0xFF10B981);
+  static const Color brandGreen = Color(0xFF2563EB);
   static const Color brandYellow = Color(0xFFFFD600);
   Color get textPrimary => _isDark ? const Color(0xFFF3F4F6) : const Color(0xFF111827);
   Color get textMuted => _isDark ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280);
@@ -807,7 +807,7 @@ Future<void> _openEmployerModal([WorkplaceModel? existing]) async {
                                             const Icon(
                                               Remix.check_line,
                                               size: 17,
-                                              color: Color(0xFF0A0B0B),
+                                              color: Colors.white,
                                             ),
                                             const SizedBox(width: 6),
                                             Text(
@@ -816,7 +816,7 @@ Future<void> _openEmployerModal([WorkplaceModel? existing]) async {
                                                   : 'إضافة المشغّل',
                                               style: const TextStyle(
                                                 fontFamily: 'Cairo',
-                                                color: Color(0xFF0A0B0B),
+                                                color: Colors.white,
                                                 fontSize: 12.5,
                                                 fontWeight: FontWeight.bold,
                                               ),

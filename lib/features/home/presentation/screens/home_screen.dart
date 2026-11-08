@@ -49,7 +49,7 @@ class _HomeScreenState extends State<HomeScreen> {
   bool get _isDark => Theme.of(context).brightness == Brightness.dark;
 
   // Static brand accents
-  static const Color brandGreen = Color(0xFF10B981);
+  static const Color brandGreen = Color(0xFF2563EB);
   static const Color brandYellow = Color(0xFFFFD600);
   static const Color brandRed = Color(0xFFEF4444);
 

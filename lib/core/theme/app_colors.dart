@@ -16,16 +16,26 @@ class AppColors {
   static const Color surfaceCell = Color(0xFF16161A);
   static const Color surfaceCellBorder = Color(0xFF222229);
 
-  // Spendo Brand Accents (Emerald / Mint)
-  static const Color spendoGreen = Color(0xFF10B981);
-  static const Color spendoMint = Color(0xFF34D399);
-  static const Color spendoDarkGreen = Color(0xFF064E3B);
-  static const Color spendoGlow = Color(0x3310B981);
+  // Spendo Primary Brand Accent (Electric Royal Blue #2563EB)
+  static const Color spendoBlue = Color(0xFF2563EB);
+  static const Color spendoBlueLight = Color(0xFF3B82F6);
+  static const Color spendoBlueGlow = Color(0x332563EB);
+  static const Color spendoBlueSurface = Color(0x1A2563EB);
+  static const Color primaryAction = Color(0xFF2563EB);
+  static const Color spendoMint = Color(0xFF60A5FA);
+  static const Color spendoGlow = Color(0x332563EB);
 
   // Boro UI Electric Yellow (#FFD600) & Glowing Accents
   static const Color electricYellow = Color(0xFFFFD600);
   static const Color electricYellowGlow = Color(0x33FFD600);
   static const Color electricYellowSurface = Color(0x1AFFD600);
+  static const Color warningYellow = Color(0xFFFFD600);
+
+  // Protected Utility Colors (Cash & WhatsApp strictly Green #10B981)
+  static const Color cashGreen = Color(0xFF10B981);
+  static const Color whatsappGreen = Color(0xFF10B981);
+  static const Color successGreen = Color(0xFF10B981);
+  static const Color spendoGreen = Color(0xFF10B981);
 
   // Text Colors
   static const Color textPrimary = Color(0xFFFFFFFF);
@@ -44,11 +54,8 @@ class AppColors {
   static const Color pinInactive = Color(0xFF45454E);
 
   // Utility Colors
-  static const Color whatsappGreen = Color(0xFF10B981);
-  static const Color accentBlue = Color(0xFF3B82F6);
+  static const Color accentBlue = Color(0xFF2563EB);
   static const Color dangerRed = Color(0xFFEF4444);
-  static const Color warningYellow = Color(0xFFFFD600);
-  static const Color successGreen = Color(0xFF10B981);
 
   // Avatar & Icons
   static const Color avatarBackground = Color(0xFF17171B);
