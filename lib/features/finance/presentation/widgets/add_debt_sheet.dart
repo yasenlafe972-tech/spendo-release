@@ -33,6 +33,7 @@ class AddDebtSheet extends StatefulWidget {
 class _AddDebtSheetState extends State<AddDebtSheet> {
   final _formKey = GlobalKey<FormState>();
   final _nameCtrl = TextEditingController();
+  final _nameFocusNode = FocusNode();
   final _amountCtrl = TextEditingController();
   final _notesCtrl = TextEditingController();
   final PeopleRepository _peopleRepo = PeopleRepository();
@@ -96,6 +97,7 @@ class _AddDebtSheetState extends State<AddDebtSheet> {
   @override
   void dispose() {
     _nameCtrl.dispose();
+    _nameFocusNode.dispose();
     _amountCtrl.dispose();
     _notesCtrl.dispose();
     super.dispose();
@@ -135,9 +137,9 @@ class _AddDebtSheetState extends State<AddDebtSheet> {
 
     try {
       String resolvedPersonId;
-      final match = _peopleList.where((p) =>
-          (p.id == _selectedPersonId) ||
-          (p.name.trim().toLowerCase() == enteredName.toLowerCase())
+      final selected = _peopleList.where((p) => p.id == _selectedPersonId).firstOrNull;
+      final match = selected ?? _peopleList.where((p) =>
+          p.name.trim().toLowerCase() == enteredName.toLowerCase()
       ).firstOrNull;
 
       if (match != null) {
@@ -328,6 +330,19 @@ class _AddDebtSheetState extends State<AddDebtSheet> {
                         const SizedBox(height: 7),
 
                         // حقل اسم الشخص
+                        Align(
+                          alignment: AlignmentDirectional.centerStart,
+                          child: TextButton.icon(
+                            onPressed: _pickExistingPerson,
+                            icon: const Icon(Remix.group_line, size: 17),
+                            label: const Text('اختيار شخص موجود'),
+                            style: TextButton.styleFrom(
+                              foregroundColor: brandGreen,
+                              textStyle: const TextStyle(fontFamily: 'Cairo',
+                                  fontSize: 11.5, fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                        ),
                         _buildPersonNameField(),
                         const SizedBox(height: 6),
 
@@ -531,6 +546,91 @@ class _AddDebtSheetState extends State<AddDebtSheet> {
     );
   }
 
+  Future<void> _pickExistingPerson() async {
+    FocusScope.of(context).unfocus();
+    var query = '';
+    final person = await showModalBottomSheet<PersonModel>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: surfaceMain,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (pickerContext) => StatefulBuilder(
+        builder: (context, updateSearch) {
+          final results = _peopleList.where((p) =>
+              p.name.toLowerCase().contains(query) ||
+              (p.phone ?? p.whatsapp ?? '').contains(query)).toList();
+          return SafeArea(
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(16, 16, 16,
+                  MediaQuery.of(context).viewInsets.bottom + 12),
+              child: SizedBox(
+                height: MediaQuery.of(context).size.height * 0.45,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Row(children: [
+                      Expanded(child: Text('اختيار شخص موجود',
+                        style: TextStyle(fontFamily: 'Cairo', color: textWhite,
+                            fontSize: 14, fontWeight: FontWeight.bold))),
+                      IconButton(tooltip: 'إغلاق',
+                        onPressed: () => Navigator.pop(pickerContext),
+                        icon: Icon(Remix.close_line, color: textMuted)),
+                    ]),
+                    TextField(
+                      onChanged: (value) => updateSearch(() => query = value.trim().toLowerCase()),
+                      style: TextStyle(fontFamily: 'Cairo', color: textWhite, fontSize: 12),
+                      decoration: InputDecoration(
+                        hintText: 'بحث بالاسم أو رقم الهاتف',
+                        prefixIcon: const Icon(Remix.search_line, size: 18),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                        isDense: true,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Expanded(
+                      child: results.isEmpty
+                          ? Center(child: Text(_peopleList.isEmpty
+                              ? 'لا يوجد أشخاص مسجلون. يمكنك كتابة اسم جديد في المعاملة.'
+                              : 'لا توجد نتائج',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(fontFamily: 'Cairo', color: textMuted, fontSize: 12)))
+                          : ListView.builder(
+                              itemCount: results.length,
+                              itemBuilder: (context, index) {
+                                final p = results[index];
+                                final phone = p.phone ?? p.whatsapp;
+                                return ListTile(
+                                  leading: const Icon(Remix.user_3_line, color: brandYellow, size: 20),
+                                  title: Text(p.name, style: TextStyle(fontFamily: 'Cairo',
+                                      color: textWhite, fontSize: 12, fontWeight: FontWeight.w600)),
+                                  subtitle: phone == null || phone.isEmpty ? null
+                                      : Text(phone, style: TextStyle(color: textMuted, fontSize: 11)),
+                                  trailing: p.id == _selectedPersonId
+                                      ? const Icon(Remix.check_line, color: brandGreen) : null,
+                                  onTap: () => Navigator.pop(pickerContext, p),
+                                );
+                              },
+                            ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+    if (!mounted || person == null) return;
+    setState(() {
+      _selectedPersonId = person.id;
+      _nameCtrl.text = person.name;
+    });
+    _nameFocusNode.unfocus();
+    SpendoHaptics.selection();
+  }
+
   /// 2. حقل اسم الشخص
   Widget _buildPersonNameField() {
     return Container(
@@ -545,8 +645,9 @@ class _AddDebtSheetState extends State<AddDebtSheet> {
           const Icon(Remix.user_3_line, color: brandGreen, size: 16),
           const SizedBox(width: 8),
           Expanded(
-            child: Autocomplete<PersonModel>(
-              initialValue: TextEditingValue(text: _nameCtrl.text),
+            child: RawAutocomplete<PersonModel>(
+              textEditingController: _nameCtrl,
+              focusNode: _nameFocusNode,
               optionsBuilder: (textEditingValue) {
                 if (textEditingValue.text.isEmpty) {
                   return const Iterable<PersonModel>.empty();
@@ -562,15 +663,10 @@ class _AddDebtSheetState extends State<AddDebtSheet> {
                 _nameCtrl.text = p.name;
               },
               fieldViewBuilder: (context, controller, focusNode, onFieldSubmitted) {
-                if (_nameCtrl.text.isNotEmpty && controller.text.isEmpty) {
-                  controller.text = _nameCtrl.text;
-                }
-
                 return TextFormField(
                   controller: controller,
                   focusNode: focusNode,
                   onChanged: (val) {
-                    _nameCtrl.text = val;
                     _selectedPersonId = null;
                   },
                   style: TextStyle(

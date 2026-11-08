@@ -41,7 +41,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen>
 
     _tabAnimController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 340),
+      duration: const Duration(milliseconds: 200),
       value: 1.0,
     );
     _tabCurvedAnim = CurvedAnimation(
@@ -266,8 +266,8 @@ class _MainNavigationScreenState extends State<MainNavigationScreen>
                   children: [
                     // Physical Banking Sliding Glass Pill & Top Electric Royal Blue Indicator
                     AnimatedPositioned(
-                      duration: const Duration(milliseconds: 360),
-                      curve: Curves.easeOutBack,
+                      duration: const Duration(milliseconds: 200),
+                      curve: Curves.easeOutCubic,
                       right: rightOffset + 3,
                       top: 1,
                       bottom: 1,
@@ -341,69 +341,56 @@ class _MainNavigationScreenState extends State<MainNavigationScreen>
       IconData lineIcon, IconData fillIcon) {
     final isSelected = _currentIndex == index;
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    const activeColor = Color(0xFF2563EB); // Electric Royal Blue
-    final inactiveColor =
-        isDark ? const Color(0xFF71717A) : const Color(0xFF9CA3AF);
-    final activeTextColor = activeColor; // Royal Blue when selected instead of plain white
+    const activeColor = Color(0xFF2563EB);
+    final color = isSelected ? activeColor
+        : (isDark ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280));
 
     return Expanded(
-      child: InkWell(
-        onTap: () {
-          if (_currentIndex != index) {
-            SpendoHaptics.selection();
-            _switchToTab(index);
-          }
-        },
-        borderRadius: BorderRadius.circular(12),
-        splashColor: const Color(0x1A2563EB),
-        highlightColor: Colors.transparent,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 4),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const SizedBox(height: 5),
-              // Animated Banking Icon with spring lift & scale
-              AnimatedSlide(
-                offset: isSelected ? const Offset(0, -0.06) : Offset.zero,
-                duration: const Duration(milliseconds: 280),
-                curve: Curves.easeOutBack,
-                child: AnimatedScale(
-                  scale: isSelected ? 1.15 : 1.0,
-                  duration: const Duration(milliseconds: 280),
-                  curve: Curves.easeOutBack,
-                  child: AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 180),
-                    child: Icon(
-                      isSelected ? fillIcon : lineIcon,
-                      key: ValueKey<bool>(isSelected),
-                      size: 20,
-                      color: isSelected ? activeColor : inactiveColor,
-                    ),
+      child: Semantics(
+        selected: isSelected,
+        button: true,
+        child: Material(
+          color: Colors.transparent,
+          borderRadius: BorderRadius.circular(12),
+          child: InkWell(
+            onTap: () {
+              if (_currentIndex == index) return;
+              FocusManager.instance.primaryFocus?.unfocus();
+              SpendoHaptics.selection();
+              _switchToTab(index);
+            },
+            borderRadius: BorderRadius.circular(12),
+            splashColor: activeColor.withValues(alpha: 0.15),
+            highlightColor: activeColor.withValues(alpha: 0.08),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(minHeight: 56),
+              child: SizedBox(
+                width: double.infinity,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 7, horizontal: 2),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      AnimatedScale(
+                        scale: isSelected ? 1.08 : 1,
+                        duration: const Duration(milliseconds: 160),
+                        curve: Curves.easeOutCubic,
+                        child: Icon(isSelected ? fillIcon : lineIcon,
+                            size: 22, color: color),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(label,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(fontFamily: 'Cairo', fontSize: 10,
+                          fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+                          color: color, height: 1.1)),
+                    ],
                   ),
                 ),
               ),
-              const SizedBox(height: 3),
-              // Label with animated style
-              AnimatedDefaultTextStyle(
-                duration: const Duration(milliseconds: 220),
-                curve: Curves.easeOutCubic,
-                style: TextStyle(
-                  fontFamily: 'Cairo',
-                  fontSize: 10,
-                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
-                  color: isSelected ? activeTextColor : inactiveColor,
-                  letterSpacing: -0.2,
-                  height: 1.1,
-                ),
-                child: Text(
-                  label,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              const SizedBox(height: 2),
-            ],
+            ),
           ),
         ),
       ),

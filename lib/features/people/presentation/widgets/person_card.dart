@@ -111,26 +111,15 @@ class PersonCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 // 1. أيقونة المستخدم الرمزية (مثل قسم المالية - بدون صورة شخصية)
-                Container(
+                SizedBox(
                   width: 28,
                   height: 28,
-                  decoration: BoxDecoration(
-                    color: (person.isUser ? brandBlue : brandYellow).withValues(
-                      alpha: _isDark ? 0.14 : 0.22,
+                  child: Center(
+                    child: Icon(
+                      person.isUser ? Remix.user_star_line : Remix.user_3_line,
+                      size: 20,
+                      color: person.isUser ? brandBlue : brandYellow,
                     ),
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(
-                      color: (person.isUser ? brandBlue : brandYellow).withValues(
-                        alpha: _isDark ? 0.35 : 0.50,
-                      ),
-                      width: 0.9,
-                    ),
-                  ),
-                  alignment: Alignment.center,
-                  child: Icon(
-                    person.isUser ? Remix.user_star_line : Remix.user_3_line,
-                    size: 14,
-                    color: person.isUser ? brandBlue : brandYellow,
                   ),
                 ),
                 const SizedBox(width: 7),
