@@ -273,11 +273,11 @@ class _AddDebtSheetState extends State<AddDebtSheet> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Row(
+                      Expanded(child: Row(
                         children: [
                           Icon(Remix.hand_coin_line, color: brandYellow, size: 19),
                           const SizedBox(width: 7),
-                          Column(
+                          Expanded(child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
@@ -299,9 +299,9 @@ class _AddDebtSheetState extends State<AddDebtSheet> {
                                 ),
                               ),
                             ],
-                          ),
+                          )),
                         ],
-                      ),
+                      )),
                       InkWell(
                         onTap: () => Navigator.pop(context),
                         borderRadius: BorderRadius.circular(6),
