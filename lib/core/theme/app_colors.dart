@@ -26,11 +26,15 @@ class AppColors {
   static const Color spendoMint = Color(0xFF60A5FA);
   static const Color spendoGlow = Color(0x332563EB);
 
-  // Boro UI Electric Yellow (#FFD600) & Glowing Accents
-  static const Color electricYellow = Color(0xFFFFD600);
-  static const Color electricYellowGlow = Color(0x33FFD600);
-  static const Color electricYellowSurface = Color(0x1AFFD600);
-  static const Color warningYellow = Color(0xFFFFD600);
+  // Muted amber for pending transactions and warnings.
+  static const Color electricYellow = Color(0xFFD6AD52);
+  static const Color electricYellowGlow = Color(0x33D6AD52);
+  static const Color electricYellowSurface = Color(0x1AD6AD52);
+  static const Color warningYellow = Color(0xFFD6AD52);
+  static Color warningFor(bool isDark) =>
+      isDark ? warningYellow : const Color(0xFF966008);
+  static Color successFor(bool isDark) =>
+      isDark ? const Color(0xFF34D399) : const Color(0xFF087F5B);
 
   // Protected Utility Colors (Cash & WhatsApp strictly Green #10B981)
   static const Color cashGreen = Color(0xFF10B981);

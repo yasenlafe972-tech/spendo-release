@@ -140,6 +140,7 @@ class AppTheme {
       colorScheme: const ColorScheme.dark(
         surface: AppColors.surface,
         primary: AppColors.spendoBlue,
+        onPrimary: Colors.white,
         secondary: AppColors.spendoBlueLight,
         error: AppColors.dangerRed,
         onSurface: AppColors.textPrimary,
@@ -194,6 +195,7 @@ class AppTheme {
       colorScheme: const ColorScheme.light(
         surface: Color(0xFFFFFFFF),
         primary: AppColors.spendoBlue,
+        onPrimary: Colors.white,
         secondary: Color(0xFF1D4ED8),
         error: AppColors.dangerRed,
         onSurface: Color(0xFF111827),
