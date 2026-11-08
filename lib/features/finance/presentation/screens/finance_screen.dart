@@ -1400,104 +1400,51 @@ class _FinanceScreenState extends State<FinanceScreen> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 10),
                   ],
 
-                  // زر مشاركة عبر واتساب
-                  InkWell(
-                    onTap: () {
-                      Navigator.pop(dialogCtx);
-                      _shareDebtViaWhatsApp(debt);
-                    },
-                    borderRadius: BorderRadius.circular(10),
-                    child: Container(
-                      height: 38,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF10B981).withValues(alpha: 0.14),
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.4)),
-                      ),
-                      alignment: Alignment.center,
-                      child: const Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Remix.whatsapp_line, size: 16, color: Color(0xFF10B981)),
-                          SizedBox(width: 6),
-                          Text(
-                            'مشاركة كشف الحساب عبر واتساب',
-                            style: TextStyle(
-                              fontFamily: 'Cairo',
-                              color: Color(0xFF10B981),
-                              fontSize: 11.5,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-
-                  // صفا زر التعديل والحذف
+                  // أزرار الإجراءات كأيقونات نقية بدون خلفية (واتساب، تعديل بالقلم، وحذف بالسطل)
                   Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Expanded(
-                        child: InkWell(
-                          onTap: () {
-                            Navigator.pop(dialogCtx);
-                            _showEditDebtSheet(debt);
-                          },
-                          borderRadius: BorderRadius.circular(8),
-                          child: Container(
-                            height: 34,
-                            decoration: BoxDecoration(
-                              color: surfaceMain,
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(color: surfaceBorder),
-                            ),
-                            alignment: Alignment.center,
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(Remix.pencil_line, size: 13, color: textMuted),
-                                const SizedBox(width: 5),
-                                Text(
-                                  'تعديل المعاملة',
-                                  style: TextStyle(fontFamily: 'Cairo', color: textWhite, fontSize: 11, fontWeight: FontWeight.w600),
-                                ),
-                              ],
-                            ),
-                          ),
+                      // أيقونة واتساب بدون خلفية
+                      InkWell(
+                        onTap: () {
+                          Navigator.pop(dialogCtx);
+                          _shareDebtViaWhatsApp(debt);
+                        },
+                        borderRadius: BorderRadius.circular(20),
+                        child: const Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                          child: Icon(Remix.whatsapp_line, size: 22, color: Color(0xFF10B981)),
                         ),
                       ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: InkWell(
-                          onTap: () {
-                            Navigator.pop(dialogCtx);
-                            _confirmDelete(debt);
-                          },
-                          borderRadius: BorderRadius.circular(8),
-                          child: Container(
-                            height: 34,
-                            decoration: BoxDecoration(
-                              color: brandRed.withValues(alpha: 0.12),
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(color: brandRed.withValues(alpha: 0.35)),
-                            ),
-                            alignment: Alignment.center,
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(Remix.delete_bin_line, size: 13, color: brandRed),
-                                const SizedBox(width: 5),
-                                Text(
-                                  'حذف المعاملة',
-                                  style: TextStyle(fontFamily: 'Cairo', color: brandRed, fontSize: 11, fontWeight: FontWeight.bold),
-                                ),
-                              ],
-                            ),
-                          ),
+                      const SizedBox(width: 12),
+
+                      // أيقونة التعديل (قلم) بدون خلفية
+                      InkWell(
+                        onTap: () {
+                          Navigator.pop(dialogCtx);
+                          _showEditDebtSheet(debt);
+                        },
+                        borderRadius: BorderRadius.circular(20),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                          child: Icon(Remix.pencil_line, size: 20, color: textMuted),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+
+                      // أيقونة الحذف (سطل) بدون خلفية
+                      InkWell(
+                        onTap: () {
+                          Navigator.pop(dialogCtx);
+                          _confirmDelete(debt);
+                        },
+                        borderRadius: BorderRadius.circular(20),
+                        child: const Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                          child: Icon(Remix.delete_bin_line, size: 20, color: brandRed),
                         ),
                       ),
                     ],
