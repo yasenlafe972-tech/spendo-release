@@ -1,3 +1,4 @@
+import 'package:sanad_app/core/theme/app_colors.dart';
 import 'package:sanad_app/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -50,17 +51,18 @@ class _AddDebtSheetState extends State<AddDebtSheet> {
   static Color get surfaceMain => _isDark ? const Color(0xFF121413) : const Color(0xFFFFFFFF);
   static Color get surfaceField => _isDark ? const Color(0xFF171A19) : const Color(0xFFF9FAFB);
   static Color get surfaceBorder => _isDark ? const Color(0xFF242927) : const Color(0xFFE5E7EB);
-  static const Color brandGreen = Color(0xFF2563EB);
-  static const Color brandYellow = Color(0xFFFFD600);
+  static const Color brandBlue = Color(0xFF2563EB);
+  static Color get brandYellow => AppColors.warningFor(_isDark);
+  static Color get successColor => AppColors.successFor(_isDark);
   static const Color brandRed = Color(0xFFEF4444);
   static Color get textMuted => _isDark ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280);
   static Color get textWhite => _isDark ? Colors.white : const Color(0xFF111827);
 
   static List<Map<String, dynamic>> get _paymentMethods => [
-    {'key': 'bit', 'title': 'Bit', 'icon': Remix.smartphone_line, 'color': brandYellow},
+    {'key': 'bit', 'title': 'Bit', 'icon': Remix.smartphone_line, 'color': brandBlue},
     {'key': 'cash', 'title': 'كاش', 'icon': Remix.money_dollar_box_line, 'color': Color(0xFF10B981)},
-    {'key': 'bank_transfer', 'title': 'تحويل بنكي', 'icon': Remix.bank_line, 'color': brandYellow},
-    {'key': 'atm_code', 'title': 'كود صراف', 'icon': Remix.qr_code_line, 'color': brandGreen},
+    {'key': 'bank_transfer', 'title': 'تحويل بنكي', 'icon': Remix.bank_line, 'color': brandBlue},
+    {'key': 'atm_code', 'title': 'كود صراف', 'icon': Remix.qr_code_line, 'color': brandBlue},
   ];
 
   @override
@@ -275,7 +277,7 @@ class _AddDebtSheetState extends State<AddDebtSheet> {
                     children: [
                       Expanded(child: Row(
                         children: [
-                          Icon(Remix.hand_coin_line, color: brandYellow, size: 19),
+                          Icon(Remix.hand_coin_line, color: brandBlue, size: 19),
                           const SizedBox(width: 7),
                           Expanded(child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -337,7 +339,7 @@ class _AddDebtSheetState extends State<AddDebtSheet> {
                             icon: const Icon(Remix.group_line, size: 17),
                             label: const Text('اختيار شخص موجود'),
                             style: TextButton.styleFrom(
-                              foregroundColor: brandGreen,
+                              foregroundColor: brandBlue,
                               textStyle: const TextStyle(fontFamily: 'Cairo',
                                   fontSize: 11.5, fontWeight: FontWeight.bold),
                             ),
@@ -427,7 +429,7 @@ class _AddDebtSheetState extends State<AddDebtSheet> {
               Expanded(
                 child: _buildTypeOptionCard(
                   isSelected: isTheyOwe,
-                  activeColor: brandGreen,
+                  activeColor: brandBlue,
                   icon: Remix.arrow_left_down_line,
                   title: 'إلي عنده',
                   subtitle: 'سلفة أعطيته إياها',
@@ -467,7 +469,7 @@ class _AddDebtSheetState extends State<AddDebtSheet> {
               Expanded(
                 child: _buildTypeOptionCard(
                   isSelected: isReceived,
-                  activeColor: brandGreen,
+                  activeColor: successColor,
                   icon: Remix.checkbox_circle_line,
                   title: 'مبالغ مستلمة',
                   subtitle: 'سحب بنكي أو استلام مالي',
@@ -602,13 +604,13 @@ class _AddDebtSheetState extends State<AddDebtSheet> {
                                 final p = results[index];
                                 final phone = p.phone ?? p.whatsapp;
                                 return ListTile(
-                                  leading: const Icon(Remix.user_3_line, color: brandYellow, size: 20),
+                                  leading: const Icon(Remix.user_3_line, color: brandBlue, size: 20),
                                   title: Text(p.name, style: TextStyle(fontFamily: 'Cairo',
                                       color: textWhite, fontSize: 12, fontWeight: FontWeight.w600)),
                                   subtitle: phone == null || phone.isEmpty ? null
                                       : Text(phone, style: TextStyle(color: textMuted, fontSize: 11)),
                                   trailing: p.id == _selectedPersonId
-                                      ? const Icon(Remix.check_line, color: brandGreen) : null,
+                                      ? const Icon(Remix.check_line, color: brandBlue) : null,
                                   onTap: () => Navigator.pop(pickerContext, p),
                                 );
                               },
@@ -642,7 +644,7 @@ class _AddDebtSheetState extends State<AddDebtSheet> {
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 0),
       child: Row(
         children: [
-          const Icon(Remix.user_3_line, color: brandGreen, size: 16),
+          const Icon(Remix.user_3_line, color: brandBlue, size: 16),
           const SizedBox(width: 8),
           Expanded(
             child: RawAutocomplete<PersonModel>(
@@ -750,7 +752,7 @@ class _AddDebtSheetState extends State<AddDebtSheet> {
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 0),
       child: Row(
         children: [
-          Icon(Remix.cash_line, color: brandYellow, size: 16),
+          Icon(Remix.cash_line, color: brandBlue, size: 16),
           const SizedBox(width: 8),
           Expanded(
             child: TextFormField(
@@ -839,7 +841,7 @@ class _AddDebtSheetState extends State<AddDebtSheet> {
                       color: surfaceField,
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(
-                        color: isSelected ? brandYellow : surfaceBorder,
+                        color: isSelected ? brandBlue : surfaceBorder,
                         width: isSelected ? 1.2 : 1.0,
                       ),
                     ),
@@ -889,7 +891,7 @@ class _AddDebtSheetState extends State<AddDebtSheet> {
             children: [
               Row(
                 children: [
-                  const Icon(Remix.calendar_event_line, color: brandGreen, size: 15),
+                  const Icon(Remix.calendar_event_line, color: brandBlue, size: 15),
                   const SizedBox(width: 8),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -969,7 +971,7 @@ class _AddDebtSheetState extends State<AddDebtSheet> {
                       ],
                     ),
                   ),
-                  const Icon(Remix.calendar_event_line, color: brandGreen, size: 14),
+                  const Icon(Remix.calendar_event_line, color: brandBlue, size: 14),
                 ],
               ),
             ),
@@ -1022,7 +1024,7 @@ class _AddDebtSheetState extends State<AddDebtSheet> {
                       ],
                     ),
                   ),
-                  Icon(Remix.calendar_check_line, color: brandYellow, size: 14),
+                  Icon(Remix.calendar_check_line, color: brandBlue, size: 14),
                 ],
               ),
             ),
@@ -1084,7 +1086,7 @@ class _AddDebtSheetState extends State<AddDebtSheet> {
         width: double.infinity,
         padding: const EdgeInsets.symmetric(vertical: 8.5),
         decoration: BoxDecoration(
-          color: brandGreen,
+          color: brandBlue,
           borderRadius: BorderRadius.circular(10),
         ),
         alignment: Alignment.center,
@@ -1092,18 +1094,18 @@ class _AddDebtSheetState extends State<AddDebtSheet> {
             ? const SizedBox(
                 width: 16,
                 height: 16,
-                child: CircularProgressIndicator(color: Colors.black, strokeWidth: 2),
+                child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
               )
             : Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: const [
-                  Icon(Remix.check_line, color: Color(0xFF0A0B0B), size: 16),
+                  Icon(Remix.check_line, color: Colors.white, size: 16),
                   SizedBox(width: 5),
                   Text(
                     'حفظ في كشف المالية',
                     style: TextStyle(
                       fontFamily: 'Cairo',
-                      color: Color(0xFF0A0B0B),
+                      color: Colors.white,
                       fontSize: 12.5,
                       fontWeight: FontWeight.bold,
                     ),

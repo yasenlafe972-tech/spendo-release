@@ -1,3 +1,4 @@
+import 'package:sanad_app/core/theme/app_colors.dart';
 import 'package:sanad_app/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -37,16 +38,17 @@ class _RecordRepaymentSheetState extends State<RecordRepaymentSheet> {
   static Color get surfaceMain => _isDark ? const Color(0xFF121413) : const Color(0xFFFFFFFF);
   static Color get surfaceField => _isDark ? const Color(0xFF171A19) : const Color(0xFFF9FAFB);
   static Color get surfaceBorder => _isDark ? const Color(0xFF242927) : const Color(0xFFE5E7EB);
-  static const Color brandGreen = Color(0xFF2563EB);
-  static const Color brandYellow = Color(0xFFFFD600);
+  static const Color brandBlue = Color(0xFF2563EB);
+  static Color get brandYellow => AppColors.warningFor(_isDark);
+  static Color get successColor => AppColors.successFor(_isDark);
   static Color get textWhite => _isDark ? Colors.white : const Color(0xFF111827);
   static Color get textMuted => _isDark ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280);
 
   static List<Map<String, dynamic>> get _methods => [
-    {'key': 'bit', 'title': 'Bit', 'icon': Remix.smartphone_line, 'color': brandYellow},
-    {'key': 'cash', 'title': 'كاش', 'icon': Remix.money_dollar_box_line, 'color': brandGreen},
-    {'key': 'bank_transfer', 'title': 'تحويل بنكي', 'icon': Remix.bank_line, 'color': brandYellow},
-    {'key': 'atm_code', 'title': 'كود صراف', 'icon': Remix.qr_code_line, 'color': brandGreen},
+    {'key': 'bit', 'title': 'Bit', 'icon': Remix.smartphone_line, 'color': brandBlue},
+    {'key': 'cash', 'title': 'كاش', 'icon': Remix.money_dollar_box_line, 'color': successColor},
+    {'key': 'bank_transfer', 'title': 'تحويل بنكي', 'icon': Remix.bank_line, 'color': brandBlue},
+    {'key': 'atm_code', 'title': 'كود صراف', 'icon': Remix.qr_code_line, 'color': brandBlue},
   ];
 
   @override
@@ -158,7 +160,7 @@ class _RecordRepaymentSheetState extends State<RecordRepaymentSheet> {
                     children: [
                       Row(
                         children: [
-                          Icon(Remix.cash_line, color: brandYellow, size: 22),
+                          Icon(Remix.cash_line, color: brandBlue, size: 22),
                           const SizedBox(width: 8),
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -240,7 +242,7 @@ class _RecordRepaymentSheetState extends State<RecordRepaymentSheet> {
                                 const SizedBox(height: 2),
                                 Text(
                                   '${d.paidAmount.toStringAsFixed(0)} ₪',
-                                  style: const TextStyle(fontFamily: 'Cairo', color: brandGreen, fontWeight: FontWeight.bold, fontSize: 13),
+                                  style: TextStyle(fontFamily: 'Cairo', color: successColor, fontWeight: FontWeight.bold, fontSize: 13),
                                 ),
                               ],
                             ),
@@ -270,7 +272,7 @@ class _RecordRepaymentSheetState extends State<RecordRepaymentSheet> {
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
                         child: Row(
                           children: [
-                            Icon(Remix.cash_line, color: brandYellow, size: 18),
+                            Icon(Remix.cash_line, color: brandBlue, size: 18),
                             const SizedBox(width: 10),
                             Expanded(
                               child: TextField(
@@ -323,13 +325,13 @@ class _RecordRepaymentSheetState extends State<RecordRepaymentSheet> {
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                const Icon(Remix.check_line, size: 13, color: brandGreen),
+                                const Icon(Remix.check_line, size: 13, color: brandBlue),
                                 const SizedBox(width: 4),
                                 Text(
                                   'سداد كامل المتبقي (${d.remainingAmount.toStringAsFixed(0)} ₪)',
                                   style: const TextStyle(
                                     fontFamily: 'Cairo',
-                                    color: brandGreen,
+                                    color: brandBlue,
                                     fontSize: 11,
                                     fontWeight: FontWeight.w600,
                                   ),
@@ -374,7 +376,7 @@ class _RecordRepaymentSheetState extends State<RecordRepaymentSheet> {
                                     color: surfaceField,
                                     borderRadius: BorderRadius.circular(10),
                                     border: Border.all(
-                                      color: isSelected ? brandYellow : surfaceBorder,
+                                      color: isSelected ? brandBlue : surfaceBorder,
                                       width: isSelected ? 1.2 : 1.0,
                                     ),
                                   ),
@@ -428,7 +430,7 @@ class _RecordRepaymentSheetState extends State<RecordRepaymentSheet> {
                                   ),
                                 ],
                               ),
-                              const Icon(Remix.calendar_event_line, color: brandGreen, size: 16),
+                              const Icon(Remix.calendar_event_line, color: brandBlue, size: 16),
                             ],
                           ),
                         ),
@@ -473,20 +475,20 @@ class _RecordRepaymentSheetState extends State<RecordRepaymentSheet> {
                           width: double.infinity,
                           padding: const EdgeInsets.symmetric(vertical: 11),
                           decoration: BoxDecoration(
-                            color: brandGreen,
+                            color: brandBlue,
                             borderRadius: BorderRadius.circular(12),
                           ),
                           alignment: Alignment.center,
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              const Icon(Remix.check_line, color: Color(0xFF0A0B0B), size: 18),
+                              const Icon(Remix.check_line, color: Colors.white, size: 18),
                               const SizedBox(width: 6),
                               Text(
                                 d.isPayLater ? 'تأكيد تم الدفع' : 'تأكيد تسجيل الدفعة',
                                 style: const TextStyle(
                                   fontFamily: 'Cairo',
-                                  color: Color(0xFF0A0B0B),
+                                  color: Colors.white,
                                   fontSize: 13,
                                   fontWeight: FontWeight.bold,
                                 ),

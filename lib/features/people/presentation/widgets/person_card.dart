@@ -27,8 +27,7 @@ class PersonCard extends StatelessWidget {
   static Color get surfaceBorder =>
       _isDark ? const Color(0xFF222229) : const Color(0xFFE5E7EB);
   static const Color brandBlue = Color(0xFF2563EB);
-  static Color get brandYellow =>
-      _isDark ? const Color(0xFFFFD600) : const Color(0xFFEAB308);
+
   static Color get textPrimary =>
       _isDark ? const Color(0xFFFFFFFF) : const Color(0xFF111827);
   static Color get textMuted =>
@@ -69,7 +68,7 @@ class PersonCard extends StatelessWidget {
         : null;
 
     final isHighlighted = person.isPinned || person.isUser;
-    final highlightColor = person.isUser ? brandBlue : brandYellow;
+    const highlightColor = brandBlue;
 
     return Container(
       decoration: BoxDecoration(
@@ -118,7 +117,7 @@ class PersonCard extends StatelessWidget {
                     child: Icon(
                       person.isUser ? Remix.user_star_line : Remix.user_3_line,
                       size: 20,
-                      color: person.isUser ? brandBlue : brandYellow,
+                      color: person.isUser ? brandBlue : textMuted,
                     ),
                   ),
                 ),
@@ -173,7 +172,7 @@ class PersonCard extends StatelessWidget {
                           if (person.isPinned) ...[
                             const SizedBox(width: 3),
                             Icon(Remix.pushpin_fill,
-                                size: 9.5, color: brandYellow),
+                                size: 9.5, color: textMuted),
                           ],
                         ],
                       ),
@@ -188,7 +187,7 @@ class PersonCard extends StatelessWidget {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Icon(Remix.cake_2_line,
-                                  size: 9.5, color: brandYellow),
+                                  size: 9.5, color: textMuted),
                               const SizedBox(width: 3),
                               Text(
                                 birthdayStr,
@@ -197,7 +196,7 @@ class PersonCard extends StatelessWidget {
                                   fontFamilyFallback: const ['Cairo', 'Heebo'],
                                   fontSize: 9.5,
                                   fontWeight: FontWeight.w600,
-                                  color: brandYellow,
+                                  color: textMuted,
                                 ),
                                 textDirection: TextDirection.ltr,
                               ),

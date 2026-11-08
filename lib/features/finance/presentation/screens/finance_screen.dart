@@ -1,3 +1,4 @@
+import 'package:sanad_app/core/theme/app_colors.dart';
 import 'package:sanad_app/core/widgets/banking_animations.dart';
 import 'package:flutter/material.dart';
 import 'package:remixicon/remixicon.dart';
@@ -39,9 +40,9 @@ class _FinanceScreenState extends State<FinanceScreen> {
   Color get surfaceMain => _isDark ? const Color(0xFF0A0A0C) : const Color(0xFFF8F9FA);
   Color get surfaceField => _isDark ? const Color(0xFF121215) : const Color(0xFFFFFFFF);
   Color get surfaceBorder => _isDark ? const Color(0xFF1E1E24) : const Color(0xFFE5E7EB);
-  static const Color brandGreen = Color(0xFF2563EB);
-  Color get brandYellow =>
-      const Color(0xFFFFD600);
+  static const Color brandBlue = Color(0xFF2563EB);
+  Color get brandYellow => AppColors.warningFor(_isDark);
+  Color get successColor => AppColors.successFor(_isDark);
   static const Color brandRed = Color(0xFFEF4444);
   Color get textWhite => _isDark ? const Color(0xFFFFFFFF) : const Color(0xFF111827);
   Color get textMuted => _isDark ? const Color(0xFF71717A) : const Color(0xFF6B7280);
@@ -129,7 +130,7 @@ class _FinanceScreenState extends State<FinanceScreen> {
           decoration: BoxDecoration(
             color: surfaceField,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: brandGreen, width: 1.0),
+            border: Border.all(color: brandBlue, width: 1.0),
             boxShadow: const [
               BoxShadow(
                 color: Color(0x66000000),
@@ -142,7 +143,7 @@ class _FinanceScreenState extends State<FinanceScreen> {
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Remix.checkbox_circle_line, color: brandYellow, size: 16),
+              Icon(Remix.checkbox_circle_line, color: successColor, size: 16),
               const SizedBox(width: 8),
               Flexible(
                 child: Text(
@@ -336,7 +337,7 @@ class _FinanceScreenState extends State<FinanceScreen> {
       case 'cash':
       case 'check':
       default:
-        return brandGreen;
+        return brandBlue;
     }
   }
 
@@ -346,9 +347,9 @@ class _FinanceScreenState extends State<FinanceScreen> {
       backgroundColor: surfaceMain,
       body: SafeArea(
         child: _isLoading
-            ? const Center(child: CircularProgressIndicator(color: brandGreen, strokeWidth: 2))
+            ? const Center(child: CircularProgressIndicator(color: brandBlue, strokeWidth: 2))
             : RefreshIndicator(
-                color: brandGreen,
+                color: brandBlue,
                 backgroundColor: surfaceMain,
                 onRefresh: _loadData,
                 child: ListView(
@@ -424,7 +425,7 @@ class _FinanceScreenState extends State<FinanceScreen> {
         children: [
           Row(
             children: [
-              const Icon(Remix.wallet_3_line, color: brandGreen, size: 22),
+              const Icon(Remix.wallet_3_line, color: brandBlue, size: 22),
               const SizedBox(width: 8),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -492,7 +493,7 @@ class _FinanceScreenState extends State<FinanceScreen> {
         ? Remix.check_line
         : (isPositive ? Remix.arrow_left_down_line : Remix.arrow_right_up_line);
 
-    final Color badgeColor = isBalanced ? brandGreen : (isPositive ? brandGreen : brandRed);
+    final Color badgeColor = isBalanced ? textMuted : (isPositive ? successColor : brandRed);
 
     return Container(
       decoration: BoxDecoration(
@@ -510,7 +511,7 @@ class _FinanceScreenState extends State<FinanceScreen> {
             children: [
               Row(
                 children: [
-                  Icon(Remix.scales_3_line, color: brandYellow, size: 16),
+                  Icon(Remix.scales_3_line, color: textMuted, size: 16),
                   const SizedBox(width: 6),
                   Text(
                     'صافي الحسابات:',
@@ -585,7 +586,7 @@ class _FinanceScreenState extends State<FinanceScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Remix.arrow_left_down_line, color: brandGreen, size: 14),
+                        Icon(Remix.arrow_left_down_line, color: brandBlue, size: 14),
                         SizedBox(width: 4),
                         Text(
                           'سلف لي',
@@ -687,7 +688,7 @@ class _FinanceScreenState extends State<FinanceScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Remix.checkbox_circle_line, color: brandYellow, size: 14),
+                        Icon(Remix.checkbox_circle_line, color: successColor, size: 14),
                         SizedBox(width: 4),
                         Text(
                           'مبالغ مستلمة',
@@ -765,7 +766,7 @@ class _FinanceScreenState extends State<FinanceScreen> {
                 icon: const Icon(Remix.add_line, size: 15),
                 label: const Text('تسجيل جديد'),
                 style: FilledButton.styleFrom(
-                  backgroundColor: brandGreen,
+                  backgroundColor: brandBlue,
                   foregroundColor: Colors.white,
                   minimumSize: const Size(0, 34),
                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -871,7 +872,7 @@ class _FinanceScreenState extends State<FinanceScreen> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Row(children: [
-              Icon(Remix.user_3_line, size: 19, color: brandYellow),
+              Icon(Remix.user_3_line, size: 19, color: textMuted),
               const SizedBox(width: 5),
               Expanded(child: Text(_peopleMap[personId]?.name ?? 'شخص غير مسجل',
                 maxLines: 1, overflow: TextOverflow.ellipsis,
@@ -892,7 +893,7 @@ class _FinanceScreenState extends State<FinanceScreen> {
                   }
                 }),
                 style: TextButton.styleFrom(
-                  foregroundColor: brandGreen,
+                  foregroundColor: brandBlue,
                   minimumSize: const Size(0, 28),
                   padding: const EdgeInsets.symmetric(vertical: 3),
                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -909,7 +910,7 @@ class _FinanceScreenState extends State<FinanceScreen> {
   Widget _buildHistoryEntry(DebtModel debt) {
     final isSettled = debt.isSettled;
     final statusColor = isSettled || debt.isReceived
-        ? brandGreen : (debt.isIOwe || debt.isPayLater ? brandRed : brandGreen);
+        ? successColor : (debt.isPayLater ? brandYellow : (debt.isIOwe ? brandRed : brandYellow));
     final status = debt.isReceived ? 'خالص ومسدد'
         : debt.isPayLater ? (isSettled ? 'تم الدفع' : 'للدفع لاحقاً')
         : isSettled ? 'تم السداد'
@@ -981,7 +982,7 @@ class _FinanceScreenState extends State<FinanceScreen> {
     final isReceived = debt.isReceived;
 
     String badgeText = 'إلي عنده';
-    Color badgeColor = brandGreen;
+    Color badgeColor = brandBlue;
     String amountPrefix = '';
     String subStatus = isSettled ? 'تم السداد بالكامل' : 'بانتظار السداد';
 
@@ -997,7 +998,7 @@ class _FinanceScreenState extends State<FinanceScreen> {
       subStatus = isSettled ? 'تم السداد بالكامل' : 'مستحق الدفع فوراً';
     } else if (isReceived) {
       badgeText = 'مبالغ مستلمة';
-      badgeColor = brandYellow;
+      badgeColor = successColor;
       amountPrefix = '+';
       subStatus = 'خالص ومسدد';
     }
@@ -1128,8 +1129,8 @@ class _FinanceScreenState extends State<FinanceScreen> {
                                 fontSize: 24,
                                 fontWeight: FontWeight.w900,
                                 color: isReceived
-                                    ? brandYellow
-                                    : (isSettled ? brandGreen : (isTheyOwe ? brandYellow : brandRed)),
+                                    ? successColor
+                                    : (isSettled ? successColor : (debt.isPayLater || isTheyOwe ? brandYellow : brandRed)),
                               ),
                             ),
                             Text(
@@ -1178,7 +1179,7 @@ class _FinanceScreenState extends State<FinanceScreen> {
                               Column(
                                 children: [
                                   Text('المسدد', style: TextStyle(fontFamily: 'Cairo', fontSize: 10, color: textMuted)),
-                                  Text('${_formatCurrency(debt.originalAmount - debt.remainingAmount)} ₪', style: TextStyle(fontFamily: 'Cairo', fontSize: 11, fontWeight: FontWeight.bold, color: brandGreen)),
+                                  Text('${_formatCurrency(debt.originalAmount - debt.remainingAmount)} ₪', style: TextStyle(fontFamily: 'Cairo', fontSize: 11, fontWeight: FontWeight.bold, color: successColor)),
                                 ],
                               ),
                               Column(
@@ -1208,7 +1209,7 @@ class _FinanceScreenState extends State<FinanceScreen> {
                         // التاريخ
                         Row(
                           children: [
-                            Icon(Remix.calendar_2_line, color: brandYellow, size: 14),
+                            Icon(Remix.calendar_2_line, color: textMuted, size: 14),
                             const SizedBox(width: 8),
                             Text(
                               'تاريخ المعاملة:',
