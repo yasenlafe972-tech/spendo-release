@@ -31,6 +31,7 @@ class _FinanceScreenState extends State<FinanceScreen> {
   List<DebtModel> _debts = [];
   Map<String, PersonModel> _peopleMap = {};
   bool _isLoading = true;
+  final Set<String> _expandedPeople = {};
   String _selectedFilter = 'all'; // 'all', 'they_owe', 'i_owe', 'received', 'settled', 'bit', 'cash', 'bank', 'check'
 
   bool get _isDark => Theme.of(context).brightness == Brightness.dark;
@@ -829,93 +830,130 @@ class _FinanceScreenState extends State<FinanceScreen> {
     );
   }
 
-  /// Two columns with natural card heights for larger text sizes.
+  /// Group by the saved person ID so separate contacts with the same name stay separate.
   Widget _buildDebtGrid() {
+    final sorted = List<DebtModel>.of(_filteredDebts)
+      ..sort((a, b) {
+        final dateOrder = b.transactionDate.compareTo(a.transactionDate);
+        return dateOrder != 0 ? dateOrder : b.createdAt.compareTo(a.createdAt);
+      });
+    final groups = <String, List<DebtModel>>{};
+    for (final debt in sorted) {
+      groups.putIfAbsent(debt.personId, () => []).add(debt);
+    }
     return LayoutBuilder(builder: (context, constraints) {
       final cardWidth = (constraints.maxWidth - 8) / 2;
       return Wrap(
         spacing: 8,
         runSpacing: 8,
-        children: _filteredDebts.map((debt) => SizedBox(
+        children: groups.entries.map((entry) => SizedBox(
           width: cardWidth,
-          child: _buildDebtCard(debt),
+          child: _buildPersonHistoryCard(entry.key, entry.value),
         )).toList(),
       );
     });
   }
 
-  Widget _buildDebtCard(DebtModel debt) {
-    final person = _peopleMap[debt.personId];
-    final isSettled = debt.isSettled;
-    final iconColor = debt.isPayLater || debt.isReceived
-        ? brandYellow : (debt.isIOwe ? brandRed : brandGreen);
-    final statusColor = isSettled || debt.isReceived
-        ? brandGreen : (debt.isIOwe || debt.isPayLater ? brandRed : brandGreen);
-    final status = debt.isReceived ? 'خالص ومسدد'
-        : debt.isPayLater ? (isSettled ? 'تم الدفع' : 'للدفع لاحقاً')
-        : isSettled ? 'تم السداد'
-        : debt.isIOwe ? 'مستحق الدفع' : 'بانتظار السداد';
-
+  Widget _buildPersonHistoryCard(String personId, List<DebtModel> debts) {
+    final expanded = _expandedPeople.contains(personId);
+    final visible = expanded ? debts : debts.take(3).toList();
     return Material(
+      key: ValueKey('finance-person-$personId'),
       color: surfaceField,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
         side: BorderSide(color: surfaceBorder),
       ),
       clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: () {
-          SpendoHaptics.light();
-          _showDebtDetailsDialog(debt);
-        },
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(8, 6, 8, 4),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Row(
-                children: [
-                  Icon(Remix.user_3_line, size: 19, color: iconColor),
-                  const SizedBox(width: 5),
-                  Expanded(
-                    child: Text(person?.name ?? 'شخص غير مسجل',
-                      maxLines: 1, overflow: TextOverflow.ellipsis,
-                      style: TextStyle(fontFamily: 'Cairo', color: textWhite,
-                          fontSize: 11.5, fontWeight: FontWeight.bold)),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 1),
-              Text(
-                ArabicDateHelper.formatArabicDateWithWeekdayFromString(debt.transactionDate),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(8, 7, 8, 4),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(children: [
+              Icon(Remix.user_3_line, size: 19, color: brandYellow),
+              const SizedBox(width: 5),
+              Expanded(child: Text(_peopleMap[personId]?.name ?? 'شخص غير مسجل',
                 maxLines: 1, overflow: TextOverflow.ellipsis,
+                style: TextStyle(fontFamily: 'Cairo', color: textWhite,
+                    fontSize: 11.5, fontWeight: FontWeight.bold))),
+            ]),
+            for (final debt in visible) ...[
+              Divider(height: 9, thickness: 0.6, color: surfaceBorder),
+              _buildHistoryEntry(debt),
+            ],
+            if (debts.length > 3)
+              TextButton(
+                onPressed: () => setState(() {
+                  if (expanded) {
+                    _expandedPeople.remove(personId);
+                  } else {
+                    _expandedPeople.add(personId);
+                  }
+                }),
+                style: TextButton.styleFrom(
+                  foregroundColor: brandGreen,
+                  minimumSize: const Size(0, 28),
+                  padding: const EdgeInsets.symmetric(vertical: 3),
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  textStyle: const TextStyle(fontFamily: 'Cairo', fontSize: 10),
+                ),
+                child: Text(expanded ? 'عرض أقل' : 'عرض باقي السجل (${debts.length - 3})'),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHistoryEntry(DebtModel debt) {
+    final isSettled = debt.isSettled;
+    final statusColor = isSettled || debt.isReceived
+        ? brandGreen : (debt.isIOwe || debt.isPayLater ? brandRed : brandGreen);
+    final status = debt.isReceived ? 'خالص ومسدد'
+        : debt.isPayLater ? (isSettled ? 'تم الدفع' : 'للدفع لاحقاً')
+        : isSettled ? 'تم السداد'
+        : debt.isIOwe ? 'مستحق الدفع' : 'بانتظار السداد';
+    final date = DateTime.tryParse(debt.transactionDate);
+    final dateLabel = date == null ? debt.transactionDate
+        : '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
+    return InkWell(
+      onTap: () => _showDebtDetailsDialog(debt),
+      borderRadius: BorderRadius.circular(6),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Wrap(
+            alignment: WrapAlignment.spaceBetween,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: 5,
+            children: [
+              Text(dateLabel, textDirection: TextDirection.ltr,
                 style: TextStyle(fontFamily: 'Cairo', color: textMuted,
-                    fontSize: 9, fontWeight: FontWeight.w500),
-              ),
-              const SizedBox(height: 1),
-              Wrap(
-                alignment: WrapAlignment.spaceBetween,
-                crossAxisAlignment: WrapCrossAlignment.center,
-                spacing: 2,
-                children: [
-                  Text(status, style: TextStyle(fontFamily: 'Cairo',
-                      color: statusColor, fontSize: 9, fontWeight: FontWeight.w700)),
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      _buildCardAction('واتساب', Remix.whatsapp_line,
-                          const Color(0xFF10B981), () => _shareDebtViaWhatsApp(debt)),
-                      _buildCardAction('تعديل', Remix.pencil_line,
-                          textMuted, () => _showEditDebtSheet(debt)),
-                      _buildCardAction('حذف', Remix.delete_bin_line,
-                          textMuted, () => _confirmDelete(debt)),
-                    ],
-                  ),
-                ],
-              ),
+                    fontSize: 9, fontWeight: FontWeight.w500)),
+              Text('${_formatCurrency(debt.originalAmount)} ₪',
+                style: TextStyle(fontFamily: 'Cairo', color: textWhite,
+                    fontSize: 11, fontWeight: FontWeight.bold)),
             ],
           ),
-        ),
+          Wrap(
+            alignment: WrapAlignment.spaceBetween,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: 2,
+            children: [
+              Text(status, style: TextStyle(fontFamily: 'Cairo',
+                  color: statusColor, fontSize: 9, fontWeight: FontWeight.w700)),
+              Row(mainAxisSize: MainAxisSize.min, children: [
+                _buildCardAction('واتساب', Remix.whatsapp_line,
+                    const Color(0xFF10B981), () => _shareDebtViaWhatsApp(debt)),
+                _buildCardAction('تعديل', Remix.pencil_line,
+                    textMuted, () => _showEditDebtSheet(debt)),
+                _buildCardAction('حذف', Remix.delete_bin_line,
+                    textMuted, () => _confirmDelete(debt)),
+              ]),
+            ],
+          ),
+        ],
       ),
     );
   }
