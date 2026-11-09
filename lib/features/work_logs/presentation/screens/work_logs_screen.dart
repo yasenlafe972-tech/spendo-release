@@ -93,6 +93,85 @@ class _WorkLogsScreenState extends State<WorkLogsScreen> {
     _loadData();
   }
 
+  Future<void> _openSideMenu() async {
+    SpendoHaptics.light();
+    await showGeneralDialog<void>(
+      context: context,
+      barrierDismissible: true,
+      barrierLabel: 'إغلاق القائمة الجانبية',
+      barrierColor: Colors.black.withValues(alpha: 0.52),
+      transitionDuration: const Duration(milliseconds: 220),
+      pageBuilder: (dialogContext, _, __) => SafeArea(
+        child: Align(
+          alignment: AlignmentDirectional.centerEnd,
+          child: Material(
+            color: surfaceMain,
+            elevation: 0,
+            child: SizedBox(
+              width: MediaQuery.of(dialogContext).size.width * 0.82 > 320
+                  ? 320
+                  : MediaQuery.of(dialogContext).size.width * 0.82,
+              height: double.infinity,
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  border: BorderDirectional(
+                    start: BorderSide(color: surfaceBorder),
+                  ),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(18, 18, 12, 14),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Text('القائمة',
+                              style: TextStyle(fontFamily: 'Cairo',
+                                color: textWhite, fontSize: 16,
+                                fontWeight: FontWeight.bold)),
+                          ),
+                          IconButton(
+                            tooltip: 'إغلاق',
+                            onPressed: () => Navigator.pop(dialogContext),
+                            icon: Icon(Remix.close_line, color: textMuted),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Divider(height: 1, color: surfaceBorder),
+                    ListTile(
+                      leading: Icon(Remix.settings_4_line, color: brandGreen),
+                      title: Text('الإعدادات',
+                        style: TextStyle(fontFamily: 'Cairo', color: textWhite,
+                          fontSize: 13, fontWeight: FontWeight.w600)),
+                      trailing: Icon(Remix.arrow_left_s_line, color: textMuted),
+                      onTap: () async {
+                        Navigator.pop(dialogContext);
+                        await Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const AppSettingsScreen(),
+                          ),
+                        );
+                        if (mounted) _loadData();
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+      transitionBuilder: (_, animation, __, child) => SlideTransition(
+        position: Tween<Offset>(
+          begin: const Offset(1, 0), end: Offset.zero,
+        ).animate(CurvedAnimation(parent: animation, curve: Curves.easeOutCubic)),
+        child: child,
+      ),
+    );
+  }
+
 Future<void> _openEmployerModal([WorkplaceModel? existing]) async {
     SpendoHaptics.light();
     final isEdit = existing != null;
@@ -980,25 +1059,11 @@ Future<void> _openEmployerModal([WorkplaceModel? existing]) async {
                       ],
                     ),
 
-                    // زر الإعدادات
-                    GestureDetector(
-                      onTap: () async {
-                        SpendoHaptics.light();
-                        await Navigator.of(context).push(
-                          MaterialPageRoute(
-                              builder: (_) => const AppSettingsScreen()),
-                        );
-                        _loadData();
-                      },
-                      behavior: HitTestBehavior.opaque,
-                      child: Padding(
-                        padding: const EdgeInsets.all(4),
-                        child: Icon(
-                          Remix.settings_4_line,
-                          color: textMuted,
-                          size: 18,
-                        ),
-                      ),
+                    IconButton(
+                      tooltip: 'فتح القائمة',
+                      onPressed: _openSideMenu,
+                      icon: Icon(Remix.menu_line, color: textMuted, size: 20),
+                      splashRadius: 22,
                     ),
                   ],
                 ),
