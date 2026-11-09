@@ -34,7 +34,11 @@ void main() async {
               children: [
                 const Row(
                   children: [
-                    Icon(Icons.error_outline, color: Color(0xFFEF4444), size: 22),
+                    Icon(
+                      Icons.error_outline,
+                      color: Color(0xFFEF4444),
+                      size: 22,
+                    ),
                     SizedBox(width: 8),
                     Text(
                       'تنبيه إقلاع Spendo',
@@ -53,7 +57,9 @@ void main() async {
                   decoration: BoxDecoration(
                     color: const Color(0xFF1C1F1E),
                     borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: const Color(0xFFEF4444).withValues(alpha: 0.4)),
+                    border: Border.all(
+                      color: const Color(0xFFEF4444).withValues(alpha: 0.4),
+                    ),
                   ),
                   child: SelectableText(
                     details.exceptionAsString(),
@@ -133,10 +139,7 @@ class SanadApp extends StatelessWidget {
       GlobalKey<NavigatorState>();
   final bool initialRouteIsLoggedIn;
 
-  const SanadApp({
-    super.key,
-    required this.initialRouteIsLoggedIn,
-  });
+  const SanadApp({super.key, required this.initialRouteIsLoggedIn});
 
   @override
   Widget build(BuildContext context) {
@@ -166,9 +169,10 @@ class SanadApp extends StatelessWidget {
                   ),
                 );
               },
-              home: initialRouteIsLoggedIn
-                  ? const MainNavigationScreen()
-                  : const AuthScreen(),
+              home:
+                  initialRouteIsLoggedIn
+                      ? const MainNavigationScreen()
+                      : const AuthScreen(),
             );
           },
         );
