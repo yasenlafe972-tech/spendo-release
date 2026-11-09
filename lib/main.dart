@@ -129,6 +129,8 @@ void main() async {
 }
 
 class SanadApp extends StatelessWidget {
+  static final GlobalKey<NavigatorState> _navigatorKey =
+      GlobalKey<NavigatorState>();
   final bool initialRouteIsLoggedIn;
 
   const SanadApp({
@@ -145,6 +147,7 @@ class SanadApp extends StatelessWidget {
           valueListenable: AppTheme.fontScaleNotifier,
           builder: (context, fontScale, _) {
             return MaterialApp(
+              navigatorKey: _navigatorKey,
               title: 'Spendo - سبيندو',
               debugShowCheckedModeBanner: false,
               theme: AppTheme.lightTheme,
