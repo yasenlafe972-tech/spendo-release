@@ -7,12 +7,28 @@ class SpendoDatePicker {
   SpendoDatePicker._();
 
   static const List<String> arabicMonths = [
-    'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
-    'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر',
+    'يناير',
+    'فبراير',
+    'مارس',
+    'أبريل',
+    'مايو',
+    'يونيو',
+    'يوليو',
+    'أغسطس',
+    'سبتمبر',
+    'أكتوبر',
+    'نوفمبر',
+    'ديسمبر',
   ];
 
   static const List<String> arabicWeekdays = [
-    'سبت', 'أحد', 'إثنين', 'ثلاثاء', 'أربعاء', 'خميس', 'جمعة',
+    'سبت',
+    'أحد',
+    'إثنين',
+    'ثلاثاء',
+    'أربعاء',
+    'خميس',
+    'جمعة',
   ];
 
   static Future<DateTime?> pickDate(
@@ -52,9 +68,10 @@ class SpendoDatePicker {
     final earliest = firstDate ?? DateTime(1930, 1, 1);
     final latest = lastDate ?? DateTime(today.year, today.month, today.day);
     final requested = initialDate ?? DateTime(today.year - 25, 1, 1);
-    final safeInitial = requested.isAfter(latest)
-        ? latest
-        : (requested.isBefore(earliest) ? earliest : requested);
+    final safeInitial =
+        requested.isAfter(latest)
+            ? latest
+            : (requested.isBefore(earliest) ? earliest : requested);
 
     return _showCalendar(
       context,
@@ -78,24 +95,26 @@ class SpendoDatePicker {
     required String cancelText,
     required String confirmText,
   }) {
-    final safeInitial = initialDate.isBefore(firstDate)
-        ? firstDate
-        : (initialDate.isAfter(lastDate) ? lastDate : initialDate);
+    final safeInitial =
+        initialDate.isBefore(firstDate)
+            ? firstDate
+            : (initialDate.isAfter(lastDate) ? lastDate : initialDate);
     return showModalBottomSheet<DateTime>(
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
       backgroundColor: Colors.transparent,
       barrierColor: Colors.black.withValues(alpha: 0.58),
-      builder: (context) => _SpendoCalendarSheet(
-        initialDate: safeInitial,
-        firstDate: firstDate,
-        lastDate: lastDate,
-        isBirthDate: isBirthDate,
-        helpText: helpText,
-        cancelText: cancelText,
-        confirmText: confirmText,
-      ),
+      builder:
+          (context) => _SpendoCalendarSheet(
+            initialDate: safeInitial,
+            firstDate: firstDate,
+            lastDate: lastDate,
+            isBirthDate: isBirthDate,
+            helpText: helpText,
+            cancelText: cancelText,
+            confirmText: confirmText,
+          ),
     );
   }
 }
@@ -132,11 +151,16 @@ class _SpendoCalendarSheetState extends State<_SpendoCalendarSheet> {
 
   bool get _isDark => Theme.of(context).brightness == Brightness.dark;
   Color get _background => _isDark ? const Color(0xFF101114) : Colors.white;
-  Color get _surface => _isDark ? const Color(0xFF18191D) : const Color(0xFFF5F6F7);
-  Color get _border => _isDark ? const Color(0xFF292B31) : const Color(0xFFE2E5E9);
-  Color get _primaryText => _isDark ? const Color(0xFFF4F4F5) : const Color(0xFF181A1F);
-  Color get _mutedText => _isDark ? const Color(0xFF9296A1) : const Color(0xFF747985);
-  Color get _quietText => _isDark ? const Color(0xFF5D626D) : const Color(0xFFADB2BB);
+  Color get _surface =>
+      _isDark ? const Color(0xFF18191D) : const Color(0xFFF5F6F7);
+  Color get _border =>
+      _isDark ? const Color(0xFF292B31) : const Color(0xFFE2E5E9);
+  Color get _primaryText =>
+      _isDark ? const Color(0xFFF4F4F5) : const Color(0xFF181A1F);
+  Color get _mutedText =>
+      _isDark ? const Color(0xFF9296A1) : const Color(0xFF747985);
+  Color get _quietText =>
+      _isDark ? const Color(0xFF5D626D) : const Color(0xFFADB2BB);
 
   @override
   void initState() {
@@ -145,7 +169,8 @@ class _SpendoCalendarSheetState extends State<_SpendoCalendarSheet> {
     _visibleMonth = DateTime(_selectedDate.year, _selectedDate.month);
   }
 
-  DateTime _dateOnly(DateTime date) => DateTime(date.year, date.month, date.day);
+  DateTime _dateOnly(DateTime date) =>
+      DateTime(date.year, date.month, date.day);
 
   bool _isAllowed(DateTime date) {
     final day = _dateOnly(date);
@@ -166,7 +191,11 @@ class _SpendoCalendarSheetState extends State<_SpendoCalendarSheet> {
   }
 
   bool _canMoveMonth(int delta) {
-    final candidate = DateTime(_visibleMonth.year, _visibleMonth.month + delta, 1);
+    final candidate = DateTime(
+      _visibleMonth.year,
+      _visibleMonth.month + delta,
+      1,
+    );
     return _monthIsAllowed(candidate.year, candidate.month);
   }
 
@@ -174,7 +203,11 @@ class _SpendoCalendarSheetState extends State<_SpendoCalendarSheet> {
     if (!_canMoveMonth(delta)) return;
     SpendoHaptics.selection();
     setState(() {
-      _visibleMonth = DateTime(_visibleMonth.year, _visibleMonth.month + delta, 1);
+      _visibleMonth = DateTime(
+        _visibleMonth.year,
+        _visibleMonth.month + delta,
+        1,
+      );
     });
   }
 
@@ -191,43 +224,44 @@ class _SpendoCalendarSheetState extends State<_SpendoCalendarSheet> {
     final picked = await showModalBottomSheet<int>(
       context: context,
       backgroundColor: Colors.transparent,
-      builder: (sheetContext) => Directionality(
-        textDirection: TextDirection.rtl,
-        child: _ChoiceSheet(
-          title: 'اختيار الشهر',
-          background: _background,
-          surface: _surface,
-          border: _border,
-          primaryText: _primaryText,
-          mutedText: _mutedText,
-          child: GridView.builder(
-            shrinkWrap: true,
-            itemCount: 12,
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 3,
-              mainAxisExtent: 46,
-              mainAxisSpacing: 8,
-              crossAxisSpacing: 8,
+      builder:
+          (sheetContext) => Directionality(
+            textDirection: TextDirection.rtl,
+            child: _ChoiceSheet(
+              title: 'اختيار الشهر',
+              background: _background,
+              surface: _surface,
+              border: _border,
+              primaryText: _primaryText,
+              mutedText: _mutedText,
+              child: GridView.builder(
+                shrinkWrap: true,
+                itemCount: 12,
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 3,
+                  mainAxisExtent: 46,
+                  mainAxisSpacing: 8,
+                  crossAxisSpacing: 8,
+                ),
+                itemBuilder: (context, index) {
+                  final month = index + 1;
+                  final enabled = _monthIsAllowed(_visibleMonth.year, month);
+                  final selected = month == _visibleMonth.month;
+                  return _ChoiceTile(
+                    label: SpendoDatePicker.arabicMonths[index],
+                    enabled: enabled,
+                    selected: selected,
+                    teal: _teal,
+                    surface: _surface,
+                    border: _border,
+                    primaryText: _primaryText,
+                    quietText: _quietText,
+                    onTap: () => Navigator.pop(sheetContext, month),
+                  );
+                },
+              ),
             ),
-            itemBuilder: (context, index) {
-              final month = index + 1;
-              final enabled = _monthIsAllowed(_visibleMonth.year, month);
-              final selected = month == _visibleMonth.month;
-              return _ChoiceTile(
-                label: SpendoDatePicker.arabicMonths[index],
-                enabled: enabled,
-                selected: selected,
-                teal: _teal,
-                surface: _surface,
-                border: _border,
-                primaryText: _primaryText,
-                quietText: _quietText,
-                onTap: () => Navigator.pop(sheetContext, month),
-              );
-            },
           ),
-        ),
-      ),
     );
 
     if (!mounted || picked == null) return;
@@ -246,45 +280,46 @@ class _SpendoCalendarSheetState extends State<_SpendoCalendarSheet> {
     int? picked;
     try {
       picked = await showModalBottomSheet<int>(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (sheetContext) => Directionality(
-        textDirection: TextDirection.rtl,
-        child: _ChoiceSheet(
-          title: 'اختيار السنة',
-          background: _background,
-          surface: _surface,
-          border: _border,
-          primaryText: _primaryText,
-          mutedText: _mutedText,
-          child: GridView.builder(
-            controller: yearScrollController,
-            shrinkWrap: true,
-            itemCount: yearCount,
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 4,
-              mainAxisExtent: 46,
-              mainAxisSpacing: 8,
-              crossAxisSpacing: 8,
-            ),
-            itemBuilder: (context, index) {
-              final year = widget.lastDate.year - index;
-              final selected = year == _visibleMonth.year;
-              return _ChoiceTile(
-                label: year.toString(),
-                enabled: true,
-                selected: selected,
-                teal: _teal,
+        context: context,
+        backgroundColor: Colors.transparent,
+        builder:
+            (sheetContext) => Directionality(
+              textDirection: TextDirection.rtl,
+              child: _ChoiceSheet(
+                title: 'اختيار السنة',
+                background: _background,
                 surface: _surface,
                 border: _border,
                 primaryText: _primaryText,
-                quietText: _quietText,
-                onTap: () => Navigator.pop(sheetContext, year),
-              );
-            },
-          ),
-        ),
-      ),
+                mutedText: _mutedText,
+                child: GridView.builder(
+                  controller: yearScrollController,
+                  shrinkWrap: true,
+                  itemCount: yearCount,
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 4,
+                    mainAxisExtent: 46,
+                    mainAxisSpacing: 8,
+                    crossAxisSpacing: 8,
+                  ),
+                  itemBuilder: (context, index) {
+                    final year = widget.lastDate.year - index;
+                    final selected = year == _visibleMonth.year;
+                    return _ChoiceTile(
+                      label: year.toString(),
+                      enabled: true,
+                      selected: selected,
+                      teal: _teal,
+                      surface: _surface,
+                      border: _border,
+                      primaryText: _primaryText,
+                      quietText: _quietText,
+                      onTap: () => Navigator.pop(sheetContext, year),
+                    );
+                  },
+                ),
+              ),
+            ),
       );
     } finally {
       yearScrollController.dispose();
@@ -295,8 +330,10 @@ class _SpendoCalendarSheetState extends State<_SpendoCalendarSheet> {
     SpendoHaptics.light();
     var month = _visibleMonth.month;
     if (!_monthIsAllowed(selectedYear, month)) {
-      month = List<int>.generate(12, (index) => index + 1)
-          .firstWhere((candidate) => _monthIsAllowed(selectedYear, candidate));
+      month = List<int>.generate(
+        12,
+        (index) => index + 1,
+      ).firstWhere((candidate) => _monthIsAllowed(selectedYear, candidate));
     }
     setState(() {
       _visibleMonth = DateTime(selectedYear, month, 1);
@@ -314,7 +351,15 @@ class _SpendoCalendarSheetState extends State<_SpendoCalendarSheet> {
   }
 
   String _weekdayName(DateTime date) {
-    const names = ['السبت', 'الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة'];
+    const names = [
+      'السبت',
+      'الأحد',
+      'الإثنين',
+      'الثلاثاء',
+      'الأربعاء',
+      'الخميس',
+      'الجمعة',
+    ];
     return names[_saturdayFirstWeekday(date)];
   }
 
@@ -411,7 +456,11 @@ class _SpendoCalendarSheetState extends State<_SpendoCalendarSheet> {
               ),
               Text(
                 'اختر السنة والشهر ثم اضغط اليوم',
-                style: TextStyle(fontFamily: 'Cairo', fontSize: 10.5, color: _mutedText),
+                style: TextStyle(
+                  fontFamily: 'Cairo',
+                  fontSize: 10.5,
+                  color: _mutedText,
+                ),
               ),
             ],
           ),
@@ -434,7 +483,8 @@ class _SpendoCalendarSheetState extends State<_SpendoCalendarSheet> {
 
   Widget _buildSelectedDate() {
     final monthName = SpendoDatePicker.arabicMonths[_selectedDate.month - 1];
-    final dateText = '${_weekdayName(_selectedDate)}، ${_selectedDate.day} $monthName ${_selectedDate.year}';
+    final dateText =
+        '${_weekdayName(_selectedDate)}، ${_selectedDate.day} $monthName ${_selectedDate.year}';
 
     return Container(
       width: double.infinity,
@@ -626,21 +676,22 @@ class _SpendoCalendarSheetState extends State<_SpendoCalendarSheet> {
 
   Widget _buildWeekdayLabels() {
     return Row(
-      children: SpendoDatePicker.arabicWeekdays.map((label) {
-        return Expanded(
-          child: Center(
-            child: Text(
-              label,
-              style: TextStyle(
-                fontFamily: 'Cairo',
-                fontSize: 10,
-                fontWeight: FontWeight.bold,
-                color: _mutedText,
+      children:
+          SpendoDatePicker.arabicWeekdays.map((label) {
+            return Expanded(
+              child: Center(
+                child: Text(
+                  label,
+                  style: TextStyle(
+                    fontFamily: 'Cairo',
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                    color: _mutedText,
+                  ),
+                ),
               ),
-            ),
-          ),
-        );
-      }).toList(),
+            );
+          }).toList(),
     );
   }
 
@@ -665,12 +716,16 @@ class _SpendoCalendarSheetState extends State<_SpendoCalendarSheet> {
         final selected = DateUtils.isSameDay(date, _selectedDate);
         final today = DateUtils.isSameDay(date, DateTime.now());
         final allowed = _isAllowed(date);
-        final color = selected ? Colors.white : (allowed ? _primaryText : _quietText);
+        final color =
+            selected ? Colors.white : (allowed ? _primaryText : _quietText);
 
         return Material(
-          color: selected
-              ? _teal
-              : (today ? _gold.withValues(alpha: 0.12) : Colors.transparent),
+          color:
+              selected
+                  ? _teal
+                  : (today
+                      ? _gold.withValues(alpha: 0.12)
+                      : Colors.transparent),
           borderRadius: BorderRadius.circular(11),
           child: InkWell(
             onTap: allowed ? () => _chooseDay(date) : null,
@@ -679,15 +734,22 @@ class _SpendoCalendarSheetState extends State<_SpendoCalendarSheet> {
               alignment: Alignment.center,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(11),
-                border: today && !selected ? Border.all(color: _gold, width: 1) : null,
+                border:
+                    today && !selected
+                        ? Border.all(color: _gold, width: 1)
+                        : null,
               ),
               child: Text(
                 date.day.toString(),
                 style: TextStyle(
                   fontFamily: 'PlusJakartaSans',
                   fontSize: 12.5,
-                  fontWeight: selected || today ? FontWeight.w800 : FontWeight.w600,
-                  color: inCurrentMonth ? color : (allowed ? _mutedText : _quietText),
+                  fontWeight:
+                      selected || today ? FontWeight.w800 : FontWeight.w600,
+                  color:
+                      inCurrentMonth
+                          ? color
+                          : (allowed ? _mutedText : _quietText),
                 ),
               ),
             ),
@@ -707,11 +769,16 @@ class _SpendoCalendarSheetState extends State<_SpendoCalendarSheet> {
               foregroundColor: _mutedText,
               side: BorderSide(color: _border),
               minimumSize: const Size.fromHeight(48),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+              ),
             ),
             child: Text(
               widget.cancelText,
-              style: const TextStyle(fontFamily: 'Cairo', fontWeight: FontWeight.w700),
+              style: const TextStyle(
+                fontFamily: 'Cairo',
+                fontWeight: FontWeight.w700,
+              ),
             ),
           ),
         ),
@@ -727,13 +794,18 @@ class _SpendoCalendarSheetState extends State<_SpendoCalendarSheet> {
               backgroundColor: _teal,
               foregroundColor: Colors.white,
               minimumSize: const Size.fromHeight(48),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+              ),
               elevation: 0,
             ),
             icon: const Icon(Remix.check_line, size: 18),
             label: Text(
               widget.confirmText,
-              style: const TextStyle(fontFamily: 'Cairo', fontWeight: FontWeight.w800),
+              style: const TextStyle(
+                fontFamily: 'Cairo',
+                fontWeight: FontWeight.w800,
+              ),
             ),
           ),
         ),
@@ -766,7 +838,9 @@ class _ChoiceSheet extends StatelessWidget {
     return SafeArea(
       top: false,
       child: Container(
-        constraints: BoxConstraints(maxHeight: MediaQuery.sizeOf(context).height * 0.62),
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.sizeOf(context).height * 0.62,
+        ),
         padding: const EdgeInsets.fromLTRB(18, 18, 18, 14),
         decoration: BoxDecoration(
           color: background,
