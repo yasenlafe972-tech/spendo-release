@@ -936,10 +936,7 @@ class _EmployerDetailsScreenState extends State<EmployerDetailsScreen> {
                             ),
                           ),
                           onPressed: () => Navigator.pop(ctx),
-                          child: const Text(
-                            'إلغاء',
-                            style: TextStyle(fontSize: 12),
-                          ),
+                          child: Text('إلغاء', style: TextStyle(fontSize: 12)),
                         ),
                       ],
                     ),
@@ -1980,7 +1977,7 @@ class _EmployerDetailsScreenState extends State<EmployerDetailsScreen> {
                               ),
                             ),
                             onPressed: () => Navigator.pop(ctx),
-                            child: const Text(
+                            child: Text(
                               'إغلاق',
                               style: TextStyle(fontSize: 11.5),
                             ),
@@ -2396,7 +2393,7 @@ class _EmployerDetailsScreenState extends State<EmployerDetailsScreen> {
                                               width: 0.8,
                                             ),
                                           ),
-                                          child: const Text(
+                                          child: Text(
                                             'מעסיק',
                                             style: TextStyle(
                                               color:
