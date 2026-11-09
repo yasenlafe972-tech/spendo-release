@@ -1812,10 +1812,8 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                   InkWell(
                     onTap: () {
                       SpendoHaptics.selection();
-                      AppTheme.setFontScale((scale - 0.04).clamp(0.80, 1.25));
-                      _backupService.scheduleAutoBackup(
-                        debounce: const Duration(seconds: 1),
-                      );
+                      AppTheme.fontScaleNotifier.value = (scale - 0.04).clamp(0.80, 1.25);
+                      _hasUnsavedChanges = true;
                     },
                     borderRadius: BorderRadius.circular(6),
                     child: Container(
@@ -1855,13 +1853,11 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                         max: 1.25,
                         divisions: 18,
                         onChanged: (val) {
-                          AppTheme.setFontScale(val);
+                          AppTheme.fontScaleNotifier.value = val;
+                          _hasUnsavedChanges = true;
                         },
                         onChangeEnd: (_) {
                           SpendoHaptics.light();
-                          _backupService.scheduleAutoBackup(
-                            debounce: const Duration(seconds: 1),
-                          );
                         },
                       ),
                     ),
@@ -1869,10 +1865,8 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                   InkWell(
                     onTap: () {
                       SpendoHaptics.selection();
-                      AppTheme.setFontScale((scale + 0.04).clamp(0.80, 1.25));
-                      _backupService.scheduleAutoBackup(
-                        debounce: const Duration(seconds: 1),
-                      );
+                      AppTheme.fontScaleNotifier.value = (scale + 0.04).clamp(0.80, 1.25);
+                      _hasUnsavedChanges = true;
                     },
                     borderRadius: BorderRadius.circular(6),
                     child: Container(
@@ -1908,10 +1902,8 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                           child: InkWell(
                             onTap: () {
                               SpendoHaptics.selection();
-                              AppTheme.setFontScale(val);
-                              _backupService.scheduleAutoBackup(
-                                debounce: const Duration(seconds: 1),
-                              );
+                              AppTheme.fontScaleNotifier.value = val;
+                          _hasUnsavedChanges = true;
                             },
                             borderRadius: BorderRadius.circular(7),
                             child: Container(
@@ -2010,7 +2002,8 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                     isSelected: currentMode == ThemeMode.dark,
                     onTap: () {
                       SpendoHaptics.selection();
-                      AppTheme.setThemeMode(ThemeMode.dark);
+                      AppTheme.themeModeNotifier.value = ThemeMode.dark;
+                      _hasUnsavedChanges = true;
                     },
                   ),
                   const SizedBox(width: 4),
@@ -2020,7 +2013,8 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                     isSelected: currentMode == ThemeMode.light,
                     onTap: () {
                       SpendoHaptics.selection();
-                      AppTheme.setThemeMode(ThemeMode.light);
+                      AppTheme.themeModeNotifier.value = ThemeMode.light;
+                      _hasUnsavedChanges = true;
                     },
                   ),
                   const SizedBox(width: 4),
@@ -2030,7 +2024,8 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                     isSelected: currentMode == ThemeMode.system,
                     onTap: () {
                       SpendoHaptics.selection();
-                      AppTheme.setThemeMode(ThemeMode.system);
+                      AppTheme.themeModeNotifier.value = ThemeMode.system;
+                      _hasUnsavedChanges = true;
                     },
                   ),
                 ],
