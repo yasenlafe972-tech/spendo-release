@@ -1,6 +1,7 @@
 import 'package:sanad_app/core/theme/app_colors.dart';
 import 'package:sanad_app/core/widgets/banking_animations.dart';
 import 'package:flutter/material.dart';
+import '../../../../core/widgets/spendo_app_menu.dart';
 import 'package:remixicon/remixicon.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -8,7 +9,6 @@ import '../../../../core/utils/arabic_date_helper.dart';
 import '../../../../core/utils/spendo_haptic_feedback.dart';
 import '../../../people/models/person_model.dart';
 import '../../../people/repositories/people_repository.dart';
-import '../../../settings/presentation/screens/app_settings_screen.dart';
 import '../../models/debt_model.dart';
 import '../../repositories/finance_repository.dart';
 import '../widgets/add_debt_sheet.dart';
