@@ -239,7 +239,13 @@ class _SpendoCalendarSheetState extends State<_SpendoCalendarSheet> {
 
   Future<void> _chooseYear() async {
     final yearCount = widget.lastDate.year - widget.firstDate.year + 1;
-    final picked = await showModalBottomSheet<int>(
+    final selectedRow = (widget.lastDate.year - _visibleMonth.year) ~/ 4;
+    final yearScrollController = ScrollController(
+      initialScrollOffset: (selectedRow * 54).toDouble(),
+    );
+    int? picked;
+    try {
+      picked = await showModalBottomSheet<int>(
       context: context,
       backgroundColor: Colors.transparent,
       builder: (sheetContext) => Directionality(
@@ -252,6 +258,7 @@ class _SpendoCalendarSheetState extends State<_SpendoCalendarSheet> {
           primaryText: _primaryText,
           mutedText: _mutedText,
           child: GridView.builder(
+            controller: yearScrollController,
             shrinkWrap: true,
             itemCount: yearCount,
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -278,7 +285,10 @@ class _SpendoCalendarSheetState extends State<_SpendoCalendarSheet> {
           ),
         ),
       ),
-    );
+      );
+    } finally {
+      yearScrollController.dispose();
+    }
 
     if (!mounted || picked == null) return;
     SpendoHaptics.light();
