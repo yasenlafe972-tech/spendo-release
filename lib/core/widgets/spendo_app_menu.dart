@@ -47,7 +47,6 @@ class SpendoAppMenu {
     SpendoHaptics.light();
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final background = isDark ? AppColors.background : const Color(0xFFF8F9FA);
-    final surface = isDark ? AppColors.surface : Colors.white;
     final border =
         isDark ? AppColors.surfaceCardBorder : const Color(0xFFE5E7EB);
     final foreground = isDark ? Colors.white : const Color(0xFF111827);
