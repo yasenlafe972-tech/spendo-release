@@ -6,6 +6,7 @@ import 'package:remixicon/remixicon.dart';
 import '../../../../core/utils/spendo_haptic_feedback.dart';
 import '../../../../core/services/firebase_backup_service.dart';
 import '../../../../core/widgets/banking_animations.dart';
+import '../../../../core/widgets/spendo_app_menu.dart';
 import 'home_screen.dart';
 import '../../../people/presentation/screens/people_screen.dart';
 import '../../../work_logs/presentation/screens/work_logs_screen.dart';
@@ -22,6 +23,7 @@ class MainNavigationScreen extends StatefulWidget {
 
 class _MainNavigationScreenState extends State<MainNavigationScreen>
     with WidgetsBindingObserver, SingleTickerProviderStateMixin {
+  final _menuKey = GlobalKey<SpendoMenuHostState>();
   int _currentIndex = 0;
   int _previousIndex = 0;
   late final AnimationController _tabAnimController;
@@ -70,6 +72,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen>
   }
 
   void _switchToTab(int newIndex) {
+    _menuKey.currentState?.close();
     if (newIndex == _currentIndex ||
         newIndex < 0 ||
         newIndex >= _screens.length) {
@@ -227,7 +230,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      body: _buildAnimatedTabBody(),
+      body: SpendoMenuHost(key: _menuKey, child: _buildAnimatedTabBody()),
       bottomNavigationBar: SafeArea(
         top: false,
         child: Builder(builder: (context) {

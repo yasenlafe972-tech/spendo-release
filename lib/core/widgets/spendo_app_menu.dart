@@ -65,6 +65,7 @@ class SpendoMenuHostState extends State<SpendoMenuHost>
   Completer<void>? _completion;
   Future<void> Function()? _onSettingsClosed;
   bool _isOpen = false;
+  bool _disposing = false;
 
   @override
   void initState() {
@@ -99,7 +100,7 @@ class SpendoMenuHostState extends State<SpendoMenuHost>
 
   void _finishClose() {
     _history = null;
-    if (!mounted) return;
+    if (!mounted || _disposing) return;
     setState(() => _isOpen = false);
     _animation.reverse();
     if (_completion?.isCompleted == false) _completion!.complete();
@@ -116,6 +117,7 @@ class SpendoMenuHostState extends State<SpendoMenuHost>
 
   @override
   void dispose() {
+    _disposing = true;
     _history?.remove();
     if (_completion?.isCompleted == false) _completion!.complete();
     _animation.dispose();
