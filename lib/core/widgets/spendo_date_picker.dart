@@ -290,15 +290,16 @@ class _SpendoCalendarSheetState extends State<_SpendoCalendarSheet> {
       yearScrollController.dispose();
     }
 
-    if (!mounted || picked == null) return;
+    final selectedYear = picked;
+    if (!mounted || selectedYear == null) return;
     SpendoHaptics.light();
     var month = _visibleMonth.month;
-    if (!_monthIsAllowed(picked, month)) {
+    if (!_monthIsAllowed(selectedYear, month)) {
       month = List<int>.generate(12, (index) => index + 1)
-          .firstWhere((candidate) => _monthIsAllowed(picked, candidate));
+          .firstWhere((candidate) => _monthIsAllowed(selectedYear, candidate));
     }
     setState(() {
-      _visibleMonth = DateTime(picked, month, 1);
+      _visibleMonth = DateTime(selectedYear, month, 1);
     });
   }
 
