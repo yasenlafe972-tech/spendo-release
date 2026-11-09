@@ -423,7 +423,14 @@ class _SpendoCalendarSheetState extends State<_SpendoCalendarSheet> {
 
   Widget _buildSelectedDate() {
     final monthName = SpendoDatePicker.arabicMonths[_selectedDate.month - 1];
-    final dateText = '،   ';
+    // ignore: prefer_interpolation_to_compose_strings
+    final dateText = _weekdayName(_selectedDate) +
+        '، ' +
+        _selectedDate.day.toString() +
+        ' ' +
+        monthName +
+        ' ' +
+        _selectedDate.year.toString();
 
     return Container(
       width: double.infinity,
@@ -468,8 +475,13 @@ class _SpendoCalendarSheetState extends State<_SpendoCalendarSheet> {
                   ),
                 ),
                 const SizedBox(height: 2),
+                // ignore: prefer_interpolation_to_compose_strings
                 Text(
-                  '//',
+                  _selectedDate.day.toString().padLeft(2, '0') +
+                      '/' +
+                      _selectedDate.month.toString().padLeft(2, '0') +
+                      '/' +
+                      _selectedDate.year.toString(),
                   style: const TextStyle(
                     fontFamily: 'PlusJakartaSans',
                     fontSize: 11,
@@ -489,7 +501,7 @@ class _SpendoCalendarSheetState extends State<_SpendoCalendarSheet> {
                 border: Border.all(color: _gold.withValues(alpha: 0.5)),
               ),
               child: Text(
-                ' سنة',
+                _ageFor(_selectedDate).toString() + ' سنة',
                 style: const TextStyle(
                   fontFamily: 'Cairo',
                   color: _gold,
