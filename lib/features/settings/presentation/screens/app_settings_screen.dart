@@ -62,6 +62,8 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
   bool _showTimeSelector = false;
   ThemeMode _savedThemeMode = AppTheme.themeModeNotifier.value;
   double _savedFontScale = AppTheme.fontScaleNotifier.value;
+  bool _savedReminderEnabled = true;
+  TimeOfDay _savedReminderTime = const TimeOfDay(hour: 17, minute: 0);
   bool _hasUnsavedChanges = false;
 
   @override
@@ -135,6 +137,8 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
         }
         _dailyReminderEnabled = reminder;
         _reminderTime = parsedTime;
+        _savedReminderEnabled = reminder;
+        _savedReminderTime = parsedTime;
         _isLoading = false;
       });
     } catch (e) {
@@ -212,6 +216,8 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
       await AppTheme.setThemeMode(AppTheme.themeModeNotifier.value);
       _savedFontScale = AppTheme.fontScaleNotifier.value;
       _savedThemeMode = AppTheme.themeModeNotifier.value;
+      _savedReminderEnabled = _dailyReminderEnabled;
+      _savedReminderTime = _reminderTime;
       _hasUnsavedChanges = false;
 
       await _settingsService.setDailyReminderEnabled(_dailyReminderEnabled);
