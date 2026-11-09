@@ -163,7 +163,7 @@ class _SpendoDatePickerSheetState extends State<_SpendoDatePickerSheet> {
 
   Color get brandYellow =>
       const Color(0xFFFFD600);
-  static const Color $10xFF0F766E);
+  static const Color brandGreen = Color(0xFF0F766E);
 
   bool get _isDark => Theme.of(context).brightness == Brightness.dark;
   Color get surfaceMain =>

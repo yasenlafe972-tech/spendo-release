@@ -91,7 +91,7 @@ class _PersonAccountsModalSheetState extends State<PersonAccountsModalSheet> {
   static Color get surfaceMain => _isDark ? const Color(0xFF121417) : const Color(0xFFFFFFFF);
   static Color get surfaceCell => _isDark ? const Color(0xFF16191E) : const Color(0xFFF9FAFB);
   static Color get surfaceBorder => _isDark ? const Color(0xFF22262E) : const Color(0xFFE5E7EB);
-  static const Color $10xFF0F766E);
+  static const Color brandGreen = Color(0xFF0F766E);
   static Color get brandYellow =>
       const Color(0xFFFFD600);
   static Color get textWhite => _isDark ? Colors.white : const Color(0xFF111827);
@@ -915,7 +915,7 @@ class _AddEditAccountSheetState extends State<_AddEditAccountSheet> {
   static Color get surfaceMain => _isDark ? const Color(0xFF121417) : const Color(0xFFFFFFFF);
   static Color get surfaceCell => _isDark ? const Color(0xFF16191E) : const Color(0xFFF9FAFB);
   static Color get surfaceBorder => _isDark ? const Color(0xFF22262E) : const Color(0xFFE5E7EB);
-  static const Color $10xFF0F766E);
+  static const Color brandGreen = Color(0xFF0F766E);
   static Color get brandYellow =>
       const Color(0xFFFFD600);
   static Color get textWhite => _isDark ? Colors.white : const Color(0xFF111827);

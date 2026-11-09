@@ -51,7 +51,7 @@ class _AddDebtSheetState extends State<AddDebtSheet> {
   static Color get surfaceMain => _isDark ? const Color(0xFF121413) : const Color(0xFFFFFFFF);
   static Color get surfaceField => _isDark ? const Color(0xFF171A19) : const Color(0xFFF9FAFB);
   static Color get surfaceBorder => _isDark ? const Color(0xFF242927) : const Color(0xFFE5E7EB);
-  static const Color $10xFF0F766E);
+  static const Color brandBlue = Color(0xFF0F766E);
   static Color get brandYellow => AppColors.warningFor(_isDark);
   static Color get successColor => AppColors.successFor(_isDark);
   static const Color brandRed = Color(0xFFEF4444);
