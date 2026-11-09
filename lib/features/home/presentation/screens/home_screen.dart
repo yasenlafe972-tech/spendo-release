@@ -617,19 +617,15 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             const SizedBox(width: 6),
             IconButton(
-              icon: Icon(Remix.settings_4_line,
+              icon: Icon(Remix.menu_line,
                   color: textWhite, size: 18),
-              tooltip: 'الإعدادات',
+              tooltip: 'فتح القائمة',
               visualDensity: VisualDensity.compact,
               padding: EdgeInsets.zero,
               constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
-              onPressed: () async {
-                SpendoHaptics.light();
-                await Navigator.of(context).push(
-                  MaterialPageRoute(builder: (_) => const AppSettingsScreen()),
-                );
-                _loadData();
-              },
+              onPressed: () => SpendoAppMenu.open(context, onSettingsClosed: () async {
+                if (mounted) await _loadData();
+              }),
             ),
           ],
         ),

@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import '../../../../core/widgets/spendo_app_menu.dart';
 import 'package:flutter/services.dart';
 import 'package:remixicon/remixicon.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -20,7 +21,6 @@ import '../../../../core/widgets/spendo_date_picker.dart';
 import '../../models/vehicle_model.dart';
 import '../widgets/fuel_expense_sheet.dart';
 import '../widgets/multi_fuel_import_sheet.dart';
-import '../../../settings/presentation/screens/app_settings_screen.dart';
 
 class VehicleTrackerScreen extends StatefulWidget {
   const VehicleTrackerScreen({super.key});
@@ -325,20 +325,14 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
               ),
               const SizedBox(width: 4),
               InkWell(
-                onTap: () async {
-                  SpendoHaptics.light();
-                  await Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => const AppSettingsScreen(),
-                    ),
-                  );
-                  _loadState();
-                },
+                onTap: () => SpendoAppMenu.open(context, onSettingsClosed: () async {
+                  if (mounted) await _loadState();
+                }),
                 borderRadius: BorderRadius.circular(6),
                 child: const Padding(
                   padding: EdgeInsets.all(6.0),
                   child: Icon(
-                    Remix.settings_4_line,
+                    Remix.menu_line,
                     color: Color(0xFF9CA3AF),
                     size: 18,
                   ),

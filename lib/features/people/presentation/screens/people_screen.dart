@@ -1214,19 +1214,14 @@ class _PeopleScreenState extends State<PeopleScreen> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         IconButton(
-                          icon: Icon(Icons.settings_outlined,
+                          icon: Icon(Remix.menu_line,
                               color: textMuted, size: 20),
-                          tooltip: 'الإعدادات',
+                          tooltip: 'فتح القائمة',
                           padding: EdgeInsets.zero,
                           constraints: const BoxConstraints(),
-                          onPressed: () async {
-                            SpendoHaptics.light();
-                            await Navigator.of(context).push(
-                              MaterialPageRoute(
-                                  builder: (_) => const AppSettingsScreen()),
-                            );
-                            _loadPeople();
-                          },
+                          onPressed: () => SpendoAppMenu.open(context, onSettingsClosed: () async {
+                            if (mounted) await _loadPeople();
+                          }),
                         ),
                         const SizedBox(width: 10),
                         Material(

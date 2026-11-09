@@ -456,17 +456,13 @@ class _FinanceScreenState extends State<FinanceScreen> {
           Row(
             children: [
               InkWell(
-                onTap: () async {
-                  SpendoHaptics.light();
-                  await Navigator.of(context).push(
-                    MaterialPageRoute(builder: (_) => const AppSettingsScreen()),
-                  );
-                  _loadData();
-                },
+                onTap: () => SpendoAppMenu.open(context, onSettingsClosed: () async {
+                  if (mounted) await _loadData();
+                }),
                 borderRadius: BorderRadius.circular(6),
                 child: const Padding(
                   padding: EdgeInsets.all(6),
-                  child: Icon(Remix.settings_4_line, color: Color(0xFF9CA3AF), size: 19),
+                  child: Icon(Remix.menu_line, color: Color(0xFF9CA3AF), size: 19),
                 ),
               ),
             ],
