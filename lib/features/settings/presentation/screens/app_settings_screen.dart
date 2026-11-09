@@ -3132,9 +3132,9 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                               // ================= Section 4: أزرار الحفظ وتسجيل الخروج =================
                               Row(
                                 children: [
-                                  // Save Button (Flex 7)
+                                  // Save Button
                                   Expanded(
-                                    flex: 7,
+                                    flex: 5,
                                     child: SizedBox(
                                       height: 38,
                                       child: ElevatedButton(
@@ -3174,11 +3174,33 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                                       ),
                                     ),
                                   ),
-                                  const SizedBox(width: 8),
+                                  const SizedBox(width: 6),
 
-                                  // Logout Button (Flex 5)
                                   Expanded(
-                                    flex: 5,
+                                    flex: 4,
+                                    child: SizedBox(
+                                      height: 38,
+                                      child: OutlinedButton(
+                                        onPressed: _hasUnsavedChanges ? _handleCancelSettings : null,
+                                        style: OutlinedButton.styleFrom(
+                                          foregroundColor: textMuted,
+                                          side: BorderSide(color: surfaceBorder),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(10),
+                                          ),
+                                        ),
+                                        child: const Text(
+                                          'إلغاء',
+                                          style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 6),
+
+                                  // Logout Button
+                                  Expanded(
+                                    flex: 4,
                                     child: SizedBox(
                                       height: 38,
                                       child: OutlinedButton(
