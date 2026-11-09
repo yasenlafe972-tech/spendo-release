@@ -3188,14 +3188,14 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                                     child: SizedBox(
                                       height: 38,
                                       child: OutlinedButton(
-                                        onPressed:
-                                            _hasUnsavedChanges
-                                                ? _handleCancelSettings
-                                                : null,
+                                        onPressed: _handleCancelSettings,
                                         style: OutlinedButton.styleFrom(
-                                          foregroundColor: textMuted,
+                                          foregroundColor: textWhite,
+                                          backgroundColor: surfaceCell,
                                           side: BorderSide(
-                                            color: surfaceBorder,
+                                            color: brandGreen.withValues(
+                                              alpha: 0.35,
+                                            ),
                                           ),
                                           shape: RoundedRectangleBorder(
                                             borderRadius: BorderRadius.circular(
