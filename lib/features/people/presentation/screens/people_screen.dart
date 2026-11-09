@@ -35,15 +35,20 @@ class _PeopleScreenState extends State<PeopleScreen> {
   bool get _isDark => Theme.of(context).brightness == Brightness.dark;
 
   // Design Tokens - Adaptive to active theme
-  Color get surfaceMain => _isDark ? const Color(0xFF0A0A0C) : const Color(0xFFF8F9FA);
-  Color get surfaceField => _isDark ? const Color(0xFF121215) : const Color(0xFFFFFFFF);
-  Color get surfaceBorder => _isDark ? const Color(0xFF1E1E24) : const Color(0xFFE5E7EB);
+  Color get surfaceMain =>
+      _isDark ? const Color(0xFF0A0A0C) : const Color(0xFFF8F9FA);
+  Color get surfaceField =>
+      _isDark ? const Color(0xFF121215) : const Color(0xFFFFFFFF);
+  Color get surfaceBorder =>
+      _isDark ? const Color(0xFF1E1E24) : const Color(0xFFE5E7EB);
   static const Color brandGreen = Color(0xFF0F766E);
-  Color get brandYellow =>
-      const Color(0xFFFFD600);
-  Color get textPrimary => _isDark ? const Color(0xFFFFFFFF) : const Color(0xFF111827);
-  Color get textMuted => _isDark ? const Color(0xFF71717A) : const Color(0xFF6B7280);
-  Color get textSubtle => _isDark ? const Color(0xFF52525B) : const Color(0xFF9CA3AF);
+  Color get brandYellow => const Color(0xFFFFD600);
+  Color get textPrimary =>
+      _isDark ? const Color(0xFFFFFFFF) : const Color(0xFF111827);
+  Color get textMuted =>
+      _isDark ? const Color(0xFF71717A) : const Color(0xFF6B7280);
+  Color get textSubtle =>
+      _isDark ? const Color(0xFF52525B) : const Color(0xFF9CA3AF);
 
   @override
   void initState() {
@@ -82,13 +87,14 @@ class _PeopleScreenState extends State<PeopleScreen> {
     var list = _people;
     if (_searchQuery.trim().isNotEmpty) {
       final q = _searchQuery.toLowerCase().trim();
-      list = list.where((p) {
-        final nameMatches = p.name.toLowerCase().contains(q);
-        final phoneMatches = p.phone?.contains(q) ?? false;
-        final emailMatches = p.email?.toLowerCase().contains(q) ?? false;
-        final idMatches = p.nationalId?.contains(q) ?? false;
-        return nameMatches || phoneMatches || emailMatches || idMatches;
-      }).toList();
+      list =
+          list.where((p) {
+            final nameMatches = p.name.toLowerCase().contains(q);
+            final phoneMatches = p.phone?.contains(q) ?? false;
+            final emailMatches = p.email?.toLowerCase().contains(q) ?? false;
+            final idMatches = p.nationalId?.contains(q) ?? false;
+            return nameMatches || phoneMatches || emailMatches || idMatches;
+          }).toList();
     }
 
     // Sort: Pinned first, then user first, then by name
@@ -142,9 +148,9 @@ class _PeopleScreenState extends State<PeopleScreen> {
     final isEdit = person != null;
     final nameCtrl = TextEditingController(text: person?.name ?? '');
     final phoneCtrl = TextEditingController(
-        text: person?.phone ?? person?.whatsapp ?? '');
-    final idNumberCtrl =
-        TextEditingController(text: person?.nationalId ?? '');
+      text: person?.phone ?? person?.whatsapp ?? '',
+    );
+    final idNumberCtrl = TextEditingController(text: person?.nationalId ?? '');
     final emailCtrl = TextEditingController(text: person?.email ?? '');
     String? avatarPath = person?.avatarPath;
 
@@ -160,9 +166,10 @@ class _PeopleScreenState extends State<PeopleScreen> {
       builder: (ctx) {
         final media = MediaQuery.of(ctx);
         final keyboardInset = media.viewInsets.bottom;
-        final bottomNavPadding = media.padding.bottom > 0
-            ? media.padding.bottom
-            : media.viewPadding.bottom;
+        final bottomNavPadding =
+            media.padding.bottom > 0
+                ? media.padding.bottom
+                : media.viewPadding.bottom;
 
         return StatefulBuilder(
           builder: (context, setModalState) {
@@ -173,9 +180,12 @@ class _PeopleScreenState extends State<PeopleScreen> {
                 bottom: true,
                 child: Padding(
                   padding: EdgeInsets.only(
-                    bottom: keyboardInset > 0
-                        ? keyboardInset
-                        : (bottomNavPadding > 0 ? bottomNavPadding + 8 : 16),
+                    bottom:
+                        keyboardInset > 0
+                            ? keyboardInset
+                            : (bottomNavPadding > 0
+                                ? bottomNavPadding + 8
+                                : 16),
                   ),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
@@ -203,7 +213,9 @@ class _PeopleScreenState extends State<PeopleScreen> {
                           decoration: BoxDecoration(
                             border: Border(
                               bottom: BorderSide(
-                                  color: surfaceBorder, width: 1.0),
+                                color: surfaceBorder,
+                                width: 1.0,
+                              ),
                             ),
                           ),
                           child: Row(
@@ -212,88 +224,112 @@ class _PeopleScreenState extends State<PeopleScreen> {
                               InkWell(
                                 onTap: () async {
                                   SpendoHaptics.light();
-                                  final source =
-                                      await showModalBottomSheet<ImageSource>(
+                                  final source = await showModalBottomSheet<
+                                    ImageSource
+                                  >(
                                     context: ctx,
                                     backgroundColor: surfaceMain,
                                     shape: const RoundedRectangleBorder(
                                       borderRadius: BorderRadius.vertical(
-                                          top: Radius.circular(18)),
-                                    ),
-                                    builder: (sheetCtx) => SafeArea(
-                                      child: Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                            vertical: 14, horizontal: 16),
-                                        child: Column(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            Text(
-                                              'الصورة الشخصية',
-                                              style: TextStyle(
-                                                fontFamily: 'Cairo',
-                                                fontSize: 14,
-                                                fontWeight: FontWeight.bold,
-                                                color: textPrimary,
-                                              ),
-                                            ),
-                                            const SizedBox(height: 12),
-                                            ListTile(
-                                              leading: Icon(
-                                                  Remix.image_line,
-                                                  color: brandYellow),
-                                              title: Text('اختيار من المعرض',
-                                                  style: TextStyle(
-                                                      fontFamily: 'Cairo',
-                                                      color: textPrimary)),
-                                              onTap: () => Navigator.pop(
-                                                  sheetCtx,
-                                                  ImageSource.gallery),
-                                            ),
-                                            ListTile(
-                                              leading: const Icon(
-                                                  Remix.camera_line,
-                                                  color: brandGreen),
-                                              title: Text('التقاط بالكاميرا',
-                                                  style: TextStyle(
-                                                      fontFamily: 'Cairo',
-                                                      color: textPrimary)),
-                                              onTap: () => Navigator.pop(
-                                                  sheetCtx,
-                                                  ImageSource.camera),
-                                            ),
-                                            if (avatarPath != null)
-                                              ListTile(
-                                                leading: const Icon(
-                                                    Remix.delete_bin_line,
-                                                    color: Color(0xFFEF4444)),
-                                                title: const Text('إزالة الصورة',
-                                                    style: TextStyle(
-                                                        fontFamily: 'Cairo',
-                                                        color:
-                                                            Color(0xFFEF4444))),
-                                                onTap: () {
-                                                  Navigator.pop(sheetCtx);
-                                                  setModalState(
-                                                      () => avatarPath = null);
-                                                },
-                                              ),
-                                          ],
-                                        ),
+                                        top: Radius.circular(18),
                                       ),
                                     ),
+                                    builder:
+                                        (sheetCtx) => SafeArea(
+                                          child: Padding(
+                                            padding: const EdgeInsets.symmetric(
+                                              vertical: 14,
+                                              horizontal: 16,
+                                            ),
+                                            child: Column(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                Text(
+                                                  'الصورة الشخصية',
+                                                  style: TextStyle(
+                                                    fontFamily: 'Cairo',
+                                                    fontSize: 14,
+                                                    fontWeight: FontWeight.bold,
+                                                    color: textPrimary,
+                                                  ),
+                                                ),
+                                                const SizedBox(height: 12),
+                                                ListTile(
+                                                  leading: Icon(
+                                                    Remix.image_line,
+                                                    color: brandYellow,
+                                                  ),
+                                                  title: Text(
+                                                    'اختيار من المعرض',
+                                                    style: TextStyle(
+                                                      fontFamily: 'Cairo',
+                                                      color: textPrimary,
+                                                    ),
+                                                  ),
+                                                  onTap:
+                                                      () => Navigator.pop(
+                                                        sheetCtx,
+                                                        ImageSource.gallery,
+                                                      ),
+                                                ),
+                                                ListTile(
+                                                  leading: const Icon(
+                                                    Remix.camera_line,
+                                                    color: brandGreen,
+                                                  ),
+                                                  title: Text(
+                                                    'التقاط بالكاميرا',
+                                                    style: TextStyle(
+                                                      fontFamily: 'Cairo',
+                                                      color: textPrimary,
+                                                    ),
+                                                  ),
+                                                  onTap:
+                                                      () => Navigator.pop(
+                                                        sheetCtx,
+                                                        ImageSource.camera,
+                                                      ),
+                                                ),
+                                                if (avatarPath != null)
+                                                  ListTile(
+                                                    leading: const Icon(
+                                                      Remix.delete_bin_line,
+                                                      color: Color(0xFFEF4444),
+                                                    ),
+                                                    title: const Text(
+                                                      'إزالة الصورة',
+                                                      style: TextStyle(
+                                                        fontFamily: 'Cairo',
+                                                        color: Color(
+                                                          0xFFEF4444,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    onTap: () {
+                                                      Navigator.pop(sheetCtx);
+                                                      setModalState(
+                                                        () => avatarPath = null,
+                                                      );
+                                                    },
+                                                  ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
                                   );
 
                                   if (source != null) {
                                     final picked = await ImagePicker()
                                         .pickImage(
-                                      source: source,
-                                      maxWidth: 600,
-                                      maxHeight: 600,
-                                      imageQuality: 85,
-                                    );
+                                          source: source,
+                                          maxWidth: 600,
+                                          maxHeight: 600,
+                                          imageQuality: 85,
+                                        );
                                     if (picked != null) {
                                       setModalState(
-                                          () => avatarPath = picked.path);
+                                        () => avatarPath = picked.path,
+                                      );
                                     }
                                   }
                                 },
@@ -306,46 +342,68 @@ class _PeopleScreenState extends State<PeopleScreen> {
                                       height: 48,
                                       decoration: BoxDecoration(
                                         shape: BoxShape.circle,
-                                        color:
-                                            brandYellow.withValues(alpha: 0.12),
+                                        color: brandYellow.withValues(
+                                          alpha: 0.12,
+                                        ),
                                         border: Border.all(
-                                          color: brandYellow
-                                              .withValues(alpha: 0.55),
+                                          color: brandYellow.withValues(
+                                            alpha: 0.55,
+                                          ),
                                           width: 1.5,
                                         ),
                                         boxShadow: [
                                           BoxShadow(
-                                            color: brandYellow
-                                                .withValues(alpha: 0.15),
+                                            color: brandYellow.withValues(
+                                              alpha: 0.15,
+                                            ),
                                             blurRadius: 8,
                                             spreadRadius: 1,
                                           ),
                                         ],
                                       ),
                                       child: ClipOval(
-                                        child: avatarPath != null &&
-                                                avatarPath!.trim().isNotEmpty &&
-                                                File(avatarPath!).existsSync()
-                                            ? Image.file(
-                                                File(avatarPath!),
-                                                width: 48,
-                                                height: 48,
-                                                fit: BoxFit.cover,
-                                              )
-                                            : Center(
-                                                child: isEdit &&
-                                                        person.name
-                                                            .trim()
-                                                            .isNotEmpty
-                                                    ? Text(
-                                                        person.name
-                                                            .trim()
-                                                            .characters
-                                                            .first,
-                                                        style: TextStyle(fontFamily: 'Cairo', fontSize: 20, fontWeight: FontWeight.bold, color: brandYellow),
-                                                      )
-                                                    : Icon(Remix.user_add_line, size: 22, color: brandYellow),
-                                              ),
+                                        child:
+                                            avatarPath != null &&
+                                                    avatarPath!
+                                                        .trim()
+                                                        .isNotEmpty &&
+                                                    File(
+                                                      avatarPath!,
+                                                    ).existsSync()
+                                                ? Image.file(
+                                                  File(avatarPath!),
+                                                  width: 48,
+                                                  height: 48,
+                                                  fit: BoxFit.cover,
+                                                )
+                                                : Center(
+                                                  child:
+                                                      isEdit &&
+                                                              person.name
+                                                                  .trim()
+                                                                  .isNotEmpty
+                                                          ? Text(
+                                                            person.name
+                                                                .trim()
+                                                                .characters
+                                                                .first,
+                                                            style: TextStyle(
+                                                              fontFamily:
+                                                                  'Cairo',
+                                                              fontSize: 20,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold,
+                                                              color:
+                                                                  brandYellow,
+                                                            ),
+                                                          )
+                                                          : Icon(
+                                                            Remix.user_add_line,
+                                                            size: 22,
+                                                            color: brandYellow,
+                                                          ),
+                                                ),
                                       ),
                                     ),
                                     Positioned(
@@ -376,8 +434,7 @@ class _PeopleScreenState extends State<PeopleScreen> {
                               // معلومات العنوان والشارة الذهبية
                               Expanded(
                                 child: Column(
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
                                       isEdit
@@ -398,27 +455,39 @@ class _PeopleScreenState extends State<PeopleScreen> {
                                     const SizedBox(height: 2),
                                     Container(
                                       padding: const EdgeInsets.symmetric(
-                                          horizontal: 7, vertical: 2),
+                                        horizontal: 7,
+                                        vertical: 2,
+                                      ),
                                       decoration: BoxDecoration(
-                                        color: brandYellow
-                                            .withValues(alpha: 0.14),
-                                        borderRadius:
-                                            BorderRadius.circular(6),
+                                        color: brandYellow.withValues(
+                                          alpha: 0.14,
+                                        ),
+                                        borderRadius: BorderRadius.circular(6),
                                         border: Border.all(
-                                          color: brandYellow
-                                              .withValues(alpha: 0.35),
+                                          color: brandYellow.withValues(
+                                            alpha: 0.35,
+                                          ),
                                         ),
                                       ),
                                       child: Row(
                                         mainAxisSize: MainAxisSize.min,
                                         children: [
-                                          Icon(Remix.shield_user_line, size: 11, color: brandYellow),
+                                          Icon(
+                                            Remix.shield_user_line,
+                                            size: 11,
+                                            color: brandYellow,
+                                          ),
                                           const SizedBox(width: 4),
                                           Text(
                                             isEdit
                                                 ? 'بطاقة شخصية مسجلة'
                                                 : 'ملف جهة اتصال جديد',
-                                            style: TextStyle(fontFamily: 'Cairo', fontSize: 10, fontWeight: FontWeight.bold, color: brandYellow),
+                                            style: TextStyle(
+                                              fontFamily: 'Cairo',
+                                              fontSize: 10,
+                                              fontWeight: FontWeight.bold,
+                                              color: brandYellow,
+                                            ),
                                           ),
                                         ],
                                       ),
@@ -473,7 +542,8 @@ class _PeopleScreenState extends State<PeopleScreen> {
                                   boxShadow: [
                                     BoxShadow(
                                       color: Colors.black.withValues(
-                                          alpha: _isDark ? 0.2 : 0.03),
+                                        alpha: _isDark ? 0.2 : 0.03,
+                                      ),
                                       blurRadius: 6,
                                       offset: const Offset(0, 2),
                                     ),
@@ -495,8 +565,7 @@ class _PeopleScreenState extends State<PeopleScreen> {
                                         ),
                                         decoration: InputDecoration(
                                           isDense: true,
-                                          hintText:
-                                              'الاسم الكامل أو التجاري *',
+                                          hintText: 'الاسم الكامل أو التجاري *',
                                           hintStyle: TextStyle(
                                             fontFamily: 'Cairo',
                                             color: textSubtle,
@@ -505,15 +574,17 @@ class _PeopleScreenState extends State<PeopleScreen> {
                                           border: InputBorder.none,
                                           contentPadding:
                                               const EdgeInsets.symmetric(
-                                                  vertical: 8),
+                                                vertical: 8,
+                                              ),
                                         ),
                                       ),
                                     ),
                                     Divider(
                                       height: 1,
                                       thickness: 0.8,
-                                      color: surfaceBorder
-                                          .withValues(alpha: 0.7),
+                                      color: surfaceBorder.withValues(
+                                        alpha: 0.7,
+                                      ),
                                       indent: 38,
                                       endIndent: 12,
                                     ),
@@ -521,11 +592,11 @@ class _PeopleScreenState extends State<PeopleScreen> {
                                     _buildBirthdayRow(
                                       selectedDate: selectedDate,
                                       onPick: () async {
-                                        final picked = await SpendoDatePicker
-                                            .pickBirthDate(
-                                          context,
-                                          initialDate: selectedDate,
-                                        );
+                                        final picked =
+                                            await SpendoDatePicker.pickBirthDate(
+                                              context,
+                                              initialDate: selectedDate,
+                                            );
                                         if (picked != null) {
                                           selectedDate = picked;
                                           setModalState(() {});
@@ -557,7 +628,8 @@ class _PeopleScreenState extends State<PeopleScreen> {
                                   boxShadow: [
                                     BoxShadow(
                                       color: Colors.black.withValues(
-                                          alpha: _isDark ? 0.2 : 0.03),
+                                        alpha: _isDark ? 0.2 : 0.03,
+                                      ),
                                       blurRadius: 6,
                                       offset: const Offset(0, 2),
                                     ),
@@ -586,42 +658,40 @@ class _PeopleScreenState extends State<PeopleScreen> {
                                             isPhone: true,
                                           );
                                           if (cleaned != val) {
-                                            phoneCtrl.value =
-                                                TextEditingValue(
+                                            phoneCtrl.value = TextEditingValue(
                                               text: cleaned,
                                               selection:
                                                   TextSelection.collapsed(
-                                                      offset:
-                                                          cleaned.length),
+                                                    offset: cleaned.length,
+                                                  ),
                                             );
                                           }
                                         },
                                         decoration: InputDecoration(
                                           isDense: true,
-                                          hintText:
-                                              'رقم الهاتف (05X-XXXXXXX)',
+                                          hintText: 'رقم الهاتف (05X-XXXXXXX)',
                                           hintStyle: TextStyle(
                                             fontFamily: 'Cairo',
                                             color: textSubtle,
                                             fontSize: 11.5,
                                           ),
-                                          hintTextDirection:
-                                              TextDirection.rtl,
+                                          hintTextDirection: TextDirection.rtl,
                                           border: InputBorder.none,
                                           contentPadding:
                                               const EdgeInsets.symmetric(
-                                                  vertical: 8),
+                                                vertical: 8,
+                                              ),
                                         ),
                                       ),
                                       trailing: _buildAmberPasteChip(
                                         iconColor: brandGreen,
                                         onPaste: () async {
-                                          final data = await Clipboard
-                                              .getData(Clipboard.kTextPlain);
+                                          final data = await Clipboard.getData(
+                                            Clipboard.kTextPlain,
+                                          );
                                           final text = data?.text ?? '';
                                           if (text.trim().isNotEmpty) {
-                                            final cleaned =
-                                                _cleanPastedNumber(
+                                            final cleaned = _cleanPastedNumber(
                                               text,
                                               isPhone: true,
                                             );
@@ -629,8 +699,8 @@ class _PeopleScreenState extends State<PeopleScreen> {
                                               phoneCtrl.text = cleaned;
                                               phoneCtrl.selection =
                                                   TextSelection.collapsed(
-                                                      offset:
-                                                          cleaned.length);
+                                                    offset: cleaned.length,
+                                                  );
                                               SpendoHaptics.light();
                                               setModalState(() {});
                                             }
@@ -641,8 +711,9 @@ class _PeopleScreenState extends State<PeopleScreen> {
                                     Divider(
                                       height: 1,
                                       thickness: 0.8,
-                                      color: surfaceBorder
-                                          .withValues(alpha: 0.7),
+                                      color: surfaceBorder.withValues(
+                                        alpha: 0.7,
+                                      ),
                                       indent: 38,
                                       endIndent: 12,
                                     ),
@@ -667,13 +738,13 @@ class _PeopleScreenState extends State<PeopleScreen> {
                                             digitsOnly: true,
                                           );
                                           if (cleaned != val) {
-                                            idNumberCtrl.value =
-                                                TextEditingValue(
+                                            idNumberCtrl
+                                                .value = TextEditingValue(
                                               text: cleaned,
                                               selection:
                                                   TextSelection.collapsed(
-                                                      offset:
-                                                          cleaned.length),
+                                                    offset: cleaned.length,
+                                                  ),
                                             );
                                           }
                                         },
@@ -686,22 +757,22 @@ class _PeopleScreenState extends State<PeopleScreen> {
                                             color: textSubtle,
                                             fontSize: 11.5,
                                           ),
-                                          hintTextDirection:
-                                              TextDirection.rtl,
+                                          hintTextDirection: TextDirection.rtl,
                                           border: InputBorder.none,
                                           contentPadding:
                                               const EdgeInsets.symmetric(
-                                                  vertical: 8),
+                                                vertical: 8,
+                                              ),
                                         ),
                                       ),
                                       trailing: _buildAmberPasteChip(
                                         onPaste: () async {
-                                          final data = await Clipboard
-                                              .getData(Clipboard.kTextPlain);
+                                          final data = await Clipboard.getData(
+                                            Clipboard.kTextPlain,
+                                          );
                                           final text = data?.text ?? '';
                                           if (text.trim().isNotEmpty) {
-                                            final cleaned =
-                                                _cleanPastedNumber(
+                                            final cleaned = _cleanPastedNumber(
                                               text,
                                               digitsOnly: true,
                                             );
@@ -709,8 +780,8 @@ class _PeopleScreenState extends State<PeopleScreen> {
                                               idNumberCtrl.text = cleaned;
                                               idNumberCtrl.selection =
                                                   TextSelection.collapsed(
-                                                      offset:
-                                                          cleaned.length);
+                                                    offset: cleaned.length,
+                                                  );
                                               SpendoHaptics.light();
                                               setModalState(() {});
                                             }
@@ -721,8 +792,9 @@ class _PeopleScreenState extends State<PeopleScreen> {
                                     Divider(
                                       height: 1,
                                       thickness: 0.8,
-                                      color: surfaceBorder
-                                          .withValues(alpha: 0.7),
+                                      color: surfaceBorder.withValues(
+                                        alpha: 0.7,
+                                      ),
                                       indent: 38,
                                       endIndent: 12,
                                     ),
@@ -751,12 +823,12 @@ class _PeopleScreenState extends State<PeopleScreen> {
                                             color: textSubtle,
                                             fontSize: 11.5,
                                           ),
-                                          hintTextDirection:
-                                              TextDirection.rtl,
+                                          hintTextDirection: TextDirection.rtl,
                                           border: InputBorder.none,
                                           contentPadding:
                                               const EdgeInsets.symmetric(
-                                                  vertical: 8),
+                                                vertical: 8,
+                                              ),
                                         ),
                                       ),
                                     ),
@@ -773,11 +845,13 @@ class _PeopleScreenState extends State<PeopleScreen> {
                                       onTap: () async {
                                         final name = nameCtrl.text.trim();
                                         if (name.isEmpty) {
-                                          ScaffoldMessenger.of(context)
-                                              .showSnackBar(
+                                          ScaffoldMessenger.of(
+                                            context,
+                                          ).showSnackBar(
                                             const SnackBar(
                                               content: Text(
-                                                  'يرجى إدخال اسم الشخص أولاً'),
+                                                'يرجى إدخال اسم الشخص أولاً',
+                                              ),
                                             ),
                                           );
                                           return;
@@ -794,65 +868,75 @@ class _PeopleScreenState extends State<PeopleScreen> {
                                         final cleanEmail =
                                             emailCtrl.text.trim();
 
-                                        final updated = isEdit
-                                            ? PersonModel(
-                                                id: person.id,
-                                                name: name,
-                                                isUser: person.isUser,
-                                                birthdate: selectedDate,
-                                                email: cleanEmail.isEmpty
-                                                    ? null
-                                                    : cleanEmail,
-                                                phone: cleanPhone.isEmpty
-                                                    ? null
-                                                    : cleanPhone,
-                                                whatsapp: cleanPhone.isEmpty
-                                                    ? null
-                                                    : cleanPhone,
-                                                nationalId: cleanId.isEmpty
-                                                    ? null
-                                                    : cleanId,
-                                                bank: person.bank,
-                                                accountNumber:
-                                                    person.accountNumber,
-                                                avatarPath: avatarPath,
-                                                isPinned: person.isPinned,
-                                                hourlyRate: person.hourlyRate,
-                                                dailyRate: person.dailyRate,
-                                                notes: person.notes,
-                                                createdAt: person.createdAt,
-                                                updatedAt: DateTime.now(),
-                                              )
-                                            : PersonModel(
-                                                id: DateTime.now()
-                                                    .millisecondsSinceEpoch
-                                                    .toString(),
-                                                name: name,
-                                                birthdate: selectedDate,
-                                                email: cleanEmail.isEmpty
-                                                    ? null
-                                                    : cleanEmail,
-                                                phone: cleanPhone.isEmpty
-                                                    ? null
-                                                    : cleanPhone,
-                                                whatsapp: cleanPhone.isEmpty
-                                                    ? null
-                                                    : cleanPhone,
-                                                nationalId: cleanId.isEmpty
-                                                    ? null
-                                                    : cleanId,
-                                                avatarPath: avatarPath,
-                                                createdAt: DateTime.now(),
-                                                updatedAt: DateTime.now(),
-                                              );
+                                        final updated =
+                                            isEdit
+                                                ? PersonModel(
+                                                  id: person.id,
+                                                  name: name,
+                                                  isUser: person.isUser,
+                                                  birthdate: selectedDate,
+                                                  email:
+                                                      cleanEmail.isEmpty
+                                                          ? null
+                                                          : cleanEmail,
+                                                  phone:
+                                                      cleanPhone.isEmpty
+                                                          ? null
+                                                          : cleanPhone,
+                                                  whatsapp:
+                                                      cleanPhone.isEmpty
+                                                          ? null
+                                                          : cleanPhone,
+                                                  nationalId:
+                                                      cleanId.isEmpty
+                                                          ? null
+                                                          : cleanId,
+                                                  bank: person.bank,
+                                                  accountNumber:
+                                                      person.accountNumber,
+                                                  avatarPath: avatarPath,
+                                                  isPinned: person.isPinned,
+                                                  hourlyRate: person.hourlyRate,
+                                                  dailyRate: person.dailyRate,
+                                                  notes: person.notes,
+                                                  createdAt: person.createdAt,
+                                                  updatedAt: DateTime.now(),
+                                                )
+                                                : PersonModel(
+                                                  id:
+                                                      DateTime.now()
+                                                          .millisecondsSinceEpoch
+                                                          .toString(),
+                                                  name: name,
+                                                  birthdate: selectedDate,
+                                                  email:
+                                                      cleanEmail.isEmpty
+                                                          ? null
+                                                          : cleanEmail,
+                                                  phone:
+                                                      cleanPhone.isEmpty
+                                                          ? null
+                                                          : cleanPhone,
+                                                  whatsapp:
+                                                      cleanPhone.isEmpty
+                                                          ? null
+                                                          : cleanPhone,
+                                                  nationalId:
+                                                      cleanId.isEmpty
+                                                          ? null
+                                                          : cleanId,
+                                                  avatarPath: avatarPath,
+                                                  createdAt: DateTime.now(),
+                                                  updatedAt: DateTime.now(),
+                                                );
 
                                         SpendoHaptics.success();
                                         if (isEdit) {
-                                          await _repository
-                                              .updatePerson(updated);
+                                          await _repository.updatePerson(
+                                            updated,
+                                          );
                                         } else {
-                                          await _repository
-                                              .addPerson(updated);
+                                          await _repository.addPerson(updated);
                                         }
                                         if (ctx.mounted) {
                                           Navigator.pop(ctx);
@@ -864,12 +948,14 @@ class _PeopleScreenState extends State<PeopleScreen> {
                                         height: 42,
                                         decoration: BoxDecoration(
                                           color: brandYellow,
-                                          borderRadius:
-                                              BorderRadius.circular(11),
+                                          borderRadius: BorderRadius.circular(
+                                            11,
+                                          ),
                                           boxShadow: [
                                             BoxShadow(
                                               color: brandYellow.withValues(
-                                                  alpha: 0.28),
+                                                alpha: 0.28,
+                                              ),
                                               blurRadius: 8,
                                               offset: const Offset(0, 3),
                                             ),
@@ -883,9 +969,10 @@ class _PeopleScreenState extends State<PeopleScreen> {
                                             Icon(
                                               Remix.check_line,
                                               size: 17,
-                                              color: _isDark
-                                                  ? const Color(0xFF0A0B0B)
-                                                  : Colors.white,
+                                              color:
+                                                  _isDark
+                                                      ? const Color(0xFF0A0B0B)
+                                                      : Colors.white,
                                             ),
                                             const SizedBox(width: 6),
                                             Text(
@@ -894,9 +981,12 @@ class _PeopleScreenState extends State<PeopleScreen> {
                                                   : 'إضافة الشخص',
                                               style: TextStyle(
                                                 fontFamily: 'Cairo',
-                                                color: _isDark
-                                                    ? const Color(0xFF0A0B0B)
-                                                    : Colors.white,
+                                                color:
+                                                    _isDark
+                                                        ? const Color(
+                                                          0xFF0A0B0B,
+                                                        )
+                                                        : Colors.white,
                                                 fontSize: 12.5,
                                                 fontWeight: FontWeight.bold,
                                               ),
@@ -913,13 +1003,14 @@ class _PeopleScreenState extends State<PeopleScreen> {
                                     child: Container(
                                       height: 42,
                                       padding: const EdgeInsets.symmetric(
-                                          horizontal: 18),
+                                        horizontal: 18,
+                                      ),
                                       decoration: BoxDecoration(
                                         color: surfaceField,
-                                        borderRadius:
-                                            BorderRadius.circular(11),
-                                        border:
-                                            Border.all(color: surfaceBorder),
+                                        borderRadius: BorderRadius.circular(11),
+                                        border: Border.all(
+                                          color: surfaceBorder,
+                                        ),
                                       ),
                                       alignment: Alignment.center,
                                       child: Text(
@@ -981,10 +1072,7 @@ class _PeopleScreenState extends State<PeopleScreen> {
           Icon(icon, color: iconColor, size: 17),
           const SizedBox(width: 10),
           Expanded(child: child),
-          if (trailing != null) ...[
-            const SizedBox(width: 6),
-            trailing,
-          ],
+          if (trailing != null) ...[const SizedBox(width: 6), trailing],
         ],
       ),
     );
@@ -1005,59 +1093,69 @@ class _PeopleScreenState extends State<PeopleScreen> {
             Icon(Remix.cake_2_line, color: brandYellow, size: 17),
             const SizedBox(width: 10),
             Expanded(
-              child: selectedDate != null
-                  ? Row(
-                      children: [
-                        Text(
-                          DateFormat('dd/MM/yyyy').format(selectedDate),
-                          style: TextStyle(
-                            fontFamily: 'Cairo',
-                            color: textPrimary,
-                            fontSize: 12.5,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 0.5,
+              child:
+                  selectedDate != null
+                      ? Row(
+                        children: [
+                          Text(
+                            DateFormat('dd/MM/yyyy').format(selectedDate),
+                            style: TextStyle(
+                              fontFamily: 'Cairo',
+                              color: textPrimary,
+                              fontSize: 12.5,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 0.5,
+                            ),
                           ),
-                        ),
-                        const SizedBox(width: 8),
-                        Builder(
-                          builder: (ctx) {
-                            final now = DateTime.now();
-                            int age = now.year - selectedDate.year;
-                            if (now.month < selectedDate.month ||
-                                (now.month == selectedDate.month &&
-                                    now.day < selectedDate.day)) {
-                              age--;
-                            }
-                            if (age >= 0) {
-                              return Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 7, vertical: 2),
-                                decoration: BoxDecoration(
-                                  color: brandYellow.withValues(alpha: 0.15),
-                                  borderRadius: BorderRadius.circular(6),
-                                  border: Border.all(
-                                    color: brandYellow.withValues(alpha: 0.45),
+                          const SizedBox(width: 8),
+                          Builder(
+                            builder: (ctx) {
+                              final now = DateTime.now();
+                              int age = now.year - selectedDate.year;
+                              if (now.month < selectedDate.month ||
+                                  (now.month == selectedDate.month &&
+                                      now.day < selectedDate.day)) {
+                                age--;
+                              }
+                              if (age >= 0) {
+                                return Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 7,
+                                    vertical: 2,
                                   ),
-                                ),
-                                child: Text(
-                                  '$age سنة',
-                                  style: TextStyle(fontFamily: 'Cairo', color: brandYellow, fontSize: 10.5, fontWeight: FontWeight.bold),
-                                ),
-                              );
-                            }
-                            return const SizedBox.shrink();
-                          },
+                                  decoration: BoxDecoration(
+                                    color: brandYellow.withValues(alpha: 0.15),
+                                    borderRadius: BorderRadius.circular(6),
+                                    border: Border.all(
+                                      color: brandYellow.withValues(
+                                        alpha: 0.45,
+                                      ),
+                                    ),
+                                  ),
+                                  child: Text(
+                                    '$age سنة',
+                                    style: TextStyle(
+                                      fontFamily: 'Cairo',
+                                      color: brandYellow,
+                                      fontSize: 10.5,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                );
+                              }
+                              return const SizedBox.shrink();
+                            },
+                          ),
+                        ],
+                      )
+                      : Text(
+                        'تاريخ الميلاد (اختياري)',
+                        style: TextStyle(
+                          fontFamily: 'Cairo',
+                          color: textSubtle,
+                          fontSize: 11.5,
                         ),
-                      ],
-                    )
-                  : Text(
-                      'تاريخ الميلاد (اختياري)',
-                      style: TextStyle(
-                        fontFamily: 'Cairo',
-                        color: textSubtle,
-                        fontSize: 11.5,
                       ),
-                    ),
             ),
             if (selectedDate != null)
               InkWell(
@@ -1078,14 +1176,18 @@ class _PeopleScreenState extends State<PeopleScreen> {
                 decoration: BoxDecoration(
                   color: brandYellow.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(6),
-                  border:
-                      Border.all(color: brandYellow.withValues(alpha: 0.35)),
+                  border: Border.all(
+                    color: brandYellow.withValues(alpha: 0.35),
+                  ),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Remix.calendar_event_line,
-                        size: 11, color: brandYellow),
+                    Icon(
+                      Remix.calendar_event_line,
+                      size: 11,
+                      color: brandYellow,
+                    ),
                     const SizedBox(width: 4),
                     Text(
                       'تحديد',
@@ -1120,16 +1222,16 @@ class _PeopleScreenState extends State<PeopleScreen> {
     );
   }
 
-
-
   Future<void> _confirmDelete(PersonModel person) async {
     final confirmed = await SpendoConfirmDeleteDialog.show(
       context,
       title: 'تأكيد حذف جهة الاتصال',
       itemName: person.name,
       itemIcon: Icons.person_outline,
-      description: 'هل أنت متأكد من حذف بطاقة "${person.name}" نهائياً من السجل؟',
-      warningNote: 'سيتم أيضاً حذف جميع الحسابات وكلمات المرور المرتبطة بهذا الشخص.',
+      description:
+          'هل أنت متأكد من حذف بطاقة "${person.name}" نهائياً من السجل؟',
+      warningNote:
+          'سيتم أيضاً حذف جميع الحسابات وكلمات المرور المرتبطة بهذا الشخص.',
       confirmLabel: 'حذف',
     );
 
@@ -1194,17 +1296,18 @@ class _PeopleScreenState extends State<PeopleScreen> {
                             const SizedBox(width: 4),
                             Text(
                               '(${filtered.length})',
-                              style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: brandYellow),
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                                color: brandYellow,
+                              ),
                             ),
                           ],
                         ),
                         const SizedBox(height: 2),
                         Text(
                           'بطاقات مصغّرة • إدارة البيانات والهويات',
-                          style: TextStyle(
-                            fontSize: 10,
-                            color: textMuted,
-                          ),
+                          style: TextStyle(fontSize: 10, color: textMuted),
                         ),
                       ],
                     ),
@@ -1214,14 +1317,21 @@ class _PeopleScreenState extends State<PeopleScreen> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         IconButton(
-                          icon: Icon(Remix.menu_line,
-                              color: textMuted, size: 20),
+                          icon: Icon(
+                            Remix.menu_line,
+                            color: textMuted,
+                            size: 20,
+                          ),
                           tooltip: 'فتح القائمة',
                           padding: EdgeInsets.zero,
                           constraints: const BoxConstraints(),
-                          onPressed: () => SpendoAppMenu.open(context, onSettingsClosed: () async {
-                            if (mounted) await _loadPeople();
-                          }),
+                          onPressed:
+                              () => SpendoAppMenu.open(
+                                context,
+                                onSettingsClosed: () async {
+                                  if (mounted) await _loadPeople();
+                                },
+                              ),
                         ),
                         const SizedBox(width: 10),
                         Material(
@@ -1232,12 +1342,17 @@ class _PeopleScreenState extends State<PeopleScreen> {
                             borderRadius: BorderRadius.circular(8),
                             child: Container(
                               padding: const EdgeInsets.symmetric(
-                                  horizontal: 10, vertical: 6),
+                                horizontal: 10,
+                                vertical: 6,
+                              ),
                               child: const Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Icon(Icons.person_add_outlined,
-                                      size: 13, color: Colors.white),
+                                  Icon(
+                                    Icons.person_add_outlined,
+                                    size: 13,
+                                    color: Colors.white,
+                                  ),
                                   SizedBox(width: 4),
                                   Text(
                                     'إضافة',
@@ -1266,67 +1381,71 @@ class _PeopleScreenState extends State<PeopleScreen> {
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 14),
                   child: Container(
-                  constraints: const BoxConstraints(minHeight: 38),
-                  decoration: BoxDecoration(
-                    color: surfaceField,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: surfaceBorder),
-                  ),
-                  child: TextField(
-                    controller: _searchController,
-                    onChanged: (val) => setState(() => _searchQuery = val),
-                    style:
-                        TextStyle(color: textPrimary, fontSize: 12),
-                    decoration: InputDecoration(
-                      hintText: 'بحث بالاسم، الهاتف، أو رقم الهوية...',
-                      hintStyle:
-                          TextStyle(color: textSubtle, fontSize: 11.5),
-                      prefixIcon: Icon(Icons.search_rounded,
-                          size: 16, color: textMuted),
-                      suffixIcon: _searchQuery.isNotEmpty
-                          ? IconButton(
-                              icon: Icon(Icons.close_rounded,
-                                  size: 15, color: textMuted),
-                              onPressed: () {
-                                _searchController.clear();
-                                setState(() => _searchQuery = '');
-                              },
-                            )
-                          : null,
-                      border: InputBorder.none,
-                      contentPadding:
-                          const EdgeInsets.symmetric(vertical: 9),
+                    constraints: const BoxConstraints(minHeight: 38),
+                    decoration: BoxDecoration(
+                      color: surfaceField,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: surfaceBorder),
+                    ),
+                    child: TextField(
+                      controller: _searchController,
+                      onChanged: (val) => setState(() => _searchQuery = val),
+                      style: TextStyle(color: textPrimary, fontSize: 12),
+                      decoration: InputDecoration(
+                        hintText: 'بحث بالاسم، الهاتف، أو رقم الهوية...',
+                        hintStyle: TextStyle(color: textSubtle, fontSize: 11.5),
+                        prefixIcon: Icon(
+                          Icons.search_rounded,
+                          size: 16,
+                          color: textMuted,
+                        ),
+                        suffixIcon:
+                            _searchQuery.isNotEmpty
+                                ? IconButton(
+                                  icon: Icon(
+                                    Icons.close_rounded,
+                                    size: 15,
+                                    color: textMuted,
+                                  ),
+                                  onPressed: () {
+                                    _searchController.clear();
+                                    setState(() => _searchQuery = '');
+                                  },
+                                )
+                                : null,
+                        border: InputBorder.none,
+                        contentPadding: const EdgeInsets.symmetric(vertical: 9),
+                      ),
                     ),
                   ),
                 ),
-              ),
               ),
               const SizedBox(height: 10),
 
               // 4. شبكة البطاقات المصغرة (بطاقتان في كل صف)
               Expanded(
-                child: _isLoading
-                    ? Center(
-                        child: CircularProgressIndicator(color: brandGreen))
-                    : filtered.isEmpty
+                child:
+                    _isLoading
                         ? Center(
-                            child: Padding(
-                              padding: EdgeInsets.symmetric(vertical: 32),
-                              child: Text(
-                                'لا توجد بطاقات مطابقة للبحث',
-                                style: TextStyle(
-                                  color: textSubtle,
-                                  fontSize: 12,
-                                ),
-                              ),
+                          child: CircularProgressIndicator(color: brandGreen),
+                        )
+                        : filtered.isEmpty
+                        ? Center(
+                          child: Padding(
+                            padding: EdgeInsets.symmetric(vertical: 32),
+                            child: Text(
+                              'لا توجد بطاقات مطابقة للبحث',
+                              style: TextStyle(color: textSubtle, fontSize: 12),
                             ),
-                          )
+                          ),
+                        )
                         : BankingCascadeItem(
-                            tabIndex: 3,
-                            staggerIndex: 1,
-                            child: GridView.builder(
+                          tabIndex: 3,
+                          staggerIndex: 1,
+                          child: GridView.builder(
                             physics: const BouncingScrollPhysics(
-                                parent: AlwaysScrollableScrollPhysics()),
+                              parent: AlwaysScrollableScrollPhysics(),
+                            ),
                             padding: const EdgeInsets.only(
                               left: 14,
                               right: 14,
@@ -1335,14 +1454,14 @@ class _PeopleScreenState extends State<PeopleScreen> {
                             ),
                             gridDelegate:
                                 SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 2,
-                              mainAxisSpacing: 8,
-                              crossAxisSpacing: 8,
-                              childAspectRatio: (3.15 /
-                                      AppTheme.fontScaleNotifier.value
-                                          .clamp(0.85, 1.25))
-                                  .clamp(2.55, 3.45),
-                            ),
+                                  crossAxisCount: 2,
+                                  mainAxisSpacing: 8,
+                                  crossAxisSpacing: 8,
+                                  childAspectRatio: (3.15 /
+                                          AppTheme.fontScaleNotifier.value
+                                              .clamp(0.85, 1.25))
+                                      .clamp(2.55, 3.45),
+                                ),
                             itemCount: filtered.length,
                             itemBuilder: (context, index) {
                               final person = filtered[index];
@@ -1353,7 +1472,9 @@ class _PeopleScreenState extends State<PeopleScreen> {
                                 onDelete: () => _confirmDelete(person),
                                 onTogglePin: () async {
                                   await _repository.togglePin(
-                                      person.id, person.isPinned);
+                                    person.id,
+                                    person.isPinned,
+                                  );
                                   _loadPeople();
                                 },
                                 onViewDetails: () {
@@ -1364,7 +1485,9 @@ class _PeopleScreenState extends State<PeopleScreen> {
                                     onDelete: () => _confirmDelete(person),
                                     onTogglePin: () async {
                                       await _repository.togglePin(
-                                          person.id, person.isPinned);
+                                        person.id,
+                                        person.isPinned,
+                                      );
                                       _loadPeople();
                                     },
                                     onAccountsChanged: _loadPeople,

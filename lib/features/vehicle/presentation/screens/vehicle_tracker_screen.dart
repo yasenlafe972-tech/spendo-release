@@ -43,15 +43,18 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
   bool _isGovSyncing = false;
 
   bool get _isDark => Theme.of(context).brightness == Brightness.dark;
-  Color get surfaceMain => _isDark ? const Color(0xFF0A0A0C) : const Color(0xFFF8F9FA);
-  Color get surfaceField => _isDark ? const Color(0xFF121215) : const Color(0xFFFFFFFF);
-  Color get surfaceBorder => _isDark ? const Color(0xFF1E1E24) : const Color(0xFFE5E7EB);
+  Color get surfaceMain =>
+      _isDark ? const Color(0xFF0A0A0C) : const Color(0xFFF8F9FA);
+  Color get surfaceField =>
+      _isDark ? const Color(0xFF121215) : const Color(0xFFFFFFFF);
+  Color get surfaceBorder =>
+      _isDark ? const Color(0xFF1E1E24) : const Color(0xFFE5E7EB);
   static const Color brandGreen = Color(0xFF0F766E);
-  Color get brandYellow =>
-      const Color(0xFFFFD600);
+  Color get brandYellow => const Color(0xFFFFD600);
   static const Color brandRed = Color(0xFFEF4444);
   Color get textWhite => _isDark ? Colors.white : const Color(0xFF111827);
-  Color get textMuted => _isDark ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280);
+  Color get textMuted =>
+      _isDark ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280);
 
   void _onThemeChanged() {
     if (mounted) setState(() {});
@@ -60,8 +63,9 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
   @override
   void initState() {
     super.initState();
-    _odometerController =
-        TextEditingController(text: _state.currentOdometer.toString());
+    _odometerController = TextEditingController(
+      text: _state.currentOdometer.toString(),
+    );
     DatabaseHelper.dataVersionNotifier.addListener(_loadState);
     AppTheme.themeModeNotifier.addListener(_onThemeChanged);
     _loadState();
@@ -143,13 +147,16 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
 
       // تحديث تاريخ التست (טסט) واسم الكتنوع التجاري تلقائياً
       if (info != null) {
-        final cleanTitle = info.rawPlate == '55505403'
-            ? 'SYM Joyride 200 (55-505-403)'
-            : _state.vehicleName;
-        await _saveState(_state.copyWith(
-          vehicleName: cleanTitle,
-          testExpiry: info.testExpiryDate ?? _state.testExpiry,
-        ));
+        final cleanTitle =
+            info.rawPlate == '55505403'
+                ? 'SYM Joyride 200 (55-505-403)'
+                : _state.vehicleName;
+        await _saveState(
+          _state.copyWith(
+            vehicleName: cleanTitle,
+            testExpiry: info.testExpiryDate ?? _state.testExpiry,
+          ),
+        );
       }
     } catch (_) {
       if (mounted) setState(() => _isGovSyncing = false);
@@ -201,9 +208,9 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
 
   String _formatNumber(int value) {
     return value.toString().replaceAllMapped(
-          RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-          (Match m) => '${m[1]},',
-        );
+      RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+      (Match m) => '${m[1]},',
+    );
   }
 
   @override
@@ -211,9 +218,7 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
     if (_isLoading) {
       return Scaffold(
         backgroundColor: surfaceMain,
-        body: Center(
-          child: CircularProgressIndicator(color: brandGreen),
-        ),
+        body: Center(child: CircularProgressIndicator(color: brandGreen)),
       );
     }
 
@@ -277,11 +282,7 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
         children: [
           Row(
             children: [
-              const Icon(
-                Remix.motorbike_line,
-                color: brandGreen,
-                size: 20,
-              ),
+              const Icon(Remix.motorbike_line, color: brandGreen, size: 20),
               const SizedBox(width: 8),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -297,10 +298,7 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                   ),
                   Text(
                     'متابعة صحة الدراجة ومصروف الوقود',
-                    style: TextStyle(
-                      fontSize: 10,
-                      color: Color(0xFF9CA3AF),
-                    ),
+                    style: TextStyle(fontSize: 10, color: Color(0xFF9CA3AF)),
                   ),
                 ],
               ),
@@ -325,9 +323,13 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
               ),
               const SizedBox(width: 4),
               InkWell(
-                onTap: () => SpendoAppMenu.open(context, onSettingsClosed: () async {
-                  if (mounted) await _loadState();
-                }),
+                onTap:
+                    () => SpendoAppMenu.open(
+                      context,
+                      onSettingsClosed: () async {
+                        if (mounted) await _loadState();
+                      },
+                    ),
                 borderRadius: BorderRadius.circular(6),
                 child: const Padding(
                   padding: EdgeInsets.all(6.0),
@@ -361,11 +363,7 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
           Container(
             padding: const EdgeInsets.only(bottom: 10),
             decoration: BoxDecoration(
-              border: Border(
-                bottom: BorderSide(
-                  color: surfaceBorder,
-                ),
-              ),
+              border: Border(bottom: BorderSide(color: surfaceBorder)),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -440,8 +438,10 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                   },
                   borderRadius: BorderRadius.circular(8),
                   child: Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 5,
+                    ),
                     decoration: BoxDecoration(
                       color: surfaceMain,
                       borderRadius: BorderRadius.circular(8),
@@ -452,11 +452,7 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                     child: const Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(
-                          Remix.add_line,
-                          color: brandGreen,
-                          size: 12,
-                        ),
+                        Icon(Remix.add_line, color: brandGreen, size: 12),
                         SizedBox(width: 4),
                         Text(
                           'تحديث العداد',
@@ -484,10 +480,7 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
               children: [
                 const Text(
                   'قراءة الكيلومترات الحالية:',
-                  style: TextStyle(
-                    fontSize: 10,
-                    color: Color(0xFF9CA3AF),
-                  ),
+                  style: TextStyle(fontSize: 10, color: Color(0xFF9CA3AF)),
                 ),
                 GestureDetector(
                   onTap: () {
@@ -532,9 +525,7 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
               margin: const EdgeInsets.only(top: 10),
               padding: const EdgeInsets.only(top: 8),
               decoration: BoxDecoration(
-                border: Border(
-                  top: BorderSide(color: surfaceBorder),
-                ),
+                border: Border(top: BorderSide(color: surfaceBorder)),
               ),
               child: Row(
                 children: [
@@ -544,7 +535,9 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                       child: TextField(
                         controller: _odometerController,
                         keyboardType: TextInputType.number,
-                        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly,
+                        ],
                         style: TextStyle(
                           fontSize: 12,
                           color: textWhite,
@@ -553,12 +546,16 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                         decoration: InputDecoration(
                           hintText: 'أدخل العداد الجديد...',
                           hintStyle: const TextStyle(
-                              fontSize: 11, color: Color(0xFF6B7280)),
+                            fontSize: 11,
+                            color: Color(0xFF6B7280),
+                          ),
                           fillColor: surfaceMain,
                           filled: true,
                           isDense: true,
                           contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 10, vertical: 7),
+                            horizontal: 10,
+                            vertical: 7,
+                          ),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
                             borderSide: BorderSide(color: surfaceBorder),
@@ -590,7 +587,9 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                       foregroundColor: Colors.white,
                       elevation: 0,
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 8),
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
                       minimumSize: const Size(0, 34),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
@@ -614,9 +613,7 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
             margin: const EdgeInsets.only(top: 10),
             padding: const EdgeInsets.only(top: 8),
             decoration: BoxDecoration(
-              border: Border(
-                top: BorderSide(color: surfaceBorder),
-              ),
+              border: Border(top: BorderSide(color: surfaceBorder)),
             ),
             child: InkWell(
               onTap: () {
@@ -657,8 +654,10 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                   ),
                   const SizedBox(width: 6),
                   Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 7,
+                      vertical: 2,
+                    ),
                     decoration: BoxDecoration(
                       color: brandYellow.withValues(alpha: 0.14),
                       borderRadius: BorderRadius.circular(5),
@@ -716,9 +715,10 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                     left: 16,
                     right: 16,
                     top: 12,
-                    bottom: keyboardInset > 0
-                        ? keyboardInset + 10
-                        : (bottomPad > 0 ? bottomPad + 10 : 16),
+                    bottom:
+                        keyboardInset > 0
+                            ? keyboardInset + 10
+                            : (bottomPad > 0 ? bottomPad + 10 : 16),
                   ),
                   child: SingleChildScrollView(
                     child: Column(
@@ -741,8 +741,11 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                           children: [
                             Row(
                               children: [
-                                const Icon(Remix.government_line,
-                                    color: brandGreen, size: 19),
+                                const Icon(
+                                  Remix.government_line,
+                                  color: brandGreen,
+                                  size: 19,
+                                ),
                                 SizedBox(width: 8),
                                 Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -768,8 +771,11 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                             ),
                             InkWell(
                               onTap: () => Navigator.pop(ctx),
-                              child: const Icon(Remix.close_line,
-                                  color: Color(0xFF9CA3AF), size: 19),
+                              child: const Icon(
+                                Remix.close_line,
+                                color: Color(0xFF9CA3AF),
+                                size: 19,
+                              ),
                             ),
                           ],
                         ),
@@ -783,8 +789,9 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                             Expanded(
                               child: Container(
                                 height: 40,
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 10),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                ),
                                 decoration: BoxDecoration(
                                   color: surfaceField,
                                   borderRadius: BorderRadius.circular(10),
@@ -816,8 +823,9 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                                         decoration: const InputDecoration(
                                           hintText: 'رقم النمرة (7 أو 8 أرقام)',
                                           hintStyle: TextStyle(
-                                              fontSize: 11,
-                                              color: Color(0xFF6B7280)),
+                                            fontSize: 11,
+                                            color: Color(0xFF6B7280),
+                                          ),
                                           border: InputBorder.none,
                                           isDense: true,
                                         ),
@@ -833,51 +841,59 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                                 backgroundColor: brandGreen,
                                 foregroundColor: Colors.white,
                                 minimumSize: const Size(0, 40),
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 12),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                ),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(10),
                                 ),
                               ),
-                              onPressed: isSearching
-                                  ? null
-                                  : () async {
-                                      final q = plateCtrl.text.trim();
-                                      if (q.length < 6) return;
-                                      setSheetState(() {
-                                        isSearching = true;
-                                        errorMsg = null;
-                                      });
-                                      final fetched = await IsraelGovApiService
-                                          .fetchVehicleByPlate(q);
-                                      final fuel = await IsraelGovApiService
-                                          .fetchOfficialFuel95Price();
-                                      if (!mounted) return;
-                                      setState(() {
+                              onPressed:
+                                  isSearching
+                                      ? null
+                                      : () async {
+                                        final q = plateCtrl.text.trim();
+                                        if (q.length < 6) return;
+                                        setSheetState(() {
+                                          isSearching = true;
+                                          errorMsg = null;
+                                        });
+                                        final fetched =
+                                            await IsraelGovApiService.fetchVehicleByPlate(
+                                              q,
+                                            );
+                                        final fuel =
+                                            await IsraelGovApiService.fetchOfficialFuel95Price();
+                                        if (!mounted) return;
+                                        setState(() {
+                                          if (fetched != null) {
+                                            _govInfo = fetched;
+                                          }
+                                          _officialFuelPrice = fuel;
+                                        });
                                         if (fetched != null) {
-                                          _govInfo = fetched;
+                                          SpendoHaptics.success();
+                                          final newTitle =
+                                              fetched.rawPlate == '55505403'
+                                                  ? 'SYM Joyride 200 (55-505-403)'
+                                                  : '${fetched.manufacturer} ${fetched.modelName} (${fetched.plateNumber})';
+                                          await _saveState(
+                                            _state.copyWith(
+                                              vehicleName: newTitle,
+                                              testExpiry:
+                                                  fetched.testExpiryDate ??
+                                                  _state.testExpiry,
+                                            ),
+                                          );
                                         }
-                                        _officialFuelPrice = fuel;
-                                      });
-                                      if (fetched != null) {
-                                        SpendoHaptics.success();
-                                        final newTitle = fetched.rawPlate == '55505403'
-                                            ? 'SYM Joyride 200 (55-505-403)'
-                                            : '${fetched.manufacturer} ${fetched.modelName} (${fetched.plateNumber})';
-                                        await _saveState(_state.copyWith(
-                                          vehicleName: newTitle,
-                                          testExpiry: fetched.testExpiryDate ??
-                                              _state.testExpiry,
-                                        ));
-                                      }
-                                      setSheetState(() {
-                                        isSearching = false;
-                                        if (fetched == null) {
-                                          errorMsg =
-                                              'لم يتم العثور على مركبة أو دراجة بهذا الرقم في سجل وزارة المواصلات';
-                                        }
-                                      });
-                                    },
+                                        setSheetState(() {
+                                          isSearching = false;
+                                          if (fetched == null) {
+                                            errorMsg =
+                                                'لم يتم العثور على مركبة أو دراجة بهذا الرقم في سجل وزارة المواصلات';
+                                          }
+                                        });
+                                      },
                               icon: Icon(
                                 isSearching
                                     ? Remix.loader_4_line
@@ -885,9 +901,13 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                                 size: 15,
                               ),
                               label: Text(
-                                isSearching ? 'جاري السحب...' : 'سحب من الوزارة',
+                                isSearching
+                                    ? 'جاري السحب...'
+                                    : 'سحب من الوزارة',
                                 style: const TextStyle(
-                                    fontSize: 11, fontWeight: FontWeight.bold),
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                             ),
                           ],
@@ -898,7 +918,9 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                           Text(
                             errorMsg!,
                             style: const TextStyle(
-                                fontSize: 10.5, color: brandRed),
+                              fontSize: 10.5,
+                              color: brandRed,
+                            ),
                           ),
                         ],
 
@@ -915,24 +937,35 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                             ),
                             child: Column(
                               children: [
-                                _buildGovRow('رقم اللوحة (מספר רישוי)',
-                                    info.plateNumber,
-                                    highlight: true),
-                                _buildGovRow('الشركة والموديل (תוצר ודגם)',
-                                    '${info.manufacturer} • ${info.modelName} (${info.vehicleType})'),
                                 _buildGovRow(
-                                    'سنة الصنع ونزول الشارع',
-                                    '${info.year} (${info.roadEntryMonth.isNotEmpty ? info.roadEntryMonth : 'רשמי'})'),
+                                  'رقم اللوحة (מספר רישוי)',
+                                  info.plateNumber,
+                                  highlight: true,
+                                ),
+                                _buildGovRow(
+                                  'الشركة والموديل (תוצר ודגם)',
+                                  '${info.manufacturer} • ${info.modelName} (${info.vehicleType})',
+                                ),
+                                _buildGovRow(
+                                  'سنة الصنع ونزول الشارع',
+                                  '${info.year} (${info.roadEntryMonth.isNotEmpty ? info.roadEntryMonth : 'רשמי'})',
+                                ),
                                 if (info.engineCc > 0)
-                                  _buildGovRow('حجم المحرك والقوة',
-                                      '${info.engineCc} סמ"ק • ${info.horsePower} כ"ס'),
+                                  _buildGovRow(
+                                    'حجم المحرك والقوة',
+                                    '${info.engineCc} סמ"ק • ${info.horsePower} כ"ס',
+                                  ),
                                 if (info.frontTire.isNotEmpty ||
                                     info.rearTire.isNotEmpty)
-                                  _buildGovRow('مقاس الإطارات الرسمي (צמיגים)',
-                                      'أمامي: ${info.frontTire} | خلفي: ${info.rearTire}'),
+                                  _buildGovRow(
+                                    'مقاس الإطارات الرسمي (צמיגים)',
+                                    'أمامي: ${info.frontTire} | خلفي: ${info.rearTire}',
+                                  ),
                                 if (info.chassisVin.isNotEmpty)
-                                  _buildGovRow('رقم الشاصي (מספר שלדה)',
-                                      info.chassisVin),
+                                  _buildGovRow(
+                                    'رقم الشاصي (מספר שלדה)',
+                                    info.chassisVin,
+                                  ),
                                 if (info.testExpiryDate != null)
                                   _buildGovRow(
                                     'موعد انتهاء التست (טסט)',
@@ -958,8 +991,11 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                             children: [
                               Row(
                                 children: [
-                                  const Icon(Remix.database_2_line,
-                                      size: 14, color: brandGreen),
+                                  const Icon(
+                                    Remix.database_2_line,
+                                    size: 14,
+                                    color: brandGreen,
+                                  ),
                                   SizedBox(width: 6),
                                   Text(
                                     'سجلات الدولة المفتوحة المرتبطة بمركبتك',
@@ -1091,9 +1127,10 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
           color: surfaceField,
           borderRadius: BorderRadius.circular(10),
           border: Border.all(
-            color: daysLeft <= 30
-                ? statusColor.withValues(alpha: 0.4)
-                : surfaceBorder,
+            color:
+                daysLeft <= 30
+                    ? statusColor.withValues(alpha: 0.4)
+                    : surfaceBorder,
           ),
         ),
         child: Column(
@@ -1139,8 +1176,10 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                   ),
                 ),
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 6,
+                    vertical: 1.5,
+                  ),
                   decoration: BoxDecoration(
                     color: statusColor.withValues(alpha: 0.14),
                     borderRadius: BorderRadius.circular(4),
@@ -1170,9 +1209,10 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
       initialDate: initialDate,
       firstDate: DateTime(2024),
       lastDate: DateTime(2035),
-      helpText: isInsurance
-          ? 'تحديد تاريخ انتهاء التأمين (ביטוח)'
-          : 'تحديد تاريخ انتهاء التست (טסט)',
+      helpText:
+          isInsurance
+              ? 'تحديد تاريخ انتهاء التأمين (ביטוח)'
+              : 'تحديد تاريخ انتهاء التست (טסט)',
       confirmText: 'حفظ التاريخ',
     );
 
@@ -1208,17 +1248,21 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
         final isWarning =
             !isExceeded && (remaining < 600 || healthRatio <= 0.25);
 
-        final borderColor = isExceeded
-            ? brandRed.withValues(alpha: 0.4)
-            : (isWarning ? brandYellow.withValues(alpha: 0.3) : surfaceBorder);
+        final borderColor =
+            isExceeded
+                ? brandRed.withValues(alpha: 0.4)
+                : (isWarning
+                    ? brandYellow.withValues(alpha: 0.3)
+                    : surfaceBorder);
 
         final percentage = isExceeded ? 0 : (healthRatio * 100).round();
 
-        final statusText = remaining > 0
-            ? 'נותרו עוד ${_formatNumber(remaining)} ק"מ'
-            : (remaining == 0
-                ? 'נותרו עוד 0 ק"מ'
-                : 'חריגה של ${_formatNumber(remaining.abs())} ק"מ!');
+        final statusText =
+            remaining > 0
+                ? 'נותרו עוד ${_formatNumber(remaining)} ק"מ'
+                : (remaining == 0
+                    ? 'נותרו עוד 0 ק"מ'
+                    : 'חריגה של ${_formatNumber(remaining.abs())} ק"מ!');
 
         return InkWell(
           onTap: () {
@@ -1241,11 +1285,7 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Icon(
-                      _getPartIcon(part),
-                      color: statusColor,
-                      size: 16,
-                    ),
+                    Icon(_getPartIcon(part), color: statusColor, size: 16),
                     Text(
                       '$percentage%',
                       style: TextStyle(
@@ -1279,10 +1319,7 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       textDirection: TextDirection.rtl,
-                      style: TextStyle(
-                        fontSize: 9,
-                        color: textMuted,
-                      ),
+                      style: TextStyle(fontSize: 9, color: textMuted),
                     ),
                   ],
                 ),
@@ -1348,9 +1385,7 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
               decoration: BoxDecoration(
                 color: surfaceField,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: brandGreen.withValues(alpha: 0.4),
-                ),
+                border: Border.all(color: brandGreen.withValues(alpha: 0.4)),
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -1388,18 +1423,12 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
               decoration: BoxDecoration(
                 color: surfaceField,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: brandYellow.withValues(alpha: 0.4),
-                ),
+                border: Border.all(color: brandYellow.withValues(alpha: 0.4)),
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(
-                    Remix.tools_line,
-                    size: 15,
-                    color: brandYellow,
-                  ),
+                  Icon(Remix.tools_line, size: 15, color: brandYellow),
                   const SizedBox(width: 6),
                   Text(
                     'تسجيل صيانة',
@@ -1430,25 +1459,28 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
     final sortedMonthKeys = monthKeys.toList()..sort((a, b) => b.compareTo(a));
 
     // Filter items
-    final filteredHistory = _selectedMonthKey == 'all'
-        ? _state.history
-        : _state.history.where((e) {
-            final key =
-                '${e.date.year}-${e.date.month.toString().padLeft(2, '0')}';
-            return key == _selectedMonthKey;
-          }).toList();
+    final filteredHistory =
+        _selectedMonthKey == 'all'
+            ? _state.history
+            : _state.history.where((e) {
+              final key =
+                  '${e.date.year}-${e.date.month.toString().padLeft(2, '0')}';
+              return key == _selectedMonthKey;
+            }).toList();
 
-    final displayHistory = _showAllHistory
-        ? filteredHistory
-        : filteredHistory.take(5).toList();
+    final displayHistory =
+        _showAllHistory ? filteredHistory : filteredHistory.take(5).toList();
 
-    final fuelItems = filteredHistory
-        .where((e) => e.category == ExpenseCategory.fuel)
-        .toList();
+    final fuelItems =
+        filteredHistory
+            .where((e) => e.category == ExpenseCategory.fuel)
+            .toList();
 
     final fuelTotal = fuelItems.fold(0.0, (sum, e) => sum + e.amount);
-    final fuelLitersTotal =
-        fuelItems.fold(0.0, (sum, e) => sum + (e.liters ?? 0.0));
+    final fuelLitersTotal = fuelItems.fold(
+      0.0,
+      (sum, e) => sum + (e.liters ?? 0.0),
+    );
 
     final maintenanceTotal = filteredHistory
         .where((e) => e.category == ExpenseCategory.maintenance)
@@ -1465,8 +1497,8 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
         allFuelMonthKeys.add(key);
       }
     }
-    final sortedFuelMonthKeys = allFuelMonthKeys.toList()
-      ..sort((a, b) => b.compareTo(a));
+    final sortedFuelMonthKeys =
+        allFuelMonthKeys.toList()..sort((a, b) => b.compareTo(a));
 
     return Container(
       decoration: BoxDecoration(
@@ -1481,11 +1513,7 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
           // Filter title
           Row(
             children: [
-              const Icon(
-                Remix.calendar_2_line,
-                size: 14,
-                color: brandGreen,
-              ),
+              const Icon(Remix.calendar_2_line, size: 14, color: brandGreen),
               const SizedBox(width: 6),
               Text(
                 'تصفية المصاريف حسب الشهر',
@@ -1510,11 +1538,12 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                   label: 'الكل (${_state.history.length})',
                 ),
                 ...sortedMonthKeys.map((k) {
-                  final count = _state.history.where((e) {
-                    final itemKey =
-                        '${e.date.year}-${e.date.month.toString().padLeft(2, '0')}';
-                    return itemKey == k;
-                  }).length;
+                  final count =
+                      _state.history.where((e) {
+                        final itemKey =
+                            '${e.date.year}-${e.date.month.toString().padLeft(2, '0')}';
+                        return itemKey == k;
+                      }).length;
                   return Padding(
                     padding: const EdgeInsets.only(right: 6),
                     child: _buildMonthChipItem(
@@ -1545,10 +1574,7 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                     children: [
                       const Text(
                         'مصروف الوقود',
-                        style: TextStyle(
-                          fontSize: 9,
-                          color: Color(0xFF9CA3AF),
-                        ),
+                        style: TextStyle(fontSize: 9, color: Color(0xFF9CA3AF)),
                       ),
                       const SizedBox(height: 2),
                       Row(
@@ -1597,10 +1623,7 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                     children: [
                       const Text(
                         'مصروف الصيانة',
-                        style: TextStyle(
-                          fontSize: 9,
-                          color: Color(0xFF9CA3AF),
-                        ),
+                        style: TextStyle(fontSize: 9, color: Color(0xFF9CA3AF)),
                       ),
                       const SizedBox(height: 2),
                       Row(
@@ -1639,10 +1662,7 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                     children: [
                       const Text(
                         'إجمالي المصاريف',
-                        style: TextStyle(
-                          fontSize: 9,
-                          color: Color(0xFF9CA3AF),
-                        ),
+                        style: TextStyle(fontSize: 9, color: Color(0xFF9CA3AF)),
                       ),
                       const SizedBox(height: 2),
                       Row(
@@ -1666,7 +1686,9 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                               fontSize: 12,
                               fontWeight: FontWeight.w900,
                               color: textWhite,
-                              fontFeatures: const [FontFeature.tabularFigures()],
+                              fontFeatures: const [
+                                FontFeature.tabularFigures(),
+                              ],
                             ),
                           ),
                         ],
@@ -1692,7 +1714,11 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                 children: [
                   Row(
                     children: [
-                      const Icon(Remix.gas_station_line, size: 13, color: brandGreen),
+                      const Icon(
+                        Remix.gas_station_line,
+                        size: 13,
+                        color: brandGreen,
+                      ),
                       const SizedBox(width: 5),
                       Text(
                         'سجل تكلفة الوقود الشهري (حسب الفواتير والفروع)',
@@ -1706,16 +1732,18 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                   ),
                   const SizedBox(height: 6),
                   ...sortedFuelMonthKeys.map((mKey) {
-                    final mFuelList = _state.history.where((e) {
-                      if (e.category != ExpenseCategory.fuel) return false;
-                      final k =
-                          '${e.date.year}-${e.date.month.toString().padLeft(2, '0')}';
-                      return k == mKey;
-                    }).toList();
-                    final mSum =
-                        mFuelList.fold(0.0, (s, e) => s + e.amount);
+                    final mFuelList =
+                        _state.history.where((e) {
+                          if (e.category != ExpenseCategory.fuel) return false;
+                          final k =
+                              '${e.date.year}-${e.date.month.toString().padLeft(2, '0')}';
+                          return k == mKey;
+                        }).toList();
+                    final mSum = mFuelList.fold(0.0, (s, e) => s + e.amount);
                     final mLiters = mFuelList.fold(
-                        0.0, (s, e) => s + (e.liters ?? 0.0));
+                      0.0,
+                      (s, e) => s + (e.liters ?? 0.0),
+                    );
                     final branches = mFuelList
                         .map((e) => (e.provider ?? '').trim())
                         .where((p) => p.isNotEmpty)
@@ -1792,10 +1820,7 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
               ),
               Text(
                 '${filteredHistory.length} عمليات',
-                style: const TextStyle(
-                  fontSize: 10,
-                  color: Color(0xFF9CA3AF),
-                ),
+                style: const TextStyle(fontSize: 10, color: Color(0xFF9CA3AF)),
               ),
             ],
           ),
@@ -1819,177 +1844,189 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
               );
             },
             child: Column(
-              key: ValueKey<String>('${_selectedMonthKey}_${_showAllHistory}_${displayHistory.length}'),
+              key: ValueKey<String>(
+                '${_selectedMonthKey}_${_showAllHistory}_${displayHistory.length}',
+              ),
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 if (displayHistory.isEmpty)
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 18),
-              child: Center(
-                child: Text(
-                  'لا توجد عمليات مسجلة في هذا الشهر',
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: Color(0xFF9CA3AF),
-                  ),
-                ),
-              ),
-            )
-          else
-            ListView.separated(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: displayHistory.length,
-              separatorBuilder: (_, __) => const Divider(
-                color: Color(0xB3242927),
-                height: 1,
-                thickness: 0.8,
-              ),
-              itemBuilder: (context, idx) {
-                final item = displayHistory[idx];
-                final isFuel = item.category == ExpenseCategory.fuel;
-                final itemColor = isFuel ? brandGreen : brandYellow;
-
-                return Dismissible(
-                  key: ValueKey(item.id),
-                  direction: DismissDirection.endToStart,
-                  onDismissed: (_) {
-                    SpendoHaptics.light();
-                    final updated = _state.history
-                        .where((x) => x.id != item.id)
-                        .toList();
-                    _saveState(_state.copyWith(history: updated));
-                    DeletionSyncService.recordDeletion(_storageKey, item.id);
-                  },
-                  background: Container(
-                    alignment: Alignment.centerLeft,
-                    padding: const EdgeInsets.only(left: 16),
-                    color: brandRed.withValues(alpha: 0.15),
-                    child: const Icon(
-                      Remix.delete_bin_line,
-                      color: brandRed,
-                      size: 16,
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 18),
+                    child: Center(
+                      child: Text(
+                        'لا توجد عمليات مسجلة في هذا الشهر',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: Color(0xFF9CA3AF),
+                        ),
+                      ),
                     ),
-                  ),
-                  child: InkWell(
-                    onTap: () {
-                      SpendoHaptics.light();
-                      _showTransactionDetailsSheet(item);
-                    },
-                    borderRadius: BorderRadius.circular(8),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                          vertical: 8, horizontal: 2),
-                      child: Row(
-                        children: [
-                          Icon(
-                            isFuel ? Remix.gas_station_line : Remix.tools_line,
-                            size: 15,
-                            color: itemColor,
+                  )
+                else
+                  ListView.separated(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: displayHistory.length,
+                    separatorBuilder:
+                        (_, __) => const Divider(
+                          color: Color(0xB3242927),
+                          height: 1,
+                          thickness: 0.8,
+                        ),
+                    itemBuilder: (context, idx) {
+                      final item = displayHistory[idx];
+                      final isFuel = item.category == ExpenseCategory.fuel;
+                      final itemColor = isFuel ? brandGreen : brandYellow;
+
+                      return Dismissible(
+                        key: ValueKey(item.id),
+                        direction: DismissDirection.endToStart,
+                        onDismissed: (_) {
+                          SpendoHaptics.light();
+                          final updated =
+                              _state.history
+                                  .where((x) => x.id != item.id)
+                                  .toList();
+                          _saveState(_state.copyWith(history: updated));
+                          DeletionSyncService.recordDeletion(
+                            _storageKey,
+                            item.id,
+                          );
+                        },
+                        background: Container(
+                          alignment: Alignment.centerLeft,
+                          padding: const EdgeInsets.only(left: 16),
+                          color: brandRed.withValues(alpha: 0.15),
+                          child: const Icon(
+                            Remix.delete_bin_line,
+                            color: brandRed,
+                            size: 16,
                           ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                        ),
+                        child: InkWell(
+                          onTap: () {
+                            SpendoHaptics.light();
+                            _showTransactionDetailsSheet(item);
+                          },
+                          borderRadius: BorderRadius.circular(8),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              vertical: 8,
+                              horizontal: 2,
+                            ),
+                            child: Row(
                               children: [
-                                Text(
-                                  item.title,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  textDirection: TextDirection.rtl,
-                                  style: TextStyle(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.bold,
-                                    color: textWhite,
-                                  ),
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
+                                Icon(
                                   isFuel
-                                      ? '${item.date.day}/${item.date.month}/${item.date.year}${item.provider != null && item.provider!.isNotEmpty ? ' • ${item.provider}' : ''}${item.liters != null && item.liters! > 0 ? ' • ${item.liters!.toStringAsFixed(2)} ליטר' : ''}'
-                                      : '${item.date.day}/${item.date.month}/${item.date.year}${item.odometer > 0 ? ' • ${_formatNumber(item.odometer)} ק"מ' : ''}',
-                                  textDirection: TextDirection.rtl,
-                                  style: const TextStyle(
-                                    fontSize: 9,
-                                    color: Color(0xFF9CA3AF),
-                                    fontFeatures: [
-                                      FontFeature.tabularFigures()
+                                      ? Remix.gas_station_line
+                                      : Remix.tools_line,
+                                  size: 15,
+                                  color: itemColor,
+                                ),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        item.title,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        textDirection: TextDirection.rtl,
+                                        style: TextStyle(
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.bold,
+                                          color: textWhite,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 2),
+                                      Text(
+                                        isFuel
+                                            ? '${item.date.day}/${item.date.month}/${item.date.year}${item.provider != null && item.provider!.isNotEmpty ? ' • ${item.provider}' : ''}${item.liters != null && item.liters! > 0 ? ' • ${item.liters!.toStringAsFixed(2)} ליטר' : ''}'
+                                            : '${item.date.day}/${item.date.month}/${item.date.year}${item.odometer > 0 ? ' • ${_formatNumber(item.odometer)} ק"מ' : ''}',
+                                        textDirection: TextDirection.rtl,
+                                        style: const TextStyle(
+                                          fontSize: 9,
+                                          color: Color(0xFF9CA3AF),
+                                          fontFeatures: [
+                                            FontFeature.tabularFigures(),
+                                          ],
+                                        ),
+                                      ),
                                     ],
                                   ),
+                                ),
+                                const SizedBox(width: 8),
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      '₪ ${item.amount.toStringAsFixed(item.amount % 1 == 0 ? 0 : 2)}',
+                                      textDirection: TextDirection.ltr,
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold,
+                                        color: itemColor,
+                                        fontFeatures: const [
+                                          FontFeature.tabularFigures(),
+                                        ],
+                                      ),
+                                    ),
+                                    const SizedBox(width: 4),
+                                    const Icon(
+                                      Remix.arrow_left_s_line,
+                                      size: 13,
+                                      color: Color(0xFF6B7280),
+                                    ),
+                                  ],
                                 ),
                               ],
                             ),
                           ),
-                          const SizedBox(width: 8),
-                          Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                '₪ ${item.amount.toStringAsFixed(item.amount % 1 == 0 ? 0 : 2)}',
-                                textDirection: TextDirection.ltr,
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
-                                  color: itemColor,
-                                  fontFeatures: const [
-                                    FontFeature.tabularFigures()
-                                  ],
-                                ),
+                        ),
+                      );
+                    },
+                  ),
+
+                if (filteredHistory.length > 5) ...[
+                  const SizedBox(height: 6),
+                  InkWell(
+                    onTap: () {
+                      SpendoHaptics.selection();
+                      setState(() => _showAllHistory = !_showAllHistory);
+                    },
+                    borderRadius: BorderRadius.circular(8),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 6),
+                      child: Center(
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              _showAllHistory
+                                  ? 'طي السجل'
+                                  : 'عرض كافة العمليات (${filteredHistory.length})',
+                              style: const TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                                color: brandGreen,
                               ),
-                              const SizedBox(width: 4),
-                              const Icon(
-                                Remix.arrow_left_s_line,
-                                size: 13,
-                                color: Color(0xFF6B7280),
-                              ),
-                            ],
-                          ),
-                        ],
+                            ),
+                            const SizedBox(width: 4),
+                            Icon(
+                              _showAllHistory
+                                  ? Remix.arrow_up_s_line
+                                  : Remix.arrow_down_s_line,
+                              size: 14,
+                              color: brandGreen,
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
-                );
-              },
-            ),
-
-          if (filteredHistory.length > 5) ...[
-            const SizedBox(height: 6),
-            InkWell(
-              onTap: () {
-                SpendoHaptics.selection();
-                setState(() => _showAllHistory = !_showAllHistory);
-              },
-              borderRadius: BorderRadius.circular(8),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 6),
-                child: Center(
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        _showAllHistory
-                            ? 'طي السجل'
-                            : 'عرض كافة العمليات (${filteredHistory.length})',
-                        style: const TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
-                          color: brandGreen,
-                        ),
-                      ),
-                      const SizedBox(width: 4),
-                      Icon(
-                        _showAllHistory
-                            ? Remix.arrow_up_s_line
-                            : Remix.arrow_down_s_line,
-                        size: 14,
-                        color: brandGreen,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ],
+                ],
               ],
             ),
           ),
@@ -1998,10 +2035,7 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
     );
   }
 
-  Widget _buildMonthChipItem({
-    required String keyName,
-    required String label,
-  }) {
+  Widget _buildMonthChipItem({required String keyName, required String label}) {
     final isSelected = _selectedMonthKey == keyName;
     return InkWell(
       onTap: () {
@@ -2016,9 +2050,7 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
         decoration: BoxDecoration(
           color: isSelected ? brandGreen.withValues(alpha: 0.12) : surfaceMain,
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(
-            color: isSelected ? brandGreen : surfaceBorder,
-          ),
+          border: Border.all(color: isSelected ? brandGreen : surfaceBorder),
         ),
         alignment: Alignment.center,
         child: AnimatedDefaultTextStyle(
@@ -2049,9 +2081,10 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
       builder: (ctx) {
         final media = MediaQuery.of(ctx);
         final keyboardInset = media.viewInsets.bottom;
-        final bottomNavPadding = media.padding.bottom > 0
-            ? media.padding.bottom
-            : media.viewPadding.bottom;
+        final bottomNavPadding =
+            media.padding.bottom > 0
+                ? media.padding.bottom
+                : media.viewPadding.bottom;
         return Directionality(
           textDirection: TextDirection.rtl,
           child: SafeArea(
@@ -2062,78 +2095,80 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                 right: 20,
                 left: 20,
                 top: 20,
-                bottom: keyboardInset > 0
-                    ? keyboardInset + 8
-                    : (bottomNavPadding > 0 ? bottomNavPadding + 8 : 16),
+                bottom:
+                    keyboardInset > 0
+                        ? keyboardInset + 8
+                        : (bottomNavPadding > 0 ? bottomNavPadding + 8 : 16),
               ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Text(
-                'تعديل اسم أو موديل المركبة',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w800,
-                  color: textWhite,
-                ),
-              ),
-              const SizedBox(height: 14),
-              TextField(
-                controller: controller,
-                autofocus: true,
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700,
-                  color: textWhite,
-                ),
-                decoration: InputDecoration(
-                  hintText: 'مثال: SYM Joyride 200 أو سكوتر العمل...',
-                  hintStyle: TextStyle(color: AppColors.textMuted),
-                  filled: true,
-                  fillColor: surfaceField,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    borderSide: BorderSide(color: surfaceBorder),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(
+                    'تعديل اسم أو موديل المركبة',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w800,
+                      color: textWhite,
+                    ),
                   ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: () {
-                  final newName = controller.text.trim();
-                  if (newName.isNotEmpty) {
-                    SpendoHaptics.light();
-                    _saveState(_state.copyWith(vehicleName: newName));
-                    Navigator.pop(ctx);
-                  }
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.spendoGreen,
-                  foregroundColor: Colors.black,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
+                  const SizedBox(height: 14),
+                  TextField(
+                    controller: controller,
+                    autofocus: true,
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      color: textWhite,
+                    ),
+                    decoration: InputDecoration(
+                      hintText: 'مثال: SYM Joyride 200 أو سكوتر العمل...',
+                      hintStyle: TextStyle(color: AppColors.textMuted),
+                      filled: true,
+                      fillColor: surfaceField,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: BorderSide(color: surfaceBorder),
+                      ),
+                    ),
                   ),
-                ),
-                child: const Text(
-                  'حفظ الاسم',
-                  style: TextStyle(fontWeight: FontWeight.w800),
-                ),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: () {
+                      final newName = controller.text.trim();
+                      if (newName.isNotEmpty) {
+                        SpendoHaptics.light();
+                        _saveState(_state.copyWith(vehicleName: newName));
+                        Navigator.pop(ctx);
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.spendoGreen,
+                      foregroundColor: Colors.black,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
+                    child: const Text(
+                      'حفظ الاسم',
+                      style: TextStyle(fontWeight: FontWeight.w800),
+                    ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
-  },
-);
   }
 
   // نافذة تحديث العداد
   void _showUpdateOdometerSheet() {
-    final controller =
-        TextEditingController(text: _state.currentOdometer.toString());
+    final controller = TextEditingController(
+      text: _state.currentOdometer.toString(),
+    );
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -2144,9 +2179,10 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
       builder: (ctx) {
         final media = MediaQuery.of(ctx);
         final keyboardInset = media.viewInsets.bottom;
-        final bottomNavPadding = media.padding.bottom > 0
-            ? media.padding.bottom
-            : media.viewPadding.bottom;
+        final bottomNavPadding =
+            media.padding.bottom > 0
+                ? media.padding.bottom
+                : media.viewPadding.bottom;
         return Directionality(
           textDirection: TextDirection.rtl,
           child: SafeArea(
@@ -2157,80 +2193,82 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                 right: 20,
                 left: 20,
                 top: 20,
-                bottom: keyboardInset > 0
-                    ? keyboardInset + 8
-                    : (bottomNavPadding > 0 ? bottomNavPadding + 8 : 16),
+                bottom:
+                    keyboardInset > 0
+                        ? keyboardInset + 8
+                        : (bottomNavPadding > 0 ? bottomNavPadding + 8 : 16),
               ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Text(
-                'تحديث قراءة العداد الحالية',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w800,
-                  color: textWhite,
-                ),
-              ),
-              const SizedBox(height: 14),
-              TextField(
-                controller: controller,
-                autofocus: true,
-                keyboardType: TextInputType.number,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.w900,
-                  color: textWhite,
-                ),
-                decoration: InputDecoration(
-                  suffixText: 'كم',
-                  filled: true,
-                  fillColor: surfaceField,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    borderSide: BorderSide(color: surfaceBorder),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(
+                    'تحديث قراءة العداد الحالية',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w800,
+                      color: textWhite,
+                    ),
                   ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: () {
-                  final nextKm = int.tryParse(controller.text.trim());
-                  if (nextKm != null && nextKm > 0) {
-                    SpendoHaptics.light();
-                    _saveState(_state.copyWith(currentOdometer: nextKm));
-                    Navigator.pop(ctx);
-                  }
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.spendoGreen,
-                  foregroundColor: Colors.black,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
+                  const SizedBox(height: 14),
+                  TextField(
+                    controller: controller,
+                    autofocus: true,
+                    keyboardType: TextInputType.number,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.w900,
+                      color: textWhite,
+                    ),
+                    decoration: InputDecoration(
+                      suffixText: 'كم',
+                      filled: true,
+                      fillColor: surfaceField,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: BorderSide(color: surfaceBorder),
+                      ),
+                    ),
                   ),
-                ),
-                child: const Text(
-                  'حفظ وتحديث الصحة فوراً',
-                  style: TextStyle(fontWeight: FontWeight.w800),
-                ),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: () {
+                      final nextKm = int.tryParse(controller.text.trim());
+                      if (nextKm != null && nextKm > 0) {
+                        SpendoHaptics.light();
+                        _saveState(_state.copyWith(currentOdometer: nextKm));
+                        Navigator.pop(ctx);
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.spendoGreen,
+                      foregroundColor: Colors.black,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
+                    child: const Text(
+                      'حفظ وتحديث الصحة فوراً',
+                      style: TextStyle(fontWeight: FontWeight.w800),
+                    ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
-  },
-);
   }
 
   // نافذة تصفير قطعة الصيانة بلمسة واحدة
   void _showResetPartSheet(MaintenancePart part) {
     final costCtrl = TextEditingController();
-    final odoCtrl =
-        TextEditingController(text: _state.currentOdometer.toString());
+    final odoCtrl = TextEditingController(
+      text: _state.currentOdometer.toString(),
+    );
 
     showModalBottomSheet(
       context: context,
@@ -2242,9 +2280,10 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
       builder: (ctx) {
         final media = MediaQuery.of(ctx);
         final keyboardInset = media.viewInsets.bottom;
-        final bottomNavPadding = media.padding.bottom > 0
-            ? media.padding.bottom
-            : media.viewPadding.bottom;
+        final bottomNavPadding =
+            media.padding.bottom > 0
+                ? media.padding.bottom
+                : media.viewPadding.bottom;
         return Directionality(
           textDirection: TextDirection.rtl,
           child: SafeArea(
@@ -2255,118 +2294,126 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                 right: 20,
                 left: 20,
                 top: 20,
-                bottom: keyboardInset > 0
-                    ? keyboardInset + 8
-                    : (bottomNavPadding > 0 ? bottomNavPadding + 8 : 16),
+                bottom:
+                    keyboardInset > 0
+                        ? keyboardInset + 8
+                        : (bottomNavPadding > 0 ? bottomNavPadding + 8 : 16),
               ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Text(
-                'هل قمت بصيانة/تغيير ${part.title} الآن؟',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w800,
-                  color: textWhite,
-                ),
-              ),
-              const SizedBox(height: 14),
-              TextField(
-                controller: costCtrl,
-                keyboardType: TextInputType.number,
-                style: TextStyle(color: textWhite),
-                decoration: InputDecoration(
-                  labelText: 'التكلفة بالشيكل (اختياري)',
-                  labelStyle: TextStyle(color: AppColors.textMuted),
-                  suffixText: '₪',
-                  filled: true,
-                  fillColor: surfaceField,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    borderSide: BorderSide(color: surfaceBorder),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(
+                    'هل قمت بصيانة/تغيير ${part.title} الآن؟',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w800,
+                      color: textWhite,
+                    ),
                   ),
-                ),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: odoCtrl,
-                keyboardType: TextInputType.number,
-                style: TextStyle(color: textWhite),
-                decoration: InputDecoration(
-                  labelText: 'قراءة العداد عند التغيير',
-                  labelStyle: TextStyle(color: AppColors.textMuted),
-                  suffixText: 'كم',
-                  filled: true,
-                  fillColor: surfaceField,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    borderSide: BorderSide(color: surfaceBorder),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: () {
-                  final serviceKm =
-                      int.tryParse(odoCtrl.text.trim()) ?? _state.currentOdometer;
-                  final cost = double.tryParse(costCtrl.text.trim()) ?? 0.0;
-
-                  SpendoHaptics.light();
-
-                  final updatedParts = _state.parts.map((p) {
-                    if (p.id == part.id) {
-                      return p.copyWith(lastServiceKm: serviceKm);
-                    }
-                    return p;
-                  }).toList();
-
-                  final updatedHistory = [..._state.history];
-                  if (cost > 0) {
-                    updatedHistory.insert(
-                      0,
-                      VehicleExpenseRecord(
-                        id: DateTime.now().millisecondsSinceEpoch.toString(),
-                        title: 'החלפת ${part.title}',
-                        amount: cost,
-                        odometer: serviceKm,
-                        date: DateTime.now(),
-                        category: ExpenseCategory.maintenance,
+                  const SizedBox(height: 14),
+                  TextField(
+                    controller: costCtrl,
+                    keyboardType: TextInputType.number,
+                    style: TextStyle(color: textWhite),
+                    decoration: InputDecoration(
+                      labelText: 'التكلفة بالشيكل (اختياري)',
+                      labelStyle: TextStyle(color: AppColors.textMuted),
+                      suffixText: '₪',
+                      filled: true,
+                      fillColor: surfaceField,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: BorderSide(color: surfaceBorder),
                       ),
-                    );
-                  }
-
-                  final nextOdo = serviceKm > _state.currentOdometer
-                      ? serviceKm
-                      : _state.currentOdometer;
-
-                  _saveState(_state.copyWith(
-                    currentOdometer: nextOdo,
-                    parts: updatedParts,
-                    history: updatedHistory,
-                  ));
-                  Navigator.pop(ctx);
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.spendoGreen,
-                  foregroundColor: Colors.black,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
+                    ),
                   ),
-                ),
-                child: const Text(
-                  'تصفير العداد وحفظ',
-                  style: TextStyle(fontWeight: FontWeight.w800),
-                ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: odoCtrl,
+                    keyboardType: TextInputType.number,
+                    style: TextStyle(color: textWhite),
+                    decoration: InputDecoration(
+                      labelText: 'قراءة العداد عند التغيير',
+                      labelStyle: TextStyle(color: AppColors.textMuted),
+                      suffixText: 'كم',
+                      filled: true,
+                      fillColor: surfaceField,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: BorderSide(color: surfaceBorder),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: () {
+                      final serviceKm =
+                          int.tryParse(odoCtrl.text.trim()) ??
+                          _state.currentOdometer;
+                      final cost = double.tryParse(costCtrl.text.trim()) ?? 0.0;
+
+                      SpendoHaptics.light();
+
+                      final updatedParts =
+                          _state.parts.map((p) {
+                            if (p.id == part.id) {
+                              return p.copyWith(lastServiceKm: serviceKm);
+                            }
+                            return p;
+                          }).toList();
+
+                      final updatedHistory = [..._state.history];
+                      if (cost > 0) {
+                        updatedHistory.insert(
+                          0,
+                          VehicleExpenseRecord(
+                            id:
+                                DateTime.now().millisecondsSinceEpoch
+                                    .toString(),
+                            title: 'החלפת ${part.title}',
+                            amount: cost,
+                            odometer: serviceKm,
+                            date: DateTime.now(),
+                            category: ExpenseCategory.maintenance,
+                          ),
+                        );
+                      }
+
+                      final nextOdo =
+                          serviceKm > _state.currentOdometer
+                              ? serviceKm
+                              : _state.currentOdometer;
+
+                      _saveState(
+                        _state.copyWith(
+                          currentOdometer: nextOdo,
+                          parts: updatedParts,
+                          history: updatedHistory,
+                        ),
+                      );
+                      Navigator.pop(ctx);
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.spendoGreen,
+                      foregroundColor: Colors.black,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
+                    child: const Text(
+                      'تصفير العداد وحفظ',
+                      style: TextStyle(fontWeight: FontWeight.w800),
+                    ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
-  },
-);
   }
 
   // نافذة تسجيل تعبئة وقود بتصميم هادئ ومتقن مع أيقونات مدمجة بالخلفية
@@ -2381,8 +2428,9 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
   void _showMaintenanceExpenseSheet() {
     final amountCtrl = TextEditingController();
     final noteCtrl = TextEditingController();
-    final odoCtrl =
-        TextEditingController(text: _state.currentOdometer.toString());
+    final odoCtrl = TextEditingController(
+      text: _state.currentOdometer.toString(),
+    );
 
     showModalBottomSheet(
       context: context,
@@ -2394,9 +2442,10 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
       builder: (ctx) {
         final media = MediaQuery.of(ctx);
         final keyboardInset = media.viewInsets.bottom;
-        final bottomNavPadding = media.padding.bottom > 0
-            ? media.padding.bottom
-            : media.viewPadding.bottom;
+        final bottomNavPadding =
+            media.padding.bottom > 0
+                ? media.padding.bottom
+                : media.viewPadding.bottom;
         return Directionality(
           textDirection: TextDirection.rtl,
           child: SafeArea(
@@ -2407,144 +2456,143 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                 right: 20,
                 left: 20,
                 top: 20,
-                bottom: keyboardInset > 0
-                    ? keyboardInset + 8
-                    : (bottomNavPadding > 0 ? bottomNavPadding + 8 : 16),
+                bottom:
+                    keyboardInset > 0
+                        ? keyboardInset + 8
+                        : (bottomNavPadding > 0 ? bottomNavPadding + 8 : 16),
               ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Row(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Icon(
-                    Remix.tools_line,
-                    color: brandYellow,
-                    size: 20,
+                  Row(
+                    children: [
+                      Icon(Remix.tools_line, color: brandYellow, size: 20),
+                      SizedBox(width: 8),
+                      Text(
+                        'تسجيل صيانة دورية / قطع غيار',
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w800,
+                          color: textWhite,
+                        ),
+                      ),
+                    ],
                   ),
-                  SizedBox(width: 8),
-                  Text(
-                    'تسجيل صيانة دورية / قطع غيار',
+                  const SizedBox(height: 14),
+                  TextField(
+                    controller: amountCtrl,
+                    autofocus: true,
+                    keyboardType: TextInputType.number,
                     style: TextStyle(
-                      fontSize: 15,
+                      fontSize: 22,
                       fontWeight: FontWeight.w800,
                       color: textWhite,
+                    ),
+                    decoration: InputDecoration(
+                      labelText: 'المبلغ المدفوع (₪)',
+                      labelStyle: TextStyle(color: AppColors.textMuted),
+                      suffixText: '₪',
+                      filled: true,
+                      fillColor: surfaceField,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: BorderSide(color: surfaceBorder),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: noteCtrl,
+                    style: TextStyle(color: textWhite),
+                    decoration: InputDecoration(
+                      labelText: 'שם הטיפול או החלפים המוחלפים (עברית)',
+                      labelStyle: TextStyle(color: AppColors.textMuted),
+                      filled: true,
+                      fillColor: surfaceField,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: BorderSide(color: surfaceBorder),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: odoCtrl,
+                    keyboardType: TextInputType.number,
+                    style: TextStyle(color: textWhite),
+                    decoration: InputDecoration(
+                      labelText: 'קריאת מד אוץ בעת הטיפול (ק"מ)',
+                      labelStyle: TextStyle(color: AppColors.textMuted),
+                      suffixText: 'ק"מ',
+                      filled: true,
+                      fillColor: surfaceField,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: BorderSide(color: surfaceBorder),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  ElevatedButton.icon(
+                    onPressed: () {
+                      final amount = double.tryParse(amountCtrl.text.trim());
+                      if (amount == null || amount <= 0) return;
+
+                      final odo =
+                          int.tryParse(odoCtrl.text.trim()) ??
+                          _state.currentOdometer;
+                      final title =
+                          noteCtrl.text.trim().isEmpty
+                              ? 'טיפול תקופתי / חלפים'
+                              : noteCtrl.text.trim();
+
+                      SpendoHaptics.light();
+
+                      final updatedHistory = [
+                        VehicleExpenseRecord(
+                          id: DateTime.now().millisecondsSinceEpoch.toString(),
+                          title: title,
+                          amount: amount,
+                          odometer: odo,
+                          date: DateTime.now(),
+                          category: ExpenseCategory.maintenance,
+                        ),
+                        ..._state.history,
+                      ];
+
+                      _saveState(
+                        _state.copyWith(
+                          currentOdometer:
+                              odo > _state.currentOdometer
+                                  ? odo
+                                  : _state.currentOdometer,
+                          history: updatedHistory,
+                        ),
+                      );
+                      Navigator.pop(ctx);
+                    },
+                    icon: const Icon(Remix.check_line, size: 18),
+                    label: const Text(
+                      'حفظ عملية الصيانة',
+                      style: TextStyle(fontWeight: FontWeight.w800),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.accentBlue,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 14),
-              TextField(
-                controller: amountCtrl,
-                autofocus: true,
-                keyboardType: TextInputType.number,
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.w800,
-                  color: textWhite,
-                ),
-                decoration: InputDecoration(
-                  labelText: 'المبلغ المدفوع (₪)',
-                  labelStyle: TextStyle(color: AppColors.textMuted),
-                  suffixText: '₪',
-                  filled: true,
-                  fillColor: surfaceField,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    borderSide:
-                        BorderSide(color: surfaceBorder),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: noteCtrl,
-                style: TextStyle(color: textWhite),
-                decoration: InputDecoration(
-                  labelText: 'שם הטיפול או החלפים המוחלפים (עברית)',
-                  labelStyle: TextStyle(color: AppColors.textMuted),
-                  filled: true,
-                  fillColor: surfaceField,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    borderSide:
-                        BorderSide(color: surfaceBorder),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: odoCtrl,
-                keyboardType: TextInputType.number,
-                style: TextStyle(color: textWhite),
-                decoration: InputDecoration(
-                  labelText: 'קריאת מד אוץ בעת הטיפול (ק"מ)',
-                  labelStyle: TextStyle(color: AppColors.textMuted),
-                  suffixText: 'ק"מ',
-                  filled: true,
-                  fillColor: surfaceField,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    borderSide:
-                        BorderSide(color: surfaceBorder),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              ElevatedButton.icon(
-                onPressed: () {
-                  final amount = double.tryParse(amountCtrl.text.trim());
-                  if (amount == null || amount <= 0) return;
-
-                  final odo = int.tryParse(odoCtrl.text.trim()) ??
-                      _state.currentOdometer;
-                  final title = noteCtrl.text.trim().isEmpty
-                      ? 'טיפול תקופתי / חלפים'
-                      : noteCtrl.text.trim();
-
-                  SpendoHaptics.light();
-
-                  final updatedHistory = [
-                    VehicleExpenseRecord(
-                      id: DateTime.now().millisecondsSinceEpoch.toString(),
-                      title: title,
-                      amount: amount,
-                      odometer: odo,
-                      date: DateTime.now(),
-                      category: ExpenseCategory.maintenance,
-                    ),
-                    ..._state.history,
-                  ];
-
-                  _saveState(_state.copyWith(
-                    currentOdometer: odo > _state.currentOdometer
-                        ? odo
-                        : _state.currentOdometer,
-                    history: updatedHistory,
-                  ));
-                  Navigator.pop(ctx);
-                },
-                icon: const Icon(Remix.check_line, size: 18),
-                label: const Text(
-                  'حفظ عملية الصيانة',
-                  style: TextStyle(fontWeight: FontWeight.w800),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.accentBlue,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                ),
-              ),
-            ],
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
-  },
-);
   }
 
   void _showInvoiceParserSheet() {
@@ -2576,9 +2624,10 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                 invoiceNumber: res.invoiceNumber,
                 date: res.date,
                 amount: amt,
-                category: res.isFuel
-                    ? ExpenseCategory.fuel
-                    : ExpenseCategory.maintenance,
+                category:
+                    res.isFuel
+                        ? ExpenseCategory.fuel
+                        : ExpenseCategory.maintenance,
                 title: res.title,
               );
 
@@ -2607,12 +2656,10 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                   loadedPdfFileName =
                       pdfFile.path.split(Platform.pathSeparator).last;
                   isScanning = true;
-                  statusMessage =
-                      'جاري قراءة واستخراج بيانات ملف الـ PDF...';
+                  statusMessage = 'جاري قراءة واستخراج بيانات ملف الـ PDF...';
                 });
 
-                final multiResults =
-                    await ReceiptOcrService.analyzeReceiptPdfMulti(
+                final multiResults = await ReceiptOcrService.analyzeReceiptPdfMulti(
                   pdfFile,
                   onProgress: (current, total) {
                     setSheetState(() {
@@ -2663,30 +2710,33 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
             }
 
             void commitAddInvoice({bool isDuplicateOverride = false}) {
-              final amt = double.tryParse(amountCtrl.text.trim()) ??
+              final amt =
+                  double.tryParse(amountCtrl.text.trim()) ??
                   parsedResult!.amount;
               if (amt <= 0) return;
 
               SpendoHaptics.success();
               final newRecord = VehicleExpenseRecord(
                 id: DateTime.now().millisecondsSinceEpoch.toString(),
-                title: titleCtrl.text.trim().isEmpty
-                    ? parsedResult!.title
-                    : titleCtrl.text.trim(),
+                title:
+                    titleCtrl.text.trim().isEmpty
+                        ? parsedResult!.title
+                        : titleCtrl.text.trim(),
                 amount: amt,
                 odometer: _state.currentOdometer,
                 date: parsedResult!.date,
-                category: parsedResult!.isFuel
-                    ? ExpenseCategory.fuel
-                    : ExpenseCategory.maintenance,
+                category:
+                    parsedResult!.isFuel
+                        ? ExpenseCategory.fuel
+                        : ExpenseCategory.maintenance,
                 invoiceNumber: parsedResult!.invoiceNumber,
-                provider: parsedResult!.providerName.isNotEmpty
-                    ? parsedResult!.providerName
-                    : null,
+                provider:
+                    parsedResult!.providerName.isNotEmpty
+                        ? parsedResult!.providerName
+                        : null,
                 liters: parsedResult!.liters,
-                items: parsedResult!.items.isNotEmpty
-                    ? parsedResult!.items
-                    : null,
+                items:
+                    parsedResult!.items.isNotEmpty ? parsedResult!.items : null,
                 notes: isDuplicateOverride ? 'نسخة مكررة تم تأكيدها' : null,
               );
 
@@ -2697,9 +2747,10 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
 
             final media = MediaQuery.of(ctx);
             final keyboardInset = media.viewInsets.bottom;
-            final bottomNavPadding = media.padding.bottom > 0
-                ? media.padding.bottom
-                : media.viewPadding.bottom;
+            final bottomNavPadding =
+                media.padding.bottom > 0
+                    ? media.padding.bottom
+                    : media.viewPadding.bottom;
 
             return Directionality(
               textDirection: TextDirection.rtl,
@@ -2711,48 +2762,389 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                     left: 20,
                     right: 20,
                     top: 20,
-                    bottom: keyboardInset > 0
-                        ? keyboardInset + 8
-                        : (bottomNavPadding > 0 ? bottomNavPadding + 8 : 16),
+                    bottom:
+                        keyboardInset > 0
+                            ? keyboardInset + 8
+                            : (bottomNavPadding > 0
+                                ? bottomNavPadding + 8
+                                : 16),
                   ),
-                child: SingleChildScrollView(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Center(
-                        child: Container(
-                          width: 42,
-                          height: 4,
-                          decoration: BoxDecoration(
-                            color: _isDark ? Colors.white24 : const Color(0xFFD1D5DB),
-                            borderRadius: BorderRadius.circular(99),
+                  child: SingleChildScrollView(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Center(
+                          child: Container(
+                            width: 42,
+                            height: 4,
+                            decoration: BoxDecoration(
+                              color:
+                                  _isDark
+                                      ? Colors.white24
+                                      : const Color(0xFFD1D5DB),
+                              borderRadius: BorderRadius.circular(99),
+                            ),
                           ),
                         ),
-                      ),
-                      const SizedBox(height: 16),
-                      Row(
-                        children: [
-                          const Icon(
-                            Icons.picture_as_pdf_rounded,
-                            color: Color(0xFFFFD600),
-                            size: 22,
+                        const SizedBox(height: 16),
+                        Row(
+                          children: [
+                            const Icon(
+                              Icons.picture_as_pdf_rounded,
+                              color: Color(0xFFFFD600),
+                              size: 22,
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'استيراد وتحليل فواتير PDF',
+                                    style: TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w800,
+                                      color: textWhite,
+                                    ),
+                                  ),
+                                  Text(
+                                    'اختر ملف الفاتورة بصيغة PDF لاستخراج البيانات تلقائياً',
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      color: textMuted,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 18),
+                        // زر اختيار ملف PDF فقط
+                        _buildImageSourceButton(
+                          icon: Icons.picture_as_pdf_rounded,
+                          label: 'اختيار ملف فاتورة PDF',
+                          onTap: pickAndAnalyzePdf,
+                        ),
+                        if (loadedPdfFileName != null) ...[
+                          const SizedBox(height: 16),
+                          Container(
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: surfaceField,
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: surfaceBorder),
+                            ),
+                            child: Row(
+                              children: [
+                                const Icon(
+                                  Icons.picture_as_pdf_rounded,
+                                  color: Color(0xFFFFD600),
+                                  size: 28,
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'تم استيراد ملف PDF',
+                                        style: TextStyle(
+                                          fontSize: 12.5,
+                                          fontWeight: FontWeight.w700,
+                                          color: textWhite,
+                                        ),
+                                      ),
+                                      Text(
+                                        loadedPdfFileName!,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                          fontSize: 10.5,
+                                          color: textMuted,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
-                          const SizedBox(width: 10),
-                          Expanded(
+                        ],
+                        if (isScanning) ...[
+                          const SizedBox(height: 20),
+                          Center(
+                            child: Column(
+                              children: [
+                                CircularProgressIndicator(
+                                  strokeWidth: 2.5,
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    AppColors.spendoGreen,
+                                  ),
+                                ),
+                                SizedBox(height: 12),
+                                Text(
+                                  'جاري قراءة الفاتورة ضوئياً واستخراج البيانات...',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                    color: textMuted,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                        if (statusMessage != null && !isScanning) ...[
+                          const SizedBox(height: 10),
+                          Text(
+                            statusMessage!,
+                            style: TextStyle(
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.w600,
+                              color:
+                                  duplicateRecord != null
+                                      ? const Color(0xFFEF4444)
+                                      : textMuted,
+                            ),
+                          ),
+                        ],
+                        if (duplicateRecord != null && !isScanning) ...[
+                          const SizedBox(height: 14),
+                          Container(
+                            padding: const EdgeInsets.all(14),
+                            decoration: BoxDecoration(
+                              color: const Color(
+                                0xFFEF4444,
+                              ).withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(18),
+                              border: Border.all(
+                                color: const Color(
+                                  0xFFEF4444,
+                                ).withValues(alpha: 0.45),
+                                width: 1.2,
+                              ),
+                            ),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
-                                  'استيراد وتحليل فواتير PDF',
-                                  style: TextStyle(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w800,
-                                    color: textWhite,
+                                const Row(
+                                  children: [
+                                    Icon(
+                                      Icons.warning_amber_rounded,
+                                      color: Color(0xFFEF4444),
+                                      size: 20,
+                                    ),
+                                    SizedBox(width: 8),
+                                    Expanded(
+                                      child: Text(
+                                        'تنبيه: تم العثور على فاتورة سابقة مطابقة في السجل!',
+                                        style: TextStyle(
+                                          fontSize: 12.5,
+                                          fontWeight: FontWeight.w800,
+                                          color: Color(0xFFEF4444),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 10),
+                                Container(
+                                  width: double.infinity,
+                                  padding: const EdgeInsets.all(10),
+                                  decoration: BoxDecoration(
+                                    color: surfaceField,
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        duplicateRecord!.title,
+                                        style: TextStyle(
+                                          fontSize: 12.5,
+                                          fontWeight: FontWeight.w700,
+                                          color: textWhite,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        'التاريخ: ${duplicateRecord!.date.day}/${duplicateRecord!.date.month}/${duplicateRecord!.date.year} • المبلغ: ₪${duplicateRecord!.amount.toStringAsFixed(2)}${duplicateRecord!.invoiceNumber != null ? ' • رقم #${duplicateRecord!.invoiceNumber}' : ''}',
+                                        style: TextStyle(
+                                          fontSize: 11,
+                                          color: textMuted,
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
+                                const SizedBox(height: 10),
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: OutlinedButton.icon(
+                                        onPressed: () {
+                                          Navigator.pop(ctx);
+                                          _showTransactionDetailsSheet(
+                                            duplicateRecord!,
+                                          );
+                                        },
+                                        icon: const Icon(
+                                          Icons.remove_red_eye_rounded,
+                                          size: 15,
+                                        ),
+                                        label: const Text(
+                                          'عرض الفاتورة المسجلة',
+                                          style: TextStyle(
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                        ),
+                                        style: OutlinedButton.styleFrom(
+                                          foregroundColor: const Color(
+                                            0xFFEF4444,
+                                          ),
+                                          side: const BorderSide(
+                                            color: Color(0xFFEF4444),
+                                          ),
+                                          padding: const EdgeInsets.symmetric(
+                                            vertical: 8,
+                                          ),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(
+                                              10,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: ElevatedButton.icon(
+                                        onPressed: () {
+                                          SpendoHaptics.light();
+                                          Navigator.pop(ctx);
+                                        },
+                                        icon: const Icon(
+                                          Icons.close_rounded,
+                                          size: 15,
+                                        ),
+                                        label: Text(
+                                          'إلغاء التكرار',
+                                          style: TextStyle(
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                        ),
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: surfaceField,
+                                          foregroundColor: textWhite,
+                                          padding: const EdgeInsets.symmetric(
+                                            vertical: 8,
+                                          ),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(
+                                              10,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                        if (parsedResult != null && !isScanning) ...[
+                          const SizedBox(height: 16),
+                          Container(
+                            padding: const EdgeInsets.all(14),
+                            decoration: BoxDecoration(
+                              color: surfaceField,
+                              borderRadius: BorderRadius.circular(18),
+                              border: Border.all(
+                                color:
+                                    duplicateRecord != null
+                                        ? const Color(
+                                          0xFFEF4444,
+                                        ).withValues(alpha: 0.5)
+                                        : AppColors.spendoGreen.withValues(
+                                          alpha: 0.45,
+                                        ),
+                              ),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Icon(
+                                      duplicateRecord != null
+                                          ? Icons.info_outline_rounded
+                                          : Icons.check_circle_rounded,
+                                      color:
+                                          duplicateRecord != null
+                                              ? const Color(0xFFEF4444)
+                                              : AppColors.spendoGreen,
+                                      size: 16,
+                                    ),
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      'تفاصيل الفاتورة المستخرجة:',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w700,
+                                        color:
+                                            duplicateRecord != null
+                                                ? const Color(0xFFEF4444)
+                                                : AppColors.spendoGreen,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 10),
+                                TextField(
+                                  controller: titleCtrl,
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w700,
+                                    color: textWhite,
+                                  ),
+                                  decoration: InputDecoration(
+                                    labelText: 'اسم الفاتورة والبيانات الفنية',
+                                    labelStyle: TextStyle(
+                                      color: textMuted,
+                                      fontSize: 11,
+                                    ),
+                                    isDense: true,
+                                  ),
+                                ),
+                                const SizedBox(height: 10),
+                                TextField(
+                                  controller: amountCtrl,
+                                  keyboardType: TextInputType.number,
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w800,
+                                    color: AppColors.spendoGreen,
+                                  ),
+                                  decoration: InputDecoration(
+                                    labelText: 'المبلغ الإجمالي المستخرج',
+                                    labelStyle: TextStyle(
+                                      color: textMuted,
+                                      fontSize: 11,
+                                    ),
+                                    suffixText: '₪',
+                                    isDense: true,
+                                  ),
+                                ),
+                                const SizedBox(height: 6),
                                 Text(
-                                  'اختر ملف الفاتورة بصيغة PDF لاستخراج البيانات تلقائياً',
+                                  'التاريخ: ${parsedResult!.date.day}/${parsedResult!.date.month}/${parsedResult!.date.year} • الفئة: ${parsedResult!.isFuel ? 'وقود' : 'صيانة וחלפים'}',
                                   style: TextStyle(
                                     fontSize: 11,
                                     color: textMuted,
@@ -2761,400 +3153,105 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                               ],
                             ),
                           ),
-                        ],
-                      ),
-                      const SizedBox(height: 18),
-                      // زر اختيار ملف PDF فقط
-                      _buildImageSourceButton(
-                        icon: Icons.picture_as_pdf_rounded,
-                        label: 'اختيار ملف فاتورة PDF',
-                        onTap: pickAndAnalyzePdf,
-                      ),
-                      if (loadedPdfFileName != null) ...[
-                        const SizedBox(height: 16),
-                        Container(
-                          padding: const EdgeInsets.all(10),
-                          decoration: BoxDecoration(
-                            color: surfaceField,
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(color: surfaceBorder),
-                          ),
-                          child: Row(
-                            children: [
-                              const Icon(
-                                Icons.picture_as_pdf_rounded,
-                                color: Color(0xFFFFD600),
-                                size: 28,
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      'تم استيراد ملف PDF',
-                                      style: TextStyle(
-                                        fontSize: 12.5,
-                                        fontWeight: FontWeight.w700,
-                                        color: textWhite,
-                                      ),
-                                    ),
-                                    Text(
-                                      loadedPdfFileName!,
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: TextStyle(
-                                        fontSize: 10.5,
-                                        color: textMuted,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                      if (isScanning) ...[
-                        const SizedBox(height: 20),
-                        Center(
-                          child: Column(
-                            children: [
-                              CircularProgressIndicator(
-                                strokeWidth: 2.5,
-                                valueColor: AlwaysStoppedAnimation<Color>(
-                                    AppColors.spendoGreen),
-                              ),
-                              SizedBox(height: 12),
-                              Text(
-                                'جاري قراءة الفاتورة ضوئياً واستخراج البيانات...',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w600,
-                                  color: textMuted,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                      if (statusMessage != null && !isScanning) ...[
-                        const SizedBox(height: 10),
-                        Text(
-                          statusMessage!,
-                          style: TextStyle(
-                            fontSize: 11.5,
-                            fontWeight: FontWeight.w600,
-                            color: duplicateRecord != null
-                                ? const Color(0xFFEF4444)
-                                : textMuted,
-                          ),
-                        ),
-                      ],
-                      if (duplicateRecord != null && !isScanning) ...[
-                        const SizedBox(height: 14),
-                        Container(
-                          padding: const EdgeInsets.all(14),
-                          decoration: BoxDecoration(
-                            color:
-                                const Color(0xFFEF4444).withValues(alpha: 0.12),
-                            borderRadius: BorderRadius.circular(18),
-                            border: Border.all(
-                              color: const Color(0xFFEF4444)
-                                  .withValues(alpha: 0.45),
-                              width: 1.2,
-                            ),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Row(
-                                children: [
-                                  Icon(
-                                    Icons.warning_amber_rounded,
-                                    color: Color(0xFFEF4444),
-                                    size: 20,
-                                  ),
-                                  SizedBox(width: 8),
-                                  Expanded(
-                                    child: Text(
-                                      'تنبيه: تم العثور على فاتورة سابقة مطابقة في السجل!',
-                                      style: TextStyle(
-                                        fontSize: 12.5,
-                                        fontWeight: FontWeight.w800,
-                                        color: Color(0xFFEF4444),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 10),
-                              Container(
-                                width: double.infinity,
-                                padding: const EdgeInsets.all(10),
-                                decoration: BoxDecoration(
-                                  color: surfaceField,
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      duplicateRecord!.title,
-                                      style: TextStyle(
-                                        fontSize: 12.5,
-                                        fontWeight: FontWeight.w700,
-                                        color: textWhite,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      'التاريخ: ${duplicateRecord!.date.day}/${duplicateRecord!.date.month}/${duplicateRecord!.date.year} • المبلغ: ₪${duplicateRecord!.amount.toStringAsFixed(2)}${duplicateRecord!.invoiceNumber != null ? ' • رقم #${duplicateRecord!.invoiceNumber}' : ''}',
-                                      style: TextStyle(
-                                        fontSize: 11,
-                                        color: textMuted,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(height: 10),
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: OutlinedButton.icon(
-                                      onPressed: () {
-                                        Navigator.pop(ctx);
-                                        _showTransactionDetailsSheet(
-                                            duplicateRecord!);
-                                      },
-                                      icon: const Icon(
-                                          Icons.remove_red_eye_rounded,
-                                      size: 15),
-                                      label: const Text(
-                                        'عرض الفاتورة المسجلة',
-                                        style: TextStyle(
-                                            fontSize: 11,
-                                            fontWeight: FontWeight.w700),
-                                      ),
-                                      style: OutlinedButton.styleFrom(
-                                        foregroundColor:
-                                            const Color(0xFFEF4444),
-                                        side: const BorderSide(
-                                            color: Color(0xFFEF4444)),
-                                        padding: const EdgeInsets.symmetric(
-                                            vertical: 8),
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(10),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Expanded(
-                                    child: ElevatedButton.icon(
-                                      onPressed: () {
-                                        SpendoHaptics.light();
-                                        Navigator.pop(ctx);
-                                      },
-                                      icon: const Icon(Icons.close_rounded,
-                                          size: 15),
-                                      label: Text(
-                                        'إلغاء التكرار',
-                                        style: TextStyle(
-                                            fontSize: 11,
-                                            fontWeight: FontWeight.w700),
-                                      ),
-                                      style: ElevatedButton.styleFrom(
+                          const SizedBox(height: 16),
+                          if (duplicateRecord != null)
+                            OutlinedButton.icon(
+                              onPressed: () {
+                                showDialog(
+                                  context: context,
+                                  builder:
+                                      (dialogCtx) => AlertDialog(
                                         backgroundColor: surfaceField,
-                                        foregroundColor: textWhite,
-                                        padding: const EdgeInsets.symmetric(
-                                            vertical: 8),
                                         shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(10),
+                                          borderRadius: BorderRadius.circular(
+                                            20,
+                                          ),
                                         ),
+                                        title: Text(
+                                          'تأكيد إضافة فاتورة مكررة',
+                                          style: TextStyle(
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.w800,
+                                            color: textWhite,
+                                          ),
+                                        ),
+                                        content: Text(
+                                          'توجد بالفعل فاتورة مطابقة في السجل. هل تود بالتأكيد إضافة هذه النسخة المكررة؟',
+                                          style: TextStyle(
+                                            fontSize: 12.5,
+                                            color: textMuted,
+                                          ),
+                                        ),
+                                        actions: [
+                                          TextButton(
+                                            onPressed:
+                                                () => Navigator.pop(dialogCtx),
+                                            child: const Text('إلغاء'),
+                                          ),
+                                          ElevatedButton(
+                                            onPressed: () {
+                                              Navigator.pop(dialogCtx);
+                                              commitAddInvoice(
+                                                isDuplicateOverride: true,
+                                              );
+                                            },
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor: const Color(
+                                                0xFFFFD600,
+                                              ),
+                                              foregroundColor: Colors.black,
+                                            ),
+                                            child: const Text(
+                                              'نعم، إضافة مكررة',
+                                            ),
+                                          ),
+                                        ],
                                       ),
-                                    ),
-                                  ),
-                                ],
+                                );
+                              },
+                              icon: const Icon(
+                                Icons.add_circle_outline_rounded,
+                                size: 18,
                               ),
-                            ],
-                          ),
-                        ),
+                              label: const Text(
+                                'إضافة كنسخة مكررة (رغم التطابق)',
+                                style: TextStyle(fontWeight: FontWeight.w800),
+                              ),
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: const Color(0xFFFFD600),
+                                side: const BorderSide(
+                                  color: Color(0xFFFFD600),
+                                ),
+                                minimumSize: const Size(double.infinity, 48),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                              ),
+                            )
+                          else
+                            ElevatedButton.icon(
+                              onPressed: () => commitAddInvoice(),
+                              icon: const Icon(Remix.check_line, size: 18),
+                              label: const Text(
+                                'إضافة الفاتورة إلى السجل',
+                                style: TextStyle(fontWeight: FontWeight.w800),
+                              ),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColors.spendoGreen,
+                                foregroundColor: Colors.black,
+                                minimumSize: const Size(double.infinity, 48),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                              ),
+                            ),
+                        ],
                       ],
-                      if (parsedResult != null && !isScanning) ...[
-                        const SizedBox(height: 16),
-                        Container(
-                          padding: const EdgeInsets.all(14),
-                          decoration: BoxDecoration(
-                            color: surfaceField,
-                            borderRadius: BorderRadius.circular(18),
-                            border: Border.all(
-                              color: duplicateRecord != null
-                                  ? const Color(0xFFEF4444)
-                                      .withValues(alpha: 0.5)
-                                  : AppColors.spendoGreen
-                                      .withValues(alpha: 0.45),
-                            ),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  Icon(
-                                    duplicateRecord != null
-                                        ? Icons.info_outline_rounded
-                                        : Icons.check_circle_rounded,
-                                    color: duplicateRecord != null
-                                        ? const Color(0xFFEF4444)
-                                        : AppColors.spendoGreen,
-                                    size: 16,
-                                  ),
-                                  const SizedBox(width: 6),
-                                  Text(
-                                    'تفاصيل الفاتورة المستخرجة:',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w700,
-                                      color: duplicateRecord != null
-                                          ? const Color(0xFFEF4444)
-                                          : AppColors.spendoGreen,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 10),
-                              TextField(
-                                controller: titleCtrl,
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w700,
-                                  color: textWhite,
-                                ),
-                                decoration: InputDecoration(
-                                  labelText: 'اسم الفاتورة والبيانات الفنية',
-                                  labelStyle: TextStyle(
-                                      color: textMuted, fontSize: 11),
-                                  isDense: true,
-                                ),
-                              ),
-                              const SizedBox(height: 10),
-                              TextField(
-                                controller: amountCtrl,
-                                keyboardType: TextInputType.number,
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w800,
-                                  color: AppColors.spendoGreen,
-                                ),
-                                decoration: InputDecoration(
-                                  labelText: 'المبلغ الإجمالي المستخرج',
-                                  labelStyle: TextStyle(
-                                      color: textMuted, fontSize: 11),
-                                  suffixText: '₪',
-                                  isDense: true,
-                                ),
-                              ),
-                              const SizedBox(height: 6),
-                              Text(
-                                'التاريخ: ${parsedResult!.date.day}/${parsedResult!.date.month}/${parsedResult!.date.year} • الفئة: ${parsedResult!.isFuel ? 'وقود' : 'صيانة וחלפים'}',
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  color: textMuted,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        if (duplicateRecord != null)
-                          OutlinedButton.icon(
-                            onPressed: () {
-                              showDialog(
-                                context: context,
-                                builder: (dialogCtx) => AlertDialog(
-                                  backgroundColor: surfaceField,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(20),
-                                  ),
-                                  title: Text(
-                                    'تأكيد إضافة فاتورة مكررة',
-                                    style: TextStyle(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.w800,
-                                      color: textWhite,
-                                    ),
-                                  ),
-                                  content: Text(
-                                    'توجد بالفعل فاتورة مطابقة في السجل. هل تود بالتأكيد إضافة هذه النسخة المكررة؟',
-                                    style: TextStyle(
-                                      fontSize: 12.5,
-                                      color: textMuted,
-                                    ),
-                                  ),
-                                  actions: [
-                                    TextButton(
-                                      onPressed: () => Navigator.pop(dialogCtx),
-                                      child: const Text('إلغاء'),
-                                    ),
-                                    ElevatedButton(
-                                      onPressed: () {
-                                        Navigator.pop(dialogCtx);
-                                        commitAddInvoice(
-                                            isDuplicateOverride: true);
-                                      },
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: const Color(0xFFFFD600),
-                                        foregroundColor: Colors.black,
-                                      ),
-                                      child: const Text('نعم، إضافة مكررة'),
-                                    ),
-                                  ],
-                                ),
-                              );
-                            },
-                            icon: const Icon(Icons.add_circle_outline_rounded,
-                                size: 18),
-                            label: const Text(
-                              'إضافة كنسخة مكررة (رغم التطابق)',
-                              style: TextStyle(fontWeight: FontWeight.w800),
-                            ),
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: const Color(0xFFFFD600),
-                              side: const BorderSide(color: Color(0xFFFFD600)),
-                              minimumSize: const Size(double.infinity, 48),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                            ),
-                          )
-                        else
-                          ElevatedButton.icon(
-                            onPressed: () => commitAddInvoice(),
-                            icon: const Icon(Remix.check_line, size: 18),
-                            label: const Text(
-                              'إضافة الفاتورة إلى السجل',
-                              style: TextStyle(fontWeight: FontWeight.w800),
-                            ),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.spendoGreen,
-                              foregroundColor: Colors.black,
-                              minimumSize: const Size(double.infinity, 48),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                            ),
-                          ),
-                      ],
-                    ],
+                    ),
                   ),
                 ),
               ),
-            ),
-          );
+            );
           },
         );
       },
@@ -3164,231 +3261,289 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
   void _showEditFuelDialog(VehicleExpenseRecord record) {
     final titleCtrl = TextEditingController(text: record.title);
     final providerCtrl = TextEditingController(text: record.provider ?? '');
-    final amountCtrl = TextEditingController(text: record.amount.toStringAsFixed(2));
-    final litersCtrl = TextEditingController(text: record.liters?.toString() ?? '');
+    final amountCtrl = TextEditingController(
+      text: record.amount.toStringAsFixed(2),
+    );
+    final litersCtrl = TextEditingController(
+      text: record.liters?.toString() ?? '',
+    );
 
     showDialog(
       context: context,
-      builder: (editCtx) => Directionality(
-        textDirection: TextDirection.rtl,
-        child: AlertDialog(
-          backgroundColor: surfaceField,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-            side: BorderSide(color: surfaceBorder),
-          ),
-          insetPadding: const EdgeInsets.symmetric(horizontal: 40, vertical: 24),
-          titlePadding: const EdgeInsets.fromLTRB(16, 14, 16, 8),
-          contentPadding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-          actionsPadding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
-          title: Text(
-            'تعديل الفاتورة والمحطة',
-            style: TextStyle(color: textWhite, fontSize: 13, fontWeight: FontWeight.bold),
-          ),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextField(
-                  controller: providerCtrl,
-                  style: TextStyle(color: textWhite, fontSize: 12),
-                  decoration: InputDecoration(
-                    labelText: 'اسم المحطة / المزود (الموقع)',
-                    labelStyle: TextStyle(color: textMuted, fontSize: 11),
-                    isDense: true,
-                  ),
+      builder:
+          (editCtx) => Directionality(
+            textDirection: TextDirection.rtl,
+            child: AlertDialog(
+              backgroundColor: surfaceField,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+                side: BorderSide(color: surfaceBorder),
+              ),
+              insetPadding: const EdgeInsets.symmetric(
+                horizontal: 40,
+                vertical: 24,
+              ),
+              titlePadding: const EdgeInsets.fromLTRB(16, 14, 16, 8),
+              contentPadding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+              actionsPadding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
+              title: Text(
+                'تعديل الفاتورة والمحطة',
+                style: TextStyle(
+                  color: textWhite,
+                  fontSize: 13,
+                  fontWeight: FontWeight.bold,
                 ),
-                const SizedBox(height: 8),
-                TextField(
-                  controller: titleCtrl,
-                  style: TextStyle(color: textWhite, fontSize: 12),
-                  decoration: InputDecoration(
-                    labelText: 'بيان الفاتورة',
-                    labelStyle: TextStyle(color: textMuted, fontSize: 11),
-                    isDense: true,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Row(
+              ),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    Expanded(
-                      child: TextField(
-                        controller: amountCtrl,
-                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                        style: TextStyle(color: brandYellow, fontSize: 12, fontWeight: FontWeight.bold),
-                        decoration: InputDecoration(
-                          labelText: 'المبلغ (₪)',
-                          labelStyle: TextStyle(color: textMuted, fontSize: 11),
-                          isDense: true,
-                        ),
+                    TextField(
+                      controller: providerCtrl,
+                      style: TextStyle(color: textWhite, fontSize: 12),
+                      decoration: InputDecoration(
+                        labelText: 'اسم المحطة / المزود (الموقع)',
+                        labelStyle: TextStyle(color: textMuted, fontSize: 11),
+                        isDense: true,
                       ),
                     ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: TextField(
-                        controller: litersCtrl,
-                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                        style: TextStyle(color: textWhite, fontSize: 12),
-                        decoration: InputDecoration(
-                          labelText: 'اللترات',
-                          labelStyle: TextStyle(color: textMuted, fontSize: 11),
-                          isDense: true,
-                        ),
+                    const SizedBox(height: 8),
+                    TextField(
+                      controller: titleCtrl,
+                      style: TextStyle(color: textWhite, fontSize: 12),
+                      decoration: InputDecoration(
+                        labelText: 'بيان الفاتورة',
+                        labelStyle: TextStyle(color: textMuted, fontSize: 11),
+                        isDense: true,
                       ),
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: amountCtrl,
+                            keyboardType: const TextInputType.numberWithOptions(
+                              decimal: true,
+                            ),
+                            style: TextStyle(
+                              color: brandYellow,
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            decoration: InputDecoration(
+                              labelText: 'المبلغ (₪)',
+                              labelStyle: TextStyle(
+                                color: textMuted,
+                                fontSize: 11,
+                              ),
+                              isDense: true,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: TextField(
+                            controller: litersCtrl,
+                            keyboardType: const TextInputType.numberWithOptions(
+                              decimal: true,
+                            ),
+                            style: TextStyle(color: textWhite, fontSize: 12),
+                            decoration: InputDecoration(
+                              labelText: 'اللترات',
+                              labelStyle: TextStyle(
+                                color: textMuted,
+                                fontSize: 11,
+                              ),
+                              isDense: true,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  style: TextButton.styleFrom(
+                    visualDensity: VisualDensity.compact,
+                  ),
+                  onPressed: () => Navigator.pop(editCtx),
+                  child: Text(
+                    'إلغاء',
+                    style: TextStyle(color: textMuted, fontSize: 11.5),
+                  ),
+                ),
+                TextButton(
+                  style: TextButton.styleFrom(
+                    visualDensity: VisualDensity.compact,
+                  ),
+                  onPressed: () {
+                    final newAmt =
+                        double.tryParse(amountCtrl.text.trim()) ??
+                        record.amount;
+                    final newLiters = double.tryParse(litersCtrl.text.trim());
+                    final newProv = providerCtrl.text.trim();
+                    final newTitle = titleCtrl.text.trim();
+
+                    final updatedRec = record.copyWith(
+                      title: newTitle.isNotEmpty ? newTitle : record.title,
+                      provider: newProv.isNotEmpty ? newProv : record.provider,
+                      amount: newAmt,
+                      liters: newLiters,
+                    );
+
+                    Navigator.pop(editCtx);
+                    final updated =
+                        _state.history
+                            .map((x) => x.id == record.id ? updatedRec : x)
+                            .toList();
+                    _saveState(_state.copyWith(history: updated));
+                  },
+                  child: const Text(
+                    'حفظ',
+                    style: TextStyle(
+                      color: brandGreen,
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
               ],
             ),
           ),
-          actions: [
-            TextButton(
-              style: TextButton.styleFrom(visualDensity: VisualDensity.compact),
-              onPressed: () => Navigator.pop(editCtx),
-              child: Text('إلغاء', style: TextStyle(color: textMuted, fontSize: 11.5)),
-            ),
-            TextButton(
-              style: TextButton.styleFrom(visualDensity: VisualDensity.compact),
-              onPressed: () {
-                final newAmt = double.tryParse(amountCtrl.text.trim()) ?? record.amount;
-                final newLiters = double.tryParse(litersCtrl.text.trim());
-                final newProv = providerCtrl.text.trim();
-                final newTitle = titleCtrl.text.trim();
-
-                final updatedRec = record.copyWith(
-                  title: newTitle.isNotEmpty ? newTitle : record.title,
-                  provider: newProv.isNotEmpty ? newProv : record.provider,
-                  amount: newAmt,
-                  liters: newLiters,
-                );
-
-                Navigator.pop(editCtx);
-                final updated = _state.history.map((x) => x.id == record.id ? updatedRec : x).toList();
-                _saveState(_state.copyWith(history: updated));
-              },
-              child: const Text('حفظ', style: TextStyle(color: brandGreen, fontSize: 11.5, fontWeight: FontWeight.bold)),
-            ),
-          ],
-        ),
-      ),
     );
   }
 
   void _showFuelDetailsModal(VehicleExpenseRecord record) {
     showDialog(
       context: context,
-      builder: (dCtx) => Directionality(
-        textDirection: TextDirection.rtl,
-        child: AlertDialog(
-          backgroundColor: surfaceField,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-            side: BorderSide(color: surfaceBorder),
-          ),
-          insetPadding:
-              const EdgeInsets.symmetric(horizontal: 56, vertical: 24),
-          titlePadding: const EdgeInsets.fromLTRB(16, 14, 16, 4),
-          contentPadding: const EdgeInsets.fromLTRB(16, 4, 16, 4),
-          actionsPadding: const EdgeInsets.fromLTRB(10, 0, 10, 6),
-          title: Text(
-            record.title,
-            style: TextStyle(
-              color: textWhite,
-              fontSize: 12.5,
-              fontWeight: FontWeight.bold,
-              height: 1.3,
-            ),
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'المبلغ: ₪${record.amount.toStringAsFixed(2)}',
+      builder:
+          (dCtx) => Directionality(
+            textDirection: TextDirection.rtl,
+            child: AlertDialog(
+              backgroundColor: surfaceField,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+                side: BorderSide(color: surfaceBorder),
+              ),
+              insetPadding: const EdgeInsets.symmetric(
+                horizontal: 56,
+                vertical: 24,
+              ),
+              titlePadding: const EdgeInsets.fromLTRB(16, 14, 16, 4),
+              contentPadding: const EdgeInsets.fromLTRB(16, 4, 16, 4),
+              actionsPadding: const EdgeInsets.fromLTRB(10, 0, 10, 6),
+              title: Text(
+                record.title,
                 style: TextStyle(
-                  color: brandYellow,
+                  color: textWhite,
+                  fontSize: 12.5,
                   fontWeight: FontWeight.bold,
-                  fontSize: 12,
+                  height: 1.3,
                 ),
               ),
-              const SizedBox(height: 4),
-              Text(
-                'التاريخ: ${ArabicDateHelper.formatArabicDateWithWeekday(record.date)}',
-                style: TextStyle(color: textMuted, fontSize: 10.5),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'المبلغ: ₪${record.amount.toStringAsFixed(2)}',
+                    style: TextStyle(
+                      color: brandYellow,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'التاريخ: ${ArabicDateHelper.formatArabicDateWithWeekday(record.date)}',
+                    style: TextStyle(color: textMuted, fontSize: 10.5),
+                  ),
+                  if (record.provider != null &&
+                      record.provider!.isNotEmpty) ...[
+                    const SizedBox(height: 3),
+                    Text(
+                      'المزود: ${record.provider}',
+                      style: TextStyle(color: textMuted, fontSize: 10.5),
+                    ),
+                  ],
+                  if (record.liters != null) ...[
+                    const SizedBox(height: 3),
+                    Text(
+                      'اللترات: ${record.liters} لتر',
+                      style: TextStyle(color: textMuted, fontSize: 10.5),
+                    ),
+                  ],
+                ],
               ),
-              if (record.provider != null && record.provider!.isNotEmpty) ...[
-                const SizedBox(height: 3),
-                Text(
-                  'المزود: ${record.provider}',
-                  style: TextStyle(color: textMuted, fontSize: 10.5),
+              actions: [
+                TextButton(
+                  style: TextButton.styleFrom(
+                    visualDensity: VisualDensity.compact,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 2,
+                    ),
+                  ),
+                  onPressed: () {
+                    Navigator.pop(dCtx);
+                    final updated =
+                        _state.history.where((x) => x.id != record.id).toList();
+                    _saveState(_state.copyWith(history: updated));
+                  },
+                  child: const Text(
+                    'حذف',
+                    style: TextStyle(
+                      color: brandRed,
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                TextButton(
+                  style: TextButton.styleFrom(
+                    visualDensity: VisualDensity.compact,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 2,
+                    ),
+                  ),
+                  onPressed: () {
+                    Navigator.pop(dCtx);
+                    _showEditFuelDialog(record);
+                  },
+                  child: Text(
+                    'تعديل',
+                    style: TextStyle(
+                      color: brandYellow,
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                TextButton(
+                  style: TextButton.styleFrom(
+                    visualDensity: VisualDensity.compact,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 2,
+                    ),
+                  ),
+                  onPressed: () => Navigator.pop(dCtx),
+                  child: const Text(
+                    'إغلاق',
+                    style: TextStyle(
+                      color: brandGreen,
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
               ],
-              if (record.liters != null) ...[
-                const SizedBox(height: 3),
-                Text(
-                  'اللترات: ${record.liters} لتر',
-                  style: TextStyle(color: textMuted, fontSize: 10.5),
-                ),
-              ],
-            ],
+            ),
           ),
-          actions: [
-            TextButton(
-              style: TextButton.styleFrom(
-                visualDensity: VisualDensity.compact,
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-              ),
-              onPressed: () {
-                Navigator.pop(dCtx);
-                final updated =
-                    _state.history.where((x) => x.id != record.id).toList();
-                _saveState(_state.copyWith(history: updated));
-              },
-              child: const Text(
-                'حذف',
-                style: TextStyle(
-                  color: brandRed,
-                  fontSize: 11.5,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-            TextButton(
-              style: TextButton.styleFrom(
-                visualDensity: VisualDensity.compact,
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-              ),
-              onPressed: () {
-                Navigator.pop(dCtx);
-                _showEditFuelDialog(record);
-              },
-              child: Text(
-                'تعديل',
-                style: TextStyle(
-                  color: brandYellow,
-                  fontSize: 11.5,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-            TextButton(
-              style: TextButton.styleFrom(
-                visualDensity: VisualDensity.compact,
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-              ),
-              onPressed: () => Navigator.pop(dCtx),
-              child: const Text(
-                'إغلاق',
-                style: TextStyle(
-                  color: brandGreen,
-                  fontSize: 11.5,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 
@@ -3409,9 +3564,10 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
       ),
       builder: (ctx) {
         final media = MediaQuery.of(ctx);
-        final bottomNavPadding = media.padding.bottom > 0
-            ? media.padding.bottom
-            : media.viewPadding.bottom;
+        final bottomNavPadding =
+            media.padding.bottom > 0
+                ? media.padding.bottom
+                : media.viewPadding.bottom;
 
         return Directionality(
           textDirection: TextDirection.rtl,
@@ -3425,206 +3581,108 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                 top: 16,
                 bottom: bottomNavPadding > 0 ? bottomNavPadding + 8 : 20,
               ),
-            child: SingleChildScrollView(
-              physics: const BouncingScrollPhysics(),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Center(
-                    child: Container(
-                      width: 42,
-                      height: 4,
-                      decoration: BoxDecoration(
-                        color: _isDark ? Colors.white24 : const Color(0xFFD1D5DB),
-                        borderRadius: BorderRadius.circular(99),
+              child: SingleChildScrollView(
+                physics: const BouncingScrollPhysics(),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Center(
+                      child: Container(
+                        width: 42,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color:
+                              _isDark
+                                  ? Colors.white24
+                                  : const Color(0xFFD1D5DB),
+                          borderRadius: BorderRadius.circular(99),
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 16),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(10),
-                            decoration: BoxDecoration(
-                              color: (isFuel
-                                      ? AppColors.spendoGreen
-                                      : AppColors.accentBlue)
-                                  .withValues(alpha: 0.15),
-                              borderRadius: BorderRadius.circular(14),
-                              border: Border.all(
+                    const SizedBox(height: 16),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(10),
+                              decoration: BoxDecoration(
                                 color: (isFuel
                                         ? AppColors.spendoGreen
                                         : AppColors.accentBlue)
-                                    .withValues(alpha: 0.3),
+                                    .withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(14),
+                                border: Border.all(
+                                  color: (isFuel
+                                          ? AppColors.spendoGreen
+                                          : AppColors.accentBlue)
+                                      .withValues(alpha: 0.3),
+                                ),
                               ),
-                            ),
-                            child: Icon(
-                              isFuel
-                                  ? Remix.gas_station_line
-                                  : Remix.tools_line,
-                              color: isFuel
-                                  ? brandGreen
-                                  : brandYellow,
-                              size: 24,
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
+                              child: Icon(
                                 isFuel
-                                    ? 'تعبئة وقود (Yellow)'
-                                    : 'صيانة وتغيير قطع غيار',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w800,
-                                  color: textWhite,
-                                ),
+                                    ? Remix.gas_station_line
+                                    : Remix.tools_line,
+                                color: isFuel ? brandGreen : brandYellow,
+                                size: 24,
                               ),
-                              Text(
-                                ArabicDateHelper.formatArabicDateWithWeekday(
-                                    record.date),
-                                style: TextStyle(
-                                  fontSize: 11.5,
-                                  color: textMuted,
+                            ),
+                            const SizedBox(width: 12),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  isFuel
+                                      ? 'تعبئة وقود (Yellow)'
+                                      : 'صيانة وتغيير قطع غيار',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w800,
+                                    color: textWhite,
+                                  ),
                                 ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: (isFuel
-                                  ? AppColors.spendoGreen
-                                  : textWhite)
-                              .withValues(alpha: 0.12),
-                          borderRadius: BorderRadius.circular(12),
+                                Text(
+                                  ArabicDateHelper.formatArabicDateWithWeekday(
+                                    record.date,
+                                  ),
+                                  style: TextStyle(
+                                    fontSize: 11.5,
+                                    color: textMuted,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
                         ),
-                        child: Text(
-                          '${record.amount.toStringAsFixed(record.amount % 1 == 0 ? 0 : 2)} ₪',
-                          style: TextStyle(
-                            fontSize: 17,
-                            fontWeight: FontWeight.w900,
-                            color: isFuel
-                                ? AppColors.spendoGreen
-                                : textWhite,
-                            fontFeatures: const [FontFeature.tabularFigures()],
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color: (isFuel ? AppColors.spendoGreen : textWhite)
+                                .withValues(alpha: 0.12),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            '${record.amount.toStringAsFixed(record.amount % 1 == 0 ? 0 : 2)} ₪',
+                            style: TextStyle(
+                              fontSize: 17,
+                              fontWeight: FontWeight.w900,
+                              color: isFuel ? AppColors.spendoGreen : textWhite,
+                              fontFeatures: const [
+                                FontFeature.tabularFigures(),
+                              ],
+                            ),
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-                  // بطاقة التفاصيل الفنية
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: surfaceField,
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: surfaceBorder),
-                    ),
-                    child: Column(
-                      children: [
-                        _buildDetailRow(
-                          icon: Remix.motorbike_line,
-                          label: 'المركبة المسجلة',
-                          value: _state.vehicleName,
-                        ),
-                        Divider(
-                            color: surfaceBorder, height: 18),
-                        _buildDetailRow(
-                          icon: Remix.file_text_line,
-                          label: 'البيان بالعبرية',
-                          value: record.title,
-                          isHighlight: true,
-                        ),
-                        if (!isFuel && record.odometer > 0) ...[
-                          Divider(
-                              color: surfaceBorder, height: 18),
-                          _buildDetailRow(
-                            icon: Remix.dashboard_3_line,
-                            label: 'قراءة العداد عند العملية',
-                            value: '${_formatNumber(record.odometer)} ק"מ',
-                          ),
-                          Divider(
-                              color: surfaceBorder, height: 18),
-                          _buildDetailRow(
-                            icon: Remix.route_line,
-                            label: 'المسافة منذ هذه العملية',
-                            value: kmSince == 0
-                                ? 'متطابق مع العداد الحالي (0 ק"מ)'
-                                : '+${_formatNumber(kmSince)} ק"מ',
-                          ),
-                        ],
-                        if (record.invoiceNumber != null &&
-                            record.invoiceNumber!.isNotEmpty) ...[
-                          Divider(
-                              color: surfaceBorder, height: 18),
-                          _buildDetailRow(
-                            icon: Remix.file_list_2_line,
-                            label: 'رقم الفاتورة / הקבלה',
-                            value: '#${record.invoiceNumber}',
-                          ),
-                        ],
-                        if (record.provider != null &&
-                            record.provider!.isNotEmpty) ...[
-                          Divider(
-                              color: surfaceBorder, height: 18),
-                          _buildDetailRow(
-                            icon: Remix.store_2_line,
-                            label: 'المزود / المحطة / الكراج',
-                            value: record.provider!,
-                          ),
-                        ],
-                        if (isFuel) ...[
-                          Divider(
-                              color: surfaceBorder, height: 18),
-                          _buildDetailRow(
-                            icon: Remix.drop_line,
-                            label: 'كمية الوقود',
-                            value:
-                                '${record.liters ?? (record.amount / 7.77).toStringAsFixed(2)} ליטרים',
-                          ),
-                          Divider(
-                              color: surfaceBorder, height: 18),
-                          _buildDetailRow(
-                            icon: Remix.gas_station_line,
-                            label: 'نوع الوقود',
-                            value: 'בנזין 95 אוקטן',
-                          ),
-                          Divider(
-                              color: surfaceBorder, height: 18),
-                          _buildDetailRow(
-                            icon: Remix.bank_card_line,
-                            label: 'وسيلة الدفع',
-                            value: 'אפליקציית Yellow (פז תדלוק מהיר)',
-                          ),
-                        ],
-                        if (record.notes != null &&
-                            record.notes!.isNotEmpty) ...[
-                          Divider(
-                              color: surfaceBorder, height: 18),
-                          _buildDetailRow(
-                            icon: Remix.file_info_line,
-                            label: 'ملاحظات وتوصيات',
-                            value: record.notes!,
-                          ),
-                        ],
                       ],
                     ),
-                  ),
-                  if (!isFuel && record.items != null && record.items!.isNotEmpty) ...[
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 20),
+                    // بطاقة التفاصيل الفنية
                     Container(
-                      width: double.infinity,
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
                         color: surfaceField,
@@ -3632,77 +3690,173 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                         border: Border.all(color: surfaceBorder),
                       ),
                       child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Row(
-                            children: [
-                              Icon(
-                                Remix.checkbox_line,
-                                size: 16,
-                                color: isFuel
-                                    ? brandGreen
-                                    : brandYellow,
-                              ),
-                              const SizedBox(width: 8),
-                              Text(
-                                'القطع والأعمال المشمولة في الفاتورة:',
-                                style: TextStyle(
-                                  fontSize: 12.5,
-                                  fontWeight: FontWeight.w800,
-                                  color: textWhite,
-                                ),
-                              ),
-                            ],
+                          _buildDetailRow(
+                            icon: Remix.motorbike_line,
+                            label: 'المركبة المسجلة',
+                            value: _state.vehicleName,
                           ),
-                          const SizedBox(height: 10),
-                          Wrap(
-                            spacing: 8,
-                            runSpacing: 8,
-                            children: record.items!.map((it) {
-                              return Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 10, vertical: 6),
-                                decoration: BoxDecoration(
-                                  color: surfaceField,
-                                  borderRadius: BorderRadius.circular(10),
-                                  border: Border.all(
-                                      color: surfaceBorder),
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    const Icon(
-                                      Remix.checkbox_circle_line,
-                                      size: 13,
-                                      color: brandGreen,
-                                    ),
-                                    const SizedBox(width: 6),
-                                    Text(
-                                      it,
-                                      style: TextStyle(
-                                        fontSize: 11.5,
-                                        fontWeight: FontWeight.w600,
-                                        color: textWhite,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              );
-                            }).toList(),
+                          Divider(color: surfaceBorder, height: 18),
+                          _buildDetailRow(
+                            icon: Remix.file_text_line,
+                            label: 'البيان بالعبرية',
+                            value: record.title,
+                            isHighlight: true,
                           ),
+                          if (!isFuel && record.odometer > 0) ...[
+                            Divider(color: surfaceBorder, height: 18),
+                            _buildDetailRow(
+                              icon: Remix.dashboard_3_line,
+                              label: 'قراءة العداد عند العملية',
+                              value: '${_formatNumber(record.odometer)} ק"מ',
+                            ),
+                            Divider(color: surfaceBorder, height: 18),
+                            _buildDetailRow(
+                              icon: Remix.route_line,
+                              label: 'المسافة منذ هذه العملية',
+                              value:
+                                  kmSince == 0
+                                      ? 'متطابق مع العداد الحالي (0 ק"מ)'
+                                      : '+${_formatNumber(kmSince)} ק"מ',
+                            ),
+                          ],
+                          if (record.invoiceNumber != null &&
+                              record.invoiceNumber!.isNotEmpty) ...[
+                            Divider(color: surfaceBorder, height: 18),
+                            _buildDetailRow(
+                              icon: Remix.file_list_2_line,
+                              label: 'رقم الفاتورة / הקבלה',
+                              value: '#${record.invoiceNumber}',
+                            ),
+                          ],
+                          if (record.provider != null &&
+                              record.provider!.isNotEmpty) ...[
+                            Divider(color: surfaceBorder, height: 18),
+                            _buildDetailRow(
+                              icon: Remix.store_2_line,
+                              label: 'المزود / المحطة / الكراج',
+                              value: record.provider!,
+                            ),
+                          ],
+                          if (isFuel) ...[
+                            Divider(color: surfaceBorder, height: 18),
+                            _buildDetailRow(
+                              icon: Remix.drop_line,
+                              label: 'كمية الوقود',
+                              value:
+                                  '${record.liters ?? (record.amount / 7.77).toStringAsFixed(2)} ליטרים',
+                            ),
+                            Divider(color: surfaceBorder, height: 18),
+                            _buildDetailRow(
+                              icon: Remix.gas_station_line,
+                              label: 'نوع الوقود',
+                              value: 'בנזין 95 אוקטן',
+                            ),
+                            Divider(color: surfaceBorder, height: 18),
+                            _buildDetailRow(
+                              icon: Remix.bank_card_line,
+                              label: 'وسيلة الدفع',
+                              value: 'אפליקציית Yellow (פז תדלוק מהיר)',
+                            ),
+                          ],
+                          if (record.notes != null &&
+                              record.notes!.isNotEmpty) ...[
+                            Divider(color: surfaceBorder, height: 18),
+                            _buildDetailRow(
+                              icon: Remix.file_info_line,
+                              label: 'ملاحظات وتوصيات',
+                              value: record.notes!,
+                            ),
+                          ],
                         ],
                       ),
                     ),
-                  ],
-                  const SizedBox(height: 20),
-                  // أزرار التحكم بالمعاملة
-                  Row(
-                    children: [
-                      Expanded(
-                        child: OutlinedButton.icon(
-                          onPressed: () {
-                            SpendoHaptics.light();
-                            final detailsText = '''
+                    if (!isFuel &&
+                        record.items != null &&
+                        record.items!.isNotEmpty) ...[
+                      const SizedBox(height: 16),
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: surfaceField,
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: surfaceBorder),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Icon(
+                                  Remix.checkbox_line,
+                                  size: 16,
+                                  color: isFuel ? brandGreen : brandYellow,
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'القطع والأعمال المشمولة في الفاتورة:',
+                                  style: TextStyle(
+                                    fontSize: 12.5,
+                                    fontWeight: FontWeight.w800,
+                                    color: textWhite,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 10),
+                            Wrap(
+                              spacing: 8,
+                              runSpacing: 8,
+                              children:
+                                  record.items!.map((it) {
+                                    return Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 10,
+                                        vertical: 6,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: surfaceField,
+                                        borderRadius: BorderRadius.circular(10),
+                                        border: Border.all(
+                                          color: surfaceBorder,
+                                        ),
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          const Icon(
+                                            Remix.checkbox_circle_line,
+                                            size: 13,
+                                            color: brandGreen,
+                                          ),
+                                          const SizedBox(width: 6),
+                                          Text(
+                                            it,
+                                            style: TextStyle(
+                                              fontSize: 11.5,
+                                              fontWeight: FontWeight.w600,
+                                              color: textWhite,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  }).toList(),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                    const SizedBox(height: 20),
+                    // أزرار التحكم بالمعاملة
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton.icon(
+                            onPressed: () {
+                              SpendoHaptics.light();
+                              final detailsText = '''
 تفاصيل معاملة (${_state.vehicleName}):
 - النوع: ${isFuel ? 'تعبئة وقود' : 'صيانة وتغيير قطع'}
 - البيان: ${record.title}
@@ -3712,83 +3866,95 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
 ${record.invoiceNumber != null ? '- رقم الفاتورة: #${record.invoiceNumber}' : ''}
 ${record.provider != null ? '- المزود: ${record.provider}' : ''}
 ''';
-                            Clipboard.setData(
-                                ClipboardData(text: detailsText.trim()));
-                            Navigator.pop(ctx);
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('تم نسخ تفاصيل الفاتورة بنجاح'),
-                                duration: Duration(seconds: 2),
-                              ),
-                            );
-                          },
-                          icon: const Icon(Remix.file_copy_line, size: 16),
-                          label: Text('نسخ التفاصيل'),
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: textWhite,
-                            side: BorderSide(
-                                color: surfaceBorder),
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(14),
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: ElevatedButton.icon(
-                          onPressed: () async {
-                            final confirmed = await SpendoConfirmDeleteDialog.show(
-                              context,
-                              title: 'حذف المعاملة',
-                              itemName: record.title,
-                              itemIcon: record.isFuel
-                                  ? Remix.gas_station_line
-                                  : Remix.tools_line,
-                              description: 'هل أنت متأكد من حذف هذه المعاملة نهائياً من سجل المركبة؟',
-                              confirmLabel: 'حذف',
-                            );
-                            if (confirmed && context.mounted) {
+                              Clipboard.setData(
+                                ClipboardData(text: detailsText.trim()),
+                              );
                               Navigator.pop(ctx);
-                              final updated = _state.history
-                                  .where((x) => x.id != record.id)
-                                  .toList();
-                              _saveState(_state.copyWith(history: updated));
-                              await DeletionSyncService.recordDeletion(_storageKey, record.id);
-                            }
-                          },
-                          icon: const Icon(Remix.delete_bin_line,
-                              size: 16, color: AppColors.dangerRed),
-                          label: const Text(
-                            'حذف المعاملة',
-                            style: TextStyle(color: AppColors.dangerRed),
-                          ),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor:
-                                AppColors.dangerRed.withValues(alpha: 0.12),
-                            shadowColor: Colors.transparent,
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(14),
-                              side: BorderSide(
-                                color:
-                                    AppColors.dangerRed.withValues(alpha: 0.3),
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('تم نسخ تفاصيل الفاتورة بنجاح'),
+                                  duration: Duration(seconds: 2),
+                                ),
+                              );
+                            },
+                            icon: const Icon(Remix.file_copy_line, size: 16),
+                            label: Text('نسخ التفاصيل'),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: textWhite,
+                              side: BorderSide(color: surfaceBorder),
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(14),
                               ),
                             ),
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-                ],
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: ElevatedButton.icon(
+                            onPressed: () async {
+                              final confirmed =
+                                  await SpendoConfirmDeleteDialog.show(
+                                    context,
+                                    title: 'حذف المعاملة',
+                                    itemName: record.title,
+                                    itemIcon:
+                                        record.isFuel
+                                            ? Remix.gas_station_line
+                                            : Remix.tools_line,
+                                    description:
+                                        'هل أنت متأكد من حذف هذه المعاملة نهائياً من سجل المركبة؟',
+                                    confirmLabel: 'حذف',
+                                  );
+                              if (confirmed && context.mounted) {
+                                Navigator.pop(ctx);
+                                final updated =
+                                    _state.history
+                                        .where((x) => x.id != record.id)
+                                        .toList();
+                                _saveState(_state.copyWith(history: updated));
+                                await DeletionSyncService.recordDeletion(
+                                  _storageKey,
+                                  record.id,
+                                );
+                              }
+                            },
+                            icon: const Icon(
+                              Remix.delete_bin_line,
+                              size: 16,
+                              color: AppColors.dangerRed,
+                            ),
+                            label: const Text(
+                              'حذف المعاملة',
+                              style: TextStyle(color: AppColors.dangerRed),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.dangerRed.withValues(
+                                alpha: 0.12,
+                              ),
+                              shadowColor: Colors.transparent,
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(14),
+                                side: BorderSide(
+                                  color: AppColors.dangerRed.withValues(
+                                    alpha: 0.3,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
-        ),
-      );
-    },
-  );
+        );
+      },
+    );
   }
 
   Widget _buildDetailRow({
@@ -3802,13 +3968,7 @@ ${record.provider != null ? '- المزود: ${record.provider}' : ''}
       children: [
         Icon(icon, size: 16, color: AppColors.textMuted),
         const SizedBox(width: 10),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 12,
-            color: textMuted,
-          ),
-        ),
+        Text(label, style: TextStyle(fontSize: 12, color: textMuted)),
         const Spacer(),
         Flexible(
           flex: 2,
@@ -3818,8 +3978,7 @@ ${record.provider != null ? '- المزود: ${record.provider}' : ''}
             style: TextStyle(
               fontSize: 12,
               fontWeight: isHighlight ? FontWeight.w800 : FontWeight.w600,
-              color:
-                  isHighlight ? brandGreen : textWhite,
+              color: isHighlight ? brandGreen : textWhite,
             ),
           ),
         ),

@@ -33,25 +33,27 @@ class _FinanceScreenState extends State<FinanceScreen> {
   Map<String, PersonModel> _peopleMap = {};
   bool _isLoading = true;
   final Set<String> _expandedPeople = {};
-  String _selectedFilter = 'all'; // 'all', 'they_owe', 'i_owe', 'received', 'settled', 'bit', 'cash', 'bank', 'check'
+  String _selectedFilter =
+      'all'; // 'all', 'they_owe', 'i_owe', 'received', 'settled', 'bit', 'cash', 'bank', 'check'
 
   bool get _isDark => Theme.of(context).brightness == Brightness.dark;
 
-  Color get surfaceMain => _isDark ? const Color(0xFF0A0A0C) : const Color(0xFFF8F9FA);
-  Color get surfaceField => _isDark ? const Color(0xFF121215) : const Color(0xFFFFFFFF);
-  Color get surfaceBorder => _isDark ? const Color(0xFF1E1E24) : const Color(0xFFE5E7EB);
+  Color get surfaceMain =>
+      _isDark ? const Color(0xFF0A0A0C) : const Color(0xFFF8F9FA);
+  Color get surfaceField =>
+      _isDark ? const Color(0xFF121215) : const Color(0xFFFFFFFF);
+  Color get surfaceBorder =>
+      _isDark ? const Color(0xFF1E1E24) : const Color(0xFFE5E7EB);
   static const Color brandBlue = Color(0xFF0F766E);
   Color get brandYellow => AppColors.warningFor(_isDark);
   Color get successColor => AppColors.successFor(_isDark);
   static const Color brandRed = Color(0xFFEF4444);
-  Color get textWhite => _isDark ? const Color(0xFFFFFFFF) : const Color(0xFF111827);
-  Color get textMuted => _isDark ? const Color(0xFF71717A) : const Color(0xFF6B7280);
-  Color get textSubtle => _isDark ? const Color(0xFF71717A) : const Color(0xFF9CA3AF);
-
-
-
-
-
+  Color get textWhite =>
+      _isDark ? const Color(0xFFFFFFFF) : const Color(0xFF111827);
+  Color get textMuted =>
+      _isDark ? const Color(0xFF71717A) : const Color(0xFF6B7280);
+  Color get textSubtle =>
+      _isDark ? const Color(0xFF71717A) : const Color(0xFF9CA3AF);
 
   @override
   void initState() {
@@ -87,7 +89,8 @@ class _FinanceScreenState extends State<FinanceScreen> {
 
   double get _totalTheyOweMe => FinanceRepository.calculateTotalTheyOwe(_debts);
   double get _totalIOweThem => FinanceRepository.calculateTotalIOwe(_debts);
-  double get _netDebtBalance => FinanceRepository.calculateNetDebtBalance(_debts);
+  double get _netDebtBalance =>
+      FinanceRepository.calculateNetDebtBalance(_debts);
   double get _totalReceived => FinanceRepository.calculateTotalReceived(_debts);
 
   List<DebtModel> get _filteredDebts {
@@ -101,13 +104,21 @@ class _FinanceScreenState extends State<FinanceScreen> {
       case 'received':
         return _debts.where((d) => d.isReceived).toList();
       case 'atm_code':
-        return _debts.where((d) => d.paymentMethod.toLowerCase() == 'atm_code').toList();
+        return _debts
+            .where((d) => d.paymentMethod.toLowerCase() == 'atm_code')
+            .toList();
       case 'bit':
-        return _debts.where((d) => d.paymentMethod.toLowerCase() == 'bit').toList();
+        return _debts
+            .where((d) => d.paymentMethod.toLowerCase() == 'bit')
+            .toList();
       case 'cash':
-        return _debts.where((d) => d.paymentMethod.toLowerCase() == 'cash').toList();
+        return _debts
+            .where((d) => d.paymentMethod.toLowerCase() == 'cash')
+            .toList();
       case 'bank':
-        return _debts.where((d) => d.paymentMethod.toLowerCase() == 'bank_transfer').toList();
+        return _debts
+            .where((d) => d.paymentMethod.toLowerCase() == 'bank_transfer')
+            .toList();
       case 'settled':
         return _debts.where((d) => d.isSettled && !d.isReceived).toList();
       case 'all':
@@ -172,14 +183,15 @@ class _FinanceScreenState extends State<FinanceScreen> {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       barrierColor: Colors.black.withValues(alpha: 0.75),
-      builder: (_) => AddDebtSheet(
-        people: people,
-        onSave: (debt) async {
-          await _financeRepo.addDebt(debt);
-          _loadData();
-          _showToast('تم حفظ المعاملة في كشف المالية');
-        },
-      ),
+      builder:
+          (_) => AddDebtSheet(
+            people: people,
+            onSave: (debt) async {
+              await _financeRepo.addDebt(debt);
+              _loadData();
+              _showToast('تم حفظ المعاملة في كشف المالية');
+            },
+          ),
     );
   }
 
@@ -192,21 +204,23 @@ class _FinanceScreenState extends State<FinanceScreen> {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       barrierColor: Colors.black.withValues(alpha: 0.75),
-      builder: (_) => AddDebtSheet(
-        people: people,
-        initialDebt: debt,
-        onSave: (updatedDebt) async {
-          await _financeRepo.updateDebt(updatedDebt);
-          _loadData();
-          _showToast('تم تعديل المعاملة بنجاح');
-        },
-      ),
+      builder:
+          (_) => AddDebtSheet(
+            people: people,
+            initialDebt: debt,
+            onSave: (updatedDebt) async {
+              await _financeRepo.updateDebt(updatedDebt);
+              _loadData();
+              _showToast('تم تعديل المعاملة بنجاح');
+            },
+          ),
     );
   }
 
   Future<void> _showRepaymentSheet(DebtModel debt) async {
     SpendoHaptics.light();
-    final person = _peopleMap[debt.personId] ??
+    final person =
+        _peopleMap[debt.personId] ??
         PersonModel(
           id: debt.personId,
           name: 'شخص غير معروف',
@@ -219,15 +233,19 @@ class _FinanceScreenState extends State<FinanceScreen> {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       barrierColor: Colors.black.withValues(alpha: 0.75),
-      builder: (_) => RecordRepaymentSheet(
-        debt: debt,
-        person: person,
-        onConfirm: (payment) async {
-          await _financeRepo.recordDebtRepayment(payment: payment, parentDebt: debt);
-          _loadData();
-          _showToast('تم تسجيل الدفعة بنجاح');
-        },
-      ),
+      builder:
+          (_) => RecordRepaymentSheet(
+            debt: debt,
+            person: person,
+            onConfirm: (payment) async {
+              await _financeRepo.recordDebtRepayment(
+                payment: payment,
+                parentDebt: debt,
+              );
+              _loadData();
+              _showToast('تم تسجيل الدفعة بنجاح');
+            },
+          ),
     );
   }
 
@@ -241,8 +259,12 @@ class _FinanceScreenState extends State<FinanceScreen> {
       buffer.writeln('الاسم: ${person?.name ?? "غير محدد"}');
       buffer.writeln('نوع المعاملة: مبالغ مستلمة (سحب بنكي أو استلام مالي)');
       buffer.writeln('طريقة الاستلام: ${debt.paymentMethodTitle}');
-      buffer.writeln('تاريخ المعاملة: ${ArabicDateHelper.formatArabicDateWithWeekdayFromString(debt.transactionDate)}');
-      buffer.writeln('المبلغ المستلم: ${debt.originalAmount.toStringAsFixed(1)} ₪');
+      buffer.writeln(
+        'تاريخ المعاملة: ${ArabicDateHelper.formatArabicDateWithWeekdayFromString(debt.transactionDate)}',
+      );
+      buffer.writeln(
+        'المبلغ المستلم: ${debt.originalAmount.toStringAsFixed(1)} ₪',
+      );
       buffer.writeln('الحالة: خالص ومسدد (مستلم بالكامل)');
       if (debt.notes != null) {
         buffer.writeln('ملاحظات: ${debt.notes}');
@@ -254,12 +276,22 @@ class _FinanceScreenState extends State<FinanceScreen> {
       buffer.writeln('الاسم: ${person?.name ?? "غير محدد"}');
       buffer.writeln('نوع المعاملة: ${debt.typeTitle}');
       buffer.writeln('طريقة الدفع: ${debt.paymentMethodTitle}');
-      buffer.writeln('تاريخ السلفة: ${ArabicDateHelper.formatArabicDateWithWeekdayFromString(debt.transactionDate)}');
-      buffer.writeln('المبلغ الأصلي (من أصل): ${debt.originalAmount.toStringAsFixed(1)} ₪');
-      buffer.writeln('المسدد حتى الآن: ${debt.paidAmount.toStringAsFixed(1)} ₪');
-      buffer.writeln('المبلغ المتبقي: ${debt.remainingAmount.toStringAsFixed(1)} ₪');
+      buffer.writeln(
+        'تاريخ السلفة: ${ArabicDateHelper.formatArabicDateWithWeekdayFromString(debt.transactionDate)}',
+      );
+      buffer.writeln(
+        'المبلغ الأصلي (من أصل): ${debt.originalAmount.toStringAsFixed(1)} ₪',
+      );
+      buffer.writeln(
+        'المسدد حتى الآن: ${debt.paidAmount.toStringAsFixed(1)} ₪',
+      );
+      buffer.writeln(
+        'المبلغ المتبقي: ${debt.remainingAmount.toStringAsFixed(1)} ₪',
+      );
       if (debt.dueDate != null) {
-        buffer.writeln('تاريخ السداد المتوقع: ${ArabicDateHelper.formatArabicDateWithWeekdayFromString(debt.dueDate!)}');
+        buffer.writeln(
+          'تاريخ السداد المتوقع: ${ArabicDateHelper.formatArabicDateWithWeekdayFromString(debt.dueDate!)}',
+        );
       }
       if (debt.notes != null) {
         buffer.writeln('ملاحظات: ${debt.notes}');
@@ -269,7 +301,9 @@ class _FinanceScreenState extends State<FinanceScreen> {
 
     if (person?.whatsapp != null && person!.whatsapp!.isNotEmpty) {
       final cleanPhone = person.whatsapp!.replaceAll(RegExp(r'[^0-9]'), '');
-      final url = Uri.parse('https://wa.me/$cleanPhone?text=${Uri.encodeComponent(buffer.toString())}');
+      final url = Uri.parse(
+        'https://wa.me/$cleanPhone?text=${Uri.encodeComponent(buffer.toString())}',
+      );
       if (await canLaunchUrl(url)) {
         await launchUrl(url, mode: LaunchMode.externalApplication);
         return;
@@ -291,7 +325,8 @@ class _FinanceScreenState extends State<FinanceScreen> {
       title: 'حذف المعاملة المالية',
       itemName: '$personName - ${debt.originalAmount.toStringAsFixed(0)} ₪',
       itemIcon: Remix.hand_coin_line,
-      description: 'هل أنت متأكد من حذف هذا السجل المالي وسجل الدفعات المرتبطة به نهائياً؟',
+      description:
+          'هل أنت متأكد من حذف هذا السجل المالي وسجل الدفعات المرتبطة به نهائياً؟',
       confirmLabel: 'حذف',
     );
 
@@ -347,69 +382,82 @@ class _FinanceScreenState extends State<FinanceScreen> {
     return Scaffold(
       backgroundColor: surfaceMain,
       body: SafeArea(
-        child: _isLoading
-            ? const Center(child: CircularProgressIndicator(color: brandBlue, strokeWidth: 2))
-            : RefreshIndicator(
-                color: brandBlue,
-                backgroundColor: surfaceMain,
-                onRefresh: _loadData,
-                child: ListView(
-                  physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                  children: [
-                    // 1. الهيدر العلوي (أيقونات نظيفة بدون خلفية)
-                    _buildHeader(),
-                    const SizedBox(height: 12),
-
-                    // 2. بطاقة ملخص الحسابات (مدمجة وبدون دوائر خلف الأيقونات)
-                    BankingCascadeItem(
-                      tabIndex: 4,
-                      staggerIndex: 0,
-                      child: _buildDashboardCards(),
+        child:
+            _isLoading
+                ? const Center(
+                  child: CircularProgressIndicator(
+                    color: brandBlue,
+                    strokeWidth: 2,
+                  ),
+                )
+                : RefreshIndicator(
+                  color: brandBlue,
+                  backgroundColor: surfaceMain,
+                  onRefresh: _loadData,
+                  child: ListView(
+                    physics: const AlwaysScrollableScrollPhysics(
+                      parent: BouncingScrollPhysics(),
                     ),
-                    const SizedBox(height: 14),
-
-                    // 3. عنوان سجل المعاملات + زر تسجيل جديد
-                    BankingCascadeItem(
-                      tabIndex: 4,
-                      staggerIndex: 1,
-                      child: _buildSectionHeader(),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 10,
                     ),
-                    const SizedBox(height: 10),
+                    children: [
+                      // 1. الهيدر العلوي (أيقونات نظيفة بدون خلفية)
+                      _buildHeader(),
+                      const SizedBox(height: 12),
 
-                    // 5. قائمة بطاقات المعاملات (مع أنيميشن سلس عند تبديل الفلتر)
-                    AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 240),
-                      switchInCurve: Curves.easeOutCubic,
-                      switchOutCurve: Curves.easeInCubic,
-                      transitionBuilder: (child, anim) {
-                        return FadeTransition(
-                          opacity: anim,
-                          child: SlideTransition(
-                            position: Tween<Offset>(
-                              begin: const Offset(0, 0.03),
-                              end: Offset.zero,
-                            ).animate(anim),
-                            child: child,
-                          ),
-                        );
-                      },
-                      child: Column(
-                        key: ValueKey<String>('${_selectedFilter}_${_filteredDebts.length}'),
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          if (_filteredDebts.isEmpty)
-                            _buildEmptyState()
-                          else
-                            _buildDebtGrid(),
-                        ],
+                      // 2. بطاقة ملخص الحسابات (مدمجة وبدون دوائر خلف الأيقونات)
+                      BankingCascadeItem(
+                        tabIndex: 4,
+                        staggerIndex: 0,
+                        child: _buildDashboardCards(),
                       ),
-                    ),
+                      const SizedBox(height: 14),
 
-                    const SizedBox(height: 80),
-                  ],
+                      // 3. عنوان سجل المعاملات + زر تسجيل جديد
+                      BankingCascadeItem(
+                        tabIndex: 4,
+                        staggerIndex: 1,
+                        child: _buildSectionHeader(),
+                      ),
+                      const SizedBox(height: 10),
+
+                      // 5. قائمة بطاقات المعاملات (مع أنيميشن سلس عند تبديل الفلتر)
+                      AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 240),
+                        switchInCurve: Curves.easeOutCubic,
+                        switchOutCurve: Curves.easeInCubic,
+                        transitionBuilder: (child, anim) {
+                          return FadeTransition(
+                            opacity: anim,
+                            child: SlideTransition(
+                              position: Tween<Offset>(
+                                begin: const Offset(0, 0.03),
+                                end: Offset.zero,
+                              ).animate(anim),
+                              child: child,
+                            ),
+                          );
+                        },
+                        child: Column(
+                          key: ValueKey<String>(
+                            '${_selectedFilter}_${_filteredDebts.length}',
+                          ),
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            if (_filteredDebts.isEmpty)
+                              _buildEmptyState()
+                            else
+                              _buildDebtGrid(),
+                          ],
+                        ),
+                      ),
+
+                      const SizedBox(height: 80),
+                    ],
+                  ),
                 ),
-              ),
       ),
     );
   }
@@ -456,13 +504,21 @@ class _FinanceScreenState extends State<FinanceScreen> {
           Row(
             children: [
               InkWell(
-                onTap: () => SpendoAppMenu.open(context, onSettingsClosed: () async {
-                  if (mounted) await _loadData();
-                }),
+                onTap:
+                    () => SpendoAppMenu.open(
+                      context,
+                      onSettingsClosed: () async {
+                        if (mounted) await _loadData();
+                      },
+                    ),
                 borderRadius: BorderRadius.circular(6),
                 child: const Padding(
                   padding: EdgeInsets.all(6),
-                  child: Icon(Remix.menu_line, color: Color(0xFF9CA3AF), size: 19),
+                  child: Icon(
+                    Remix.menu_line,
+                    color: Color(0xFF9CA3AF),
+                    size: 19,
+                  ),
                 ),
               ),
             ],
@@ -482,15 +538,20 @@ class _FinanceScreenState extends State<FinanceScreen> {
     final String netPrefix = isPositive ? '+' : (isNegative ? '-' : '');
     final double absNet = net.abs();
 
-    final String netStatusLabel = isPositive
-        ? 'فائض لك عند الغير'
-        : (isNegative ? 'التزام مالي عليك' : 'الحسابات متوازنة');
+    final String netStatusLabel =
+        isPositive
+            ? 'فائض لك عند الغير'
+            : (isNegative ? 'التزام مالي عليك' : 'الحسابات متوازنة');
 
-    final IconData netStatusIcon = isBalanced
-        ? Remix.check_line
-        : (isPositive ? Remix.arrow_left_down_line : Remix.arrow_right_up_line);
+    final IconData netStatusIcon =
+        isBalanced
+            ? Remix.check_line
+            : (isPositive
+                ? Remix.arrow_left_down_line
+                : Remix.arrow_right_up_line);
 
-    final Color badgeColor = isBalanced ? textMuted : (isPositive ? successColor : brandRed);
+    final Color badgeColor =
+        isBalanced ? textMuted : (isPositive ? successColor : brandRed);
 
     return Container(
       decoration: BoxDecoration(
@@ -583,7 +644,11 @@ class _FinanceScreenState extends State<FinanceScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Remix.arrow_left_down_line, color: brandBlue, size: 14),
+                        Icon(
+                          Remix.arrow_left_down_line,
+                          color: brandBlue,
+                          size: 14,
+                        ),
                         SizedBox(width: 4),
                         Text(
                           'سلف لي',
@@ -634,7 +699,11 @@ class _FinanceScreenState extends State<FinanceScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Remix.arrow_right_up_line, color: brandRed, size: 14),
+                        Icon(
+                          Remix.arrow_right_up_line,
+                          color: brandRed,
+                          size: 14,
+                        ),
                         SizedBox(width: 4),
                         Text(
                           'ديون علي',
@@ -685,7 +754,11 @@ class _FinanceScreenState extends State<FinanceScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Remix.checkbox_circle_line, color: successColor, size: 14),
+                        Icon(
+                          Remix.checkbox_circle_line,
+                          color: successColor,
+                          size: 14,
+                        ),
                         SizedBox(width: 4),
                         Text(
                           'مبالغ مستلمة',
@@ -744,13 +817,25 @@ class _FinanceScreenState extends State<FinanceScreen> {
         Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text('سجل المعاملات',
-                style: TextStyle(fontFamily: 'Cairo', color: textWhite,
-                    fontSize: 12, fontWeight: FontWeight.bold)),
+            Text(
+              'سجل المعاملات',
+              style: TextStyle(
+                fontFamily: 'Cairo',
+                color: textWhite,
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
             const SizedBox(width: 6),
-            Text('${_filteredDebts.length}',
-                style: TextStyle(fontFamily: 'Cairo', color: textMuted,
-                    fontSize: 11, fontWeight: FontWeight.w600)),
+            Text(
+              '${_filteredDebts.length}',
+              style: TextStyle(
+                fontFamily: 'Cairo',
+                color: textMuted,
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ],
         ),
         Row(
@@ -759,20 +844,27 @@ class _FinanceScreenState extends State<FinanceScreen> {
             SizedBox(width: 90, child: _buildFilterDropdown()),
             const SizedBox(width: 6),
             FilledButton.icon(
-                onPressed: _showAddDebtSheet,
-                icon: const Icon(Remix.add_line, size: 15),
-                label: const Text('تسجيل جديد'),
-                style: FilledButton.styleFrom(
-                  backgroundColor: brandBlue,
-                  foregroundColor: Colors.white,
-                  minimumSize: const Size(0, 34),
-                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                  textStyle: const TextStyle(fontFamily: 'Cairo',
-                      fontSize: 12, fontWeight: FontWeight.w700),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(11)),
+              onPressed: _showAddDebtSheet,
+              icon: const Icon(Remix.add_line, size: 15),
+              label: const Text('تسجيل جديد'),
+              style: FilledButton.styleFrom(
+                backgroundColor: brandBlue,
+                foregroundColor: Colors.white,
+                minimumSize: const Size(0, 34),
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 5,
                 ),
+                textStyle: const TextStyle(
+                  fontFamily: 'Cairo',
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(11),
+                ),
+              ),
             ),
           ],
         ),
@@ -812,12 +904,25 @@ class _FinanceScreenState extends State<FinanceScreen> {
           menuWidth: 122,
           menuMaxHeight: 280,
           icon: Icon(Remix.arrow_down_s_line, size: 19, color: textMuted),
-          style: TextStyle(fontFamily: 'Cairo', color: textWhite,
-              fontSize: 11, fontWeight: FontWeight.w600),
-          items: labels.entries.map((entry) => DropdownMenuItem(
-            value: entry.key,
-            child: Text(entry.value, maxLines: 1, overflow: TextOverflow.ellipsis),
-          )).toList(),
+          style: TextStyle(
+            fontFamily: 'Cairo',
+            color: textWhite,
+            fontSize: 11,
+            fontWeight: FontWeight.w600,
+          ),
+          items:
+              labels.entries
+                  .map(
+                    (entry) => DropdownMenuItem(
+                      value: entry.key,
+                      child: Text(
+                        entry.value,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  )
+                  .toList(),
           onChanged: (value) {
             if (value == null || value == _selectedFilter) return;
             SpendoHaptics.selection();
@@ -830,26 +935,32 @@ class _FinanceScreenState extends State<FinanceScreen> {
 
   /// Group by the saved person ID so separate contacts with the same name stay separate.
   Widget _buildDebtGrid() {
-    final sorted = List<DebtModel>.of(_filteredDebts)
-      ..sort((a, b) {
-        final dateOrder = b.transactionDate.compareTo(a.transactionDate);
-        return dateOrder != 0 ? dateOrder : b.createdAt.compareTo(a.createdAt);
-      });
+    final sorted = List<DebtModel>.of(_filteredDebts)..sort((a, b) {
+      final dateOrder = b.transactionDate.compareTo(a.transactionDate);
+      return dateOrder != 0 ? dateOrder : b.createdAt.compareTo(a.createdAt);
+    });
     final groups = <String, List<DebtModel>>{};
     for (final debt in sorted) {
       groups.putIfAbsent(debt.personId, () => []).add(debt);
     }
-    return LayoutBuilder(builder: (context, constraints) {
-      final cardWidth = (constraints.maxWidth - 8) / 2;
-      return Wrap(
-        spacing: 8,
-        runSpacing: 8,
-        children: groups.entries.map((entry) => SizedBox(
-          width: cardWidth,
-          child: _buildPersonHistoryCard(entry.key, entry.value),
-        )).toList(),
-      );
-    });
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final cardWidth = (constraints.maxWidth - 8) / 2;
+        return Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children:
+              groups.entries
+                  .map(
+                    (entry) => SizedBox(
+                      width: cardWidth,
+                      child: _buildPersonHistoryCard(entry.key, entry.value),
+                    ),
+                  )
+                  .toList(),
+        );
+      },
+    );
   }
 
   Widget _buildPersonHistoryCard(String personId, List<DebtModel> debts) {
@@ -868,27 +979,39 @@ class _FinanceScreenState extends State<FinanceScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Row(children: [
-              Icon(Remix.user_3_line, size: 19, color: textMuted),
-              const SizedBox(width: 5),
-              Expanded(child: Text(_peopleMap[personId]?.name ?? 'شخص غير مسجل',
-                maxLines: 1, overflow: TextOverflow.ellipsis,
-                style: TextStyle(fontFamily: 'Cairo', color: textWhite,
-                    fontSize: 11.5, fontWeight: FontWeight.bold))),
-            ]),
+            Row(
+              children: [
+                Icon(Remix.user_3_line, size: 19, color: textMuted),
+                const SizedBox(width: 5),
+                Expanded(
+                  child: Text(
+                    _peopleMap[personId]?.name ?? 'شخص غير مسجل',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontFamily: 'Cairo',
+                      color: textWhite,
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            ),
             for (final debt in visible) ...[
               Divider(height: 9, thickness: 0.6, color: surfaceBorder),
               _buildHistoryEntry(debt),
             ],
             if (debts.length > 3)
               TextButton(
-                onPressed: () => setState(() {
-                  if (expanded) {
-                    _expandedPeople.remove(personId);
-                  } else {
-                    _expandedPeople.add(personId);
-                  }
-                }),
+                onPressed:
+                    () => setState(() {
+                      if (expanded) {
+                        _expandedPeople.remove(personId);
+                      } else {
+                        _expandedPeople.add(personId);
+                      }
+                    }),
                 style: TextButton.styleFrom(
                   foregroundColor: brandBlue,
                   minimumSize: const Size(0, 28),
@@ -896,7 +1019,9 @@ class _FinanceScreenState extends State<FinanceScreen> {
                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   textStyle: const TextStyle(fontFamily: 'Cairo', fontSize: 10),
                 ),
-                child: Text(expanded ? 'عرض أقل' : 'عرض باقي السجل (${debts.length - 3})'),
+                child: Text(
+                  expanded ? 'عرض أقل' : 'عرض باقي السجل (${debts.length - 3})',
+                ),
               ),
           ],
         ),
@@ -906,15 +1031,27 @@ class _FinanceScreenState extends State<FinanceScreen> {
 
   Widget _buildHistoryEntry(DebtModel debt) {
     final isSettled = debt.isSettled;
-    final statusColor = isSettled || debt.isReceived
-        ? successColor : (debt.isPayLater ? brandYellow : (debt.isIOwe ? brandRed : brandYellow));
-    final status = debt.isReceived ? 'خالص ومسدد'
-        : debt.isPayLater ? (isSettled ? 'تم الدفع' : 'للدفع لاحقاً')
-        : isSettled ? 'تم السداد'
-        : debt.isIOwe ? 'مستحق الدفع' : 'بانتظار السداد';
+    final statusColor =
+        isSettled || debt.isReceived
+            ? successColor
+            : (debt.isPayLater
+                ? brandYellow
+                : (debt.isIOwe ? brandRed : brandYellow));
+    final status =
+        debt.isReceived
+            ? 'خالص ومسدد'
+            : debt.isPayLater
+            ? (isSettled ? 'تم الدفع' : 'للدفع لاحقاً')
+            : isSettled
+            ? 'تم السداد'
+            : debt.isIOwe
+            ? 'مستحق الدفع'
+            : 'بانتظار السداد';
     final date = DateTime.tryParse(debt.transactionDate);
-    final dateLabel = date == null ? debt.transactionDate
-        : '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
+    final dateLabel =
+        date == null
+            ? debt.transactionDate
+            : '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
     return InkWell(
       onTap: () => _showDebtDetailsDialog(debt),
       borderRadius: BorderRadius.circular(6),
@@ -926,12 +1063,25 @@ class _FinanceScreenState extends State<FinanceScreen> {
             crossAxisAlignment: WrapCrossAlignment.center,
             spacing: 5,
             children: [
-              Text(dateLabel, textDirection: TextDirection.ltr,
-                style: TextStyle(fontFamily: 'Cairo', color: textMuted,
-                    fontSize: 9, fontWeight: FontWeight.w500)),
-              Text('${_formatCurrency(debt.originalAmount)} ₪',
-                style: TextStyle(fontFamily: 'Cairo', color: textWhite,
-                    fontSize: 11, fontWeight: FontWeight.bold)),
+              Text(
+                dateLabel,
+                textDirection: TextDirection.ltr,
+                style: TextStyle(
+                  fontFamily: 'Cairo',
+                  color: textMuted,
+                  fontSize: 9,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              Text(
+                '${_formatCurrency(debt.originalAmount)} ₪',
+                style: TextStyle(
+                  fontFamily: 'Cairo',
+                  color: textWhite,
+                  fontSize: 11,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ],
           ),
           Wrap(
@@ -939,16 +1089,38 @@ class _FinanceScreenState extends State<FinanceScreen> {
             crossAxisAlignment: WrapCrossAlignment.center,
             spacing: 2,
             children: [
-              Text(status, style: TextStyle(fontFamily: 'Cairo',
-                  color: statusColor, fontSize: 9, fontWeight: FontWeight.w700)),
-              Row(mainAxisSize: MainAxisSize.min, children: [
-                _buildCardAction('واتساب', Remix.whatsapp_line,
-                    const Color(0xFF10B981), () => _shareDebtViaWhatsApp(debt)),
-                _buildCardAction('تعديل', Remix.pencil_line,
-                    textMuted, () => _showEditDebtSheet(debt)),
-                _buildCardAction('حذف', Remix.delete_bin_line,
-                    textMuted, () => _confirmDelete(debt)),
-              ]),
+              Text(
+                status,
+                style: TextStyle(
+                  fontFamily: 'Cairo',
+                  color: statusColor,
+                  fontSize: 9,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _buildCardAction(
+                    'واتساب',
+                    Remix.whatsapp_line,
+                    const Color(0xFF10B981),
+                    () => _shareDebtViaWhatsApp(debt),
+                  ),
+                  _buildCardAction(
+                    'تعديل',
+                    Remix.pencil_line,
+                    textMuted,
+                    () => _showEditDebtSheet(debt),
+                  ),
+                  _buildCardAction(
+                    'حذف',
+                    Remix.delete_bin_line,
+                    textMuted,
+                    () => _confirmDelete(debt),
+                  ),
+                ],
+              ),
             ],
           ),
         ],
@@ -956,7 +1128,12 @@ class _FinanceScreenState extends State<FinanceScreen> {
     );
   }
 
-  Widget _buildCardAction(String label, IconData icon, Color color, VoidCallback onTap) {
+  Widget _buildCardAction(
+    String label,
+    IconData icon,
+    Color color,
+    VoidCallback onTap,
+  ) {
     return Tooltip(
       message: label,
       child: InkWell(
@@ -1002,9 +1179,10 @@ class _FinanceScreenState extends State<FinanceScreen> {
 
     if (isSettled) badgeColor = successColor;
 
-    final double displayAmount = isReceived
-        ? debt.originalAmount
-        : (isSettled ? debt.originalAmount : debt.remainingAmount);
+    final double displayAmount =
+        isReceived
+            ? debt.originalAmount
+            : (isSettled ? debt.originalAmount : debt.remainingAmount);
 
     showGeneralDialog(
       context: context,
@@ -1025,7 +1203,9 @@ class _FinanceScreenState extends State<FinanceScreen> {
                 border: Border.all(color: surfaceBorder),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: _isDark ? 0.45 : 0.15),
+                    color: Colors.black.withValues(
+                      alpha: _isDark ? 0.45 : 0.15,
+                    ),
                     blurRadius: 24,
                     offset: const Offset(0, 8),
                   ),
@@ -1048,7 +1228,11 @@ class _FinanceScreenState extends State<FinanceScreen> {
                             color: surfaceBorder.withValues(alpha: 0.4),
                             shape: BoxShape.circle,
                           ),
-                          child: Icon(Remix.close_line, size: 16, color: textMuted),
+                          child: Icon(
+                            Remix.close_line,
+                            size: 16,
+                            color: textMuted,
+                          ),
                         ),
                       ),
                       const SizedBox(width: 8),
@@ -1079,11 +1263,18 @@ class _FinanceScreenState extends State<FinanceScreen> {
                         ),
                       ),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 7,
+                          vertical: 2.5,
+                        ),
                         decoration: BoxDecoration(
-                          color: badgeColor.withValues(alpha: _isDark ? 0.14 : 0.20),
+                          color: badgeColor.withValues(
+                            alpha: _isDark ? 0.14 : 0.20,
+                          ),
                           borderRadius: BorderRadius.circular(6),
-                          border: Border.all(color: badgeColor.withValues(alpha: 0.4)),
+                          border: Border.all(
+                            color: badgeColor.withValues(alpha: 0.4),
+                          ),
                         ),
                         child: Text(
                           badgeText,
@@ -1101,16 +1292,25 @@ class _FinanceScreenState extends State<FinanceScreen> {
 
                   // 2. بطاقة Bento 1: المبلغ المالي وحالة السداد
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 12,
+                    ),
                     decoration: BoxDecoration(
                       color: surfaceMain,
                       borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: badgeColor.withValues(alpha: 0.35)),
+                      border: Border.all(
+                        color: badgeColor.withValues(alpha: 0.35),
+                      ),
                     ),
                     child: Column(
                       children: [
                         Text(
-                          isReceived ? 'إجمالي المبلغ المستلم' : (isSettled ? 'المبلغ المسدد' : 'المبلغ المستحق'),
+                          isReceived
+                              ? 'إجمالي المبلغ المستلم'
+                              : (isSettled
+                                  ? 'المبلغ المسدد'
+                                  : 'المبلغ المستحق'),
                           style: TextStyle(
                             fontFamily: 'Cairo',
                             fontSize: 10.5,
@@ -1127,9 +1327,14 @@ class _FinanceScreenState extends State<FinanceScreen> {
                                 fontFamily: 'Cairo',
                                 fontSize: 24,
                                 fontWeight: FontWeight.w900,
-                                color: isReceived
-                                    ? successColor
-                                    : (isSettled ? successColor : (debt.isPayLater || isTheyOwe ? brandYellow : brandRed)),
+                                color:
+                                    isReceived
+                                        ? successColor
+                                        : (isSettled
+                                            ? successColor
+                                            : (debt.isPayLater || isTheyOwe
+                                                ? brandYellow
+                                                : brandRed)),
                               ),
                             ),
                             Text(
@@ -1145,11 +1350,16 @@ class _FinanceScreenState extends State<FinanceScreen> {
                         ),
                         const SizedBox(height: 4),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 2,
+                          ),
                           decoration: BoxDecoration(
                             color: badgeColor.withValues(alpha: 0.14),
                             borderRadius: BorderRadius.circular(6),
-                            border: Border.all(color: badgeColor.withValues(alpha: 0.4)),
+                            border: Border.all(
+                              color: badgeColor.withValues(alpha: 0.4),
+                            ),
                           ),
                           child: Text(
                             subStatus,
@@ -1162,7 +1372,9 @@ class _FinanceScreenState extends State<FinanceScreen> {
                           ),
                         ),
                         // تفصيل السداد الجزئي إن وجد
-                        if (!isSettled && !isReceived && debt.remainingAmount < debt.originalAmount) ...[
+                        if (!isSettled &&
+                            !isReceived &&
+                            debt.remainingAmount < debt.originalAmount) ...[
                           const SizedBox(height: 8),
                           Divider(color: surfaceBorder, height: 1),
                           const SizedBox(height: 8),
@@ -1171,20 +1383,65 @@ class _FinanceScreenState extends State<FinanceScreen> {
                             children: [
                               Column(
                                 children: [
-                                  Text('المبلغ الأصلي', style: TextStyle(fontFamily: 'Cairo', fontSize: 10, color: textMuted)),
-                                  Text('${_formatCurrency(debt.originalAmount)} ₪', style: TextStyle(fontFamily: 'Cairo', fontSize: 11, fontWeight: FontWeight.bold, color: textWhite)),
+                                  Text(
+                                    'المبلغ الأصلي',
+                                    style: TextStyle(
+                                      fontFamily: 'Cairo',
+                                      fontSize: 10,
+                                      color: textMuted,
+                                    ),
+                                  ),
+                                  Text(
+                                    '${_formatCurrency(debt.originalAmount)} ₪',
+                                    style: TextStyle(
+                                      fontFamily: 'Cairo',
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.bold,
+                                      color: textWhite,
+                                    ),
+                                  ),
                                 ],
                               ),
                               Column(
                                 children: [
-                                  Text('المسدد', style: TextStyle(fontFamily: 'Cairo', fontSize: 10, color: textMuted)),
-                                  Text('${_formatCurrency(debt.originalAmount - debt.remainingAmount)} ₪', style: TextStyle(fontFamily: 'Cairo', fontSize: 11, fontWeight: FontWeight.bold, color: successColor)),
+                                  Text(
+                                    'المسدد',
+                                    style: TextStyle(
+                                      fontFamily: 'Cairo',
+                                      fontSize: 10,
+                                      color: textMuted,
+                                    ),
+                                  ),
+                                  Text(
+                                    '${_formatCurrency(debt.originalAmount - debt.remainingAmount)} ₪',
+                                    style: TextStyle(
+                                      fontFamily: 'Cairo',
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.bold,
+                                      color: successColor,
+                                    ),
+                                  ),
                                 ],
                               ),
                               Column(
                                 children: [
-                                  Text('المتبقي', style: TextStyle(fontFamily: 'Cairo', fontSize: 10, color: textMuted)),
-                                  Text('${_formatCurrency(debt.remainingAmount)} ₪', style: TextStyle(fontFamily: 'Cairo', fontSize: 11, fontWeight: FontWeight.bold, color: brandRed)),
+                                  Text(
+                                    'المتبقي',
+                                    style: TextStyle(
+                                      fontFamily: 'Cairo',
+                                      fontSize: 10,
+                                      color: textMuted,
+                                    ),
+                                  ),
+                                  Text(
+                                    '${_formatCurrency(debt.remainingAmount)} ₪',
+                                    style: TextStyle(
+                                      fontFamily: 'Cairo',
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.bold,
+                                      color: brandRed,
+                                    ),
+                                  ),
                                 ],
                               ),
                             ],
@@ -1197,7 +1454,10 @@ class _FinanceScreenState extends State<FinanceScreen> {
 
                   // 3. بطاقة Bento 2: تفاصيل المعاملة (التاريخ + وسيلة الدفع)
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 10,
+                    ),
                     decoration: BoxDecoration(
                       color: surfaceMain,
                       borderRadius: BorderRadius.circular(12),
@@ -1208,33 +1468,64 @@ class _FinanceScreenState extends State<FinanceScreen> {
                         // التاريخ
                         Row(
                           children: [
-                            Icon(Remix.calendar_2_line, color: textMuted, size: 14),
+                            Icon(
+                              Remix.calendar_2_line,
+                              color: textMuted,
+                              size: 14,
+                            ),
                             const SizedBox(width: 8),
                             Text(
                               'تاريخ المعاملة:',
-                              style: TextStyle(fontFamily: 'Cairo', color: textMuted, fontSize: 11),
+                              style: TextStyle(
+                                fontFamily: 'Cairo',
+                                color: textMuted,
+                                fontSize: 11,
+                              ),
                             ),
                             const Spacer(),
                             Text(
-                              ArabicDateHelper.formatArabicDateWithWeekdayFromString(debt.transactionDate),
-                              style: TextStyle(fontFamily: 'Cairo', color: textWhite, fontSize: 11, fontWeight: FontWeight.bold),
+                              ArabicDateHelper.formatArabicDateWithWeekdayFromString(
+                                debt.transactionDate,
+                              ),
+                              style: TextStyle(
+                                fontFamily: 'Cairo',
+                                color: textWhite,
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ],
                         ),
-                        Divider(color: surfaceBorder.withValues(alpha: 0.6), height: 12),
+                        Divider(
+                          color: surfaceBorder.withValues(alpha: 0.6),
+                          height: 12,
+                        ),
                         // وسيلة الدفع
                         Row(
                           children: [
-                            Icon(_getPaymentMethodIcon(debt.paymentMethod), color: _getPaymentMethodColor(debt.paymentMethod), size: 14),
+                            Icon(
+                              _getPaymentMethodIcon(debt.paymentMethod),
+                              color: _getPaymentMethodColor(debt.paymentMethod),
+                              size: 14,
+                            ),
                             const SizedBox(width: 8),
                             Text(
                               'طريقة الدفع:',
-                              style: TextStyle(fontFamily: 'Cairo', color: textMuted, fontSize: 11),
+                              style: TextStyle(
+                                fontFamily: 'Cairo',
+                                color: textMuted,
+                                fontSize: 11,
+                              ),
                             ),
                             const Spacer(),
                             Text(
                               debt.paymentMethodTitle,
-                              style: TextStyle(fontFamily: 'Cairo', color: textWhite, fontSize: 11, fontWeight: FontWeight.bold),
+                              style: TextStyle(
+                                fontFamily: 'Cairo',
+                                color: textWhite,
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ],
                         ),
@@ -1246,7 +1537,10 @@ class _FinanceScreenState extends State<FinanceScreen> {
                   if (debt.notes != null && debt.notes!.trim().isNotEmpty) ...[
                     const SizedBox(height: 8),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
                       decoration: BoxDecoration(
                         color: surfaceMain,
                         borderRadius: BorderRadius.circular(10),
@@ -1255,12 +1549,21 @@ class _FinanceScreenState extends State<FinanceScreen> {
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Icon(Remix.file_text_line, color: textMuted, size: 13),
+                          Icon(
+                            Remix.file_text_line,
+                            color: textMuted,
+                            size: 13,
+                          ),
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
                               debt.notes!,
-                              style: TextStyle(fontFamily: 'Cairo', color: textWhite, fontSize: 11, height: 1.3),
+                              style: TextStyle(
+                                fontFamily: 'Cairo',
+                                color: textWhite,
+                                fontSize: 11,
+                                height: 1.3,
+                              ),
                             ),
                           ),
                         ],
@@ -1289,10 +1592,18 @@ class _FinanceScreenState extends State<FinanceScreen> {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(debt.isPayLater ? Remix.checkbox_circle_line : Remix.cash_line, size: 15, color: Colors.white),
+                            Icon(
+                              debt.isPayLater
+                                  ? Remix.checkbox_circle_line
+                                  : Remix.cash_line,
+                              size: 15,
+                              color: Colors.white,
+                            ),
                             const SizedBox(width: 6),
                             Text(
-                              debt.isPayLater ? 'تأكيد دفع المعاملة' : 'تسجيل سداد دفعة',
+                              debt.isPayLater
+                                  ? 'تأكيد دفع المعاملة'
+                                  : 'تسجيل سداد دفعة',
                               style: const TextStyle(
                                 fontFamily: 'Cairo',
                                 color: Colors.white,
@@ -1319,8 +1630,15 @@ class _FinanceScreenState extends State<FinanceScreen> {
                         },
                         borderRadius: BorderRadius.circular(20),
                         child: const Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                          child: Icon(Remix.whatsapp_line, size: 22, color: Color(0xFF10B981)),
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 6,
+                          ),
+                          child: Icon(
+                            Remix.whatsapp_line,
+                            size: 22,
+                            color: Color(0xFF10B981),
+                          ),
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -1333,8 +1651,15 @@ class _FinanceScreenState extends State<FinanceScreen> {
                         },
                         borderRadius: BorderRadius.circular(20),
                         child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                          child: Icon(Remix.pencil_line, size: 20, color: textMuted),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 6,
+                          ),
+                          child: Icon(
+                            Remix.pencil_line,
+                            size: 20,
+                            color: textMuted,
+                          ),
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -1347,8 +1672,15 @@ class _FinanceScreenState extends State<FinanceScreen> {
                         },
                         borderRadius: BorderRadius.circular(20),
                         child: const Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                          child: Icon(Remix.delete_bin_line, size: 20, color: brandRed),
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 6,
+                          ),
+                          child: Icon(
+                            Remix.delete_bin_line,
+                            size: 20,
+                            color: brandRed,
+                          ),
                         ),
                       ),
                     ],
