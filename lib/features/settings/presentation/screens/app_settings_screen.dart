@@ -235,6 +235,21 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
     }
   }
 
+  void _handleCancelSettings() {
+    SpendoHaptics.light();
+    setState(() {
+      AppTheme.themeModeNotifier.value = _savedThemeMode;
+      AppTheme.fontScaleNotifier.value = _savedFontScale;
+      _dailyReminderEnabled = _savedReminderEnabled;
+      _reminderTime = _savedReminderTime;
+      _showTimeSelector = false;
+      _nameController.text = _userProfile?.name ?? 'لافي';
+      _emailController.text = _userProfile?.email ?? _linkedAccountEmail;
+      _hasUnsavedChanges = false;
+    });
+    _showCustomToast('تم إلغاء التغييرات غير المحفوظة');
+  }
+
   void _copyEmail() {
     final email =
         _emailController.text.trim().isNotEmpty
@@ -249,7 +264,7 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
       _dailyReminderEnabled = !_dailyReminderEnabled;
       if (!_dailyReminderEnabled) _showTimeSelector = false;
     });
-    _settingsService.setDailyReminderEnabled(_dailyReminderEnabled);
+    _hasUnsavedChanges = true;
     _showCustomToast(
       _dailyReminderEnabled
           ? 'تم تفعيل تذكير تسجيل يوم العمل'
@@ -271,9 +286,8 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
       _reminderTime = TimeOfDay(hour: h, minute: m);
       _dailyReminderEnabled = true;
     });
-    _settingsService.setDailyReminderTime(timeStr);
-    _settingsService.setDailyReminderEnabled(true);
-    _showCustomToast('تم ضبط وقت التذكير على $timeStr');
+    _hasUnsavedChanges = true;
+    _showCustomToast('تم ضبط وقت التذكير على $timeStr — احفظ لتطبيق التغيير');
   }
 
   Future<void> _handleSelectCustomTime() async {
@@ -326,9 +340,8 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
         _reminderTime = picked;
         _dailyReminderEnabled = true;
       });
-      await _settingsService.setDailyReminderTime(timeStr);
-      await _settingsService.setDailyReminderEnabled(true);
-      _showCustomToast('تم ضبط وقت التذكير على $timeStr وتفعيله');
+      _hasUnsavedChanges = true;
+      _showCustomToast('تم ضبط وقت التذكير على $timeStr — احفظ لتطبيق التغيير');
     }
   }
 
