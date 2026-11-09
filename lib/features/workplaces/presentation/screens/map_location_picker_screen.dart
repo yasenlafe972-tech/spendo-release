@@ -417,7 +417,7 @@ class _MapLocationPickerScreenState extends State<MapLocationPickerScreen> {
                   children: [
                     Row(
                       children: [
-                        const Icon(
+                        Icon(
                           Remix.navigation_line,
                           size: 13,
                           color: brandYellow,
@@ -518,7 +518,7 @@ class _MapLocationPickerScreenState extends State<MapLocationPickerScreen> {
                     onPressed: _isLocatingUser ? null : _flyToCurrentGps,
                     child:
                         _isLocatingUser
-                            ? const SizedBox(
+                            ? SizedBox(
                               width: 16,
                               height: 16,
                               child: CircularProgressIndicator(
