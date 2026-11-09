@@ -261,7 +261,7 @@ class _SpendoCalendarSheetState extends State<_SpendoCalendarSheet> {
               crossAxisSpacing: 8,
             ),
             itemBuilder: (context, index) {
-              final year = widget.firstDate.year + index;
+              final year = widget.lastDate.year - index;
               final selected = year == _visibleMonth.year;
               return _ChoiceTile(
                 label: year.toString(),
