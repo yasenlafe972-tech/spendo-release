@@ -29,8 +29,9 @@ class _MainNavigationScreenState extends State<MainNavigationScreen>
   late final AnimationController _tabAnimController;
   late final CurvedAnimation _tabCurvedAnim;
 
-  static const MethodChannel _shareChannel =
-      MethodChannel('com.finance.spendo/share');
+  static const MethodChannel _shareChannel = MethodChannel(
+    'com.finance.spendo/share',
+  );
   String? _lastHandledSharePath;
   DateTime? _lastHandledShareTime;
 
@@ -95,8 +96,9 @@ class _MainNavigationScreenState extends State<MainNavigationScreen>
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       try {
-        final initial =
-            await _shareChannel.invokeMethod<String>('getInitialSharedFile');
+        final initial = await _shareChannel.invokeMethod<String>(
+          'getInitialSharedFile',
+        );
         if (initial != null && initial.isNotEmpty) {
           await _handleIncomingSharedFile(initial);
         }
@@ -155,8 +157,9 @@ class _MainNavigationScreenState extends State<MainNavigationScreen>
         state == AppLifecycleState.inactive) {
       try {
         if (Firebase.apps.isNotEmpty) {
-          FirebaseBackupService.instance
-              .scheduleAutoBackup(debounce: Duration.zero);
+          FirebaseBackupService.instance.scheduleAutoBackup(
+            debounce: Duration.zero,
+          );
         }
       } catch (_) {}
     }
@@ -233,82 +236,115 @@ class _MainNavigationScreenState extends State<MainNavigationScreen>
       body: SpendoMenuHost(key: _menuKey, child: _buildAnimatedTabBody()),
       bottomNavigationBar: SafeArea(
         top: false,
-        child: Builder(builder: (context) {
-          final isDark = Theme.of(context).brightness == Brightness.dark;
-          final navBg =
-              isDark ? const Color(0xFF121215) : const Color(0xFFFFFFFF);
-          final navBorder =
-              isDark ? const Color(0xFF1E1E24) : const Color(0xFFE5E7EB);
+        child: Builder(
+          builder: (context) {
+            final isDark = Theme.of(context).brightness == Brightness.dark;
+            final navBg =
+                isDark ? const Color(0xFF121215) : const Color(0xFFFFFFFF);
+            final navBorder =
+                isDark ? const Color(0xFF1E1E24) : const Color(0xFFE5E7EB);
 
+            return Container(
+              margin: const EdgeInsets.fromLTRB(10, 0, 10, 8),
+              decoration: BoxDecoration(
+                color: navBg,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: navBorder, width: 1.0),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 3),
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final double itemWidth = constraints.maxWidth / 5;
+                  // In RTL, index 0 is on the right edge: right offset = _currentIndex * itemWidth
+                  final double rightOffset = _currentIndex * itemWidth;
 
-          return Container(
-            margin: const EdgeInsets.fromLTRB(10, 0, 10, 8),
-            decoration: BoxDecoration(
-              color: navBg,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: navBorder, width: 1.0),
-
-            ),
-            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 3),
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                final double itemWidth = constraints.maxWidth / 5;
-                // In RTL, index 0 is on the right edge: right offset = _currentIndex * itemWidth
-                final double rightOffset = _currentIndex * itemWidth;
-
-                return Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    // Matte neutral selection indicator, without glow or shadows.
-                    AnimatedPositioned(
-                      duration: const Duration(milliseconds: 200),
-                      curve: Curves.easeOutCubic,
-                      right: rightOffset + 3,
-                      top: 1,
-                      bottom: 1,
-                      width: itemWidth - 6,
-                      child: DecoratedBox(
-                        decoration: BoxDecoration(
-                          color: isDark
-                              ? const Color(0xFF27272A)
-                              : const Color(0xFFF0F1F3),
-                          borderRadius: BorderRadius.circular(12),
+                  return Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      // Matte neutral selection indicator, without glow or shadows.
+                      AnimatedPositioned(
+                        duration: const Duration(milliseconds: 200),
+                        curve: Curves.easeOutCubic,
+                        right: rightOffset + 3,
+                        top: 1,
+                        bottom: 1,
+                        width: itemWidth - 6,
+                        child: DecoratedBox(
+                          decoration: BoxDecoration(
+                            color:
+                                isDark
+                                    ? const Color(0xFF27272A)
+                                    : const Color(0xFFF0F1F3),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
                         ),
                       ),
-                    ),
-                    // Navigation Items Row
-                    Row(
-                      children: [
-                        _buildNavItem(context, 0, 'الرئيسية',
-                            Remix.home_5_line, Remix.home_5_fill),
-                        _buildNavItem(context, 1, 'سجل العمل',
-                            Remix.briefcase_4_line, Remix.briefcase_4_fill),
-                        _buildNavItem(context, 2, 'المركبة',
-                            Remix.motorbike_line, Remix.motorbike_fill),
-                        _buildNavItem(context, 3, 'الأشخاص', Remix.group_line,
-                            Remix.group_fill),
-                        _buildNavItem(context, 4, 'المالية',
-                            Remix.wallet_3_line, Remix.wallet_3_fill),
-                      ],
-                    ),
-                  ],
-                );
-              },
-            ),
-          );
-        }),
+                      // Navigation Items Row
+                      Row(
+                        children: [
+                          _buildNavItem(
+                            context,
+                            0,
+                            'الرئيسية',
+                            Remix.home_5_line,
+                            Remix.home_5_fill,
+                          ),
+                          _buildNavItem(
+                            context,
+                            1,
+                            'سجل العمل',
+                            Remix.briefcase_4_line,
+                            Remix.briefcase_4_fill,
+                          ),
+                          _buildNavItem(
+                            context,
+                            2,
+                            'المركبة',
+                            Remix.motorbike_line,
+                            Remix.motorbike_fill,
+                          ),
+                          _buildNavItem(
+                            context,
+                            3,
+                            'الأشخاص',
+                            Remix.group_line,
+                            Remix.group_fill,
+                          ),
+                          _buildNavItem(
+                            context,
+                            4,
+                            'المالية',
+                            Remix.wallet_3_line,
+                            Remix.wallet_3_fill,
+                          ),
+                        ],
+                      ),
+                    ],
+                  );
+                },
+              ),
+            );
+          },
+        ),
       ),
     );
   }
 
-  Widget _buildNavItem(BuildContext context, int index, String label,
-      IconData lineIcon, IconData fillIcon) {
+  Widget _buildNavItem(
+    BuildContext context,
+    int index,
+    String label,
+    IconData lineIcon,
+    IconData fillIcon,
+  ) {
     final isSelected = _currentIndex == index;
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final activeColor = isDark
-        ? const Color(0xFFF4F4F5) : const Color(0xFF27272A);
-    final color = isSelected ? activeColor
-        : (isDark ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280));
+    final activeColor =
+        isDark ? const Color(0xFFF4F4F5) : const Color(0xFF27272A);
+    final color =
+        isSelected
+            ? activeColor
+            : (isDark ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280));
 
     return Expanded(
       child: Semantics(
@@ -332,7 +368,10 @@ class _MainNavigationScreenState extends State<MainNavigationScreen>
               child: SizedBox(
                 width: double.infinity,
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 7, horizontal: 2),
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 7,
+                    horizontal: 2,
+                  ),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -341,16 +380,26 @@ class _MainNavigationScreenState extends State<MainNavigationScreen>
                         scale: isSelected ? 1.08 : 1,
                         duration: const Duration(milliseconds: 160),
                         curve: Curves.easeOutCubic,
-                        child: Icon(isSelected ? fillIcon : lineIcon,
-                            size: 22, color: color),
+                        child: Icon(
+                          isSelected ? fillIcon : lineIcon,
+                          size: 22,
+                          color: color,
+                        ),
                       ),
                       const SizedBox(height: 4),
-                      Text(label,
+                      Text(
+                        label,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: TextStyle(fontFamily: 'Cairo', fontSize: 10,
-                          fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
-                          color: color, height: 1.1)),
+                        style: TextStyle(
+                          fontFamily: 'Cairo',
+                          fontSize: 10,
+                          fontWeight:
+                              isSelected ? FontWeight.bold : FontWeight.w600,
+                          color: color,
+                          height: 1.1,
+                        ),
+                      ),
                     ],
                   ),
                 ),

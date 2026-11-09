@@ -26,7 +26,8 @@ class SpendoMenuButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) => IconButton(
     tooltip: 'فتح القائمة',
-    onPressed: () => SpendoAppMenu.open(context, onSettingsClosed: onSettingsClosed),
+    onPressed:
+        () => SpendoAppMenu.open(context, onSettingsClosed: onSettingsClosed),
     icon: Icon(Remix.menu_line, size: size, color: color),
     padding: padding,
     constraints: constraints,
@@ -37,7 +38,8 @@ class SpendoMenuButton extends StatelessWidget {
 class SpendoAppMenu {
   SpendoAppMenu._();
 
-  static Future<void> open(BuildContext context, {
+  static Future<void> open(
+    BuildContext context, {
     Future<void> Function()? onSettingsClosed,
   }) {
     final host = context.findAncestorStateOfType<SpendoMenuHostState>();
@@ -71,7 +73,8 @@ class SpendoMenuHostState extends State<SpendoMenuHost>
   void initState() {
     super.initState();
     _animation = AnimationController(
-      vsync: this, duration: const Duration(milliseconds: 220),
+      vsync: this,
+      duration: const Duration(milliseconds: 220),
     );
     _curve = CurvedAnimation(parent: _animation, curve: Curves.easeOutCubic);
   }
@@ -109,9 +112,9 @@ class SpendoMenuHostState extends State<SpendoMenuHost>
   Future<void> _openSettings() async {
     final callback = _onSettingsClosed;
     close();
-    await Navigator.of(context).push(
-      MaterialPageRoute<void>(builder: (_) => const AppSettingsScreen()),
-    );
+    await Navigator.of(
+      context,
+    ).push(MaterialPageRoute<void>(builder: (_) => const AppSettingsScreen()));
     if (mounted && callback != null) await callback();
   }
 
@@ -148,14 +151,19 @@ class SpendoMenuHostState extends State<SpendoMenuHost>
                   fit: StackFit.expand,
                   children: [
                     ModalBarrier(
-                      color: Colors.black.withValues(alpha: 0.35 * _curve.value),
+                      color: Colors.black.withValues(
+                        alpha: 0.35 * _curve.value,
+                      ),
                       dismissible: true,
                       onDismiss: close,
                       semanticsLabel: 'إغلاق القائمة الجانبية',
                     ),
                     LayoutBuilder(
                       builder: (context, constraints) {
-                        final width = (constraints.maxWidth * 0.52).clamp(0.0, 240.0);
+                        final width = (constraints.maxWidth * 0.52).clamp(
+                          0.0,
+                          240.0,
+                        );
                         return Align(
                           alignment: Alignment.centerLeft,
                           child: Transform.translate(
@@ -166,43 +174,73 @@ class SpendoMenuHostState extends State<SpendoMenuHost>
                                 width: width,
                                 height: double.infinity,
                                 decoration: BoxDecoration(
-                                  border: Border(right: BorderSide(color: border)),
+                                  border: Border(
+                                    right: BorderSide(color: border),
+                                  ),
                                 ),
                                 child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.stretch,
                                   children: [
                                     Padding(
-                                      padding: const EdgeInsets.fromLTRB(8, 12, 16, 10),
+                                      padding: const EdgeInsets.fromLTRB(
+                                        8,
+                                        12,
+                                        16,
+                                        10,
+                                      ),
                                       child: Row(
                                         children: [
                                           Expanded(
-                                            child: Text('القائمة', style: TextStyle(
-                                              fontFamily: 'Cairo', color: foreground,
-                                              fontSize: 15, fontWeight: FontWeight.bold,
-                                            )),
+                                            child: Text(
+                                              'القائمة',
+                                              style: TextStyle(
+                                                fontFamily: 'Cairo',
+                                                color: foreground,
+                                                fontSize: 15,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
                                           ),
                                           IconButton(
                                             tooltip: 'إغلاق',
                                             onPressed: close,
-                                            icon: Icon(Remix.close_line, color: muted, size: 20),
+                                            icon: Icon(
+                                              Remix.close_line,
+                                              color: muted,
+                                              size: 20,
+                                            ),
                                           ),
                                         ],
                                       ),
                                     ),
                                     Divider(height: 1, color: border),
                                     ListTile(
-                                      contentPadding: const EdgeInsets.symmetric(horizontal: 14),
+                                      contentPadding:
+                                          const EdgeInsets.symmetric(
+                                            horizontal: 14,
+                                          ),
                                       minLeadingWidth: 20,
                                       horizontalTitleGap: 10,
                                       leading: const Icon(
                                         Remix.settings_4_line,
-                                        color: AppColors.spendoGreen, size: 21,
+                                        color: AppColors.spendoGreen,
+                                        size: 21,
                                       ),
-                                      title: Text('الإعدادات', style: TextStyle(
-                                        fontFamily: 'Cairo', color: foreground,
-                                        fontSize: 13, fontWeight: FontWeight.w600,
-                                      )),
-                                      trailing: Icon(Remix.arrow_left_s_line, color: muted, size: 18),
+                                      title: Text(
+                                        'الإعدادات',
+                                        style: TextStyle(
+                                          fontFamily: 'Cairo',
+                                          color: foreground,
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                      trailing: Icon(
+                                        Remix.arrow_left_s_line,
+                                        color: muted,
+                                        size: 18,
+                                      ),
                                       onTap: _openSettings,
                                     ),
                                   ],
