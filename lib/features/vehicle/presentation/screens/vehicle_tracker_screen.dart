@@ -14,7 +14,6 @@ import '../../../../core/services/deletion_sync_service.dart';
 import '../../../../core/services/firebase_backup_service.dart';
 import '../../../../core/services/israel_gov_api_service.dart';
 import '../../../../core/services/receipt_ocr_service.dart';
-import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/arabic_date_helper.dart';
 import '../../../../core/utils/spendo_haptic_feedback.dart';
 import '../../../../core/widgets/spendo_confirm_delete_dialog.dart';
