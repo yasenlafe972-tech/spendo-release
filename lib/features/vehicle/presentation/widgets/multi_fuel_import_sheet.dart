@@ -62,7 +62,7 @@ class _MultiFuelImportSheetState extends State<MultiFuelImportSheet> {
   static Color get surfaceMain => _isDark ? const Color(0xFF121413) : const Color(0xFFFFFFFF);
   static Color get surfaceField => _isDark ? const Color(0xFF171A19) : const Color(0xFFF9FAFB);
   static Color get surfaceBorder => _isDark ? const Color(0xFF242927) : const Color(0xFFE5E7EB);
-  static const brandGreen = Color(0xFF10B981);
+  static const $10xFF0F766E);
   static const Color brandYellow = Color(0xFFFFD600);
   static Color get textMuted => _isDark ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280);
   static Color get textWhite => _isDark ? Colors.white : const Color(0xFF111827);
@@ -548,7 +548,7 @@ class _MultiFuelImportSheetState extends State<MultiFuelImportSheet> {
                                                   color: const Color(0xFF1E3A8A).withAlpha(80),
                                                   borderRadius: BorderRadius.circular(4),
                                                   border: Border.all(
-                                                    color: const Color(0xFF6EE7B7).withAlpha(120),
+                                                    color: const Color(0xFF5EEAD4).withAlpha(120),
                                                     width: 0.8,
                                                   ),
                                                 ),

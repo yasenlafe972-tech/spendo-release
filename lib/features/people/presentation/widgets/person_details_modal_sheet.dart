@@ -65,11 +65,11 @@ class _PersonDetailsModalSheetState extends State<PersonDetailsModalSheet> {
       _isDark ? const Color(0xFF16161A) : const Color(0xFFF9FAFB);
   static Color get surfaceBorder =>
       _isDark ? const Color(0xFF222229) : const Color(0xFFE5E7EB);
-  static const Color brandBlue = Color(0xFF10B981);
+  static const Color $10xFF0F766E);
   static Color get brandYellow =>
       const Color(0xFFFFD600);
   static const Color brandRed = Color(0xFFEF4444);
-  static const Color brandGreen = Color(0xFF10B981);
+  static const Color $10xFF0F766E);
   static Color get textWhite =>
       _isDark ? Colors.white : const Color(0xFF111827);
   static Color get textMuted =>

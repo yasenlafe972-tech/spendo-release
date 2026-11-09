@@ -16,15 +16,15 @@ class AppColors {
   static const Color surfaceCell = Color(0xFF16161A);
   static const Color surfaceCellBorder = Color(0xFF222229);
 
-  // Spendo Primary Brand Accent (Electric Royal Blue #2563EB)
-  static const Color spendoBlue = Color(0xFF10B981);
+  // Spendo Primary Brand Accent (Deep Teal #0F766E)
+  static const Color spendoBlue = Color(0xFF0F766E);
 
-  static const Color spendoBlueLight = Color(0xFF34D399);
-  static const Color spendoBlueGlow = Color(0x3310B981);
-  static const Color spendoBlueSurface = Color(0x1A10B981);
-  static const Color primaryAction = Color(0xFF10B981);
-  static const Color spendoMint = Color(0xFF6EE7B7);
-  static const Color spendoGlow = Color(0x3310B981);
+  static const Color spendoBlueLight = Color(0xFF14B8A6);
+  static const Color spendoBlueGlow = Color(0x330F766E);
+  static const Color spendoBlueSurface = Color(0x1A0F766E);
+  static const Color primaryAction = Color(0xFF0F766E);
+  static const Color spendoMint = Color(0xFF5EEAD4);
+  static const Color spendoGlow = Color(0x330F766E);
 
   // Muted amber for pending transactions and warnings.
   static const Color electricYellow = Color(0xFFD6AD52);
@@ -40,7 +40,7 @@ class AppColors {
   static const Color cashGreen = Color(0xFF10B981);
   static const Color whatsappGreen = Color(0xFF10B981);
   static const Color successGreen = Color(0xFF10B981);
-  static const Color spendoGreen = Color(0xFF10B981); // Electric Royal Blue
+  static const Color spendoGreen = Color(0xFF0F766E); // Primary brand accent
 
   // Text Colors
   static const Color textPrimary = Color(0xFFFFFFFF);
@@ -59,7 +59,7 @@ class AppColors {
   static const Color pinInactive = Color(0xFF45454E);
 
   // Utility Colors
-  static const Color accentBlue = Color(0xFF10B981);
+  static const Color accentBlue = Color(0xFF0F766E);
   static const Color dangerRed = Color(0xFFEF4444);
 
   // Avatar & Icons

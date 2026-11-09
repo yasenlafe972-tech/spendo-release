@@ -72,7 +72,7 @@ class QuickActionBar extends StatelessWidget {
             child: _QuickActionButton(
               label: 'تعبئة وقود',
               icon: Icons.local_gas_station_rounded,
-              accentColor: const Color(0xFF10B981),
+              accentColor: const Color(0xFF0F766E),
               onTap: onAddFuelRefill ?? onOpenCloudBackup,
             ),
           ),

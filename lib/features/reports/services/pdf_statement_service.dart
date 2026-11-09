@@ -95,7 +95,7 @@ class PdfStatementService {
             padding: const pw.EdgeInsets.only(bottom: 14),
             decoration: const pw.BoxDecoration(
               border: pw.Border(
-                bottom: pw.BorderSide(color: PdfColor.fromInt(0xFF10B981), width: 2.5),
+                bottom: pw.BorderSide(color: PdfColor.fromInt(0xFF0F766E), width: 2.5),
               ),
             ),
             child: pw.Row(
@@ -109,7 +109,7 @@ class PdfStatementService {
                       style: pw.TextStyle(
                         font: boldFont,
                         fontSize: 19,
-                        color: const PdfColor.fromInt(0xFF10B981),
+                        color: const PdfColor.fromInt(0xFF0F766E),
                       ),
                     ),
                     pw.SizedBox(height: 3),
@@ -136,7 +136,7 @@ class PdfStatementService {
                       ),
                       child: pw.Text(
                         _ar('معتمد رسمياً'),
-                        style: pw.TextStyle(font: boldFont, fontSize: 8, color: const PdfColor.fromInt(0xFF10B981)),
+                        style: pw.TextStyle(font: boldFont, fontSize: 8, color: const PdfColor.fromInt(0xFF0F766E)),
                       ),
                     ),
                   ],
@@ -193,7 +193,7 @@ class PdfStatementService {
                   children: [
                     pw.Text(
                       _ar('إجمالي أيام العمل: $totalDays يوم'),
-                      style: pw.TextStyle(font: boldFont, fontSize: 10, color: const PdfColor.fromInt(0xFF10B981)),
+                      style: pw.TextStyle(font: boldFont, fontSize: 10, color: const PdfColor.fromInt(0xFF0F766E)),
                     ),
                     if (includeFinancials && workplace.dailyRate > 0) ...[
                       pw.SizedBox(height: 2),
@@ -217,7 +217,7 @@ class PdfStatementService {
                   child: _buildSummaryBox(
                     title: _ar('إجمالي المستحق للعمل'),
                     value: '${totalEarned.toStringAsFixed(0)} ₪',
-                    color: const PdfColor.fromInt(0xFF10B981),
+                    color: const PdfColor.fromInt(0xFF0F766E),
                     font: boldFont,
                   ),
                 ),
@@ -367,7 +367,7 @@ class PdfStatementService {
                   ),
                   pw.Text(
                     _ar('إجمالي المقبوض: ${totalPaid.toStringAsFixed(0)} ₪'),
-                    style: pw.TextStyle(font: boldFont, fontSize: 9.5, color: const PdfColor.fromInt(0xFF10B981)),
+                    style: pw.TextStyle(font: boldFont, fontSize: 9.5, color: const PdfColor.fromInt(0xFF0F766E)),
                   ),
                 ],
               ),
@@ -583,7 +583,7 @@ class PdfStatementService {
           pw.Container(
             padding: const pw.EdgeInsets.only(bottom: 16),
             decoration: const pw.BoxDecoration(
-              border: pw.Border(bottom: pw.BorderSide(color: PdfColor.fromInt(0xFF10B981), width: 2.5)),
+              border: pw.Border(bottom: pw.BorderSide(color: PdfColor.fromInt(0xFF0F766E), width: 2.5)),
             ),
             child: pw.Row(
               mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
@@ -593,7 +593,7 @@ class PdfStatementService {
                   children: [
                     pw.Text(
                       _ar('Spendo • كشف حساب مالي'),
-                      style: pw.TextStyle(font: boldFont, fontSize: 20, color: const PdfColor.fromInt(0xFF10B981)),
+                      style: pw.TextStyle(font: boldFont, fontSize: 20, color: const PdfColor.fromInt(0xFF0F766E)),
                     ),
                     pw.SizedBox(height: 4),
                     pw.Text(
@@ -660,7 +660,7 @@ class PdfStatementService {
                 child: _buildSummaryBox(
                   title: _ar('إجمالي المستحق'),
                   value: '${totalEarned.toStringAsFixed(1)} ₪',
-                  color: const PdfColor.fromInt(0xFF10B981),
+                  color: const PdfColor.fromInt(0xFF0F766E),
                   font: boldFont,
                 ),
               ),

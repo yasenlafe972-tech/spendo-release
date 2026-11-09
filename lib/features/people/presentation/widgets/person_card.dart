@@ -26,7 +26,7 @@ class PersonCard extends StatelessWidget {
       _isDark ? const Color(0xFF16161A) : const Color(0xFFFFFFFF);
   static Color get surfaceBorder =>
       _isDark ? const Color(0xFF222229) : const Color(0xFFE5E7EB);
-  static const Color brandBlue = Color(0xFF10B981);
+  static const Color $10xFF0F766E);
 
   static Color get textPrimary =>
       _isDark ? const Color(0xFFFFFFFF) : const Color(0xFF111827);

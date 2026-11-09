@@ -106,7 +106,7 @@ class _SpendoLogoPainter extends CustomPainter {
       ..isAntiAlias = true;
 
     final greenPaint = Paint()
-      ..color = greenColor ?? const Color(0xFF10B981)
+      ..color = greenColor ?? const Color(0xFF0F766E)
       ..style = PaintingStyle.fill
       ..isAntiAlias = true;
 
