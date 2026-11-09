@@ -1,4 +1,5 @@
 import 'package:sanad_app/core/theme/app_theme.dart';
+import 'package:sanad_app/core/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:remixicon/remixicon.dart';
@@ -24,16 +25,22 @@ class RecordWorkplacePaymentSheet extends StatefulWidget {
   });
 
   static bool get _isDark => AppTheme.isDarkMode;
-  static Color get surfaceMain => _isDark ? const Color(0xFF121413) : const Color(0xFFFFFFFF);
-  static Color get surfaceField => _isDark ? const Color(0xFF171A19) : const Color(0xFFF9FAFB);
-  static Color get surfaceHover => _isDark ? const Color(0xFF1D211F) : const Color(0xFFF1F3F5);
-  static Color get surfaceBorder => _isDark ? const Color(0xFF242927) : const Color(0xFFE5E7EB);
+  static Color get surfaceMain =>
+      _isDark ? const Color(0xFF121413) : const Color(0xFFFFFFFF);
+  static Color get surfaceField =>
+      _isDark ? const Color(0xFF171A19) : const Color(0xFFF9FAFB);
+  static Color get surfaceHover =>
+      _isDark ? const Color(0xFF1D211F) : const Color(0xFFF1F3F5);
+  static Color get surfaceBorder =>
+      _isDark ? const Color(0xFF242927) : const Color(0xFFE5E7EB);
   static const Color brandGreen = Color(0xFF0F766E);
-  static Color get brandYellow =>
-      const Color(0xFFFFD600);
-  static Color get textPrimary => _isDark ? const Color(0xFFF3F4F6) : const Color(0xFF111827);
-  static Color get textMuted => _isDark ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280);
-  static Color get textWhite => _isDark ? Colors.white : const Color(0xFF111827);
+  static Color get brandYellow => AppColors.warningFor(_isDark);
+  static Color get textPrimary =>
+      _isDark ? const Color(0xFFF3F4F6) : const Color(0xFF111827);
+  static Color get textMuted =>
+      _isDark ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280);
+  static Color get textWhite =>
+      _isDark ? Colors.white : const Color(0xFF111827);
 
   static Future<void> show(
     BuildContext context, {
@@ -47,20 +54,23 @@ class RecordWorkplacePaymentSheet extends StatefulWidget {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       barrierColor: Colors.black.withValues(alpha: 0.75),
-      builder: (_) => RecordWorkplacePaymentSheet(
-        workplace: workplace,
-        existingPayment: existingPayment,
-        remainingDue: remainingDue,
-        onSave: onSave,
-      ),
+      builder:
+          (_) => RecordWorkplacePaymentSheet(
+            workplace: workplace,
+            existingPayment: existingPayment,
+            remainingDue: remainingDue,
+            onSave: onSave,
+          ),
     );
   }
 
   @override
-  State<RecordWorkplacePaymentSheet> createState() => _RecordWorkplacePaymentSheetState();
+  State<RecordWorkplacePaymentSheet> createState() =>
+      _RecordWorkplacePaymentSheetState();
 }
 
-class _RecordWorkplacePaymentSheetState extends State<RecordWorkplacePaymentSheet> {
+class _RecordWorkplacePaymentSheetState
+    extends State<RecordWorkplacePaymentSheet> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _amountController = TextEditingController();
   final TextEditingController _notesController = TextEditingController();
@@ -149,11 +159,19 @@ class _RecordWorkplacePaymentSheetState extends State<RecordWorkplacePaymentShee
           ),
           content: Row(
             children: [
-              const Icon(Remix.error_warning_line, color: Colors.redAccent, size: 16),
+              const Icon(
+                Remix.error_warning_line,
+                color: Colors.redAccent,
+                size: 16,
+              ),
               SizedBox(width: 8),
               Text(
                 'الرجاء إدخال مبلغ الدفعة أولاً',
-                style: TextStyle(color: RecordWorkplacePaymentSheet.textWhite, fontSize: 12, fontWeight: FontWeight.w600),
+                style: TextStyle(
+                  color: RecordWorkplacePaymentSheet.textWhite,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ],
           ),
@@ -170,7 +188,10 @@ class _RecordWorkplacePaymentSheetState extends State<RecordWorkplacePaymentShee
       amount: amount,
       date: dateStr,
       paymentMethod: _paymentMethod,
-      notes: _notesController.text.trim().isEmpty ? null : _notesController.text.trim(),
+      notes:
+          _notesController.text.trim().isEmpty
+              ? null
+              : _notesController.text.trim(),
       createdAt: widget.existingPayment?.createdAt ?? DateTime.now(),
     );
 
@@ -183,17 +204,23 @@ class _RecordWorkplacePaymentSheetState extends State<RecordWorkplacePaymentShee
   @override
   Widget build(BuildContext context) {
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
-    final dateFormatted = ArabicDateHelper.formatArabicDateWithWeekday(_selectedDate);
-    final remainingFormatted = (widget.remainingDue != null && widget.remainingDue! > 0)
-        ? '${widget.remainingDue!.toStringAsFixed(0)} ₪'
-        : '0 ₪';
+    final dateFormatted = ArabicDateHelper.formatArabicDateWithWeekday(
+      _selectedDate,
+    );
+    final remainingFormatted =
+        (widget.remainingDue != null && widget.remainingDue! > 0)
+            ? '${widget.remainingDue!.toStringAsFixed(0)} ₪'
+            : '0 ₪';
 
     return Container(
       decoration: BoxDecoration(
         color: RecordWorkplacePaymentSheet.surfaceMain,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
         border: Border(
-          top: BorderSide(color: RecordWorkplacePaymentSheet.surfaceBorder, width: 1.2),
+          top: BorderSide(
+            color: RecordWorkplacePaymentSheet.surfaceBorder,
+            width: 1.2,
+          ),
         ),
       ),
       padding: EdgeInsets.fromLTRB(16, 14, 16, 16 + bottomInset),
@@ -258,7 +285,8 @@ class _RecordWorkplacePaymentSheetState extends State<RecordWorkplacePaymentShee
                                 Text(
                                   widget.workplace.name,
                                   style: TextStyle(
-                                    color: RecordWorkplacePaymentSheet.brandYellow,
+                                    color:
+                                        RecordWorkplacePaymentSheet.brandYellow,
                                     fontSize: 10.5,
                                     fontWeight: FontWeight.w700,
                                   ),
@@ -270,7 +298,11 @@ class _RecordWorkplacePaymentSheetState extends State<RecordWorkplacePaymentShee
                       ],
                     ),
                     IconButton(
-                      icon: const Icon(Remix.close_line, color: Color(0xFF9CA3AF), size: 20),
+                      icon: const Icon(
+                        Remix.close_line,
+                        color: Color(0xFF9CA3AF),
+                        size: 20,
+                      ),
                       padding: EdgeInsets.zero,
                       constraints: const BoxConstraints(),
                       visualDensity: VisualDensity.compact,
@@ -285,7 +317,9 @@ class _RecordWorkplacePaymentSheetState extends State<RecordWorkplacePaymentShee
                   decoration: BoxDecoration(
                     color: RecordWorkplacePaymentSheet.surfaceField,
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: RecordWorkplacePaymentSheet.brandGreen),
+                    border: Border.all(
+                      color: RecordWorkplacePaymentSheet.brandGreen,
+                    ),
                   ),
                   child: Column(
                     children: [
@@ -308,14 +342,16 @@ class _RecordWorkplacePaymentSheetState extends State<RecordWorkplacePaymentShee
                                 Text(
                                   'المتبقي حالياً: ',
                                   style: TextStyle(
-                                    color: RecordWorkplacePaymentSheet.brandYellow,
+                                    color:
+                                        RecordWorkplacePaymentSheet.brandYellow,
                                     fontSize: 10,
                                   ),
                                 ),
                                 Text(
                                   remainingFormatted,
                                   style: TextStyle(
-                                    color: RecordWorkplacePaymentSheet.brandYellow,
+                                    color:
+                                        RecordWorkplacePaymentSheet.brandYellow,
                                     fontSize: 10,
                                     fontWeight: FontWeight.w800,
                                   ),
@@ -334,7 +370,10 @@ class _RecordWorkplacePaymentSheetState extends State<RecordWorkplacePaymentShee
                             Expanded(
                               child: TextFormField(
                                 controller: _amountController,
-                                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                                keyboardType:
+                                    const TextInputType.numberWithOptions(
+                                      decimal: true,
+                                    ),
                                 style: TextStyle(
                                   color: RecordWorkplacePaymentSheet.textWhite,
                                   fontSize: 22,
@@ -371,21 +410,42 @@ class _RecordWorkplacePaymentSheetState extends State<RecordWorkplacePaymentShee
                         decoration: BoxDecoration(
                           color: RecordWorkplacePaymentSheet.surfaceField,
                           border: Border(
-                            top: BorderSide(color: RecordWorkplacePaymentSheet.surfaceBorder),
+                            top: BorderSide(
+                              color: RecordWorkplacePaymentSheet.surfaceBorder,
+                            ),
                           ),
-                          borderRadius: const BorderRadius.vertical(bottom: Radius.circular(11)),
+                          borderRadius: const BorderRadius.vertical(
+                            bottom: Radius.circular(11),
+                          ),
                         ),
                         child: Row(
                           children: [
-                            _buildQuickAmountBtn('+500', () => _addQuickAmount(500)),
+                            _buildQuickAmountBtn(
+                              '+500',
+                              () => _addQuickAmount(500),
+                            ),
                             _buildDivider(),
-                            _buildQuickAmountBtn('+1,000', () => _addQuickAmount(1000)),
+                            _buildQuickAmountBtn(
+                              '+1,000',
+                              () => _addQuickAmount(1000),
+                            ),
                             _buildDivider(),
-                            _buildQuickAmountBtn('+2,000', () => _addQuickAmount(2000)),
+                            _buildQuickAmountBtn(
+                              '+2,000',
+                              () => _addQuickAmount(2000),
+                            ),
                             _buildDivider(),
-                            _buildQuickAmountBtn('كامل المتبقي', _setFullRemaining, isYellow: true),
+                            _buildQuickAmountBtn(
+                              'كامل المتبقي',
+                              _setFullRemaining,
+                              isYellow: true,
+                            ),
                             _buildDivider(),
-                            _buildQuickAmountBtn('تصفير', _clearAmount, isRed: true),
+                            _buildQuickAmountBtn(
+                              'تصفير',
+                              _clearAmount,
+                              isRed: true,
+                            ),
                           ],
                         ),
                       ),
@@ -399,11 +459,16 @@ class _RecordWorkplacePaymentSheetState extends State<RecordWorkplacePaymentShee
                   onTap: _selectDate,
                   borderRadius: BorderRadius.circular(12),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 9,
+                    ),
                     decoration: BoxDecoration(
                       color: RecordWorkplacePaymentSheet.surfaceField,
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: RecordWorkplacePaymentSheet.surfaceBorder),
+                      border: Border.all(
+                        color: RecordWorkplacePaymentSheet.surfaceBorder,
+                      ),
                     ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -418,7 +483,10 @@ class _RecordWorkplacePaymentSheetState extends State<RecordWorkplacePaymentShee
                             SizedBox(width: 8),
                             Text(
                               'تاريخ استلام الدفعة:',
-                              style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 11),
+                              style: TextStyle(
+                                color: Color(0xFF9CA3AF),
+                                fontSize: 11,
+                              ),
                             ),
                           ],
                         ),
@@ -438,65 +506,88 @@ class _RecordWorkplacePaymentSheetState extends State<RecordWorkplacePaymentShee
 
                 // Payment Method: 4 buttons
                 Row(
-                  children: _methods.map((m) {
-                    final isSelected = _paymentMethod == m['name'];
-                    return Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 2.5),
-                        child: InkWell(
-                          onTap: () {
-                            SpendoHaptics.selection();
-                            setState(() => _paymentMethod = m['name']);
-                          },
-                          borderRadius: BorderRadius.circular(12),
-                          child: AnimatedContainer(
-                            duration: const Duration(milliseconds: 150),
-                            padding: const EdgeInsets.symmetric(vertical: 8),
-                            decoration: BoxDecoration(
-                              color: RecordWorkplacePaymentSheet.surfaceField,
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(
-                                color: isSelected
-                                    ? RecordWorkplacePaymentSheet.brandGreen
-                                    : RecordWorkplacePaymentSheet.surfaceBorder,
-                              ),
+                  children:
+                      _methods.map((m) {
+                        final isSelected = _paymentMethod == m['name'];
+                        return Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 2.5,
                             ),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(
-                                  m['icon'] as IconData,
-                                  size: 16,
-                                  color: isSelected
-                                      ? RecordWorkplacePaymentSheet.brandGreen
-                                      : const Color(0xFF9CA3AF),
+                            child: InkWell(
+                              onTap: () {
+                                SpendoHaptics.selection();
+                                setState(() => _paymentMethod = m['name']);
+                              },
+                              borderRadius: BorderRadius.circular(12),
+                              child: AnimatedContainer(
+                                duration: const Duration(milliseconds: 150),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 8,
                                 ),
-                                const SizedBox(height: 3),
-                                Text(
-                                  m['name'] as String,
-                                  style: TextStyle(
-                                    color: isSelected ? RecordWorkplacePaymentSheet.textWhite : const Color(0xFF9CA3AF),
-                                    fontSize: 11,
-                                    fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                                decoration: BoxDecoration(
+                                  color:
+                                      RecordWorkplacePaymentSheet.surfaceField,
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color:
+                                        isSelected
+                                            ? RecordWorkplacePaymentSheet
+                                                .brandGreen
+                                            : RecordWorkplacePaymentSheet
+                                                .surfaceBorder,
                                   ),
                                 ),
-                              ],
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      m['icon'] as IconData,
+                                      size: 16,
+                                      color:
+                                          isSelected
+                                              ? RecordWorkplacePaymentSheet
+                                                  .brandGreen
+                                              : const Color(0xFF9CA3AF),
+                                    ),
+                                    const SizedBox(height: 3),
+                                    Text(
+                                      m['name'] as String,
+                                      style: TextStyle(
+                                        color:
+                                            isSelected
+                                                ? RecordWorkplacePaymentSheet
+                                                    .textWhite
+                                                : const Color(0xFF9CA3AF),
+                                        fontSize: 11,
+                                        fontWeight:
+                                            isSelected
+                                                ? FontWeight.w700
+                                                : FontWeight.w500,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
                             ),
                           ),
-                        ),
-                      ),
-                    );
-                  }).toList(),
+                        );
+                      }).toList(),
                 ),
                 const SizedBox(height: 8),
 
                 // Notes Field
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 7,
+                  ),
                   decoration: BoxDecoration(
                     color: RecordWorkplacePaymentSheet.surfaceField,
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: RecordWorkplacePaymentSheet.surfaceBorder),
+                    border: Border.all(
+                      color: RecordWorkplacePaymentSheet.surfaceBorder,
+                    ),
                   ),
                   child: Row(
                     children: [
@@ -509,10 +600,16 @@ class _RecordWorkplacePaymentSheetState extends State<RecordWorkplacePaymentShee
                       Expanded(
                         child: TextFormField(
                           controller: _notesController,
-                          style: TextStyle(color: RecordWorkplacePaymentSheet.textWhite, fontSize: 11.5),
+                          style: TextStyle(
+                            color: RecordWorkplacePaymentSheet.textWhite,
+                            fontSize: 11.5,
+                          ),
                           decoration: const InputDecoration(
                             hintText: 'ملاحظات أو بيان الدفعة (اختياري)...',
-                            hintStyle: TextStyle(color: Color(0xFF6B7280), fontSize: 11),
+                            hintStyle: TextStyle(
+                              color: Color(0xFF6B7280),
+                              fontSize: 11,
+                            ),
                             border: InputBorder.none,
                             isDense: true,
                             contentPadding: EdgeInsets.zero,
@@ -531,13 +628,19 @@ class _RecordWorkplacePaymentSheetState extends State<RecordWorkplacePaymentShee
                     backgroundColor: RecordWorkplacePaymentSheet.brandGreen,
                     foregroundColor: const Color(0xFF0A0B0B),
                     padding: const EdgeInsets.symmetric(vertical: 10),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                     elevation: 0,
                   ),
                   child: const Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Remix.check_line, size: 16, color: Color(0xFF0A0B0B)),
+                      Icon(
+                        Remix.check_line,
+                        size: 16,
+                        color: Color(0xFF0A0B0B),
+                      ),
                       SizedBox(width: 6),
                       Text(
                         'حفظ الدفعة المستلمة',

@@ -1,4 +1,5 @@
 import 'package:sanad_app/core/theme/app_theme.dart';
+import 'package:sanad_app/core/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/services/firebase_backup_service.dart';
@@ -29,7 +30,8 @@ class MultiFuelImportSheet extends StatefulWidget {
     String? sourceFileName,
     VoidCallback? onSaved,
   }) {
-    final surfaceMain = AppTheme.isDarkMode ? const Color(0xFF121413) : const Color(0xFFFFFFFF);
+    final surfaceMain =
+        AppTheme.isDarkMode ? const Color(0xFF121413) : const Color(0xFFFFFFFF);
     return showModalBottomSheet<bool>(
       context: context,
       isScrollControlled: true,
@@ -38,11 +40,12 @@ class MultiFuelImportSheet extends StatefulWidget {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
-      builder: (_) => MultiFuelImportSheet(
-        receipts: receipts,
-        sourceFileName: sourceFileName,
-        onSaved: onSaved,
-      ),
+      builder:
+          (_) => MultiFuelImportSheet(
+            receipts: receipts,
+            sourceFileName: sourceFileName,
+            onSaved: onSaved,
+          ),
     );
   }
 
@@ -59,13 +62,18 @@ class _MultiFuelImportSheetState extends State<MultiFuelImportSheet> {
   double _officialFuelPrice = 7.25;
 
   static bool get _isDark => AppTheme.isDarkMode;
-  static Color get surfaceMain => _isDark ? const Color(0xFF121413) : const Color(0xFFFFFFFF);
-  static Color get surfaceField => _isDark ? const Color(0xFF171A19) : const Color(0xFFF9FAFB);
-  static Color get surfaceBorder => _isDark ? const Color(0xFF242927) : const Color(0xFFE5E7EB);
+  static Color get surfaceMain =>
+      _isDark ? const Color(0xFF121413) : const Color(0xFFFFFFFF);
+  static Color get surfaceField =>
+      _isDark ? const Color(0xFF171A19) : const Color(0xFFF9FAFB);
+  static Color get surfaceBorder =>
+      _isDark ? const Color(0xFF242927) : const Color(0xFFE5E7EB);
   static const brandGreen = Color(0xFF0F766E);
-  static const Color brandYellow = Color(0xFFFFD600);
-  static Color get textMuted => _isDark ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280);
-  static Color get textWhite => _isDark ? Colors.white : const Color(0xFF111827);
+  static Color get brandYellow => AppColors.warningFor(_isDark);
+  static Color get textMuted =>
+      _isDark ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280);
+  static Color get textWhite =>
+      _isDark ? Colors.white : const Color(0xFF111827);
 
   @override
   void initState() {
@@ -119,7 +127,8 @@ class _MultiFuelImportSheetState extends State<MultiFuelImportSheet> {
       if (_selectedIndices.length == widget.receipts.length) {
         _selectedIndices.clear();
       } else {
-        _selectedIndices = List.generate(widget.receipts.length, (i) => i).toSet();
+        _selectedIndices =
+            List.generate(widget.receipts.length, (i) => i).toSet();
       }
     });
   }
@@ -161,32 +170,40 @@ class _MultiFuelImportSheetState extends State<MultiFuelImportSheet> {
         if (idx >= widget.receipts.length) continue;
         final r = widget.receipts[idx];
 
-        final stationTitle = r.providerName.isNotEmpty
-            ? r.providerName
-            : (r.isFuel ? 'תדלוק Yellow פז' : 'Yellow חנות נוחות');
+        final stationTitle =
+            r.providerName.isNotEmpty
+                ? r.providerName
+                : (r.isFuel ? 'תדלוק Yellow פז' : 'Yellow חנות נוחות');
 
-        final computedLiters = r.isFuel
-            ? (r.liters ??
-                (_officialFuelPrice > 0
-                    ? double.parse((r.amount / _officialFuelPrice).toStringAsFixed(2))
-                    : null))
-            : null;
+        final computedLiters =
+            r.isFuel
+                ? (r.liters ??
+                    (_officialFuelPrice > 0
+                        ? double.parse(
+                          (r.amount / _officialFuelPrice).toStringAsFixed(2),
+                        )
+                        : null))
+                : null;
 
         final rec = VehicleExpenseRecord(
-          id: '${r.date.millisecondsSinceEpoch}_${r.amount.toStringAsFixed(2)}_$idx',
+          id:
+              '${r.date.millisecondsSinceEpoch}_${r.amount.toStringAsFixed(2)}_$idx',
           title: stationTitle,
           amount: r.amount,
           odometer: r.odometer ?? _state.currentOdometer,
           date: r.date,
-          category: r.isFuel ? ExpenseCategory.fuel : ExpenseCategory.maintenance,
+          category:
+              r.isFuel ? ExpenseCategory.fuel : ExpenseCategory.maintenance,
           invoiceNumber: r.invoiceNumber,
           provider: r.providerName.isNotEmpty ? r.providerName : 'Yellow פז',
           liters: computedLiters,
-          pricePerLiter: r.isFuel ? (r.pricePerLiter ?? _officialFuelPrice) : null,
+          pricePerLiter:
+              r.isFuel ? (r.pricePerLiter ?? _officialFuelPrice) : null,
           notes: r.isFuel ? 'استيراد وقود Yellow' : 'مشتريات متجر Yellow',
-          items: r.items.isNotEmpty
-              ? r.items
-              : (r.isFuel ? null : const ['מشتريات متجر Yellow']),
+          items:
+              r.items.isNotEmpty
+                  ? r.items
+                  : (r.isFuel ? null : const ['מشتريات متجر Yellow']),
         );
         newRecords.add(rec);
 
@@ -194,7 +211,10 @@ class _MultiFuelImportSheetState extends State<MultiFuelImportSheet> {
         if (!r.isFuel) {
           try {
             await DailyExpenseService.addExpense(
-              merchantName: r.providerName.isNotEmpty ? r.providerName : 'Yellow חנות נוחות',
+              merchantName:
+                  r.providerName.isNotEmpty
+                      ? r.providerName
+                      : 'Yellow חנות נוחות',
               amount: r.amount,
               explicitCategory: 'shopping',
               source: 'yellow_store',
@@ -207,13 +227,15 @@ class _MultiFuelImportSheetState extends State<MultiFuelImportSheet> {
 
       final existingHistory = List<VehicleExpenseRecord>.from(_state.history);
       for (final rec in newRecords) {
-        existingHistory.removeWhere((e) =>
-            e.amount == rec.amount &&
-            e.date.year == rec.date.year &&
-            e.date.month == rec.date.month &&
-            e.date.day == rec.date.day &&
-            e.date.hour == rec.date.hour &&
-            e.date.minute == rec.date.minute);
+        existingHistory.removeWhere(
+          (e) =>
+              e.amount == rec.amount &&
+              e.date.year == rec.date.year &&
+              e.date.month == rec.date.month &&
+              e.date.day == rec.date.day &&
+              e.date.hour == rec.date.hour &&
+              e.date.minute == rec.date.minute,
+        );
       }
       final updatedHistory = [...newRecords, ...existingHistory];
       updatedHistory.sort((a, b) => b.date.compareTo(a.date));
@@ -263,16 +285,15 @@ class _MultiFuelImportSheetState extends State<MultiFuelImportSheet> {
   @override
   Widget build(BuildContext context) {
     final media = MediaQuery.of(context);
-    final bottomNavPadding = media.padding.bottom > 0
-        ? media.padding.bottom
-        : media.viewPadding.bottom;
+    final bottomNavPadding =
+        media.padding.bottom > 0
+            ? media.padding.bottom
+            : media.viewPadding.bottom;
 
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Container(
-        constraints: BoxConstraints(
-          maxHeight: media.size.height * 0.88,
-        ),
+        constraints: BoxConstraints(maxHeight: media.size.height * 0.88),
         decoration: BoxDecoration(
           color: surfaceMain,
           borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
@@ -296,7 +317,10 @@ class _MultiFuelImportSheetState extends State<MultiFuelImportSheet> {
 
               // Header
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 18,
+                  vertical: 8,
+                ),
                 child: Row(
                   children: [
                     Container(
@@ -305,7 +329,10 @@ class _MultiFuelImportSheetState extends State<MultiFuelImportSheet> {
                       decoration: BoxDecoration(
                         color: brandYellow.withAlpha(35),
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: brandYellow.withAlpha(100), width: 1.2),
+                        border: Border.all(
+                          color: brandYellow.withAlpha(100),
+                          width: 1.2,
+                        ),
                       ),
                       child: Icon(
                         Icons.receipt_long_rounded,
@@ -329,18 +356,18 @@ class _MultiFuelImportSheetState extends State<MultiFuelImportSheet> {
                           const SizedBox(height: 2),
                           Text(
                             () {
-                              final totalPages = widget.receipts.firstOrNull?.totalPages ?? widget.receipts.length;
-                              final fuelCnt = widget.receipts.where((r) => r.isFuel).length;
+                              final totalPages =
+                                  widget.receipts.firstOrNull?.totalPages ??
+                                  widget.receipts.length;
+                              final fuelCnt =
+                                  widget.receipts.where((r) => r.isFuel).length;
                               final storeCnt = widget.receipts.length - fuelCnt;
                               if (storeCnt > 0) {
                                 return 'تم فحص $totalPages صفحات بالملف وعُثر على ${widget.receipts.length} فواتير ($fuelCnt وقود • $storeCnt مشتريات)';
                               }
                               return 'تم فحص $totalPages صفحات بالملف وعُثر على ${widget.receipts.length} فواتير وقود';
                             }(),
-                            style: TextStyle(
-                              color: textMuted,
-                              fontSize: 12,
-                            ),
+                            style: TextStyle(color: textMuted, fontSize: 12),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -359,7 +386,10 @@ class _MultiFuelImportSheetState extends State<MultiFuelImportSheet> {
 
               // Summary bar
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 18,
+                  vertical: 10,
+                ),
                 color: surfaceField,
                 child: Row(
                   children: [
@@ -378,10 +408,7 @@ class _MultiFuelImportSheetState extends State<MultiFuelImportSheet> {
                                 ),
                               ),
                               if (_totalSelectedLiters > 0) ...[
-                                Text(
-                                  ' • ',
-                                  style: TextStyle(color: textMuted),
-                                ),
+                                Text(' • ', style: TextStyle(color: textMuted)),
                                 Text(
                                   '${_totalSelectedLiters.toStringAsFixed(2)} لتر',
                                   style: TextStyle(
@@ -408,7 +435,10 @@ class _MultiFuelImportSheetState extends State<MultiFuelImportSheet> {
                       onTap: _toggleSelectAll,
                       borderRadius: BorderRadius.circular(8),
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 6,
+                        ),
                         decoration: BoxDecoration(
                           color: surfaceBorder,
                           borderRadius: BorderRadius.circular(8),
@@ -433,252 +463,346 @@ class _MultiFuelImportSheetState extends State<MultiFuelImportSheet> {
 
               // Invoices List
               Expanded(
-                child: _isLoading
-                    ? const Center(
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: brandGreen,
-                        ),
-                      )
-                    : Scrollbar(
-                        thumbVisibility: true,
-                        child: ListView.separated(
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                          itemCount: widget.receipts.length,
-                          separatorBuilder: (_, __) => const SizedBox(height: 8),
-                          itemBuilder: (ctx, idx) {
-                            final r = widget.receipts[idx];
-                            final isSelected = _selectedIndices.contains(idx);
-                            final isDuplicate = _duplicateIndices.contains(idx);
+                child:
+                    _isLoading
+                        ? const Center(
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: brandGreen,
+                          ),
+                        )
+                        : Scrollbar(
+                          thumbVisibility: true,
+                          child: ListView.separated(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 10,
+                            ),
+                            itemCount: widget.receipts.length,
+                            separatorBuilder:
+                                (_, __) => const SizedBox(height: 8),
+                            itemBuilder: (ctx, idx) {
+                              final r = widget.receipts[idx];
+                              final isSelected = _selectedIndices.contains(idx);
+                              final isDuplicate = _duplicateIndices.contains(
+                                idx,
+                              );
 
-                            return InkWell(
-                              onTap: () {
-                                SpendoHaptics.selection();
-                                setState(() {
-                                  if (isSelected) {
-                                    _selectedIndices.remove(idx);
-                                  } else {
-                                    _selectedIndices.add(idx);
-                                  }
-                                });
-                              },
-                              borderRadius: BorderRadius.circular(14),
-                              child: AnimatedContainer(
-                                duration: const Duration(milliseconds: 180),
-                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                                decoration: BoxDecoration(
-                                  color: isSelected
-                                      ? surfaceField
-                                      : surfaceField.withAlpha(120),
-                                  borderRadius: BorderRadius.circular(14),
-                                  border: Border.all(
-                                    color: isSelected
-                                        ? brandGreen.withAlpha(150)
-                                        : surfaceBorder,
-                                    width: isSelected ? 1.5 : 1,
+                              return InkWell(
+                                onTap: () {
+                                  SpendoHaptics.selection();
+                                  setState(() {
+                                    if (isSelected) {
+                                      _selectedIndices.remove(idx);
+                                    } else {
+                                      _selectedIndices.add(idx);
+                                    }
+                                  });
+                                },
+                                borderRadius: BorderRadius.circular(14),
+                                child: AnimatedContainer(
+                                  duration: const Duration(milliseconds: 180),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 10,
                                   ),
-                                ),
-                                child: Row(
-                                  children: [
-                                    // Checkbox
-                                    Container(
-                                      width: 22,
-                                      height: 22,
-                                      decoration: BoxDecoration(
-                                        color: isSelected ? brandGreen : Colors.transparent,
-                                        borderRadius: BorderRadius.circular(6),
-                                        border: Border.all(
-                                          color: isSelected ? brandGreen : textMuted,
-                                          width: 1.5,
+                                  decoration: BoxDecoration(
+                                    color:
+                                        isSelected
+                                            ? surfaceField
+                                            : surfaceField.withAlpha(120),
+                                    borderRadius: BorderRadius.circular(14),
+                                    border: Border.all(
+                                      color:
+                                          isSelected
+                                              ? brandGreen.withAlpha(150)
+                                              : surfaceBorder,
+                                      width: isSelected ? 1.5 : 1,
+                                    ),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      // Checkbox
+                                      Container(
+                                        width: 22,
+                                        height: 22,
+                                        decoration: BoxDecoration(
+                                          color:
+                                              isSelected
+                                                  ? brandGreen
+                                                  : Colors.transparent,
+                                          borderRadius: BorderRadius.circular(
+                                            6,
+                                          ),
+                                          border: Border.all(
+                                            color:
+                                                isSelected
+                                                    ? brandGreen
+                                                    : textMuted,
+                                            width: 1.5,
+                                          ),
+                                        ),
+                                        child:
+                                            isSelected
+                                                ? const Icon(
+                                                  Icons.check_rounded,
+                                                  size: 16,
+                                                  color: Colors.black,
+                                                )
+                                                : null,
+                                      ),
+                                      const SizedBox(width: 10),
+
+                                      // Fuel vs Store Icon
+                                      Container(
+                                        width: 32,
+                                        height: 32,
+                                        decoration: BoxDecoration(
+                                          color: (r.isFuel
+                                                  ? brandGreen
+                                                  : brandYellow)
+                                              .withAlpha(25),
+                                          borderRadius: BorderRadius.circular(
+                                            8,
+                                          ),
+                                        ),
+                                        child: Icon(
+                                          r.isFuel
+                                              ? Icons.local_gas_station_rounded
+                                              : Icons.shopping_bag_outlined,
+                                          size: 18,
+                                          color:
+                                              r.isFuel
+                                                  ? brandGreen
+                                                  : brandYellow,
                                         ),
                                       ),
-                                      child: isSelected
-                                          ? const Icon(
-                                              Icons.check_rounded,
-                                              size: 16,
-                                              color: Colors.black,
-                                            )
-                                          : null,
-                                    ),
-                                    const SizedBox(width: 10),
+                                      const SizedBox(width: 10),
 
-                                    // Fuel vs Store Icon
-                                    Container(
-                                      width: 32,
-                                      height: 32,
-                                      decoration: BoxDecoration(
-                                        color: (r.isFuel ? brandGreen : brandYellow).withAlpha(25),
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                      child: Icon(
-                                        r.isFuel
-                                            ? Icons.local_gas_station_rounded
-                                            : Icons.shopping_bag_outlined,
-                                        size: 18,
-                                        color: r.isFuel ? brandGreen : brandYellow,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 10),
-
-                                  // Station & Details
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Wrap(
-                                          spacing: 6,
-                                          runSpacing: 4,
-                                          crossAxisAlignment: WrapCrossAlignment.center,
+                                      // Station & Details
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
                                           children: [
-                                            Text(
-                                              r.providerName.isNotEmpty
-                                                  ? r.providerName
-                                                  : 'تعبئة وقود פז',
-                                              style: TextStyle(
-                                                color: textWhite,
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: 14,
-                                              ),
-                                            ),
-                                            if (r.invoiceNumber != null && r.invoiceNumber!.isNotEmpty)
-                                              Container(
-                                                padding: const EdgeInsets.symmetric(
-                                                    horizontal: 6, vertical: 2),
-                                                decoration: BoxDecoration(
-                                                  color: const Color(0xFF1E3A8A).withAlpha(80),
-                                                  borderRadius: BorderRadius.circular(4),
-                                                  border: Border.all(
-                                                    color: const Color(0xFF5EEAD4).withAlpha(120),
-                                                    width: 0.8,
-                                                  ),
-                                                ),
-                                                child: Text(
-                                                  '#${r.invoiceNumber}',
-                                                  style: const TextStyle(
-                                                    color: Color(0xFF93C5FD),
-                                                    fontSize: 10,
-                                                    fontWeight: FontWeight.w600,
-                                                  ),
-                                                ),
-                                              ),
-                                            if (r.pageNumber != null)
-                                              Container(
-                                                padding: const EdgeInsets.symmetric(
-                                                    horizontal: 6, vertical: 2),
-                                                decoration: BoxDecoration(
-                                                  color: _isDark ? Colors.white.withAlpha(15) : const Color(0xFFE5E7EB),
-                                                  borderRadius: BorderRadius.circular(4),
-                                                  border: Border.all(
-                                                    color: _isDark ? Colors.white24 : const Color(0xFFD1D5DB),
-                                                    width: 0.8,
-                                                  ),
-                                                ),
-                                                child: Text(
-                                                  'صفحة ${r.pageNumber}',
-                                                  style: TextStyle(
-                                                    color: textMuted,
-                                                    fontSize: 10,
-                                                    fontWeight: FontWeight.w600,
-                                                  ),
-                                                ),
-                                              ),
-                                            if (isDuplicate)
-                                              Container(
-                                                padding: const EdgeInsets.symmetric(
-                                                    horizontal: 6, vertical: 2),
-                                                decoration: BoxDecoration(
-                                                  color: brandYellow.withAlpha(30),
-                                                  borderRadius: BorderRadius.circular(4),
-                                                  border: Border.all(
-                                                    color: brandYellow.withAlpha(100),
-                                                    width: 0.8,
-                                                  ),
-                                                ),
-                                                child: Text(
-                                                  'مسجلة مسبقاً',
-                                                  style: TextStyle(
-                                                    color: brandYellow,
-                                                    fontSize: 10,
-                                                    fontWeight: FontWeight.w600,
-                                                  ),
-                                                ),
-                                              ),
-                                          ],
-                                        ),
-                                        const SizedBox(height: 3),
-                                        Wrap(
-                                          spacing: 4,
-                                          runSpacing: 2,
-                                          crossAxisAlignment: WrapCrossAlignment.center,
-                                          children: [
-                                            Text(
-                                              ArabicDateHelper.formatArabicDateWithWeekday(r.date),
-                                              style: TextStyle(
-                                                color: textMuted,
-                                                fontSize: 12,
-                                              ),
-                                            ),
-                                            if (r.liters != null && r.liters! > 0) ...[
-                                              Text(
-                                                '•',
-                                                style: TextStyle(color: textMuted, fontSize: 10),
-                                              ),
-                                              Text(
-                                                '${r.liters!.toStringAsFixed(2)} لتر',
-                                                style: TextStyle(
-                                                  color: textMuted,
-                                                  fontSize: 12,
-                                                ),
-                                              ),
-                                              if (r.pricePerLiter != null) ...[
+                                            Wrap(
+                                              spacing: 6,
+                                              runSpacing: 4,
+                                              crossAxisAlignment:
+                                                  WrapCrossAlignment.center,
+                                              children: [
                                                 Text(
-                                                  '•',
-                                                  style: TextStyle(color: textMuted, fontSize: 10),
+                                                  r.providerName.isNotEmpty
+                                                      ? r.providerName
+                                                      : 'تعبئة وقود פז',
+                                                  style: TextStyle(
+                                                    color: textWhite,
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize: 14,
+                                                  ),
                                                 ),
+                                                if (r.invoiceNumber != null &&
+                                                    r.invoiceNumber!.isNotEmpty)
+                                                  Container(
+                                                    padding:
+                                                        const EdgeInsets.symmetric(
+                                                          horizontal: 6,
+                                                          vertical: 2,
+                                                        ),
+                                                    decoration: BoxDecoration(
+                                                      color: const Color(
+                                                        0xFF1E3A8A,
+                                                      ).withAlpha(80),
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                            4,
+                                                          ),
+                                                      border: Border.all(
+                                                        color: const Color(
+                                                          0xFF5EEAD4,
+                                                        ).withAlpha(120),
+                                                        width: 0.8,
+                                                      ),
+                                                    ),
+                                                    child: Text(
+                                                      '#${r.invoiceNumber}',
+                                                      style: const TextStyle(
+                                                        color: Color(
+                                                          0xFF93C5FD,
+                                                        ),
+                                                        fontSize: 10,
+                                                        fontWeight:
+                                                            FontWeight.w600,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                if (r.pageNumber != null)
+                                                  Container(
+                                                    padding:
+                                                        const EdgeInsets.symmetric(
+                                                          horizontal: 6,
+                                                          vertical: 2,
+                                                        ),
+                                                    decoration: BoxDecoration(
+                                                      color:
+                                                          _isDark
+                                                              ? Colors.white
+                                                                  .withAlpha(15)
+                                                              : const Color(
+                                                                0xFFE5E7EB,
+                                                              ),
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                            4,
+                                                          ),
+                                                      border: Border.all(
+                                                        color:
+                                                            _isDark
+                                                                ? Colors.white24
+                                                                : const Color(
+                                                                  0xFFD1D5DB,
+                                                                ),
+                                                        width: 0.8,
+                                                      ),
+                                                    ),
+                                                    child: Text(
+                                                      'صفحة ${r.pageNumber}',
+                                                      style: TextStyle(
+                                                        color: textMuted,
+                                                        fontSize: 10,
+                                                        fontWeight:
+                                                            FontWeight.w600,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                if (isDuplicate)
+                                                  Container(
+                                                    padding:
+                                                        const EdgeInsets.symmetric(
+                                                          horizontal: 6,
+                                                          vertical: 2,
+                                                        ),
+                                                    decoration: BoxDecoration(
+                                                      color: brandYellow
+                                                          .withAlpha(30),
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                            4,
+                                                          ),
+                                                      border: Border.all(
+                                                        color: brandYellow
+                                                            .withAlpha(100),
+                                                        width: 0.8,
+                                                      ),
+                                                    ),
+                                                    child: Text(
+                                                      'مسجلة مسبقاً',
+                                                      style: TextStyle(
+                                                        color: brandYellow,
+                                                        fontSize: 10,
+                                                        fontWeight:
+                                                            FontWeight.w600,
+                                                      ),
+                                                    ),
+                                                  ),
+                                              ],
+                                            ),
+                                            const SizedBox(height: 3),
+                                            Wrap(
+                                              spacing: 4,
+                                              runSpacing: 2,
+                                              crossAxisAlignment:
+                                                  WrapCrossAlignment.center,
+                                              children: [
                                                 Text(
-                                                  '${r.pricePerLiter!.toStringAsFixed(2)} ₪/ل',
+                                                  ArabicDateHelper.formatArabicDateWithWeekday(
+                                                    r.date,
+                                                  ),
                                                   style: TextStyle(
                                                     color: textMuted,
                                                     fontSize: 12,
                                                   ),
                                                 ),
+                                                if (r.liters != null &&
+                                                    r.liters! > 0) ...[
+                                                  Text(
+                                                    '•',
+                                                    style: TextStyle(
+                                                      color: textMuted,
+                                                      fontSize: 10,
+                                                    ),
+                                                  ),
+                                                  Text(
+                                                    '${r.liters!.toStringAsFixed(2)} لتر',
+                                                    style: TextStyle(
+                                                      color: textMuted,
+                                                      fontSize: 12,
+                                                    ),
+                                                  ),
+                                                  if (r.pricePerLiter !=
+                                                      null) ...[
+                                                    Text(
+                                                      '•',
+                                                      style: TextStyle(
+                                                        color: textMuted,
+                                                        fontSize: 10,
+                                                      ),
+                                                    ),
+                                                    Text(
+                                                      '${r.pricePerLiter!.toStringAsFixed(2)} ₪/ل',
+                                                      style: TextStyle(
+                                                        color: textMuted,
+                                                        fontSize: 12,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ],
                                               ],
-                                            ],
+                                            ),
                                           ],
                                         ),
-                                      ],
-                                    ),
-                                  ),
+                                      ),
 
-                                  // Amount
-                                  Column(
-                                    crossAxisAlignment: CrossAxisAlignment.end,
-                                    children: [
-                                      Text(
-                                        '${r.amount.toStringAsFixed(2)} ₪',
-                                        style: TextStyle(
-                                          color: isSelected ? brandGreen : textMuted,
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 16,
-                                        ),
+                                      // Amount
+                                      Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.end,
+                                        children: [
+                                          Text(
+                                            '${r.amount.toStringAsFixed(2)} ₪',
+                                            style: TextStyle(
+                                              color:
+                                                  isSelected
+                                                      ? brandGreen
+                                                      : textMuted,
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 16,
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ],
                                   ),
-                                ],
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                    ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
               ),
 
               // Bottom buttons
               Container(
-                padding: EdgeInsets.fromLTRB(16, 12, 16, bottomNavPadding > 0 ? bottomNavPadding + 8 : 16),
+                padding: EdgeInsets.fromLTRB(
+                  16,
+                  12,
+                  16,
+                  bottomNavPadding > 0 ? bottomNavPadding + 8 : 16,
+                ),
                 decoration: BoxDecoration(
                   color: surfaceMain,
-                  border: Border(top: BorderSide(color: surfaceBorder, width: 1)),
+                  border: Border(
+                    top: BorderSide(color: surfaceBorder, width: 1),
+                  ),
                 ),
                 child: Row(
                   children: [
@@ -686,9 +810,10 @@ class _MultiFuelImportSheetState extends State<MultiFuelImportSheet> {
                       child: SizedBox(
                         height: 48,
                         child: ElevatedButton(
-                          onPressed: _selectedIndices.isNotEmpty && !_isSaving
-                              ? _commitImport
-                              : null,
+                          onPressed:
+                              _selectedIndices.isNotEmpty && !_isSaving
+                                  ? _commitImport
+                                  : null,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: brandGreen,
                             disabledBackgroundColor: brandGreen.withAlpha(60),
@@ -697,25 +822,26 @@ class _MultiFuelImportSheetState extends State<MultiFuelImportSheet> {
                               borderRadius: BorderRadius.circular(14),
                             ),
                           ),
-                          child: _isSaving
-                              ? const SizedBox(
-                                  width: 20,
-                                  height: 20,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    color: Colors.black,
+                          child:
+                              _isSaving
+                                  ? const SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: Colors.black,
+                                    ),
+                                  )
+                                  : Text(
+                                    _selectedIndices.isEmpty
+                                        ? 'يرجى تحديد فاتورة واحدة على الأقل'
+                                        : 'استيراد ${_selectedIndices.length} فواتير (${_totalSelectedAmount.toStringAsFixed(2)} ₪)',
+                                    style: const TextStyle(
+                                      color: Colors.black,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 14,
+                                    ),
                                   ),
-                                )
-                              : Text(
-                                  _selectedIndices.isEmpty
-                                      ? 'يرجى تحديد فاتورة واحدة على الأقل'
-                                      : 'استيراد ${_selectedIndices.length} فواتير (${_totalSelectedAmount.toStringAsFixed(2)} ₪)',
-                                  style: const TextStyle(
-                                    color: Colors.black,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 14,
-                                  ),
-                                ),
                         ),
                       ),
                     ),

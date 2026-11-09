@@ -1,4 +1,5 @@
 import 'package:sanad_app/core/theme/app_theme.dart';
+import 'package:sanad_app/core/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
@@ -30,38 +31,48 @@ class MapLocationPickerScreen extends StatefulWidget {
     return Navigator.push<LocationResult>(
       context,
       MaterialPageRoute(
-        builder: (_) => MapLocationPickerScreen(
-          initialLatitude: initialLatitude,
-          initialLongitude: initialLongitude,
-          initialCity: initialCity,
-          initialAddress: initialAddress,
-        ),
+        builder:
+            (_) => MapLocationPickerScreen(
+              initialLatitude: initialLatitude,
+              initialLongitude: initialLongitude,
+              initialCity: initialCity,
+              initialAddress: initialAddress,
+            ),
       ),
     );
   }
 
   @override
-  State<MapLocationPickerScreen> createState() => _MapLocationPickerScreenState();
+  State<MapLocationPickerScreen> createState() =>
+      _MapLocationPickerScreenState();
 }
 
 class _MapLocationPickerScreenState extends State<MapLocationPickerScreen> {
   late final MapController _mapController;
   late final TextEditingController _addressController;
 
-  LatLng _currentCenter = const LatLng(32.8530, 35.1970); // Default: Galilee center
+  LatLng _currentCenter = const LatLng(
+    32.8530,
+    35.1970,
+  ); // Default: Galilee center
   LatLng? _selectedPoint;
   double _currentZoom = 14.0;
   bool _isLocatingUser = false;
 
   // Design Tokens
   static bool get _isDark => AppTheme.isDarkMode;
-  static Color get surfaceMain => _isDark ? const Color(0xFF121413) : const Color(0xFFFFFFFF);
-  static Color get surfaceField => _isDark ? const Color(0xFF171A19) : const Color(0xFFF9FAFB);
-  static Color get surfaceBorder => _isDark ? const Color(0xFF242927) : const Color(0xFFE5E7EB);
+  static Color get surfaceMain =>
+      _isDark ? const Color(0xFF121413) : const Color(0xFFFFFFFF);
+  static Color get surfaceField =>
+      _isDark ? const Color(0xFF171A19) : const Color(0xFFF9FAFB);
+  static Color get surfaceBorder =>
+      _isDark ? const Color(0xFF242927) : const Color(0xFFE5E7EB);
   static const Color brandGreen = Color(0xFF0F766E);
-  static const Color brandYellow = Color(0xFFFFD600);
-  static Color get textMuted => _isDark ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280);
-  static Color get textWhite => _isDark ? Colors.white : const Color(0xFF111827);
+  static Color get brandYellow => AppColors.warningFor(_isDark);
+  static Color get textMuted =>
+      _isDark ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280);
+  static Color get textWhite =>
+      _isDark ? Colors.white : const Color(0xFF111827);
 
   // Pre-configured coordinates for common towns & work sites
   static final Map<String, LatLng> _townCoordinates = {
@@ -119,10 +130,14 @@ class _MapLocationPickerScreenState extends State<MapLocationPickerScreen> {
 
     // 1. Initial coordinates from passed data
     if (widget.initialLatitude != null && widget.initialLongitude != null) {
-      _currentCenter = LatLng(widget.initialLatitude!, widget.initialLongitude!);
+      _currentCenter = LatLng(
+        widget.initialLatitude!,
+        widget.initialLongitude!,
+      );
       _selectedPoint = _currentCenter;
       _currentZoom = 15.0;
-    } else if (widget.initialCity != null && widget.initialCity!.trim().isNotEmpty) {
+    } else if (widget.initialCity != null &&
+        widget.initialCity!.trim().isNotEmpty) {
       final cityKey = widget.initialCity!.trim();
       final match = _findTownCoordinates(cityKey);
       if (match != null) {
@@ -181,7 +196,9 @@ class _MapLocationPickerScreenState extends State<MapLocationPickerScreen> {
         setState(() => _isLocatingUser = false);
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('تعذر تحديد موقع GPS، يرجى تفعيل الموقع أو تحديده يدوياً من الخريطة'),
+            content: Text(
+              'تعذر تحديد موقع GPS، يرجى تفعيل الموقع أو تحديده يدوياً من الخريطة',
+            ),
             backgroundColor: Color(0xFFEF4444),
           ),
         );
@@ -212,9 +229,10 @@ class _MapLocationPickerScreenState extends State<MapLocationPickerScreen> {
       LocationResult(
         latitude: pt.latitude,
         longitude: pt.longitude,
-        address: _addressController.text.trim().isNotEmpty
-            ? _addressController.text.trim()
-            : widget.initialCity,
+        address:
+            _addressController.text.trim().isNotEmpty
+                ? _addressController.text.trim()
+                : widget.initialCity,
       ),
     );
   }
@@ -239,7 +257,11 @@ class _MapLocationPickerScreenState extends State<MapLocationPickerScreen> {
             children: [
               Text(
                 'تحديد موقع العمل على الخريطة',
-                style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: textWhite),
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: textWhite,
+                ),
               ),
               Text(
                 'انقر على أي شارع أو بلد لتثبيت مكان العمل بدقة',
@@ -254,11 +276,19 @@ class _MapLocationPickerScreenState extends State<MapLocationPickerScreen> {
                 style: TextButton.styleFrom(
                   backgroundColor: brandGreen,
                   foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
                 ),
                 icon: const Icon(Remix.check_line, size: 15),
-                label: const Text('تثبيت', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                label: const Text(
+                  'تثبيت',
+                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                ),
                 onPressed: _confirmSelection,
               ),
             ),
@@ -289,10 +319,26 @@ class _MapLocationPickerScreenState extends State<MapLocationPickerScreen> {
                     // Slight dark mode tint for the map to match Obsidian palette
                     return ColorFiltered(
                       colorFilter: const ColorFilter.matrix([
-                        0.85, 0, 0, 0, 0,
-                        0, 0.85, 0, 0, 0,
-                        0, 0, 0.85, 0, 0,
-                        0, 0, 0, 1.0, 0,
+                        0.85,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0.85,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0.85,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        1.0,
+                        0,
                       ]),
                       child: tileWidget,
                     );
@@ -349,13 +395,20 @@ class _MapLocationPickerScreenState extends State<MapLocationPickerScreen> {
               left: 10,
               right: 10,
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
                   color: surfaceMain.withValues(alpha: 0.92),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(color: surfaceBorder),
                   boxShadow: const [
-                    BoxShadow(color: Color(0x66000000), blurRadius: 10, offset: Offset(0, 4)),
+                    BoxShadow(
+                      color: Color(0x66000000),
+                      blurRadius: 10,
+                      offset: Offset(0, 4),
+                    ),
                   ],
                 ),
                 child: Column(
@@ -364,16 +417,28 @@ class _MapLocationPickerScreenState extends State<MapLocationPickerScreen> {
                   children: [
                     Row(
                       children: [
-                        const Icon(Remix.navigation_line, size: 13, color: brandYellow),
+                        const Icon(
+                          Remix.navigation_line,
+                          size: 13,
+                          color: brandYellow,
+                        ),
                         const SizedBox(width: 6),
                         Text(
                           'انتقال سريع للبلد / المنطقة:',
-                          style: TextStyle(color: textWhite, fontSize: 10.5, fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                            color: textWhite,
+                            fontSize: 10.5,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                         const Spacer(),
                         Text(
                           '${activePoint.latitude.toStringAsFixed(4)}, ${activePoint.longitude.toStringAsFixed(4)}',
-                          style: TextStyle(color: textMuted, fontSize: 9.5, fontFamily: 'monospace'),
+                          style: TextStyle(
+                            color: textMuted,
+                            fontSize: 9.5,
+                            fontFamily: 'monospace',
+                          ),
                         ),
                       ],
                     ),
@@ -382,43 +447,52 @@ class _MapLocationPickerScreenState extends State<MapLocationPickerScreen> {
                       scrollDirection: Axis.horizontal,
                       physics: const BouncingScrollPhysics(),
                       child: Row(
-                        children: [
-                          'طمرة',
-                          'كابول',
-                          'سخنين',
-                          'شفاعمرو',
-                          'مجد الكروم',
-                          'دير الاسد',
-                          'كفر كنا',
-                          'الناصرة',
-                          'عكا',
-                          'حيفا',
-                          'القدس',
-                          'دبرات',
-                        ].map((town) {
-                          final coords = _townCoordinates[town];
-                          return Padding(
-                            padding: const EdgeInsets.only(left: 6),
-                            child: InkWell(
-                              onTap: () {
-                                if (coords != null) _jumpToTown(town, coords);
-                              },
-                              borderRadius: BorderRadius.circular(6),
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                                decoration: BoxDecoration(
-                                  color: surfaceField,
+                        children:
+                            [
+                              'طمرة',
+                              'كابول',
+                              'سخنين',
+                              'شفاعمرو',
+                              'مجد الكروم',
+                              'دير الاسد',
+                              'كفر كنا',
+                              'الناصرة',
+                              'عكا',
+                              'حيفا',
+                              'القدس',
+                              'دبرات',
+                            ].map((town) {
+                              final coords = _townCoordinates[town];
+                              return Padding(
+                                padding: const EdgeInsets.only(left: 6),
+                                child: InkWell(
+                                  onTap: () {
+                                    if (coords != null)
+                                      _jumpToTown(town, coords);
+                                  },
                                   borderRadius: BorderRadius.circular(6),
-                                  border: Border.all(color: surfaceBorder),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                      vertical: 3,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: surfaceField,
+                                      borderRadius: BorderRadius.circular(6),
+                                      border: Border.all(color: surfaceBorder),
+                                    ),
+                                    child: Text(
+                                      town,
+                                      style: TextStyle(
+                                        color: textWhite,
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
                                 ),
-                                child: Text(
-                                  town,
-                                  style: TextStyle(color: textWhite, fontSize: 10, fontWeight: FontWeight.w600),
-                                ),
-                              ),
-                            ),
-                          );
-                        }).toList(),
+                              );
+                            }).toList(),
                       ),
                     ),
                   ],
@@ -442,13 +516,17 @@ class _MapLocationPickerScreenState extends State<MapLocationPickerScreen> {
                       side: BorderSide(color: surfaceBorder),
                     ),
                     onPressed: _isLocatingUser ? null : _flyToCurrentGps,
-                    child: _isLocatingUser
-                        ? const SizedBox(
-                            width: 16,
-                            height: 16,
-                            child: CircularProgressIndicator(strokeWidth: 2, color: brandYellow),
-                          )
-                        : const Icon(Remix.crosshair_2_line, size: 18),
+                    child:
+                        _isLocatingUser
+                            ? const SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: brandYellow,
+                              ),
+                            )
+                            : const Icon(Remix.crosshair_2_line, size: 18),
                   ),
                   const SizedBox(height: 8),
                   FloatingActionButton.small(
@@ -461,7 +539,10 @@ class _MapLocationPickerScreenState extends State<MapLocationPickerScreen> {
                       side: BorderSide(color: surfaceBorder),
                     ),
                     onPressed: () {
-                      final z = (_mapController.camera.zoom + 1).clamp(6.0, 18.0);
+                      final z = (_mapController.camera.zoom + 1).clamp(
+                        6.0,
+                        18.0,
+                      );
                       _mapController.move(_mapController.camera.center, z);
                     },
                     child: const Icon(Remix.add_line, size: 18),
@@ -477,7 +558,10 @@ class _MapLocationPickerScreenState extends State<MapLocationPickerScreen> {
                       side: BorderSide(color: surfaceBorder),
                     ),
                     onPressed: () {
-                      final z = (_mapController.camera.zoom - 1).clamp(6.0, 18.0);
+                      final z = (_mapController.camera.zoom - 1).clamp(
+                        6.0,
+                        18.0,
+                      );
                       _mapController.move(_mapController.camera.center, z);
                     },
                     child: const Icon(Remix.subtract_line, size: 18),
@@ -493,13 +577,20 @@ class _MapLocationPickerScreenState extends State<MapLocationPickerScreen> {
               bottom: 12,
               child: SafeArea(
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 12,
+                  ),
                   decoration: BoxDecoration(
                     color: surfaceMain.withValues(alpha: 0.96),
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(color: surfaceBorder),
                     boxShadow: const [
-                      BoxShadow(color: Color(0x88000000), blurRadius: 16, offset: Offset(0, 4)),
+                      BoxShadow(
+                        color: Color(0x88000000),
+                        blurRadius: 16,
+                        offset: Offset(0, 4),
+                      ),
                     ],
                   ),
                   child: Column(
@@ -507,15 +598,27 @@ class _MapLocationPickerScreenState extends State<MapLocationPickerScreen> {
                     children: [
                       Row(
                         children: [
-                          const Icon(Remix.map_pin_2_line, color: brandGreen, size: 18),
+                          const Icon(
+                            Remix.map_pin_2_line,
+                            color: brandGreen,
+                            size: 18,
+                          ),
                           const SizedBox(width: 8),
                           Expanded(
                             child: TextField(
                               controller: _addressController,
-                              style: TextStyle(color: textWhite, fontSize: 12.5, fontWeight: FontWeight.bold),
+                              style: TextStyle(
+                                color: textWhite,
+                                fontSize: 12.5,
+                                fontWeight: FontWeight.bold,
+                              ),
                               decoration: InputDecoration(
-                                hintText: 'اكتب اسم الشارع أو تفصيل المكان (اختياري)',
-                                hintStyle: TextStyle(color: textMuted, fontSize: 11),
+                                hintText:
+                                    'اكتب اسم الشارع أو تفصيل المكان (اختياري)',
+                                hintStyle: TextStyle(
+                                  color: textMuted,
+                                  fontSize: 11,
+                                ),
                                 border: InputBorder.none,
                                 isDense: true,
                                 contentPadding: EdgeInsets.zero,
@@ -533,13 +636,20 @@ class _MapLocationPickerScreenState extends State<MapLocationPickerScreen> {
                                 backgroundColor: brandGreen,
                                 foregroundColor: Colors.white,
                                 elevation: 0,
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                                padding: const EdgeInsets.symmetric(vertical: 10),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 10,
+                                ),
                               ),
                               icon: const Icon(Remix.check_line, size: 16),
                               label: const Text(
                                 'تثبيت هذا الموقع لمكان العمل',
-                                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5),
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 12.5,
+                                ),
                               ),
                               onPressed: _confirmSelection,
                             ),

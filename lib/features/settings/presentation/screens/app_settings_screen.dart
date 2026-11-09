@@ -12,6 +12,7 @@ import '../../../auth/presentation/screens/auth_screen.dart';
 import '../../../people/models/person_model.dart';
 import '../../../people/repositories/people_repository.dart';
 import 'package:sanad_app/core/theme/app_theme.dart';
+import 'package:sanad_app/core/theme/app_colors.dart';
 import '../../../home/services/daily_expense_service.dart';
 import '../../services/settings_service.dart';
 
@@ -32,16 +33,21 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
   bool get _isDark => Theme.of(context).brightness == Brightness.dark;
 
   // Design color tokens - adaptive to active Theme
-  Color get surfaceBg => _isDark ? const Color(0xFF0A0A0C) : const Color(0xFFF8F9FA);
-  Color get surfaceMain => _isDark ? const Color(0xFF121215) : const Color(0xFFFFFFFF);
-  Color get surfaceCell => _isDark ? const Color(0xFF16161A) : const Color(0xFFF1F3F5);
-  Color get surfaceBorder => _isDark ? const Color(0xFF1E1E24) : const Color(0xFFE5E7EB);
+  Color get surfaceBg =>
+      _isDark ? const Color(0xFF0A0A0C) : const Color(0xFFF8F9FA);
+  Color get surfaceMain =>
+      _isDark ? const Color(0xFF121215) : const Color(0xFFFFFFFF);
+  Color get surfaceCell =>
+      _isDark ? const Color(0xFF16161A) : const Color(0xFFF1F3F5);
+  Color get surfaceBorder =>
+      _isDark ? const Color(0xFF1E1E24) : const Color(0xFFE5E7EB);
   static const Color brandGreen = Color(0xFF0F766E);
-  Color get brandYellow =>
-      const Color(0xFFFFD600);
+  Color get brandYellow => AppColors.warningFor(_isDark);
   static const Color brandRed = Color(0xFFEF4444);
-  Color get textWhite => _isDark ? const Color(0xFFFFFFFF) : const Color(0xFF111827);
-  Color get textMuted => _isDark ? const Color(0xFF71717A) : const Color(0xFF6B7280);
+  Color get textWhite =>
+      _isDark ? const Color(0xFFFFFFFF) : const Color(0xFF111827);
+  Color get textMuted =>
+      _isDark ? const Color(0xFF71717A) : const Color(0xFF6B7280);
 
   bool _isLoading = true;
   PersonModel? _userProfile;
@@ -88,7 +94,10 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
       TimeOfDay parsedTime = const TimeOfDay(hour: 17, minute: 0);
       try {
         final parts = reminderTimeStr.split(':');
-        parsedTime = TimeOfDay(hour: int.parse(parts[0]), minute: int.parse(parts[1]));
+        parsedTime = TimeOfDay(
+          hour: int.parse(parts[0]),
+          minute: int.parse(parts[1]),
+        );
       } catch (_) {}
 
       if (!mounted) return;
@@ -97,16 +106,25 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
         _linkedAccountEmail = linkedEmail;
         if (fbUser != null) {
           final displayName = fbUser.displayName;
-          _nameController.text = (displayName != null && displayName.trim().isNotEmpty)
-              ? displayName
-              : (user?.name.trim().isNotEmpty == true && user!.name != 'My profile' ? user.name : 'لافي');
+          _nameController.text =
+              (displayName != null && displayName.trim().isNotEmpty)
+                  ? displayName
+                  : (user?.name.trim().isNotEmpty == true &&
+                          user!.name != 'My profile'
+                      ? user.name
+                      : 'لافي');
           _emailController.text = fbUser.email ?? (user?.email ?? linkedEmail);
         } else {
           _nameController.text =
-              user?.name.trim().isNotEmpty == true && user!.name != 'My profile' ? user.name : 'لافي';
-          _emailController.text = user?.email?.trim().isNotEmpty == true
-              ? user!.email!
-              : (linkedEmail.isNotEmpty ? linkedEmail : 'yasenlafe972@gmail.com');
+              user?.name.trim().isNotEmpty == true && user!.name != 'My profile'
+                  ? user.name
+                  : 'لافي';
+          _emailController.text =
+              user?.email?.trim().isNotEmpty == true
+                  ? user!.email!
+                  : (linkedEmail.isNotEmpty
+                      ? linkedEmail
+                      : 'yasenlafe972@gmail.com');
         }
         _dailyReminderEnabled = reminder;
         _reminderTime = parsedTime;
@@ -136,7 +154,11 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
             const SizedBox(width: 8),
             Text(
               message,
-              style: TextStyle(color: textWhite, fontSize: 11.5, fontWeight: FontWeight.w600),
+              style: TextStyle(
+                color: textWhite,
+                fontSize: 11.5,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ],
         ),
@@ -183,7 +205,9 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
       await AppTheme.setThemeMode(AppTheme.themeModeNotifier.value);
 
       await _settingsService.setDailyReminderEnabled(_dailyReminderEnabled);
-      await _settingsService.setDailyReminderTime(_formatTimeOfDay(_reminderTime));
+      await _settingsService.setDailyReminderTime(
+        _formatTimeOfDay(_reminderTime),
+      );
       await _backupService.setAutoBackupEnabled(true);
       await _backupService.performBackup();
 
@@ -196,9 +220,10 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
   }
 
   void _copyEmail() {
-    final email = _emailController.text.trim().isNotEmpty
-        ? _emailController.text.trim()
-        : 'yasenlafe972@gmail.com';
+    final email =
+        _emailController.text.trim().isNotEmpty
+            ? _emailController.text.trim()
+            : 'yasenlafe972@gmail.com';
     Clipboard.setData(ClipboardData(text: email));
     _showCustomToast('تم نسخ البريد الإلكتروني');
   }
@@ -210,7 +235,9 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
     });
     _settingsService.setDailyReminderEnabled(_dailyReminderEnabled);
     _showCustomToast(
-      _dailyReminderEnabled ? 'تم تفعيل تذكير تسجيل يوم العمل' : 'تم إيقاف التذكير اليومي',
+      _dailyReminderEnabled
+          ? 'تم تفعيل تذكير تسجيل يوم العمل'
+          : 'تم إيقاف التذكير اليومي',
     );
   }
 
@@ -325,83 +352,124 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
     final choice = await showModalBottomSheet<String>(
       context: context,
       backgroundColor: Colors.transparent,
-      builder: (ctx) => Container(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 22),
-        decoration: BoxDecoration(
-          color: surfaceMain,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-          border: Border(top: BorderSide(color: surfaceBorder)),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text(
-              'استعادة البيانات والنسخ الاحتياطي',
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: textWhite),
-            ),
-            const SizedBox(height: 18),
-            InkWell(
-              onTap: () => Navigator.pop(ctx, 'cloud'),
-              borderRadius: BorderRadius.circular(12),
-              child: Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: surfaceCell,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: surfaceBorder),
-                ),
-                child: Row(
-                  children: [
-                    const Icon(Remix.cloud_line, color: brandGreen, size: 20),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('استعادة من سحابة Firebase', style: TextStyle(color: textWhite, fontSize: 13, fontWeight: FontWeight.bold)),
-                          const SizedBox(height: 2),
-                          Text('جلب أحدث نسخة متزامنة تلقائياً من السحابة', style: TextStyle(color: textMuted, fontSize: 10)),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
+      builder:
+          (ctx) => Container(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 22),
+            decoration: BoxDecoration(
+              color: surfaceMain,
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(20),
               ),
+              border: Border(top: BorderSide(color: surfaceBorder)),
             ),
-            const SizedBox(height: 10),
-            InkWell(
-              onTap: () => Navigator.pop(ctx, 'file'),
-              borderRadius: BorderRadius.circular(12),
-              child: Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: surfaceCell,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  'استعادة البيانات والنسخ الاحتياطي',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: textWhite,
+                  ),
+                ),
+                const SizedBox(height: 18),
+                InkWell(
+                  onTap: () => Navigator.pop(ctx, 'cloud'),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: surfaceBorder),
-                ),
-                child: Row(
-                  children: [
-                    Icon(Remix.file_upload_line, color: brandYellow, size: 20),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('استيراد ملف نسخة احتياطية (.json)', style: TextStyle(color: textWhite, fontSize: 13, fontWeight: FontWeight.bold)),
-                          const SizedBox(height: 2),
-                          Text('اختيار ملف مستلم عبر تلغرام أو محفوظ في الملفات', style: TextStyle(color: textMuted, fontSize: 10)),
-                        ],
-                      ),
+                  child: Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: surfaceCell,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: surfaceBorder),
                     ),
-                  ],
+                    child: Row(
+                      children: [
+                        const Icon(
+                          Remix.cloud_line,
+                          color: brandGreen,
+                          size: 20,
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'استعادة من سحابة Firebase',
+                                style: TextStyle(
+                                  color: textWhite,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                'جلب أحدث نسخة متزامنة تلقائياً من السحابة',
+                                style: TextStyle(
+                                  color: textMuted,
+                                  fontSize: 10,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
-              ),
+                const SizedBox(height: 10),
+                InkWell(
+                  onTap: () => Navigator.pop(ctx, 'file'),
+                  borderRadius: BorderRadius.circular(12),
+                  child: Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: surfaceCell,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: surfaceBorder),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Remix.file_upload_line,
+                          color: brandYellow,
+                          size: 20,
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'استيراد ملف نسخة احتياطية (.json)',
+                                style: TextStyle(
+                                  color: textWhite,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                'اختيار ملف مستلم عبر تلغرام أو محفوظ في الملفات',
+                                style: TextStyle(
+                                  color: textMuted,
+                                  fontSize: 10,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
     );
 
     if (choice == 'cloud') {
@@ -409,7 +477,9 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
         final res = await _backupService.performRestore();
         if (res.isSuccess) {
           SpendoHaptics.success();
-          _showCustomToast('تمت استعادة البيانات بنجاح (${res.recordsRestored} سجل)');
+          _showCustomToast(
+            'تمت استعادة البيانات بنجاح (${res.recordsRestored} سجل)',
+          );
           setState(() {});
         } else {
           _showCustomToast(res.message);
@@ -426,7 +496,9 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
           final res = await _backupService.importBackupFromJsonString(content);
           if (res.isSuccess) {
             SpendoHaptics.success();
-            _showCustomToast('تم استعادة البيانات بنجاح (${res.recordsRestored} سجل)');
+            _showCustomToast(
+              'تم استعادة البيانات بنجاح (${res.recordsRestored} سجل)',
+            );
             setState(() {});
           } else {
             _showCustomToast(res.message);
@@ -439,37 +511,49 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
   }
 
   Future<void> _handleLogout() async {
-    final email = _emailController.text.trim().isNotEmpty
-        ? _emailController.text.trim()
-        : 'الحساب الحالي';
+    final email =
+        _emailController.text.trim().isNotEmpty
+            ? _emailController.text.trim()
+            : 'الحساب الحالي';
 
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: surfaceMain,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-          side: BorderSide(color: surfaceBorder),
-        ),
-        title: Text(
-          'تسجيل الخروج',
-          style: TextStyle(color: textWhite, fontSize: 14, fontWeight: FontWeight.bold),
-        ),
-        content: Text(
-          'هل أنت متأكد من تسجيل الخروج من ($email)؟',
-          style: TextStyle(color: textMuted, fontSize: 12.5),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: Text('إلغاء', style: TextStyle(color: textMuted)),
+      builder:
+          (ctx) => AlertDialog(
+            backgroundColor: surfaceMain,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+              side: BorderSide(color: surfaceBorder),
+            ),
+            title: Text(
+              'تسجيل الخروج',
+              style: TextStyle(
+                color: textWhite,
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            content: Text(
+              'هل أنت متأكد من تسجيل الخروج من ($email)؟',
+              style: TextStyle(color: textMuted, fontSize: 12.5),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, false),
+                child: Text('إلغاء', style: TextStyle(color: textMuted)),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, true),
+                child: const Text(
+                  'تسجيل الخروج',
+                  style: TextStyle(
+                    color: brandRed,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
           ),
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('تسجيل الخروج', style: TextStyle(color: brandRed, fontWeight: FontWeight.bold)),
-          ),
-        ],
-      ),
     );
 
     if (confirmed == true) {
@@ -495,153 +579,187 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       barrierColor: Colors.black.withValues(alpha: 0.8),
-      builder: (ctx) => Container(
-        decoration: BoxDecoration(
-          color: surfaceMain,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-          border: Border(
-            top: BorderSide(color: surfaceBorder),
-            left: BorderSide(color: surfaceBorder),
-            right: BorderSide(color: surfaceBorder),
-          ),
-        ),
-        padding: EdgeInsets.only(
-          top: 14,
-          left: 14,
-          right: 14,
-          bottom: MediaQuery.of(ctx).viewInsets.bottom + 16,
-        ),
-        child: SafeArea(
-          top: false,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      builder:
+          (ctx) => Container(
+            decoration: BoxDecoration(
+              color: surfaceMain,
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(20),
+              ),
+              border: Border(
+                top: BorderSide(color: surfaceBorder),
+                left: BorderSide(color: surfaceBorder),
+                right: BorderSide(color: surfaceBorder),
+              ),
+            ),
+            padding: EdgeInsets.only(
+              top: 14,
+              left: 14,
+              right: 14,
+              bottom: MediaQuery.of(ctx).viewInsets.bottom + 16,
+            ),
+            child: SafeArea(
+              top: false,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Icon(
-                        isName ? Remix.user_3_line : Remix.mail_line,
-                        size: 15,
-                        color: isName ? brandGreen : brandYellow,
+                      Row(
+                        children: [
+                          Icon(
+                            isName ? Remix.user_3_line : Remix.mail_line,
+                            size: 15,
+                            color: isName ? brandGreen : brandYellow,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            isName
+                                ? 'تعديل الاسم الشخصي'
+                                : 'تعديل البريد الإلكتروني',
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.bold,
+                              color: textWhite,
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(width: 8),
-                      Text(
-                        isName ? 'تعديل الاسم الشخصي' : 'تعديل البريد الإلكتروني',
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.bold,
-                          color: textWhite,
+                      InkWell(
+                        onTap: () => Navigator.pop(ctx),
+                        child: Padding(
+                          padding: const EdgeInsets.all(4),
+                          child: Icon(
+                            Remix.close_line,
+                            size: 18,
+                            color: textMuted,
+                          ),
                         ),
                       ),
                     ],
                   ),
-                  InkWell(
-                    onTap: () => Navigator.pop(ctx),
-                    child: Padding(
-                      padding: const EdgeInsets.all(4),
-                      child: Icon(Remix.close_line, size: 18, color: textMuted),
+                  const SizedBox(height: 12),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: surfaceCell,
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: surfaceBorder),
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Container(
-                decoration: BoxDecoration(
-                  color: surfaceCell,
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: surfaceBorder),
-                ),
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      isName ? 'الاسم الشخصي في البروفايل' : 'البريد الإلكتروني للحساب',
-                      style: TextStyle(fontSize: 9.5, color: textMuted, fontWeight: FontWeight.w600),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 8,
                     ),
-                    const SizedBox(height: 4),
-                    TextField(
-                      controller: controller,
-                      autofocus: true,
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                        color: textWhite,
-                        fontFamily: isName ? null : 'monospace',
-                      ),
-                      textDirection: isName ? null : TextDirection.ltr,
-                      decoration: const InputDecoration(
-                        border: InputBorder.none,
-                        isDense: true,
-                        contentPadding: EdgeInsets.zero,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 14),
-              Row(
-                children: [
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () {
-                        final val = controller.text.trim();
-                        if (val.isNotEmpty) {
-                          setState(() {
-                            if (isName) {
-                              _nameController.text = val;
-                            } else {
-                              _emailController.text = val;
-                            }
-                          });
-                          Navigator.pop(ctx);
-                          _showCustomToast(isName ? 'تم تحديث الاسم الشخصي' : 'تم تحديث البريد الإلكتروني');
-                        }
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: brandGreen,
-                        foregroundColor: const Color(0xFF0A0B0D),
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                        padding: const EdgeInsets.symmetric(vertical: 10),
-                      ),
-                      child: const Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Remix.check_line, size: 15, color: Color(0xFF0A0B0D)),
-                          SizedBox(width: 4),
-                          Text(
-                            'تحديث',
-                            style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF0A0B0D)),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          isName
+                              ? 'الاسم الشخصي في البروفايل'
+                              : 'البريد الإلكتروني للحساب',
+                          style: TextStyle(
+                            fontSize: 9.5,
+                            color: textMuted,
+                            fontWeight: FontWeight.w600,
                           ),
-                        ],
-                      ),
+                        ),
+                        const SizedBox(height: 4),
+                        TextField(
+                          controller: controller,
+                          autofocus: true,
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: textWhite,
+                            fontFamily: isName ? null : 'monospace',
+                          ),
+                          textDirection: isName ? null : TextDirection.ltr,
+                          decoration: const InputDecoration(
+                            border: InputBorder.none,
+                            isDense: true,
+                            contentPadding: EdgeInsets.zero,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: () => Navigator.pop(ctx),
-                      style: OutlinedButton.styleFrom(
-                        side: BorderSide(color: surfaceBorder),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                        padding: const EdgeInsets.symmetric(vertical: 10),
+                  const SizedBox(height: 14),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: () {
+                            final val = controller.text.trim();
+                            if (val.isNotEmpty) {
+                              setState(() {
+                                if (isName) {
+                                  _nameController.text = val;
+                                } else {
+                                  _emailController.text = val;
+                                }
+                              });
+                              Navigator.pop(ctx);
+                              _showCustomToast(
+                                isName
+                                    ? 'تم تحديث الاسم الشخصي'
+                                    : 'تم تحديث البريد الإلكتروني',
+                              );
+                            }
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: brandGreen,
+                            foregroundColor: const Color(0xFF0A0B0D),
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            padding: const EdgeInsets.symmetric(vertical: 10),
+                          ),
+                          child: const Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Remix.check_line,
+                                size: 15,
+                                color: Color(0xFF0A0B0D),
+                              ),
+                              SizedBox(width: 4),
+                              Text(
+                                'تحديث',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF0A0B0D),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
-                      child: Text(
-                        'إلغاء',
-                        style: TextStyle(fontSize: 12, color: textMuted),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () => Navigator.pop(ctx),
+                          style: OutlinedButton.styleFrom(
+                            side: BorderSide(color: surfaceBorder),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            padding: const EdgeInsets.symmetric(vertical: 10),
+                          ),
+                          child: Text(
+                            'إلغاء',
+                            style: TextStyle(fontSize: 12, color: textMuted),
+                          ),
+                        ),
                       ),
-                    ),
+                    ],
                   ),
                 ],
               ),
-            ],
+            ),
           ),
-        ),
-      ),
     );
   }
 
@@ -687,7 +805,11 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                           children: [
                             Row(
                               children: [
-                                Icon(Remix.lock_password_line, color: brandYellow, size: 18),
+                                Icon(
+                                  Remix.lock_password_line,
+                                  color: brandYellow,
+                                  size: 18,
+                                ),
                                 SizedBox(width: 8),
                                 Text(
                                   'تغيير كلمة المرور',
@@ -703,7 +825,11 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                               onTap: () => Navigator.pop(ctx),
                               child: Padding(
                                 padding: const EdgeInsets.all(4),
-                                child: Icon(Remix.close_line, size: 18, color: textMuted),
+                                child: Icon(
+                                  Remix.close_line,
+                                  size: 18,
+                                  color: textMuted,
+                                ),
                               ),
                             ),
                           ],
@@ -717,20 +843,32 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
 
                         if (errorMessage != null) ...[
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 7,
+                            ),
                             decoration: BoxDecoration(
                               color: brandRed.withValues(alpha: 0.15),
                               borderRadius: BorderRadius.circular(8),
-                              border: Border.all(color: brandRed.withValues(alpha: 0.4)),
+                              border: Border.all(
+                                color: brandRed.withValues(alpha: 0.4),
+                              ),
                             ),
                             child: Row(
                               children: [
-                                const Icon(Remix.error_warning_line, color: brandRed, size: 15),
+                                const Icon(
+                                  Remix.error_warning_line,
+                                  color: brandRed,
+                                  size: 15,
+                                ),
                                 const SizedBox(width: 6),
                                 Expanded(
                                   child: Text(
                                     errorMessage!,
-                                    style: const TextStyle(color: brandRed, fontSize: 11),
+                                    style: const TextStyle(
+                                      color: brandRed,
+                                      fontSize: 11,
+                                    ),
                                   ),
                                 ),
                               ],
@@ -740,7 +878,10 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                         ],
 
                         // Current Password
-                        Text('كلمة المرور الحالية', style: TextStyle(fontSize: 10.5, color: textMuted)),
+                        Text(
+                          'كلمة المرور الحالية',
+                          style: TextStyle(fontSize: 10.5, color: textMuted),
+                        ),
                         const SizedBox(height: 4),
                         Container(
                           decoration: BoxDecoration(
@@ -751,20 +892,35 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                           child: TextField(
                             controller: currentPwCtrl,
                             obscureText: obscureCurrent,
-                            style: TextStyle(color: textWhite, fontSize: 12, fontFamily: 'monospace'),
+                            style: TextStyle(
+                              color: textWhite,
+                              fontSize: 12,
+                              fontFamily: 'monospace',
+                            ),
                             decoration: InputDecoration(
                               isDense: true,
                               border: InputBorder.none,
-                              contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 10,
+                              ),
                               hintText: 'أدخل كلمة المرور الحالية',
-                              hintStyle: const TextStyle(color: Color(0xFF52525B), fontSize: 11),
+                              hintStyle: const TextStyle(
+                                color: Color(0xFF52525B),
+                                fontSize: 11,
+                              ),
                               suffixIcon: IconButton(
                                 icon: Icon(
-                                  obscureCurrent ? Remix.eye_off_line : Remix.eye_line,
+                                  obscureCurrent
+                                      ? Remix.eye_off_line
+                                      : Remix.eye_line,
                                   size: 15,
                                   color: textMuted,
                                 ),
-                                onPressed: () => setDialogState(() => obscureCurrent = !obscureCurrent),
+                                onPressed:
+                                    () => setDialogState(
+                                      () => obscureCurrent = !obscureCurrent,
+                                    ),
                               ),
                             ),
                           ),
@@ -772,7 +928,10 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                         const SizedBox(height: 10),
 
                         // New Password
-                        Text('كلمة المرور الجديدة (6 خانات على الأقل)', style: TextStyle(fontSize: 10.5, color: textMuted)),
+                        Text(
+                          'كلمة المرور الجديدة (6 خانات على الأقل)',
+                          style: TextStyle(fontSize: 10.5, color: textMuted),
+                        ),
                         const SizedBox(height: 4),
                         Container(
                           decoration: BoxDecoration(
@@ -783,20 +942,35 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                           child: TextField(
                             controller: newPwCtrl,
                             obscureText: obscureNew,
-                            style: TextStyle(color: textWhite, fontSize: 12, fontFamily: 'monospace'),
+                            style: TextStyle(
+                              color: textWhite,
+                              fontSize: 12,
+                              fontFamily: 'monospace',
+                            ),
                             decoration: InputDecoration(
                               isDense: true,
                               border: InputBorder.none,
-                              contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 10,
+                              ),
                               hintText: 'كلمة مرور جديدة قوية',
-                              hintStyle: const TextStyle(color: Color(0xFF52525B), fontSize: 11),
+                              hintStyle: const TextStyle(
+                                color: Color(0xFF52525B),
+                                fontSize: 11,
+                              ),
                               suffixIcon: IconButton(
                                 icon: Icon(
-                                  obscureNew ? Remix.eye_off_line : Remix.eye_line,
+                                  obscureNew
+                                      ? Remix.eye_off_line
+                                      : Remix.eye_line,
                                   size: 15,
                                   color: textMuted,
                                 ),
-                                onPressed: () => setDialogState(() => obscureNew = !obscureNew),
+                                onPressed:
+                                    () => setDialogState(
+                                      () => obscureNew = !obscureNew,
+                                    ),
                               ),
                             ),
                           ),
@@ -804,7 +978,10 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                         const SizedBox(height: 10),
 
                         // Confirm Password
-                        Text('تأكيد كلمة المرور الجديدة', style: TextStyle(fontSize: 10.5, color: textMuted)),
+                        Text(
+                          'تأكيد كلمة المرور الجديدة',
+                          style: TextStyle(fontSize: 10.5, color: textMuted),
+                        ),
                         const SizedBox(height: 4),
                         Container(
                           decoration: BoxDecoration(
@@ -815,20 +992,35 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                           child: TextField(
                             controller: confirmPwCtrl,
                             obscureText: obscureConfirm,
-                            style: TextStyle(color: textWhite, fontSize: 12, fontFamily: 'monospace'),
+                            style: TextStyle(
+                              color: textWhite,
+                              fontSize: 12,
+                              fontFamily: 'monospace',
+                            ),
                             decoration: InputDecoration(
                               isDense: true,
                               border: InputBorder.none,
-                              contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 10,
+                              ),
                               hintText: 'أعد إدخال كلمة المرور الجديدة',
-                              hintStyle: const TextStyle(color: Color(0xFF52525B), fontSize: 11),
+                              hintStyle: const TextStyle(
+                                color: Color(0xFF52525B),
+                                fontSize: 11,
+                              ),
                               suffixIcon: IconButton(
                                 icon: Icon(
-                                  obscureConfirm ? Remix.eye_off_line : Remix.eye_line,
+                                  obscureConfirm
+                                      ? Remix.eye_off_line
+                                      : Remix.eye_line,
                                   size: 15,
                                   color: textMuted,
                                 ),
-                                onPressed: () => setDialogState(() => obscureConfirm = !obscureConfirm),
+                                onPressed:
+                                    () => setDialogState(
+                                      () => obscureConfirm = !obscureConfirm,
+                                    ),
                               ),
                             ),
                           ),
@@ -840,13 +1032,21 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                           alignment: Alignment.centerRight,
                           child: TextButton(
                             onPressed: () async {
-                              final emailToSend = _emailController.text.trim().isNotEmpty
-                                  ? _emailController.text.trim()
-                                  : null;
-                              final ok = await AuthLinkService.sendPasswordResetEmail(emailToSend);
+                              final emailToSend =
+                                  _emailController.text.trim().isNotEmpty
+                                      ? _emailController.text.trim()
+                                      : null;
+                              final ok =
+                                  await AuthLinkService.sendPasswordResetEmail(
+                                    emailToSend,
+                                  );
                               if (dialogCtx.mounted) {
                                 Navigator.pop(ctx);
-                                _showCustomToast(ok ? 'تم إرسال رابط إعادة التعيين لبريدك' : 'فشل إرسال الرابط');
+                                _showCustomToast(
+                                  ok
+                                      ? 'تم إرسال رابط إعادة التعيين لبريدك'
+                                      : 'فشل إرسال الرابط',
+                                );
                               }
                             },
                             style: TextButton.styleFrom(
@@ -856,7 +1056,11 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                             ),
                             child: Text(
                               'نسيت كلمة المرور؟ إرسال رابط للإيميل',
-                              style: TextStyle(color: brandYellow, fontSize: 11, fontWeight: FontWeight.w600),
+                              style: TextStyle(
+                                color: brandYellow,
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
                           ),
                         ),
@@ -864,79 +1068,107 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
 
                         // Submit Button
                         ElevatedButton(
-                          onPressed: isSubmitting
-                              ? null
-                              : () async {
-                                  final currentPw = currentPwCtrl.text.trim();
-                                  final newPw = newPwCtrl.text.trim();
-                                  final confirmPw = confirmPwCtrl.text.trim();
+                          onPressed:
+                              isSubmitting
+                                  ? null
+                                  : () async {
+                                    final currentPw = currentPwCtrl.text.trim();
+                                    final newPw = newPwCtrl.text.trim();
+                                    final confirmPw = confirmPwCtrl.text.trim();
 
-                                  if (currentPw.isEmpty) {
-                                    setDialogState(() => errorMessage = 'يرجى إدخال كلمة المرور الحالية');
-                                    return;
-                                  }
-                                  if (newPw.length < 6) {
-                                    setDialogState(() => errorMessage = 'كلمة المرور الجديدة يجب أن تكون 6 خانات على الأقل');
-                                    return;
-                                  }
-                                  if (newPw != confirmPw) {
-                                    setDialogState(() => errorMessage = 'كلمتا المرور غير متطابقتين');
-                                    return;
-                                  }
+                                    if (currentPw.isEmpty) {
+                                      setDialogState(
+                                        () =>
+                                            errorMessage =
+                                                'يرجى إدخال كلمة المرور الحالية',
+                                      );
+                                      return;
+                                    }
+                                    if (newPw.length < 6) {
+                                      setDialogState(
+                                        () =>
+                                            errorMessage =
+                                                'كلمة المرور الجديدة يجب أن تكون 6 خانات على الأقل',
+                                      );
+                                      return;
+                                    }
+                                    if (newPw != confirmPw) {
+                                      setDialogState(
+                                        () =>
+                                            errorMessage =
+                                                'كلمتا المرور غير متطابقتين',
+                                      );
+                                      return;
+                                    }
 
-                                  setDialogState(() {
-                                    isSubmitting = true;
-                                    errorMessage = null;
-                                  });
-
-                                  final result = await AuthLinkService.updatePassword(
-                                    currentPassword: currentPw,
-                                    newPassword: newPw,
-                                  );
-
-                                  if (!dialogCtx.mounted) return;
-
-                                  final isSuccess = result['success'] == true;
-                                  final msg = (result['message'] ?? result['error'] ?? 'تم تحديث كلمة المرور') as String;
-
-                                  if (isSuccess) {
-                                    Navigator.pop(ctx);
-                                    _showCustomToast(msg);
-                                  } else {
                                     setDialogState(() {
-                                      isSubmitting = false;
-                                      errorMessage = msg;
+                                      isSubmitting = true;
+                                      errorMessage = null;
                                     });
-                                  }
-                                },
+
+                                    final result =
+                                        await AuthLinkService.updatePassword(
+                                          currentPassword: currentPw,
+                                          newPassword: newPw,
+                                        );
+
+                                    if (!dialogCtx.mounted) return;
+
+                                    final isSuccess = result['success'] == true;
+                                    final msg =
+                                        (result['message'] ??
+                                                result['error'] ??
+                                                'تم تحديث كلمة المرور')
+                                            as String;
+
+                                    if (isSuccess) {
+                                      Navigator.pop(ctx);
+                                      _showCustomToast(msg);
+                                    } else {
+                                      setDialogState(() {
+                                        isSubmitting = false;
+                                        errorMessage = msg;
+                                      });
+                                    }
+                                  },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: brandGreen,
                             foregroundColor: const Color(0xFF0A0B0D),
                             elevation: 0,
                             padding: const EdgeInsets.symmetric(vertical: 12),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
                           ),
-                          child: isSubmitting
-                              ? const SizedBox(
-                                  width: 18,
-                                  height: 18,
-                                  child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF0A0B0D)),
-                                )
-                              : const Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(Remix.check_line, size: 16, color: Color(0xFF0A0B0D)),
-                                    SizedBox(width: 6),
-                                    Text(
-                                      'تحديث كلمة المرور',
-                                      style: TextStyle(
-                                        fontSize: 12.5,
-                                        fontWeight: FontWeight.bold,
+                          child:
+                              isSubmitting
+                                  ? const SizedBox(
+                                    width: 18,
+                                    height: 18,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: Color(0xFF0A0B0D),
+                                    ),
+                                  )
+                                  : const Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(
+                                        Remix.check_line,
+                                        size: 16,
                                         color: Color(0xFF0A0B0D),
                                       ),
-                                    ),
-                                  ],
-                                ),
+                                      SizedBox(width: 6),
+                                      Text(
+                                        'تحديث كلمة المرور',
+                                        style: TextStyle(
+                                          fontSize: 12.5,
+                                          fontWeight: FontWeight.bold,
+                                          color: Color(0xFF0A0B0D),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                         ),
                       ],
                     ),
@@ -972,7 +1204,11 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(color: brandGreen.withValues(alpha: 0.35)),
               ),
-              child: const Icon(Remix.wallet_3_line, size: 15, color: brandGreen),
+              child: const Icon(
+                Remix.wallet_3_line,
+                size: 15,
+                color: brandGreen,
+              ),
             ),
             const SizedBox(width: 8),
             Expanded(
@@ -995,11 +1231,16 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                       ),
                       const SizedBox(width: 5),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 5,
+                          vertical: 1,
+                        ),
                         decoration: BoxDecoration(
                           color: brandGreen.withValues(alpha: 0.14),
                           borderRadius: BorderRadius.circular(4),
-                          border: Border.all(color: brandGreen.withValues(alpha: 0.4)),
+                          border: Border.all(
+                            color: brandGreen.withValues(alpha: 0.4),
+                          ),
                         ),
                         child: const Text(
                           'تلقائي',
@@ -1074,12 +1315,16 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                           Expanded(
                             child: Row(
                               children: [
-                                const Icon(Remix.wallet_3_line,
-                                    color: brandGreen, size: 19),
+                                const Icon(
+                                  Remix.wallet_3_line,
+                                  color: brandGreen,
+                                  size: 19,
+                                ),
                                 const SizedBox(width: 8),
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                         'ربط المحفظة التلقائي مع الموقع (Wallet)',
@@ -1104,8 +1349,11 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                           ),
                           InkWell(
                             onTap: () => Navigator.pop(ctx),
-                            child: Icon(Remix.close_line,
-                                color: textMuted, size: 19),
+                            child: Icon(
+                              Remix.close_line,
+                              color: textMuted,
+                              size: 19,
+                            ),
                           ),
                         ],
                       ),
@@ -1137,9 +1385,10 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                                             ? Remix.checkbox_circle_line
                                             : Remix.notification_badge_line,
                                         size: 15,
-                                        color: isListenerActive
-                                            ? brandGreen
-                                            : brandYellow,
+                                        color:
+                                            isListenerActive
+                                                ? brandGreen
+                                                : brandYellow,
                                       ),
                                       const SizedBox(width: 6),
                                       Flexible(
@@ -1150,9 +1399,10 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                                           style: TextStyle(
                                             fontSize: 11,
                                             fontWeight: FontWeight.bold,
-                                            color: isListenerActive
-                                                ? brandGreen
-                                                : brandYellow,
+                                            color:
+                                                isListenerActive
+                                                    ? brandGreen
+                                                    : brandYellow,
                                           ),
                                         ),
                                       ),
@@ -1161,14 +1411,18 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                                 ),
                                 InkWell(
                                   onTap: () async {
-                                    final active = await DailyExpenseService
-                                        .isWalletListenerEnabled();
-                                    setSheetState(() => isListenerActive = active);
+                                    final active =
+                                        await DailyExpenseService.isWalletListenerEnabled();
+                                    setSheetState(
+                                      () => isListenerActive = active,
+                                    );
                                   },
                                   child: Text(
                                     'تحديث الحالة',
                                     style: TextStyle(
-                                        fontSize: 9.5, color: textMuted),
+                                      fontSize: 9.5,
+                                      color: textMuted,
+                                    ),
                                   ),
                                 ),
                               ],
@@ -1188,15 +1442,18 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                                 Expanded(
                                   child: ElevatedButton.icon(
                                     style: ElevatedButton.styleFrom(
-                                      backgroundColor: isListenerActive
-                                          ? surfaceMain
-                                          : brandGreen,
-                                      foregroundColor: isListenerActive
-                                          ? textWhite
-                                          : Colors.white,
+                                      backgroundColor:
+                                          isListenerActive
+                                              ? surfaceMain
+                                              : brandGreen,
+                                      foregroundColor:
+                                          isListenerActive
+                                              ? textWhite
+                                              : Colors.white,
                                       elevation: 0,
                                       padding: const EdgeInsets.symmetric(
-                                          vertical: 8),
+                                        vertical: 8,
+                                      ),
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(8),
                                         side: BorderSide(color: surfaceBorder),
@@ -1206,27 +1463,27 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                                       SpendoHaptics.light();
                                       if (Platform.isIOS) {
                                         Navigator.pop(ctx);
-                                        await DailyExpenseService
-                                            .openIosShortcutsApp();
+                                        await DailyExpenseService.openIosShortcutsApp();
                                       } else {
-                                        await DailyExpenseService
-                                            .openWalletListenerSettings();
+                                        await DailyExpenseService.openWalletListenerSettings();
                                       }
                                     },
                                     icon: Icon(
                                       Remix.shield_check_line,
                                       size: 14,
-                                      color: isListenerActive
-                                          ? brandGreen
-                                          : Colors.white,
+                                      color:
+                                          isListenerActive
+                                              ? brandGreen
+                                              : Colors.white,
                                     ),
                                     label: Text(
                                       isListenerActive
                                           ? 'إعدادات صلاحية المحفظة'
                                           : 'تفعيل ربط المحفظة الآن',
                                       style: const TextStyle(
-                                          fontSize: 10.5,
-                                          fontWeight: FontWeight.bold),
+                                        fontSize: 10.5,
+                                        fontWeight: FontWeight.bold,
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -1238,7 +1495,8 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                                       side: BorderSide(color: surfaceBorder),
                                       backgroundColor: surfaceMain,
                                       padding: const EdgeInsets.symmetric(
-                                          vertical: 8),
+                                        vertical: 8,
+                                      ),
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(8),
                                       ),
@@ -1246,16 +1504,19 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                                     onPressed: () async {
                                       SpendoHaptics.light();
                                       Navigator.pop(ctx);
-                                      await DailyExpenseService
-                                          .openDeviceWalletApp();
+                                      await DailyExpenseService.openDeviceWalletApp();
                                     },
-                                    icon: Icon(Remix.bank_card_line,
-                                        size: 14, color: brandYellow),
+                                    icon: Icon(
+                                      Remix.bank_card_line,
+                                      size: 14,
+                                      color: brandYellow,
+                                    ),
                                     label: const Text(
                                       'فتح محفظة البطاقات',
                                       style: TextStyle(
-                                          fontSize: 10.5,
-                                          fontWeight: FontWeight.bold),
+                                        fontSize: 10.5,
+                                        fontWeight: FontWeight.bold,
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -1281,8 +1542,11 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                           children: [
                             Row(
                               children: [
-                                const Icon(Remix.flashlight_fill,
-                                    size: 14, color: brandGreen),
+                                const Icon(
+                                  Remix.flashlight_fill,
+                                  size: 14,
+                                  color: brandGreen,
+                                ),
                                 const SizedBox(width: 6),
                                 Expanded(
                                   child: Text(
@@ -1311,8 +1575,9 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                                 backgroundColor: brandGreen,
                                 foregroundColor: const Color(0xFF0A0B0D),
                                 elevation: 0,
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 8),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 8,
+                                ),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(8),
                                 ),
@@ -1320,22 +1585,25 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                               onPressed: () async {
                                 Clipboard.setData(
                                   const ClipboardData(
-                                    text: DailyExpenseService
-                                        .iosShortcutAutoFixCommand,
+                                    text:
+                                        DailyExpenseService
+                                            .iosShortcutAutoFixCommand,
                                   ),
                                 );
                                 SpendoHaptics.success();
                                 Navigator.pop(ctx);
                                 if (Platform.isIOS) {
-                                  await DailyExpenseService
-                                      .openIosShortcutsApp();
+                                  await DailyExpenseService.openIosShortcutsApp();
                                 }
                                 _showCustomToast(
                                   'تم نسخ الأمر التلقائي الجاهز للاختصار الجديد',
                                 );
                               },
-                              icon: const Icon(Remix.magic_line,
-                                  size: 14, color: Color(0xFF0A0B0D)),
+                              icon: const Icon(
+                                Remix.magic_line,
+                                size: 14,
+                                color: Color(0xFF0A0B0D),
+                              ),
                               label: const Text(
                                 'تفعيل الاختصار التلقائي الجديد (بدون سؤال يدوي)',
                                 style: TextStyle(
@@ -1359,28 +1627,34 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                                 foregroundColor: textWhite,
                                 side: BorderSide(color: surfaceBorder),
                                 backgroundColor: surfaceCell,
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 9),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 9,
+                                ),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(10),
                                 ),
                               ),
                               onPressed: () {
-                                Clipboard.setData(const ClipboardData(
-                                    text: directUrlTemplate));
+                                Clipboard.setData(
+                                  const ClipboardData(text: directUrlTemplate),
+                                );
                                 SpendoHaptics.success();
                                 Navigator.pop(ctx);
                                 _showCustomToast(
                                   'تم نسخ رابط المحفظة التلقائي المباشر (spendo://pay?tx=)',
                                 );
                               },
-                              icon: const Icon(Remix.links_line,
-                                  size: 14, color: brandGreen),
+                              icon: const Icon(
+                                Remix.links_line,
+                                size: 14,
+                                color: brandGreen,
+                              ),
                               label: const Text(
                                 'نسخ رابط الاختصار التلقائي',
                                 style: TextStyle(
-                                    fontSize: 10.5,
-                                    fontWeight: FontWeight.bold),
+                                  fontSize: 10.5,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                             ),
                           ),
@@ -1391,28 +1665,34 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                                 foregroundColor: textWhite,
                                 side: BorderSide(color: surfaceBorder),
                                 backgroundColor: surfaceCell,
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 9),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 9,
+                                ),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(10),
                                 ),
                               ),
                               onPressed: () {
                                 Clipboard.setData(
-                                    const ClipboardData(text: cloudWebhookUrl));
+                                  const ClipboardData(text: cloudWebhookUrl),
+                                );
                                 SpendoHaptics.success();
                                 Navigator.pop(ctx);
                                 _showCustomToast(
                                   'تم نسخ رابط الإرسال الصامت بالخلفية (Webhook)',
                                 );
                               },
-                              icon: Icon(Remix.cloud_line,
-                                  size: 14, color: brandYellow),
+                              icon: Icon(
+                                Remix.cloud_line,
+                                size: 14,
+                                color: brandYellow,
+                              ),
                               label: const Text(
                                 'نسخ رابط الخلفية الصامت',
                                 style: TextStyle(
-                                    fontSize: 10.5,
-                                    fontWeight: FontWeight.bold),
+                                  fontSize: 10.5,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                             ),
                           ),
@@ -1470,11 +1750,16 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                     ],
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 7,
+                      vertical: 2,
+                    ),
                     decoration: BoxDecoration(
                       color: brandGreen.withValues(alpha: 0.14),
                       borderRadius: BorderRadius.circular(6),
-                      border: Border.all(color: brandGreen.withValues(alpha: 0.4)),
+                      border: Border.all(
+                        color: brandGreen.withValues(alpha: 0.4),
+                      ),
                     ),
                     child: Text(
                       '$pct%',
@@ -1495,7 +1780,9 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                     onTap: () {
                       SpendoHaptics.selection();
                       AppTheme.setFontScale((scale - 0.04).clamp(0.80, 1.25));
-                      _backupService.scheduleAutoBackup(debounce: const Duration(seconds: 1));
+                      _backupService.scheduleAutoBackup(
+                        debounce: const Duration(seconds: 1),
+                      );
                     },
                     borderRadius: BorderRadius.circular(6),
                     child: Container(
@@ -1525,7 +1812,9 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                         thumbColor: brandGreen,
                         overlayColor: brandGreen.withValues(alpha: 0.15),
                         trackHeight: 3.0,
-                        thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 7),
+                        thumbShape: const RoundSliderThumbShape(
+                          enabledThumbRadius: 7,
+                        ),
                       ),
                       child: Slider(
                         value: scale.clamp(0.80, 1.25),
@@ -1537,7 +1826,9 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                         },
                         onChangeEnd: (_) {
                           SpendoHaptics.light();
-                          _backupService.scheduleAutoBackup(debounce: const Duration(seconds: 1));
+                          _backupService.scheduleAutoBackup(
+                            debounce: const Duration(seconds: 1),
+                          );
                         },
                       ),
                     ),
@@ -1546,7 +1837,9 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                     onTap: () {
                       SpendoHaptics.selection();
                       AppTheme.setFontScale((scale + 0.04).clamp(0.80, 1.25));
-                      _backupService.scheduleAutoBackup(debounce: const Duration(seconds: 1));
+                      _backupService.scheduleAutoBackup(
+                        debounce: const Duration(seconds: 1),
+                      );
                     },
                     borderRadius: BorderRadius.circular(6),
                     child: Container(
@@ -1572,47 +1865,55 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
               ),
               const SizedBox(height: 4),
               Row(
-                children: presets.map((p) {
-                  final val = p['val'] as double;
-                  final isSelected = (scale - val).abs() < 0.02;
-                  return Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 2),
-                      child: InkWell(
-                        onTap: () {
-                          SpendoHaptics.selection();
-                          AppTheme.setFontScale(val);
-                          _backupService.scheduleAutoBackup(debounce: const Duration(seconds: 1));
-                        },
-                        borderRadius: BorderRadius.circular(7),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(vertical: 5),
-                          alignment: Alignment.center,
-                          decoration: BoxDecoration(
-                            color: isSelected
-                                ? brandGreen.withValues(alpha: 0.16)
-                                : surfaceMain,
+                children:
+                    presets.map((p) {
+                      final val = p['val'] as double;
+                      final isSelected = (scale - val).abs() < 0.02;
+                      return Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 2),
+                          child: InkWell(
+                            onTap: () {
+                              SpendoHaptics.selection();
+                              AppTheme.setFontScale(val);
+                              _backupService.scheduleAutoBackup(
+                                debounce: const Duration(seconds: 1),
+                              );
+                            },
                             borderRadius: BorderRadius.circular(7),
-                            border: Border.all(
-                              color: isSelected ? brandGreen : surfaceBorder,
-                              width: isSelected ? 1.1 : 0.8,
-                            ),
-                          ),
-                          child: Text(
-                            p['label'] as String,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              fontSize: 8.8,
-                              fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
-                              color: isSelected ? brandGreen : textMuted,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(vertical: 5),
+                              alignment: Alignment.center,
+                              decoration: BoxDecoration(
+                                color:
+                                    isSelected
+                                        ? brandGreen.withValues(alpha: 0.16)
+                                        : surfaceMain,
+                                borderRadius: BorderRadius.circular(7),
+                                border: Border.all(
+                                  color:
+                                      isSelected ? brandGreen : surfaceBorder,
+                                  width: isSelected ? 1.1 : 0.8,
+                                ),
+                              ),
+                              child: Text(
+                                p['label'] as String,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontSize: 8.8,
+                                  fontWeight:
+                                      isSelected
+                                          ? FontWeight.bold
+                                          : FontWeight.w600,
+                                  color: isSelected ? brandGreen : textMuted,
+                                ),
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                    ),
-                  );
-                }).toList(),
+                      );
+                    }).toList(),
               ),
             ],
           ),
@@ -1630,17 +1931,28 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
           children: [
             Text(
               'المظهر والسمة',
-              style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: textMuted),
+              style: TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.bold,
+                color: textMuted,
+              ),
             ),
             ValueListenableBuilder<ThemeMode>(
               valueListenable: AppTheme.themeModeNotifier,
               builder: (context, mode, _) {
-                final label = mode == ThemeMode.light
-                    ? 'الوضع النهاري'
-                    : (mode == ThemeMode.system ? 'تلقائي (حسب النظام)' : 'الوضع الليلي');
+                final label =
+                    mode == ThemeMode.light
+                        ? 'الوضع النهاري'
+                        : (mode == ThemeMode.system
+                            ? 'تلقائي (حسب النظام)'
+                            : 'الوضع الليلي');
                 return Text(
                   label,
-                  style: const TextStyle(fontSize: 9.5, fontWeight: FontWeight.bold, color: brandGreen),
+                  style: const TextStyle(
+                    fontSize: 9.5,
+                    fontWeight: FontWeight.bold,
+                    color: brandGreen,
+                  ),
                 );
               },
             ),
@@ -1712,31 +2024,30 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
           duration: const Duration(milliseconds: 180),
           padding: const EdgeInsets.symmetric(vertical: 8),
           decoration: BoxDecoration(
-            color: isSelected
-                ? (_isDark ? const Color(0xFF1E1E24) : Colors.white)
-                : Colors.transparent,
+            color:
+                isSelected
+                    ? (_isDark ? const Color(0xFF1E1E24) : Colors.white)
+                    : Colors.transparent,
             borderRadius: BorderRadius.circular(9),
-            border: isSelected
-                ? Border.all(color: brandGreen, width: 1.2)
-                : Border.all(color: Colors.transparent),
-            boxShadow: isSelected && !_isDark
-                ? [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.04),
-                      blurRadius: 4,
-                      offset: const Offset(0, 2),
-                    ),
-                  ]
-                : null,
+            border:
+                isSelected
+                    ? Border.all(color: brandGreen, width: 1.2)
+                    : Border.all(color: Colors.transparent),
+            boxShadow:
+                isSelected && !_isDark
+                    ? [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.04),
+                        blurRadius: 4,
+                        offset: const Offset(0, 2),
+                      ),
+                    ]
+                    : null,
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                icon,
-                size: 14,
-                color: isSelected ? brandGreen : textMuted,
-              ),
+              Icon(icon, size: 14, color: isSelected ? brandGreen : textMuted),
               const SizedBox(width: 6),
               Text(
                 title,
@@ -1757,263 +2068,286 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
   Widget build(BuildContext context) {
     final fbUser = FirebaseAuth.instance.currentUser;
     final isLoggedIn = fbUser != null;
-    final currentEmail = _emailController.text.trim().isNotEmpty
-        ? _emailController.text.trim()
-        : 'yasenlafe972@gmail.com';
+    final currentEmail =
+        _emailController.text.trim().isNotEmpty
+            ? _emailController.text.trim()
+            : 'yasenlafe972@gmail.com';
 
     return Scaffold(
       backgroundColor: surfaceBg,
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: brandGreen))
-          : SafeArea(
-              child: Directionality(
-                textDirection: TextDirection.rtl,
-                child: Column(
-                  children: [
-                    // 1. Unified Compact Header
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                      decoration: BoxDecoration(
-                        color: surfaceMain,
-                        border: Border(bottom: BorderSide(color: surfaceBorder)),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          // Right: Back arrow + Divider + Settings icon + Title + General Badge + Subtitle
-                          Row(
-                            children: [
-                              InkWell(
-                                onTap: () => Navigator.pop(context),
-                                child: Padding(
-                                  padding: const EdgeInsets.all(3),
-                                  child: Icon(Remix.arrow_right_line, size: 18, color: textMuted),
+      body:
+          _isLoading
+              ? const Center(
+                child: CircularProgressIndicator(color: brandGreen),
+              )
+              : SafeArea(
+                child: Directionality(
+                  textDirection: TextDirection.rtl,
+                  child: Column(
+                    children: [
+                      // 1. Unified Compact Header
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 10,
+                        ),
+                        decoration: BoxDecoration(
+                          color: surfaceMain,
+                          border: Border(
+                            bottom: BorderSide(color: surfaceBorder),
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            // Right: Back arrow + Divider + Settings icon + Title + General Badge + Subtitle
+                            Row(
+                              children: [
+                                InkWell(
+                                  onTap: () => Navigator.pop(context),
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(3),
+                                    child: Icon(
+                                      Remix.arrow_right_line,
+                                      size: 18,
+                                      color: textMuted,
+                                    ),
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(width: 8),
-                              Container(width: 1, height: 16, color: surfaceBorder),
-                              const SizedBox(width: 8),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    children: [
-                                      const Icon(Remix.settings_4_line, size: 14, color: brandGreen),
-                                      const SizedBox(width: 6),
-                                      Text(
-                                        'الإعدادات',
-                                        style: TextStyle(
-                                          fontSize: 13,
-                                          fontWeight: FontWeight.bold,
-                                          color: textWhite,
+                                const SizedBox(width: 8),
+                                Container(
+                                  width: 1,
+                                  height: 16,
+                                  color: surfaceBorder,
+                                ),
+                                const SizedBox(width: 8),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        const Icon(
+                                          Remix.settings_4_line,
+                                          size: 14,
+                                          color: brandGreen,
                                         ),
-                                      ),
-                                      const SizedBox(width: 6),
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
-                                        decoration: BoxDecoration(
-                                          border: Border.all(color: brandYellow.withValues(alpha: 0.3)),
-                                          borderRadius: BorderRadius.circular(4),
-                                        ),
-                                        child: Text(
-                                          'إعدادات عامة',
+                                        const SizedBox(width: 6),
+                                        Text(
+                                          'الإعدادات',
                                           style: TextStyle(
-                                            fontSize: 9,
+                                            fontSize: 13,
                                             fontWeight: FontWeight.bold,
-                                            color: brandYellow,
+                                            color: textWhite,
                                           ),
                                         ),
+                                        const SizedBox(width: 6),
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 5,
+                                            vertical: 1,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            border: Border.all(
+                                              color: brandYellow.withValues(
+                                                alpha: 0.3,
+                                              ),
+                                            ),
+                                            borderRadius: BorderRadius.circular(
+                                              4,
+                                            ),
+                                          ),
+                                          child: Text(
+                                            'إعدادات عامة',
+                                            style: TextStyle(
+                                              fontSize: 9,
+                                              fontWeight: FontWeight.bold,
+                                              color: brandYellow,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      'إدارة الحساب، التذكيرات، والنسخ الاحتياطي',
+                                      style: TextStyle(
+                                        fontSize: 9.5,
+                                        color: textMuted,
                                       ),
-                                    ],
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+
+                            // Left: Account Status Badge
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 4,
+                              ),
+                              decoration: BoxDecoration(
+                                color: surfaceMain,
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(color: surfaceBorder),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Container(
+                                    width: 6,
+                                    height: 6,
+                                    decoration: BoxDecoration(
+                                      color:
+                                          isLoggedIn ? brandGreen : brandGreen,
+                                      shape: BoxShape.circle,
+                                    ),
                                   ),
-                                  const SizedBox(height: 2),
+                                  const SizedBox(width: 5),
                                   Text(
-                                    'إدارة الحساب، التذكيرات، والنسخ الاحتياطي',
-                                    style: TextStyle(fontSize: 9.5, color: textMuted),
+                                    isLoggedIn ? 'سحابي متصل' : 'حساب محلي',
+                                    style: TextStyle(
+                                      fontSize: 9.5,
+                                      fontWeight: FontWeight.bold,
+                                      color: textWhite,
+                                    ),
                                   ),
                                 ],
                               ),
-                            ],
-                          ),
-
-                          // Left: Account Status Badge
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: surfaceMain,
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(color: surfaceBorder),
                             ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Container(
-                                  width: 6,
-                                  height: 6,
-                                  decoration: BoxDecoration(
-                                    color: isLoggedIn ? brandGreen : brandGreen,
-                                    shape: BoxShape.circle,
-                                  ),
-                                ),
-                                const SizedBox(width: 5),
-                                Text(
-                                  isLoggedIn ? 'سحابي متصل' : 'حساب محلي',
-                                  style: TextStyle(
-                                    fontSize: 9.5,
-                                    fontWeight: FontWeight.bold,
-                                    color: textWhite,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
 
-                    // Scrollable Settings Sections
-                    Expanded(
-                      child: SingleChildScrollView(
-                        physics: const BouncingScrollPhysics(),
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            _buildThemeSection(),
-                            _buildFontScaleSection(),
-                            const SizedBox(height: 10),
-                            _buildWalletAutoLinkSection(),
-                            const SizedBox(height: 12),
+                      // Scrollable Settings Sections
+                      Expanded(
+                        child: SingleChildScrollView(
+                          physics: const BouncingScrollPhysics(),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 12,
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              _buildThemeSection(),
+                              _buildFontScaleSection(),
+                              const SizedBox(height: 10),
+                              _buildWalletAutoLinkSection(),
+                              const SizedBox(height: 12),
 
-                            // ================= Section 1: البروفايل والأمان =================
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  'البروفايل والأمان',
-                                  style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: textMuted),
-                                ),
-                                const Text(
-                                  'Spendo ID',
-                                  style: TextStyle(fontSize: 9, fontFamily: 'monospace', color: Color(0xFF71717A)),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 4),
-
-                            Container(
-                              decoration: BoxDecoration(
-                                color: surfaceCell,
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: surfaceBorder),
-                              ),
-                              clipBehavior: Clip.antiAlias,
-                              child: Column(
+                              // ================= Section 1: البروفايل والأمان =================
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
-                                  // Top Row: Name + Change Password (2 columns side by side)
-                                  IntrinsicHeight(
-                                    child: Row(
-                                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                                      children: [
-                                        // Column 1 (Right): Profile Name
-                                        Expanded(
-                                          child: Container(
-                                            decoration: BoxDecoration(
-                                              border: Border(
-                                                bottom: BorderSide(color: surfaceBorder),
-                                                left: BorderSide(color: surfaceBorder),
-                                              ),
-                                            ),
-                                            child: Row(
-                                              children: [
-                                                Expanded(
-                                                  child: Padding(
-                                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                                                    child: Row(
-                                                      children: [
-                                                        const Icon(Remix.user_3_line, size: 14, color: brandGreen),
-                                                        const SizedBox(width: 8),
-                                                        Expanded(
-                                                          child: Column(
-                                                            crossAxisAlignment: CrossAxisAlignment.start,
-                                                            mainAxisAlignment: MainAxisAlignment.center,
-                                                            children: [
-                                                              Text(
-                                                                'الاسم الشخصي',
-                                                                style: TextStyle(fontSize: 8.5, color: textMuted),
-                                                              ),
-                                                              const SizedBox(height: 1),
-                                                              Text(
-                                                                _nameController.text.isNotEmpty
-                                                                    ? _nameController.text
-                                                                    : 'My profile',
-                                                                maxLines: 1,
-                                                                overflow: TextOverflow.ellipsis,
-                                                                style: TextStyle(
-                                                                  fontSize: 11.5,
-                                                                  fontWeight: FontWeight.bold,
-                                                                  color: textWhite,
-                                                                ),
-                                                              ),
-                                                            ],
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                ),
-                                                InkWell(
-                                                  onTap: () => _openEditModal('name'),
-                                                  child: Container(
-                                                    width: 30,
-                                                    alignment: Alignment.center,
-                                                    decoration: BoxDecoration(
-                                                      color: _isDark ? const Color(0x66121514) : const Color(0x22E5E7EB),
-                                                      border: Border(right: BorderSide(color: surfaceBorder)),
-                                                    ),
-                                                    child: Icon(Remix.pencil_line, size: 12, color: textMuted),
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        ),
+                                  Text(
+                                    'البروفايل والأمان',
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.bold,
+                                      color: textMuted,
+                                    ),
+                                  ),
+                                  const Text(
+                                    'Spendo ID',
+                                    style: TextStyle(
+                                      fontSize: 9,
+                                      fontFamily: 'monospace',
+                                      color: Color(0xFF71717A),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 4),
 
-                                        // Column 2 (Left): Change Password
-                                        Expanded(
-                                          child: InkWell(
-                                            onTap: _showChangePasswordDialog,
+                              Container(
+                                decoration: BoxDecoration(
+                                  color: surfaceCell,
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(color: surfaceBorder),
+                                ),
+                                clipBehavior: Clip.antiAlias,
+                                child: Column(
+                                  children: [
+                                    // Top Row: Name + Change Password (2 columns side by side)
+                                    IntrinsicHeight(
+                                      child: Row(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.stretch,
+                                        children: [
+                                          // Column 1 (Right): Profile Name
+                                          Expanded(
                                             child: Container(
                                               decoration: BoxDecoration(
-                                                border: Border(bottom: BorderSide(color: surfaceBorder)),
+                                                border: Border(
+                                                  bottom: BorderSide(
+                                                    color: surfaceBorder,
+                                                  ),
+                                                  left: BorderSide(
+                                                    color: surfaceBorder,
+                                                  ),
+                                                ),
                                               ),
                                               child: Row(
                                                 children: [
                                                   Expanded(
                                                     child: Padding(
-                                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                                                      padding:
+                                                          const EdgeInsets.symmetric(
+                                                            horizontal: 10,
+                                                            vertical: 8,
+                                                          ),
                                                       child: Row(
                                                         children: [
-                                                          Icon(Remix.lock_password_line, size: 14, color: brandYellow),
-                                                          const SizedBox(width: 8),
+                                                          const Icon(
+                                                            Remix.user_3_line,
+                                                            size: 14,
+                                                            color: brandGreen,
+                                                          ),
+                                                          const SizedBox(
+                                                            width: 8,
+                                                          ),
                                                           Expanded(
                                                             child: Column(
-                                                              crossAxisAlignment: CrossAxisAlignment.start,
-                                                              mainAxisAlignment: MainAxisAlignment.center,
+                                                              crossAxisAlignment:
+                                                                  CrossAxisAlignment
+                                                                      .start,
+                                                              mainAxisAlignment:
+                                                                  MainAxisAlignment
+                                                                      .center,
                                                               children: [
                                                                 Text(
-                                                                  'تحديث كلمة السر',
-                                                                  style: TextStyle(fontSize: 8.5, color: textMuted),
-                                                                ),
-                                                                const SizedBox(height: 1),
-                                                                Text(
-                                                                  'تغيير كلمة المرور',
-                                                                  maxLines: 1,
-                                                                  overflow: TextOverflow.ellipsis,
+                                                                  'الاسم الشخصي',
                                                                   style: TextStyle(
-                                                                    fontSize: 11.5,
-                                                                    fontWeight: FontWeight.bold,
-                                                                    color: textWhite,
+                                                                    fontSize:
+                                                                        8.5,
+                                                                    color:
+                                                                        textMuted,
+                                                                  ),
+                                                                ),
+                                                                const SizedBox(
+                                                                  height: 1,
+                                                                ),
+                                                                Text(
+                                                                  _nameController
+                                                                          .text
+                                                                          .isNotEmpty
+                                                                      ? _nameController
+                                                                          .text
+                                                                      : 'My profile',
+                                                                  maxLines: 1,
+                                                                  overflow:
+                                                                      TextOverflow
+                                                                          .ellipsis,
+                                                                  style: TextStyle(
+                                                                    fontSize:
+                                                                        11.5,
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .bold,
+                                                                    color:
+                                                                        textWhite,
                                                                   ),
                                                                 ),
                                                               ],
@@ -2023,346 +2357,794 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                                                       ),
                                                     ),
                                                   ),
-                                                  Container(
-                                                    width: 26,
-                                                    alignment: Alignment.center,
-                                                    decoration: BoxDecoration(
-                                                      color: _isDark ? const Color(0x66121514) : const Color(0x22E5E7EB),
-                                                      border: Border(right: BorderSide(color: surfaceBorder)),
+                                                  InkWell(
+                                                    onTap:
+                                                        () => _openEditModal(
+                                                          'name',
+                                                        ),
+                                                    child: Container(
+                                                      width: 30,
+                                                      alignment:
+                                                          Alignment.center,
+                                                      decoration: BoxDecoration(
+                                                        color:
+                                                            _isDark
+                                                                ? const Color(
+                                                                  0x66121514,
+                                                                )
+                                                                : const Color(
+                                                                  0x22E5E7EB,
+                                                                ),
+                                                        border: Border(
+                                                          right: BorderSide(
+                                                            color:
+                                                                surfaceBorder,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      child: Icon(
+                                                        Remix.pencil_line,
+                                                        size: 12,
+                                                        color: textMuted,
+                                                      ),
                                                     ),
-                                                    child: Icon(Remix.arrow_left_s_line, size: 14, color: textMuted),
                                                   ),
                                                 ],
                                               ),
                                             ),
                                           ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
 
-                                  // Bottom Row: Email + Copy & Edit Buttons
-                                  Row(
-                                    children: [
-                                      Expanded(
-                                        child: Padding(
-                                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
-                                          child: Row(
-                                            children: [
-                                              Icon(Remix.mail_line, size: 14, color: brandYellow),
-                                              const SizedBox(width: 8),
-                                              Expanded(
-                                                child: Column(
-                                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                                  children: [
-                                                    Text(
-                                                      'البريد الإلكتروني المسجل',
-                                                      style: TextStyle(fontSize: 8.5, color: textMuted),
+                                          // Column 2 (Left): Change Password
+                                          Expanded(
+                                            child: InkWell(
+                                              onTap: _showChangePasswordDialog,
+                                              child: Container(
+                                                decoration: BoxDecoration(
+                                                  border: Border(
+                                                    bottom: BorderSide(
+                                                      color: surfaceBorder,
                                                     ),
-                                                    const SizedBox(height: 1),
-                                                    Text(
-                                                      currentEmail,
-                                                      maxLines: 1,
-                                                      overflow: TextOverflow.ellipsis,
-                                                      textDirection: TextDirection.ltr,
-                                                      style: TextStyle(
-                                                        fontSize: 11,
-                                                        fontFamily: 'monospace',
-                                                        fontWeight: FontWeight.w600,
-                                                        color: textWhite,
+                                                  ),
+                                                ),
+                                                child: Row(
+                                                  children: [
+                                                    Expanded(
+                                                      child: Padding(
+                                                        padding:
+                                                            const EdgeInsets.symmetric(
+                                                              horizontal: 10,
+                                                              vertical: 8,
+                                                            ),
+                                                        child: Row(
+                                                          children: [
+                                                            Icon(
+                                                              Remix
+                                                                  .lock_password_line,
+                                                              size: 14,
+                                                              color:
+                                                                  brandYellow,
+                                                            ),
+                                                            const SizedBox(
+                                                              width: 8,
+                                                            ),
+                                                            Expanded(
+                                                              child: Column(
+                                                                crossAxisAlignment:
+                                                                    CrossAxisAlignment
+                                                                        .start,
+                                                                mainAxisAlignment:
+                                                                    MainAxisAlignment
+                                                                        .center,
+                                                                children: [
+                                                                  Text(
+                                                                    'تحديث كلمة السر',
+                                                                    style: TextStyle(
+                                                                      fontSize:
+                                                                          8.5,
+                                                                      color:
+                                                                          textMuted,
+                                                                    ),
+                                                                  ),
+                                                                  const SizedBox(
+                                                                    height: 1,
+                                                                  ),
+                                                                  Text(
+                                                                    'تغيير كلمة المرور',
+                                                                    maxLines: 1,
+                                                                    overflow:
+                                                                        TextOverflow
+                                                                            .ellipsis,
+                                                                    style: TextStyle(
+                                                                      fontSize:
+                                                                          11.5,
+                                                                      fontWeight:
+                                                                          FontWeight
+                                                                              .bold,
+                                                                      color:
+                                                                          textWhite,
+                                                                    ),
+                                                                  ),
+                                                                ],
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    Container(
+                                                      width: 26,
+                                                      alignment:
+                                                          Alignment.center,
+                                                      decoration: BoxDecoration(
+                                                        color:
+                                                            _isDark
+                                                                ? const Color(
+                                                                  0x66121514,
+                                                                )
+                                                                : const Color(
+                                                                  0x22E5E7EB,
+                                                                ),
+                                                        border: Border(
+                                                          right: BorderSide(
+                                                            color:
+                                                                surfaceBorder,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      child: Icon(
+                                                        Remix.arrow_left_s_line,
+                                                        size: 14,
+                                                        color: textMuted,
                                                       ),
                                                     ),
                                                   ],
                                                 ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                      Container(
-                                        height: 38,
-                                        decoration: BoxDecoration(
-                                          color: _isDark ? const Color(0x66121514) : const Color(0x22E5E7EB),
-                                          border: Border(right: BorderSide(color: surfaceBorder)),
-                                        ),
-                                        child: Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            InkWell(
-                                              onTap: _copyEmail,
-                                              child: Container(
-                                                width: 30,
-                                                alignment: Alignment.center,
-                                                child: Icon(Remix.file_copy_line, size: 12, color: textMuted),
-                                              ),
-                                            ),
-                                            Container(width: 1, height: 38, color: surfaceBorder),
-                                            InkWell(
-                                              onTap: () => _openEditModal('email'),
-                                              child: Container(
-                                                width: 30,
-                                                alignment: Alignment.center,
-                                                child: Icon(Remix.pencil_line, size: 12, color: textMuted),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(height: 10),
-
-                            // ================= Section 2: التذكيرات والتنبيهات =================
-                            Text(
-                              'التذكيرات والتنبيهات',
-                              style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: textMuted),
-                            ),
-                            const SizedBox(height: 4),
-
-                            Container(
-                              decoration: BoxDecoration(
-                                color: surfaceCell,
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: surfaceBorder),
-                              ),
-                              clipBehavior: Clip.antiAlias,
-                              child: Column(
-                                children: [
-                                  Padding(
-                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                                    child: Row(
-                                      children: [
-                                        Icon(Remix.notification_3_line, size: 15, color: brandYellow),
-                                        const SizedBox(width: 8),
-                                        Expanded(
-                                          child: Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                                'تذكير تسجيل يوم العمل',
-                                                style: TextStyle(
-                                                  fontSize: 11.5,
-                                                  fontWeight: FontWeight.bold,
-                                                  color: textWhite,
-                                                ),
-                                              ),
-                                              SizedBox(height: 1),
-                                              Text(
-                                                'إشعار يومي بعد الدوام لتسجيل عمل اليوم',
-                                                style: TextStyle(fontSize: 9.5, color: textMuted),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                        // Reminder Time Button
-                                        InkWell(
-                                          onTap: _handleSelectCustomTime,
-                                          onLongPress: _toggleTimeSelector,
-                                          borderRadius: BorderRadius.circular(6),
-                                          child: Container(
-                                            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3.5),
-                                            decoration: BoxDecoration(
-                                              color: surfaceMain,
-                                              borderRadius: BorderRadius.circular(6),
-                                              border: Border.all(
-                                                color: _dailyReminderEnabled ? brandYellow : surfaceBorder,
-                                              ),
-                                            ),
-                                            child: Row(
-                                              mainAxisSize: MainAxisSize.min,
-                                              children: [
-                                                Icon(Remix.time_line, size: 10, color: brandYellow),
-                                                const SizedBox(width: 3),
-                                                Text(
-                                                  _formatTimeOfDay(_reminderTime),
-                                                  style: TextStyle(
-                                                    color: brandYellow,
-                                                    fontSize: 10,
-                                                    fontFamily: 'monospace',
-                                                    fontWeight: FontWeight.bold,
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        ),
-                                        const SizedBox(width: 8),
-
-                                        // Sleek Compact Toggle Switch
-                                        InkWell(
-                                          onTap: _toggleReminderSwitch,
-                                          borderRadius: BorderRadius.circular(20),
-                                          child: AnimatedContainer(
-                                            duration: const Duration(milliseconds: 150),
-                                            width: 36,
-                                            height: 20,
-                                            padding: const EdgeInsets.all(2),
-                                            decoration: BoxDecoration(
-                                              color: _dailyReminderEnabled ? brandGreen : surfaceMain,
-                                              borderRadius: BorderRadius.circular(20),
-                                              border: Border.all(
-                                                color: _dailyReminderEnabled ? brandGreen : surfaceBorder,
-                                              ),
-                                            ),
-                                            alignment: _dailyReminderEnabled
-                                                ? Alignment.centerLeft
-                                                : Alignment.centerRight,
-                                            child: Container(
-                                              width: 14,
-                                              height: 14,
-                                              decoration: BoxDecoration(
-                                                color: _dailyReminderEnabled
-                                                    ? const Color(0xFF0A0B0D)
-                                                    : const Color(0xFF71717A),
-                                                shape: BoxShape.circle,
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-
-                                  // Quick Time Selector Row
-                                  if (_showTimeSelector || _dailyReminderEnabled)
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                                      decoration: BoxDecoration(color: _isDark ? const Color(0x99121514) : const Color(0x11000000), border: Border(top: BorderSide(color: surfaceBorder)),),
-                                      child: Row(
-                                        children: [
-                                          Text(
-                                            'وقت التذكير اليومي:',
-                                            style: TextStyle(fontSize: 9.5, color: textMuted),
-                                          ),
-                                          const Spacer(),
-                                          Row(
-                                            children: ['16:00', '17:00', '18:30', '20:00'].map((t) {
-                                              final isSel = _formatTimeOfDay(_reminderTime) == t;
-                                              return Padding(
-                                                padding: const EdgeInsets.only(left: 4),
-                                                child: InkWell(
-                                                  onTap: () => _selectReminderTime(t),
-                                                  borderRadius: BorderRadius.circular(4),
-                                                  child: Container(
-                                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                                    decoration: BoxDecoration(
-                                                      color: isSel ? brandYellow.withValues(alpha: 0.15) : surfaceCell,
-                                                      borderRadius: BorderRadius.circular(4),
-                                                      border: Border.all(
-                                                        color: isSel ? brandYellow : surfaceBorder,
-                                                      ),
-                                                    ),
-                                                    child: Text(
-                                                      t,
-                                                      style: TextStyle(
-                                                        fontSize: 9.5,
-                                                        fontFamily: 'monospace',
-                                                        fontWeight: isSel ? FontWeight.bold : FontWeight.normal,
-                                                        color: isSel ? brandYellow : const Color(0xFFD1D5DB),
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ),
-                                              );
-                                            }).toList(),
-                                          ),
-                                          const SizedBox(width: 4),
-                                          InkWell(
-                                            onTap: _handleSelectCustomTime,
-                                            borderRadius: BorderRadius.circular(4),
-                                            child: Container(
-                                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                              decoration: BoxDecoration(
-                                                color: brandGreen.withValues(alpha: 0.12),
-                                                borderRadius: BorderRadius.circular(4),
-                                                border: Border.all(color: brandGreen.withValues(alpha: 0.45)),
-                                              ),
-                                              child: Row(
-                                                mainAxisSize: MainAxisSize.min,
-                                                children: [
-                                                  Icon(Remix.time_line, size: 10, color: brandGreen),
-                                                  SizedBox(width: 3),
-                                                  Text(
-                                                    'تخصيص',
-                                                    style: TextStyle(
-                                                      fontSize: 9.5,
-                                                      fontWeight: FontWeight.bold,
-                                                      color: brandGreen,
-                                                    ),
-                                                  ),
-                                                ],
                                               ),
                                             ),
                                           ),
                                         ],
                                       ),
                                     ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(height: 10),
 
-                            // ================= Section 3: النسخ الاحتياطي والبيانات =================
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  'النسخ الاحتياطي والبيانات',
-                                  style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: textMuted),
-                                ),
-                                Text(
-                                  'حفظ محلي آمن',
-                                  style: TextStyle(fontSize: 9, color: Color(0xFF71717A)),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 4),
-
-                            IntrinsicHeight(
-                              child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.stretch,
-                                children: [
-                                  // Export backup
-                                  Expanded(
-                                    child: InkWell(
-                                      onTap: _handleExportBackup,
-                                      borderRadius: BorderRadius.circular(12),
-                                      child: Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                                        decoration: BoxDecoration(
-                                          color: surfaceCell,
-                                          borderRadius: BorderRadius.circular(12),
-                                          border: Border.all(color: surfaceBorder),
-                                        ),
-                                        child: Row(
-                                          children: [
-                                            const Icon(Remix.download_cloud_2_line, size: 14, color: brandGreen),
-                                            const SizedBox(width: 6),
-                                            Expanded(
-                                              child: Column(
-                                                crossAxisAlignment: CrossAxisAlignment.start,
-                                                mainAxisAlignment: MainAxisAlignment.center,
-                                                children: [
-                                                  Text(
-                                                    'تصدير نسخة',
-                                                    style: TextStyle(
-                                                      fontSize: 11,
-                                                      fontWeight: FontWeight.bold,
-                                                      color: textWhite,
-                                                    ),
+                                    // Bottom Row: Email + Copy & Edit Buttons
+                                    Row(
+                                      children: [
+                                        Expanded(
+                                          child: Padding(
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 10,
+                                              vertical: 7,
+                                            ),
+                                            child: Row(
+                                              children: [
+                                                Icon(
+                                                  Remix.mail_line,
+                                                  size: 14,
+                                                  color: brandYellow,
+                                                ),
+                                                const SizedBox(width: 8),
+                                                Expanded(
+                                                  child: Column(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
+                                                    children: [
+                                                      Text(
+                                                        'البريد الإلكتروني المسجل',
+                                                        style: TextStyle(
+                                                          fontSize: 8.5,
+                                                          color: textMuted,
+                                                        ),
+                                                      ),
+                                                      const SizedBox(height: 1),
+                                                      Text(
+                                                        currentEmail,
+                                                        maxLines: 1,
+                                                        overflow:
+                                                            TextOverflow
+                                                                .ellipsis,
+                                                        textDirection:
+                                                            TextDirection.ltr,
+                                                        style: TextStyle(
+                                                          fontSize: 11,
+                                                          fontFamily:
+                                                              'monospace',
+                                                          fontWeight:
+                                                              FontWeight.w600,
+                                                          color: textWhite,
+                                                        ),
+                                                      ),
+                                                    ],
                                                   ),
-                                                  SizedBox(height: 1),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                        Container(
+                                          height: 38,
+                                          decoration: BoxDecoration(
+                                            color:
+                                                _isDark
+                                                    ? const Color(0x66121514)
+                                                    : const Color(0x22E5E7EB),
+                                            border: Border(
+                                              right: BorderSide(
+                                                color: surfaceBorder,
+                                              ),
+                                            ),
+                                          ),
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              InkWell(
+                                                onTap: _copyEmail,
+                                                child: Container(
+                                                  width: 30,
+                                                  alignment: Alignment.center,
+                                                  child: Icon(
+                                                    Remix.file_copy_line,
+                                                    size: 12,
+                                                    color: textMuted,
+                                                  ),
+                                                ),
+                                              ),
+                                              Container(
+                                                width: 1,
+                                                height: 38,
+                                                color: surfaceBorder,
+                                              ),
+                                              InkWell(
+                                                onTap:
+                                                    () =>
+                                                        _openEditModal('email'),
+                                                child: Container(
+                                                  width: 30,
+                                                  alignment: Alignment.center,
+                                                  child: Icon(
+                                                    Remix.pencil_line,
+                                                    size: 12,
+                                                    color: textMuted,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 10),
+
+                              // ================= Section 2: التذكيرات والتنبيهات =================
+                              Text(
+                                'التذكيرات والتنبيهات',
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                  color: textMuted,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+
+                              Container(
+                                decoration: BoxDecoration(
+                                  color: surfaceCell,
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(color: surfaceBorder),
+                                ),
+                                clipBehavior: Clip.antiAlias,
+                                child: Column(
+                                  children: [
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 10,
+                                        vertical: 8,
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          Icon(
+                                            Remix.notification_3_line,
+                                            size: 15,
+                                            color: brandYellow,
+                                          ),
+                                          const SizedBox(width: 8),
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  'تذكير تسجيل يوم العمل',
+                                                  style: TextStyle(
+                                                    fontSize: 11.5,
+                                                    fontWeight: FontWeight.bold,
+                                                    color: textWhite,
+                                                  ),
+                                                ),
+                                                SizedBox(height: 1),
+                                                Text(
+                                                  'إشعار يومي بعد الدوام لتسجيل عمل اليوم',
+                                                  style: TextStyle(
+                                                    fontSize: 9.5,
+                                                    color: textMuted,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                          // Reminder Time Button
+                                          InkWell(
+                                            onTap: _handleSelectCustomTime,
+                                            onLongPress: _toggleTimeSelector,
+                                            borderRadius: BorderRadius.circular(
+                                              6,
+                                            ),
+                                            child: Container(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    horizontal: 7,
+                                                    vertical: 3.5,
+                                                  ),
+                                              decoration: BoxDecoration(
+                                                color: surfaceMain,
+                                                borderRadius:
+                                                    BorderRadius.circular(6),
+                                                border: Border.all(
+                                                  color:
+                                                      _dailyReminderEnabled
+                                                          ? brandYellow
+                                                          : surfaceBorder,
+                                                ),
+                                              ),
+                                              child: Row(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  Icon(
+                                                    Remix.time_line,
+                                                    size: 10,
+                                                    color: brandYellow,
+                                                  ),
+                                                  const SizedBox(width: 3),
                                                   Text(
-                                                    'حفظ ملف البيانات',
-                                                    style: TextStyle(fontSize: 8.5, color: textMuted),
+                                                    _formatTimeOfDay(
+                                                      _reminderTime,
+                                                    ),
+                                                    style: TextStyle(
+                                                      color: brandYellow,
+                                                      fontSize: 10,
+                                                      fontFamily: 'monospace',
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                    ),
                                                   ),
                                                 ],
                                               ),
                                             ),
-                                            const Icon(Remix.arrow_left_up_line, size: 11, color: Color(0xFF71717A)),
+                                          ),
+                                          const SizedBox(width: 8),
+
+                                          // Sleek Compact Toggle Switch
+                                          InkWell(
+                                            onTap: _toggleReminderSwitch,
+                                            borderRadius: BorderRadius.circular(
+                                              20,
+                                            ),
+                                            child: AnimatedContainer(
+                                              duration: const Duration(
+                                                milliseconds: 150,
+                                              ),
+                                              width: 36,
+                                              height: 20,
+                                              padding: const EdgeInsets.all(2),
+                                              decoration: BoxDecoration(
+                                                color:
+                                                    _dailyReminderEnabled
+                                                        ? brandGreen
+                                                        : surfaceMain,
+                                                borderRadius:
+                                                    BorderRadius.circular(20),
+                                                border: Border.all(
+                                                  color:
+                                                      _dailyReminderEnabled
+                                                          ? brandGreen
+                                                          : surfaceBorder,
+                                                ),
+                                              ),
+                                              alignment:
+                                                  _dailyReminderEnabled
+                                                      ? Alignment.centerLeft
+                                                      : Alignment.centerRight,
+                                              child: Container(
+                                                width: 14,
+                                                height: 14,
+                                                decoration: BoxDecoration(
+                                                  color:
+                                                      _dailyReminderEnabled
+                                                          ? const Color(
+                                                            0xFF0A0B0D,
+                                                          )
+                                                          : const Color(
+                                                            0xFF71717A,
+                                                          ),
+                                                  shape: BoxShape.circle,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+
+                                    // Quick Time Selector Row
+                                    if (_showTimeSelector ||
+                                        _dailyReminderEnabled)
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 10,
+                                          vertical: 6,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color:
+                                              _isDark
+                                                  ? const Color(0x99121514)
+                                                  : const Color(0x11000000),
+                                          border: Border(
+                                            top: BorderSide(
+                                              color: surfaceBorder,
+                                            ),
+                                          ),
+                                        ),
+                                        child: Row(
+                                          children: [
+                                            Text(
+                                              'وقت التذكير اليومي:',
+                                              style: TextStyle(
+                                                fontSize: 9.5,
+                                                color: textMuted,
+                                              ),
+                                            ),
+                                            const Spacer(),
+                                            Row(
+                                              children:
+                                                  [
+                                                    '16:00',
+                                                    '17:00',
+                                                    '18:30',
+                                                    '20:00',
+                                                  ].map((t) {
+                                                    final isSel =
+                                                        _formatTimeOfDay(
+                                                          _reminderTime,
+                                                        ) ==
+                                                        t;
+                                                    return Padding(
+                                                      padding:
+                                                          const EdgeInsets.only(
+                                                            left: 4,
+                                                          ),
+                                                      child: InkWell(
+                                                        onTap:
+                                                            () =>
+                                                                _selectReminderTime(
+                                                                  t,
+                                                                ),
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                              4,
+                                                            ),
+                                                        child: Container(
+                                                          padding:
+                                                              const EdgeInsets.symmetric(
+                                                                horizontal: 6,
+                                                                vertical: 2,
+                                                              ),
+                                                          decoration: BoxDecoration(
+                                                            color:
+                                                                isSel
+                                                                    ? brandYellow
+                                                                        .withValues(
+                                                                          alpha:
+                                                                              0.15,
+                                                                        )
+                                                                    : surfaceCell,
+                                                            borderRadius:
+                                                                BorderRadius.circular(
+                                                                  4,
+                                                                ),
+                                                            border: Border.all(
+                                                              color:
+                                                                  isSel
+                                                                      ? brandYellow
+                                                                      : surfaceBorder,
+                                                            ),
+                                                          ),
+                                                          child: Text(
+                                                            t,
+                                                            style: TextStyle(
+                                                              fontSize: 9.5,
+                                                              fontFamily:
+                                                                  'monospace',
+                                                              fontWeight:
+                                                                  isSel
+                                                                      ? FontWeight
+                                                                          .bold
+                                                                      : FontWeight
+                                                                          .normal,
+                                                              color:
+                                                                  isSel
+                                                                      ? brandYellow
+                                                                      : const Color(
+                                                                        0xFFD1D5DB,
+                                                                      ),
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    );
+                                                  }).toList(),
+                                            ),
+                                            const SizedBox(width: 4),
+                                            InkWell(
+                                              onTap: _handleSelectCustomTime,
+                                              borderRadius:
+                                                  BorderRadius.circular(4),
+                                              child: Container(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                      horizontal: 6,
+                                                      vertical: 2,
+                                                    ),
+                                                decoration: BoxDecoration(
+                                                  color: brandGreen.withValues(
+                                                    alpha: 0.12,
+                                                  ),
+                                                  borderRadius:
+                                                      BorderRadius.circular(4),
+                                                  border: Border.all(
+                                                    color: brandGreen
+                                                        .withValues(
+                                                          alpha: 0.45,
+                                                        ),
+                                                  ),
+                                                ),
+                                                child: Row(
+                                                  mainAxisSize:
+                                                      MainAxisSize.min,
+                                                  children: [
+                                                    Icon(
+                                                      Remix.time_line,
+                                                      size: 10,
+                                                      color: brandGreen,
+                                                    ),
+                                                    SizedBox(width: 3),
+                                                    Text(
+                                                      'تخصيص',
+                                                      style: TextStyle(
+                                                        fontSize: 9.5,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        color: brandGreen,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 10),
+
+                              // ================= Section 3: النسخ الاحتياطي والبيانات =================
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    'النسخ الاحتياطي والبيانات',
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.bold,
+                                      color: textMuted,
+                                    ),
+                                  ),
+                                  Text(
+                                    'حفظ محلي آمن',
+                                    style: TextStyle(
+                                      fontSize: 9,
+                                      color: Color(0xFF71717A),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 4),
+
+                              IntrinsicHeight(
+                                child: Row(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.stretch,
+                                  children: [
+                                    // Export backup
+                                    Expanded(
+                                      child: InkWell(
+                                        onTap: _handleExportBackup,
+                                        borderRadius: BorderRadius.circular(12),
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 10,
+                                            vertical: 8,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: surfaceCell,
+                                            borderRadius: BorderRadius.circular(
+                                              12,
+                                            ),
+                                            border: Border.all(
+                                              color: surfaceBorder,
+                                            ),
+                                          ),
+                                          child: Row(
+                                            children: [
+                                              const Icon(
+                                                Remix.download_cloud_2_line,
+                                                size: 14,
+                                                color: brandGreen,
+                                              ),
+                                              const SizedBox(width: 6),
+                                              Expanded(
+                                                child: Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.center,
+                                                  children: [
+                                                    Text(
+                                                      'تصدير نسخة',
+                                                      style: TextStyle(
+                                                        fontSize: 11,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        color: textWhite,
+                                                      ),
+                                                    ),
+                                                    SizedBox(height: 1),
+                                                    Text(
+                                                      'حفظ ملف البيانات',
+                                                      style: TextStyle(
+                                                        fontSize: 8.5,
+                                                        color: textMuted,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                              const Icon(
+                                                Remix.arrow_left_up_line,
+                                                size: 11,
+                                                color: Color(0xFF71717A),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+
+                                    // Restore backup
+                                    Expanded(
+                                      child: InkWell(
+                                        onTap: _handleImportBackup,
+                                        borderRadius: BorderRadius.circular(12),
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 10,
+                                            vertical: 8,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: surfaceCell,
+                                            borderRadius: BorderRadius.circular(
+                                              12,
+                                            ),
+                                            border: Border.all(
+                                              color: surfaceBorder,
+                                            ),
+                                          ),
+                                          child: Row(
+                                            children: [
+                                              Icon(
+                                                Remix.upload_cloud_2_line,
+                                                size: 14,
+                                                color: brandYellow,
+                                              ),
+                                              const SizedBox(width: 6),
+                                              Expanded(
+                                                child: Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.center,
+                                                  children: [
+                                                    Text(
+                                                      'استعادة نسخة',
+                                                      style: TextStyle(
+                                                        fontSize: 11,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        color: textWhite,
+                                                      ),
+                                                    ),
+                                                    SizedBox(height: 1),
+                                                    Text(
+                                                      'استيراد من الجهاز',
+                                                      style: TextStyle(
+                                                        fontSize: 8.5,
+                                                        color: textMuted,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                              const Icon(
+                                                Remix.folder_open_line,
+                                                size: 11,
+                                                color: Color(0xFF71717A),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+
+                              // ================= Section 4: أزرار الحفظ وتسجيل الخروج =================
+                              Row(
+                                children: [
+                                  // Save Button (Flex 7)
+                                  Expanded(
+                                    flex: 7,
+                                    child: SizedBox(
+                                      height: 38,
+                                      child: ElevatedButton(
+                                        onPressed: _handleSaveSettings,
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: brandGreen,
+                                          foregroundColor: const Color(
+                                            0xFF0A0B0D,
+                                          ),
+                                          elevation: 0,
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(
+                                              10,
+                                            ),
+                                          ),
+                                        ),
+                                        child: const Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            Icon(
+                                              Remix.check_line,
+                                              size: 15,
+                                              color: Color(0xFF0A0B0D),
+                                            ),
+                                            SizedBox(width: 4),
+                                            Text(
+                                              'حفظ الإعدادات',
+                                              style: TextStyle(
+                                                fontSize: 11.5,
+                                                fontWeight: FontWeight.bold,
+                                                color: Color(0xFF0A0B0D),
+                                              ),
+                                            ),
                                           ],
                                         ),
                                       ),
@@ -2370,44 +3152,44 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                                   ),
                                   const SizedBox(width: 8),
 
-                                  // Restore backup
+                                  // Logout Button (Flex 5)
                                   Expanded(
-                                    child: InkWell(
-                                      onTap: _handleImportBackup,
-                                      borderRadius: BorderRadius.circular(12),
-                                      child: Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                                        decoration: BoxDecoration(
-                                          color: surfaceCell,
-                                          borderRadius: BorderRadius.circular(12),
-                                          border: Border.all(color: surfaceBorder),
+                                    flex: 5,
+                                    child: SizedBox(
+                                      height: 38,
+                                      child: OutlinedButton(
+                                        onPressed: _handleLogout,
+                                        style: OutlinedButton.styleFrom(
+                                          backgroundColor: surfaceCell,
+                                          side: BorderSide(
+                                            color: brandRed.withValues(
+                                              alpha: 0.3,
+                                            ),
+                                          ),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(
+                                              10,
+                                            ),
+                                          ),
                                         ),
-                                        child: Row(
+                                        child: const Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
                                           children: [
-                                            Icon(Remix.upload_cloud_2_line, size: 14, color: brandYellow),
-                                            const SizedBox(width: 6),
-                                            Expanded(
-                                              child: Column(
-                                                crossAxisAlignment: CrossAxisAlignment.start,
-                                                mainAxisAlignment: MainAxisAlignment.center,
-                                                children: [
-                                                  Text(
-                                                    'استعادة نسخة',
-                                                    style: TextStyle(
-                                                      fontSize: 11,
-                                                      fontWeight: FontWeight.bold,
-                                                      color: textWhite,
-                                                    ),
-                                                  ),
-                                                  SizedBox(height: 1),
-                                                  Text(
-                                                    'استيراد من الجهاز',
-                                                    style: TextStyle(fontSize: 8.5, color: textMuted),
-                                                  ),
-                                                ],
+                                            Icon(
+                                              Remix.logout_box_r_line,
+                                              size: 14,
+                                              color: brandRed,
+                                            ),
+                                            SizedBox(width: 4),
+                                            Text(
+                                              'تسجيل الخروج',
+                                              style: TextStyle(
+                                                fontSize: 11.5,
+                                                fontWeight: FontWeight.bold,
+                                                color: brandRed,
                                               ),
                                             ),
-                                            const Icon(Remix.folder_open_line, size: 11, color: Color(0xFF71717A)),
                                           ],
                                         ),
                                       ),
@@ -2415,114 +3197,50 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                                   ),
                                 ],
                               ),
-                            ),
-                            const SizedBox(height: 12),
+                              const SizedBox(height: 8),
 
-                            // ================= Section 4: أزرار الحفظ وتسجيل الخروج =================
-                            Row(
-                              children: [
-                                // Save Button (Flex 7)
-                                Expanded(
-                                  flex: 7,
-                                  child: SizedBox(
-                                    height: 38,
-                                    child: ElevatedButton(
-                                      onPressed: _handleSaveSettings,
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: brandGreen,
-                                        foregroundColor: const Color(0xFF0A0B0D),
-                                        elevation: 0,
-                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                                      ),
-                                      child: const Row(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        children: [
-                                          Icon(Remix.check_line, size: 15, color: Color(0xFF0A0B0D)),
-                                          SizedBox(width: 4),
-                                          Text(
-                                            'حفظ الإعدادات',
-                                            style: TextStyle(
-                                              fontSize: 11.5,
-                                              fontWeight: FontWeight.bold,
-                                              color: Color(0xFF0A0B0D),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
+                              // Bottom Session Info Bar
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 6,
                                 ),
-                                const SizedBox(width: 8),
-
-                                // Logout Button (Flex 5)
-                                Expanded(
-                                  flex: 5,
-                                  child: SizedBox(
-                                    height: 38,
-                                    child: OutlinedButton(
-                                      onPressed: _handleLogout,
-                                      style: OutlinedButton.styleFrom(
-                                        backgroundColor: surfaceCell,
-                                        side: BorderSide(color: brandRed.withValues(alpha: 0.3)),
-                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                                      ),
-                                      child: const Row(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        children: [
-                                          Icon(Remix.logout_box_r_line, size: 14, color: brandRed),
-                                          SizedBox(width: 4),
-                                          Text(
-                                            'تسجيل الخروج',
-                                            style: TextStyle(
-                                              fontSize: 11.5,
-                                              fontWeight: FontWeight.bold,
-                                              color: brandRed,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
+                                decoration: BoxDecoration(
+                                  color: surfaceMain,
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(color: surfaceBorder),
                                 ),
-                              ],
-                            ),
-                            const SizedBox(height: 8),
-
-                            // Bottom Session Info Bar
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                              decoration: BoxDecoration(
-                                color: surfaceMain,
-                                borderRadius: BorderRadius.circular(8),
-                                border: Border.all(color: surfaceBorder),
-                              ),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(
-                                    'الجلسة المسجلة حالياً:',
-                                    style: TextStyle(fontSize: 9.5, color: textMuted),
-                                  ),
-                                  Text(
-                                    currentEmail,
-                                    textDirection: TextDirection.ltr,
-                                    style: TextStyle(
-                                      fontSize: 9.5,
-                                      fontFamily: 'monospace',
-                                      color: textMuted,
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      'الجلسة المسجلة حالياً:',
+                                      style: TextStyle(
+                                        fontSize: 9.5,
+                                        color: textMuted,
+                                      ),
                                     ),
-                                  ),
-                                ],
+                                    Text(
+                                      currentEmail,
+                                      textDirection: TextDirection.ltr,
+                                      style: TextStyle(
+                                        fontSize: 9.5,
+                                        fontFamily: 'monospace',
+                                        color: textMuted,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
-            ),
     );
   }
 }

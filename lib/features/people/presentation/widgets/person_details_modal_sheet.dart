@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:remixicon/remixicon.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:sanad_app/core/theme/app_theme.dart';
+import 'package:sanad_app/core/theme/app_colors.dart';
 import 'package:sanad_app/core/utils/spendo_haptic_feedback.dart';
 import 'package:sanad_app/features/people/models/person_model.dart';
 import 'package:sanad_app/features/people/repositories/people_repository.dart';
@@ -42,13 +43,14 @@ class PersonDetailsModalSheet extends StatefulWidget {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       barrierColor: Colors.black.withValues(alpha: 0.75),
-      builder: (_) => PersonDetailsModalSheet(
-        person: person,
-        onEdit: onEdit,
-        onDelete: onDelete,
-        onTogglePin: onTogglePin,
-        onAccountsChanged: onAccountsChanged,
-      ),
+      builder:
+          (_) => PersonDetailsModalSheet(
+            person: person,
+            onEdit: onEdit,
+            onDelete: onDelete,
+            onTogglePin: onTogglePin,
+            onAccountsChanged: onAccountsChanged,
+          ),
     );
   }
 
@@ -66,8 +68,7 @@ class _PersonDetailsModalSheetState extends State<PersonDetailsModalSheet> {
   static Color get surfaceBorder =>
       _isDark ? const Color(0xFF222229) : const Color(0xFFE5E7EB);
   static const Color brandBlue = Color(0xFF0F766E);
-  static Color get brandYellow =>
-      const Color(0xFFFFD600);
+  static Color get brandYellow => AppColors.warningFor(_isDark);
   static const Color brandRed = Color(0xFFEF4444);
   static const Color brandGreen = Color(0xFF0F766E);
   static Color get textWhite =>
@@ -111,8 +112,7 @@ class _PersonDetailsModalSheetState extends State<PersonDetailsModalSheet> {
         duration: const Duration(seconds: 2),
         content: Row(
           children: [
-            Icon(Remix.checkbox_circle_line,
-                color: brandYellow, size: 16),
+            Icon(Remix.checkbox_circle_line, color: brandYellow, size: 16),
             const SizedBox(width: 8),
             Text(
               message,
@@ -141,7 +141,8 @@ class _PersonDetailsModalSheetState extends State<PersonDetailsModalSheet> {
     }
     if (p.birthdate != null) {
       buffer.writeln(
-          'تاريخ الميلاد: ${p.birthdate!.day}/${p.birthdate!.month}/${p.birthdate!.year}');
+        'تاريخ الميلاد: ${p.birthdate!.day}/${p.birthdate!.month}/${p.birthdate!.year}',
+      );
     }
     if (p.email != null && p.email!.trim().isNotEmpty) {
       buffer.writeln('البريد الإلكتروني: ${p.email}');
@@ -194,22 +195,27 @@ class _PersonDetailsModalSheetState extends State<PersonDetailsModalSheet> {
   @override
   Widget build(BuildContext context) {
     final p = widget.person;
-    final phone = (p.phone != null && p.phone!.trim().isNotEmpty)
-        ? p.phone!.trim()
-        : (p.whatsapp != null && p.whatsapp!.trim().isNotEmpty)
+    final phone =
+        (p.phone != null && p.phone!.trim().isNotEmpty)
+            ? p.phone!.trim()
+            : (p.whatsapp != null && p.whatsapp!.trim().isNotEmpty)
             ? p.whatsapp!.trim()
             : null;
-    final nationalId = (p.nationalId != null && p.nationalId!.trim().isNotEmpty)
-        ? p.nationalId!.trim()
-        : null;
-    final email = (p.email != null && p.email!.trim().isNotEmpty)
-        ? p.email!.trim()
-        : null;
-    final notes = (p.notes != null && p.notes!.trim().isNotEmpty)
-        ? p.notes!.trim()
-        : null;
+    final nationalId =
+        (p.nationalId != null && p.nationalId!.trim().isNotEmpty)
+            ? p.nationalId!.trim()
+            : null;
+    final email =
+        (p.email != null && p.email!.trim().isNotEmpty)
+            ? p.email!.trim()
+            : null;
+    final notes =
+        (p.notes != null && p.notes!.trim().isNotEmpty)
+            ? p.notes!.trim()
+            : null;
 
-    final hasAvatarPhoto = p.avatarPath != null &&
+    final hasAvatarPhoto =
+        p.avatarPath != null &&
         p.avatarPath!.trim().isNotEmpty &&
         File(p.avatarPath!).existsSync();
 
@@ -257,48 +263,53 @@ class _PersonDetailsModalSheetState extends State<PersonDetailsModalSheet> {
                         height: 54,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: isHighlighted
-                              ? highlightColor.withValues(alpha: 0.16)
-                              : brandYellow.withValues(alpha: 0.14),
+                          color:
+                              isHighlighted
+                                  ? highlightColor.withValues(alpha: 0.16)
+                                  : brandYellow.withValues(alpha: 0.14),
                           border: Border.all(
-                            color: isHighlighted
-                                ? highlightColor.withValues(alpha: 0.6)
-                                : brandYellow.withValues(alpha: 0.5),
+                            color:
+                                isHighlighted
+                                    ? highlightColor.withValues(alpha: 0.6)
+                                    : brandYellow.withValues(alpha: 0.5),
                             width: 1.8,
                           ),
                           boxShadow: [
                             BoxShadow(
-                              color: isHighlighted
-                                  ? highlightColor.withValues(alpha: 0.18)
-                                  : brandYellow.withValues(alpha: 0.15),
+                              color:
+                                  isHighlighted
+                                      ? highlightColor.withValues(alpha: 0.18)
+                                      : brandYellow.withValues(alpha: 0.15),
                               blurRadius: 10,
                               spreadRadius: 1,
                             ),
                           ],
                         ),
                         child: ClipOval(
-                          child: hasAvatarPhoto
-                              ? Image.file(
-                                  File(p.avatarPath!),
-                                  width: 54,
-                                  height: 54,
-                                  fit: BoxFit.cover,
-                                )
-                              : Center(
-                                  child: Text(
-                                    p.name.trim().isNotEmpty
-                                        ? p.name.trim().characters.first
-                                        : '؟',
-                                    style: TextStyle(
-                                      fontFamily: 'Cairo',
-                                      fontSize: 22,
-                                      fontWeight: FontWeight.bold,
-                                      color: isHighlighted
-                                          ? highlightColor
-                                          : brandYellow,
+                          child:
+                              hasAvatarPhoto
+                                  ? Image.file(
+                                    File(p.avatarPath!),
+                                    width: 54,
+                                    height: 54,
+                                    fit: BoxFit.cover,
+                                  )
+                                  : Center(
+                                    child: Text(
+                                      p.name.trim().isNotEmpty
+                                          ? p.name.trim().characters.first
+                                          : '؟',
+                                      style: TextStyle(
+                                        fontFamily: 'Cairo',
+                                        fontSize: 22,
+                                        fontWeight: FontWeight.bold,
+                                        color:
+                                            isHighlighted
+                                                ? highlightColor
+                                                : brandYellow,
+                                      ),
                                     ),
                                   ),
-                                ),
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -328,13 +339,17 @@ class _PersonDetailsModalSheetState extends State<PersonDetailsModalSheet> {
                                   const SizedBox(width: 6),
                                   Container(
                                     padding: const EdgeInsets.symmetric(
-                                        horizontal: 6, vertical: 1.5),
+                                      horizontal: 6,
+                                      vertical: 1.5,
+                                    ),
                                     decoration: BoxDecoration(
                                       color: brandBlue.withValues(alpha: 0.16),
                                       borderRadius: BorderRadius.circular(4),
                                       border: Border.all(
-                                          color: brandBlue
-                                              .withValues(alpha: 0.45)),
+                                        color: brandBlue.withValues(
+                                          alpha: 0.45,
+                                        ),
+                                      ),
                                     ),
                                     child: const Text(
                                       'أنت',
@@ -349,8 +364,11 @@ class _PersonDetailsModalSheetState extends State<PersonDetailsModalSheet> {
                                 ],
                                 if (p.isPinned) ...[
                                   const SizedBox(width: 4),
-                                  Icon(Remix.pushpin_fill,
-                                      size: 13, color: brandYellow),
+                                  Icon(
+                                    Remix.pushpin_fill,
+                                    size: 13,
+                                    color: brandYellow,
+                                  ),
                                 ],
                               ],
                             ),
@@ -360,14 +378,20 @@ class _PersonDetailsModalSheetState extends State<PersonDetailsModalSheet> {
                             if (p.birthdate != null)
                               Row(
                                 children: [
-                                  Icon(Remix.cake_2_line,
-                                      size: 12, color: brandYellow),
+                                  Icon(
+                                    Remix.cake_2_line,
+                                    size: 12,
+                                    color: brandYellow,
+                                  ),
                                   const SizedBox(width: 4),
                                   Text(
                                     '${p.birthdate!.day}/${p.birthdate!.month}/${p.birthdate!.year}',
                                     style: TextStyle(
                                       fontFamily: 'PlusJakartaSans',
-                                      fontFamilyFallback: const ['Cairo', 'Heebo'],
+                                      fontFamilyFallback: const [
+                                        'Cairo',
+                                        'Heebo',
+                                      ],
                                       fontSize: 11,
                                       fontWeight: FontWeight.w600,
                                       color: brandYellow,
@@ -378,10 +402,13 @@ class _PersonDetailsModalSheetState extends State<PersonDetailsModalSheet> {
                                     const SizedBox(width: 6),
                                     Container(
                                       padding: const EdgeInsets.symmetric(
-                                          horizontal: 5, vertical: 1),
+                                        horizontal: 5,
+                                        vertical: 1,
+                                      ),
                                       decoration: BoxDecoration(
-                                        color:
-                                            brandYellow.withValues(alpha: 0.15),
+                                        color: brandYellow.withValues(
+                                          alpha: 0.15,
+                                        ),
                                         borderRadius: BorderRadius.circular(4),
                                       ),
                                       child: Text(
@@ -442,8 +469,11 @@ class _PersonDetailsModalSheetState extends State<PersonDetailsModalSheet> {
                             borderRadius: BorderRadius.circular(8),
                             child: Padding(
                               padding: const EdgeInsets.all(5),
-                              child: Icon(Remix.pencil_line,
-                                  size: 16, color: brandBlue),
+                              child: Icon(
+                                Remix.pencil_line,
+                                size: 16,
+                                color: brandBlue,
+                              ),
                             ),
                           ),
                           InkWell(
@@ -454,8 +484,11 @@ class _PersonDetailsModalSheetState extends State<PersonDetailsModalSheet> {
                             borderRadius: BorderRadius.circular(8),
                             child: const Padding(
                               padding: EdgeInsets.all(5),
-                              child: Icon(Remix.delete_bin_line,
-                                  size: 16, color: brandRed),
+                              child: Icon(
+                                Remix.delete_bin_line,
+                                size: 16,
+                                color: brandRed,
+                              ),
                             ),
                           ),
                           InkWell(
@@ -463,8 +496,11 @@ class _PersonDetailsModalSheetState extends State<PersonDetailsModalSheet> {
                             borderRadius: BorderRadius.circular(8),
                             child: Padding(
                               padding: const EdgeInsets.all(5),
-                              child: Icon(Remix.close_line,
-                                  size: 18, color: textMuted),
+                              child: Icon(
+                                Remix.close_line,
+                                size: 18,
+                                color: textMuted,
+                              ),
                             ),
                           ),
                         ],
@@ -488,31 +524,32 @@ class _PersonDetailsModalSheetState extends State<PersonDetailsModalSheet> {
                         title: 'رقم الهاتف / الواتساب',
                         value: phone ?? 'غير مسجل',
                         isLtrValue: phone != null,
-                        actions: phone != null
-                            ? [
-                                _buildActionIcon(
-                                  icon: Remix.phone_fill,
-                                  color: brandBlue,
-                                  tooltip: 'اتصال',
-                                  onTap: () => _makeCall(phone),
-                                ),
-                                const SizedBox(width: 4),
-                                _buildActionIcon(
-                                  icon: Remix.whatsapp_fill,
-                                  color: brandGreen,
-                                  tooltip: 'واتساب',
-                                  onTap: () => _openWhatsApp(phone),
-                                ),
-                                const SizedBox(width: 4),
-                                _buildActionIcon(
-                                  icon: Remix.file_copy_line,
-                                  color: textMuted,
-                                  tooltip: 'نسخ',
-                                  onTap: () =>
-                                      _copy(phone, 'تم نسخ رقم الهاتف'),
-                                ),
-                              ]
-                            : null,
+                        actions:
+                            phone != null
+                                ? [
+                                  _buildActionIcon(
+                                    icon: Remix.phone_fill,
+                                    color: brandBlue,
+                                    tooltip: 'اتصال',
+                                    onTap: () => _makeCall(phone),
+                                  ),
+                                  const SizedBox(width: 4),
+                                  _buildActionIcon(
+                                    icon: Remix.whatsapp_fill,
+                                    color: brandGreen,
+                                    tooltip: 'واتساب',
+                                    onTap: () => _openWhatsApp(phone),
+                                  ),
+                                  const SizedBox(width: 4),
+                                  _buildActionIcon(
+                                    icon: Remix.file_copy_line,
+                                    color: textMuted,
+                                    tooltip: 'نسخ',
+                                    onTap:
+                                        () => _copy(phone, 'تم نسخ رقم الهاتف'),
+                                  ),
+                                ]
+                                : null,
                       ),
                       const SizedBox(height: 8),
 
@@ -523,17 +560,21 @@ class _PersonDetailsModalSheetState extends State<PersonDetailsModalSheet> {
                         title: 'رقم الهوية الوطنية',
                         value: nationalId ?? 'غير مسجل',
                         isLtrValue: nationalId != null,
-                        actions: nationalId != null
-                            ? [
-                                _buildActionIcon(
-                                  icon: Remix.file_copy_line,
-                                  color: textMuted,
-                                  tooltip: 'نسخ',
-                                  onTap: () => _copy(
-                                      nationalId, 'تم نسخ رقم الهوية'),
-                                ),
-                              ]
-                            : null,
+                        actions:
+                            nationalId != null
+                                ? [
+                                  _buildActionIcon(
+                                    icon: Remix.file_copy_line,
+                                    color: textMuted,
+                                    tooltip: 'نسخ',
+                                    onTap:
+                                        () => _copy(
+                                          nationalId,
+                                          'تم نسخ رقم الهوية',
+                                        ),
+                                  ),
+                                ]
+                                : null,
                       ),
                       const SizedBox(height: 8),
 
@@ -544,24 +585,28 @@ class _PersonDetailsModalSheetState extends State<PersonDetailsModalSheet> {
                         title: 'البريد الإلكتروني',
                         value: email ?? 'غير مسجل',
                         isLtrValue: email != null,
-                        actions: email != null
-                            ? [
-                                _buildActionIcon(
-                                  icon: Remix.send_plane_fill,
-                                  color: brandBlue,
-                                  tooltip: 'إرسال إيميل',
-                                  onTap: () => _sendEmail(email),
-                                ),
-                                const SizedBox(width: 4),
-                                _buildActionIcon(
-                                  icon: Remix.file_copy_line,
-                                  color: textMuted,
-                                  tooltip: 'نسخ',
-                                  onTap: () => _copy(
-                                      email, 'تم نسخ البريد الإلكتروني'),
-                                ),
-                              ]
-                            : null,
+                        actions:
+                            email != null
+                                ? [
+                                  _buildActionIcon(
+                                    icon: Remix.send_plane_fill,
+                                    color: brandBlue,
+                                    tooltip: 'إرسال إيميل',
+                                    onTap: () => _sendEmail(email),
+                                  ),
+                                  const SizedBox(width: 4),
+                                  _buildActionIcon(
+                                    icon: Remix.file_copy_line,
+                                    color: textMuted,
+                                    tooltip: 'نسخ',
+                                    onTap:
+                                        () => _copy(
+                                          email,
+                                          'تم نسخ البريد الإلكتروني',
+                                        ),
+                                  ),
+                                ]
+                                : null,
                       ),
                       const SizedBox(height: 8),
 
@@ -571,7 +616,9 @@ class _PersonDetailsModalSheetState extends State<PersonDetailsModalSheet> {
                         borderRadius: BorderRadius.circular(12),
                         child: Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 12, vertical: 10),
+                            horizontal: 12,
+                            vertical: 10,
+                          ),
                           decoration: BoxDecoration(
                             color: surfaceCard,
                             borderRadius: BorderRadius.circular(12),
@@ -588,8 +635,11 @@ class _PersonDetailsModalSheetState extends State<PersonDetailsModalSheet> {
                                   color: brandYellow.withValues(alpha: 0.15),
                                   borderRadius: BorderRadius.circular(8),
                                 ),
-                                child: Icon(Remix.key_2_line,
-                                    size: 16, color: brandYellow),
+                                child: Icon(
+                                  Remix.key_2_line,
+                                  size: 16,
+                                  color: brandYellow,
+                                ),
                               ),
                               const SizedBox(width: 10),
                               Expanded(
@@ -608,9 +658,7 @@ class _PersonDetailsModalSheetState extends State<PersonDetailsModalSheet> {
                                     const SizedBox(height: 1),
                                     Text(
                                       _accountServices.isNotEmpty
-                                          ? _accountServices
-                                              .take(4)
-                                              .join(' • ')
+                                          ? _accountServices.take(4).join(' • ')
                                           : 'إدارة كلمات المرور والحسابات التابعة',
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
@@ -626,7 +674,9 @@ class _PersonDetailsModalSheetState extends State<PersonDetailsModalSheet> {
                               const SizedBox(width: 6),
                               Container(
                                 padding: const EdgeInsets.symmetric(
-                                    horizontal: 8, vertical: 3),
+                                  horizontal: 8,
+                                  vertical: 3,
+                                ),
                                 decoration: BoxDecoration(
                                   color: brandYellow.withValues(alpha: 0.18),
                                   borderRadius: BorderRadius.circular(6),
@@ -638,18 +688,18 @@ class _PersonDetailsModalSheetState extends State<PersonDetailsModalSheet> {
                                       '$_accountsCount',
                                       style: TextStyle(
                                         fontFamily: 'PlusJakartaSans',
-                                        fontFamilyFallback: [
-                                          'Cairo',
-                                          'Heebo'
-                                        ],
+                                        fontFamilyFallback: ['Cairo', 'Heebo'],
                                         fontSize: 11,
                                         fontWeight: FontWeight.bold,
                                         color: brandYellow,
                                       ),
                                     ),
                                     const SizedBox(width: 3),
-                                    Icon(Remix.arrow_left_s_line,
-                                        size: 12, color: brandYellow),
+                                    Icon(
+                                      Remix.arrow_left_s_line,
+                                      size: 12,
+                                      color: brandYellow,
+                                    ),
                                   ],
                                 ),
                               ),
@@ -690,8 +740,11 @@ class _PersonDetailsModalSheetState extends State<PersonDetailsModalSheet> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Remix.file_copy_2_line,
-                              size: 15, color: textWhite),
+                          Icon(
+                            Remix.file_copy_2_line,
+                            size: 15,
+                            color: textWhite,
+                          ),
                           const SizedBox(width: 6),
                           Text(
                             'نسخ كافة بيانات الشخص',

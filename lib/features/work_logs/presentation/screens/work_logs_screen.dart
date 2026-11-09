@@ -1,5 +1,6 @@
 import 'package:sanad_app/core/widgets/banking_animations.dart';
 import 'package:sanad_app/core/theme/app_theme.dart';
+import 'package:sanad_app/core/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/widgets/spendo_app_menu.dart';
 import 'package:remixicon/remixicon.dart';
@@ -39,7 +40,7 @@ class _WorkLogsScreenState extends State<WorkLogsScreen> {
   Color get surfaceBorder =>
       _isDark ? const Color(0xFF1E1E24) : const Color(0xFFE5E7EB);
   static const Color brandGreen = Color(0xFF0F766E);
-  Color get brandYellow => const Color(0xFFFFD600);
+  Color get brandYellow => AppColors.warningFor(_isDark);
   Color get textPrimary =>
       _isDark ? const Color(0xFFF3F4F6) : const Color(0xFF111827);
   Color get textMuted =>

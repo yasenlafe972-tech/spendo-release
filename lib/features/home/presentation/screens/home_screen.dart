@@ -1,6 +1,7 @@
 import 'package:sanad_app/core/widgets/banking_animations.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:sanad_app/core/theme/app_colors.dart';
 import '../../../../core/widgets/spendo_app_menu.dart';
 import 'package:remixicon/remixicon.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -46,7 +47,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // Static brand accents
   static const Color brandGreen = Color(0xFF0F766E);
-  static const Color brandYellow = Color(0xFFFFD600);
+  static Color get brandYellow => AppColors.warningFor(_isDark);
   static const Color brandRed = Color(0xFFEF4444);
 
   // Dynamic surface & text tokens based on active theme

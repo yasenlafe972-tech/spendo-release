@@ -1,4 +1,5 @@
 import 'package:sanad_app/core/theme/app_theme.dart';
+import 'package:sanad_app/core/theme/app_colors.dart';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -21,30 +22,33 @@ class SpendoMiniLogoPainter extends CustomPainter {
     final scaleY = size.height / 100.0;
 
     // Top trapezoid: yellow #EAB308
-    final pYellow = Path()
-      ..moveTo(38 * scaleX, 16 * scaleY)
-      ..lineTo(78 * scaleX, 16 * scaleY)
-      ..lineTo(64 * scaleX, 34 * scaleY)
-      ..lineTo(24 * scaleX, 34 * scaleY)
-      ..close();
+    final pYellow =
+        Path()
+          ..moveTo(38 * scaleX, 16 * scaleY)
+          ..lineTo(78 * scaleX, 16 * scaleY)
+          ..lineTo(64 * scaleX, 34 * scaleY)
+          ..lineTo(24 * scaleX, 34 * scaleY)
+          ..close();
     canvas.drawPath(pYellow, Paint()..color = const Color(0xFFFFD600));
 
     // Middle diagonal: green #00A86B
-    final pGreen = Path()
-      ..moveTo(24 * scaleX, 34 * scaleY)
-      ..lineTo(45 * scaleX, 34 * scaleY)
-      ..lineTo(76 * scaleX, 66 * scaleY)
-      ..lineTo(55 * scaleX, 66 * scaleY)
-      ..close();
+    final pGreen =
+        Path()
+          ..moveTo(24 * scaleX, 34 * scaleY)
+          ..lineTo(45 * scaleX, 34 * scaleY)
+          ..lineTo(76 * scaleX, 66 * scaleY)
+          ..lineTo(55 * scaleX, 66 * scaleY)
+          ..close();
     canvas.drawPath(pGreen, Paint()..color = const Color(0xFF00A86B));
 
     // Bottom trapezoid: white #F3F4F6
-    final pWhite = Path()
-      ..moveTo(36 * scaleX, 66 * scaleY)
-      ..lineTo(76 * scaleX, 66 * scaleY)
-      ..lineTo(62 * scaleX, 84 * scaleY)
-      ..lineTo(22 * scaleX, 84 * scaleY)
-      ..close();
+    final pWhite =
+        Path()
+          ..moveTo(36 * scaleX, 66 * scaleY)
+          ..lineTo(76 * scaleX, 66 * scaleY)
+          ..lineTo(62 * scaleX, 84 * scaleY)
+          ..lineTo(22 * scaleX, 84 * scaleY)
+          ..close();
     canvas.drawPath(pWhite, Paint()..color = const Color(0xFFF3F4F6));
   }
 
@@ -74,28 +78,34 @@ class PersonAccountsModalSheet extends StatefulWidget {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       barrierColor: Colors.black.withValues(alpha: 0.85),
-      builder: (_) => PersonAccountsModalSheet(
-        person: person,
-        onAccountsChanged: onAccountsChanged,
-      ),
+      builder:
+          (_) => PersonAccountsModalSheet(
+            person: person,
+            onAccountsChanged: onAccountsChanged,
+          ),
     );
   }
 
   @override
-  State<PersonAccountsModalSheet> createState() => _PersonAccountsModalSheetState();
+  State<PersonAccountsModalSheet> createState() =>
+      _PersonAccountsModalSheetState();
 }
 
 class _PersonAccountsModalSheetState extends State<PersonAccountsModalSheet> {
   // Theme Design Tokens
   static bool get _isDark => AppTheme.isDarkMode;
-  static Color get surfaceMain => _isDark ? const Color(0xFF121417) : const Color(0xFFFFFFFF);
-  static Color get surfaceCell => _isDark ? const Color(0xFF16191E) : const Color(0xFFF9FAFB);
-  static Color get surfaceBorder => _isDark ? const Color(0xFF22262E) : const Color(0xFFE5E7EB);
+  static Color get surfaceMain =>
+      _isDark ? const Color(0xFF121417) : const Color(0xFFFFFFFF);
+  static Color get surfaceCell =>
+      _isDark ? const Color(0xFF16191E) : const Color(0xFFF9FAFB);
+  static Color get surfaceBorder =>
+      _isDark ? const Color(0xFF22262E) : const Color(0xFFE5E7EB);
   static const Color brandGreen = Color(0xFF0F766E);
-  static Color get brandYellow =>
-      const Color(0xFFFFD600);
-  static Color get textWhite => _isDark ? Colors.white : const Color(0xFF111827);
-  static Color get textMuted => _isDark ? const Color(0xFF9CA3AF) : const Color(0xFF4B5563);
+  static Color get brandYellow => AppColors.warningFor(_isDark);
+  static Color get textWhite =>
+      _isDark ? Colors.white : const Color(0xFF111827);
+  static Color get textMuted =>
+      _isDark ? const Color(0xFF9CA3AF) : const Color(0xFF4B5563);
 
   final PeopleRepository _repository = PeopleRepository();
   List<PersonAccountModel> _accounts = [];
@@ -165,7 +175,11 @@ class _PersonAccountsModalSheetState extends State<PersonAccountsModalSheet> {
             const SizedBox(width: 8),
             Text(
               message,
-              style: TextStyle(color: textWhite, fontSize: 11.5, fontWeight: FontWeight.w600),
+              style: TextStyle(
+                color: textWhite,
+                fontSize: 11.5,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ],
         ),
@@ -192,7 +206,12 @@ class _PersonAccountsModalSheetState extends State<PersonAccountsModalSheet> {
     setState(() {
       _isTwoColumns = !_isTwoColumns;
     });
-    _copy('', _isTwoColumns ? 'تم التبديل لعرض بطاقتين في كل سطر' : 'تم التبديل لعرض بطاقة واحدة في السطر');
+    _copy(
+      '',
+      _isTwoColumns
+          ? 'تم التبديل لعرض بطاقتين في كل سطر'
+          : 'تم التبديل لعرض بطاقة واحدة في السطر',
+    );
   }
 
   Future<void> _confirmDelete(PersonAccountModel account) async {
@@ -201,7 +220,8 @@ class _PersonAccountsModalSheetState extends State<PersonAccountsModalSheet> {
       title: 'حذف الحساب',
       itemName: account.service,
       itemIcon: Remix.key_2_line,
-      description: 'هل أنت متأكد من حذف هذا الحساب وكلمة المرور الخاصة به نهائياً؟',
+      description:
+          'هل أنت متأكد من حذف هذا الحساب وكلمة المرور الخاصة به نهائياً؟',
       confirmLabel: 'حذف الحساب',
     );
 
@@ -218,10 +238,8 @@ class _PersonAccountsModalSheetState extends State<PersonAccountsModalSheet> {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       barrierColor: Colors.black.withValues(alpha: 0.85),
-      builder: (_) => _AddEditAccountSheet(
-        person: widget.person,
-        account: existing,
-      ),
+      builder:
+          (_) => _AddEditAccountSheet(person: widget.person, account: existing),
     );
 
     if (result == true) {
@@ -239,13 +257,14 @@ class _PersonAccountsModalSheetState extends State<PersonAccountsModalSheet> {
           context: context,
           isScrollControlled: true,
           backgroundColor: Colors.transparent,
-          builder: (ctx) => AddEditPersonSheet(
-            person: widget.person,
-            onSave: (p) async {
-              await _repository.updatePerson(p);
-              _loadAccounts();
-            },
-          ),
+          builder:
+              (ctx) => AddEditPersonSheet(
+                person: widget.person,
+                onSave: (p) async {
+                  await _repository.updatePerson(p);
+                  _loadAccounts();
+                },
+              ),
         );
       },
       onDelete: () async {
@@ -262,14 +281,20 @@ class _PersonAccountsModalSheetState extends State<PersonAccountsModalSheet> {
   IconData _getServiceIcon(String service) {
     final s = service.toLowerCase().trim();
     if (s.contains('apple') || s.contains('icloud')) return Remix.apple_line;
-    if (s.contains('davinci') || s.contains('ai') || s.contains('gpt') || s.contains('openai')) return Remix.sparkling_line;
+    if (s.contains('davinci') ||
+        s.contains('ai') ||
+        s.contains('gpt') ||
+        s.contains('openai'))
+      return Remix.sparkling_line;
     if (s.contains('mapbox') || s.contains('map')) return Remix.compass_3_line;
-    if (s.contains('nsave') || s.contains('bank') || s.contains('wallet')) return Remix.wallet_3_line;
+    if (s.contains('nsave') || s.contains('bank') || s.contains('wallet'))
+      return Remix.wallet_3_line;
     if (s.contains('paypal')) return Remix.paypal_line;
     if (s.contains('oracle') || s.contains('cloud')) return Remix.cloud_line;
     if (s.contains('amazon') || s.contains('prime')) return Remix.amazon_line;
     if (s.contains('google') || s.contains('gmail')) return Remix.google_line;
-    if (s.contains('facebook') || s.contains('meta')) return Remix.facebook_line;
+    if (s.contains('facebook') || s.contains('meta'))
+      return Remix.facebook_line;
     if (s.contains('netflix')) return Remix.movie_2_line;
     if (s.contains('twitter') || s == 'x') return Remix.twitter_x_line;
     if (s.contains('mail.ru')) return Remix.mail_line;
@@ -279,9 +304,10 @@ class _PersonAccountsModalSheetState extends State<PersonAccountsModalSheet> {
   @override
   Widget build(BuildContext context) {
     final filtered = _filteredAccounts;
-    final primaryEmail = (widget.person.email != null && widget.person.email!.trim().isNotEmpty)
-        ? widget.person.email!.trim()
-        : 'yasenlafi972@gmail.com';
+    final primaryEmail =
+        (widget.person.email != null && widget.person.email!.trim().isNotEmpty)
+            ? widget.person.email!.trim()
+            : 'yasenlafi972@gmail.com';
 
     return Container(
       constraints: BoxConstraints(
@@ -306,7 +332,10 @@ class _PersonAccountsModalSheetState extends State<PersonAccountsModalSheet> {
             Directionality(
               textDirection: TextDirection.ltr,
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 10,
+                ),
                 decoration: BoxDecoration(
                   color: surfaceCell,
                   border: Border(bottom: BorderSide(color: surfaceBorder)),
@@ -341,19 +370,30 @@ class _PersonAccountsModalSheetState extends State<PersonAccountsModalSheet> {
                       onTap: _openProfileModal,
                       borderRadius: BorderRadius.circular(6),
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 7,
+                          vertical: 2.5,
+                        ),
                         decoration: BoxDecoration(
                           color: surfaceMain,
                           borderRadius: BorderRadius.circular(6),
-                          border: Border.all(color: brandGreen.withValues(alpha: 0.4)),
+                          border: Border.all(
+                            color: brandGreen.withValues(alpha: 0.4),
+                          ),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Remix.user_line, size: 10, color: brandGreen),
+                            const Icon(
+                              Remix.user_line,
+                              size: 10,
+                              color: brandGreen,
+                            ),
                             const SizedBox(width: 4),
                             Text(
-                              widget.person.name.isNotEmpty ? widget.person.name : 'My profile',
+                              widget.person.name.isNotEmpty
+                                  ? widget.person.name
+                                  : 'My profile',
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: const TextStyle(
@@ -374,7 +414,11 @@ class _PersonAccountsModalSheetState extends State<PersonAccountsModalSheet> {
                       onTap: () => Navigator.pop(context),
                       child: const Padding(
                         padding: EdgeInsets.all(4),
-                        child: Icon(Remix.close_line, size: 18, color: Color(0xFFA1A1AA)),
+                        child: Icon(
+                          Remix.close_line,
+                          size: 18,
+                          color: Color(0xFFA1A1AA),
+                        ),
                       ),
                     ),
                   ],
@@ -386,7 +430,10 @@ class _PersonAccountsModalSheetState extends State<PersonAccountsModalSheet> {
             Directionality(
               textDirection: TextDirection.ltr,
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 8,
+                ),
                 child: Row(
                   children: [
                     // Search Input
@@ -401,16 +448,27 @@ class _PersonAccountsModalSheetState extends State<PersonAccountsModalSheet> {
                         ),
                         child: Row(
                           children: [
-                            const Icon(Remix.search_line, size: 13, color: Color(0xFFA1A1AA)),
+                            const Icon(
+                              Remix.search_line,
+                              size: 13,
+                              color: Color(0xFFA1A1AA),
+                            ),
                             const SizedBox(width: 6),
                             Expanded(
                               child: TextField(
                                 controller: _searchController,
-                                onChanged: (val) => setState(() => _searchQuery = val),
-                                style: TextStyle(fontSize: 11.5, color: textWhite),
+                                onChanged:
+                                    (val) => setState(() => _searchQuery = val),
+                                style: TextStyle(
+                                  fontSize: 11.5,
+                                  color: textWhite,
+                                ),
                                 decoration: const InputDecoration(
                                   hintText: 'Search service or email...',
-                                  hintStyle: TextStyle(fontSize: 11, color: Color(0xFF71717A)),
+                                  hintStyle: TextStyle(
+                                    fontSize: 11,
+                                    color: Color(0xFF71717A),
+                                  ),
                                   border: InputBorder.none,
                                   isDense: true,
                                   contentPadding: EdgeInsets.zero,
@@ -423,7 +481,11 @@ class _PersonAccountsModalSheetState extends State<PersonAccountsModalSheet> {
                                   _searchController.clear();
                                   setState(() => _searchQuery = '');
                                 },
-                                child: const Icon(Remix.close_circle_line, size: 13, color: Color(0xFF71717A)),
+                                child: const Icon(
+                                  Remix.close_circle_line,
+                                  size: 13,
+                                  color: Color(0xFF71717A),
+                                ),
                               ),
                           ],
                         ),
@@ -445,7 +507,11 @@ class _PersonAccountsModalSheetState extends State<PersonAccountsModalSheet> {
                         child: const Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(Remix.add_line, size: 14, color: Color(0xFF0A0B0D)),
+                            Icon(
+                              Remix.add_line,
+                              size: 14,
+                              color: Color(0xFF0A0B0D),
+                            ),
                             SizedBox(width: 3),
                             Text(
                               'New',
@@ -503,17 +569,26 @@ class _PersonAccountsModalSheetState extends State<PersonAccountsModalSheet> {
                       ),
                     ),
 
-                    VerticalDivider(width: 1, thickness: 1, color: surfaceBorder),
+                    VerticalDivider(
+                      width: 1,
+                      thickness: 1,
+                      color: surfaceBorder,
+                    ),
 
                     // Copy Email
                     Expanded(
                       flex: 4,
                       child: InkWell(
-                        onTap: () => _copy(primaryEmail, 'تم نسخ الإيميل الأساسي'),
+                        onTap:
+                            () => _copy(primaryEmail, 'تم نسخ الإيميل الأساسي'),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            const Icon(Remix.at_line, color: brandGreen, size: 11),
+                            const Icon(
+                              Remix.at_line,
+                              color: brandGreen,
+                              size: 11,
+                            ),
                             SizedBox(width: 4),
                             Text(
                               'نسخ إيميلي',
@@ -528,7 +603,11 @@ class _PersonAccountsModalSheetState extends State<PersonAccountsModalSheet> {
                       ),
                     ),
 
-                    VerticalDivider(width: 1, thickness: 1, color: surfaceBorder),
+                    VerticalDivider(
+                      width: 1,
+                      thickness: 1,
+                      color: surfaceBorder,
+                    ),
 
                     // Reveal All Passwords
                     Expanded(
@@ -539,13 +618,17 @@ class _PersonAccountsModalSheetState extends State<PersonAccountsModalSheet> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Icon(
-                              _allPasswordsVisible ? Remix.eye_off_line : Remix.eye_line,
+                              _allPasswordsVisible
+                                  ? Remix.eye_off_line
+                                  : Remix.eye_line,
                               color: brandYellow,
                               size: 11,
                             ),
                             const SizedBox(width: 4),
                             Text(
-                              _allPasswordsVisible ? 'إخفاء الكل' : 'إظهار الكل',
+                              _allPasswordsVisible
+                                  ? 'إخفاء الكل'
+                                  : 'إظهار الكل',
                               style: TextStyle(
                                 fontSize: 9.5,
                                 fontWeight: FontWeight.w600,
@@ -557,7 +640,11 @@ class _PersonAccountsModalSheetState extends State<PersonAccountsModalSheet> {
                       ),
                     ),
 
-                    VerticalDivider(width: 1, thickness: 1, color: surfaceBorder),
+                    VerticalDivider(
+                      width: 1,
+                      thickness: 1,
+                      color: surfaceBorder,
+                    ),
 
                     // Toggle Columns (2x2 vs 1x1)
                     Expanded(
@@ -568,7 +655,9 @@ class _PersonAccountsModalSheetState extends State<PersonAccountsModalSheet> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Icon(
-                              _isTwoColumns ? Remix.layout_grid_line : Remix.list_check_2,
+                              _isTwoColumns
+                                  ? Remix.layout_grid_line
+                                  : Remix.list_check_2,
                               color: brandGreen,
                               size: 11,
                             ),
@@ -593,58 +682,70 @@ class _PersonAccountsModalSheetState extends State<PersonAccountsModalSheet> {
 
             // 4. Accounts Cards List / Grid (2 per line by default)
             Expanded(
-              child: _isLoading
-                  ? const Center(child: CircularProgressIndicator(color: brandGreen))
-                  : filtered.isEmpty
+              child:
+                  _isLoading
+                      ? const Center(
+                        child: CircularProgressIndicator(color: brandGreen),
+                      )
+                      : filtered.isEmpty
                       ? Center(
-                          child: Padding(
-                            padding: const EdgeInsets.all(24),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                const Icon(
-                                  Remix.key_2_line,
-                                  size: 36,
-                                  color: Color(0xFF3F3F46),
+                        child: Padding(
+                          padding: const EdgeInsets.all(24),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(
+                                Remix.key_2_line,
+                                size: 36,
+                                color: Color(0xFF3F3F46),
+                              ),
+                              const SizedBox(height: 10),
+                              Text(
+                                _searchQuery.isNotEmpty
+                                    ? 'لا توجد حسابات مطابقة للبحث'
+                                    : 'لا توجد حسابات مضافة بعد في الخزنة',
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  color: Color(0xFF71717A),
+                                  fontWeight: FontWeight.w600,
                                 ),
-                                const SizedBox(height: 10),
-                                Text(
-                                  _searchQuery.isNotEmpty
-                                      ? 'لا توجد حسابات مطابقة للبحث'
-                                      : 'لا توجد حسابات مضافة بعد في الخزنة',
-                                  style: const TextStyle(
-                                    fontSize: 12,
-                                    color: Color(0xFF71717A),
-                                    fontWeight: FontWeight.w600,
+                              ),
+                              const SizedBox(height: 12),
+                              ElevatedButton.icon(
+                                onPressed: () => _showAddEditAccountModal(),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: surfaceCell,
+                                  foregroundColor: Colors.white,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                    side: BorderSide(color: surfaceBorder),
+                                  ),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 14,
+                                    vertical: 8,
                                   ),
                                 ),
-                                const SizedBox(height: 12),
-                                ElevatedButton.icon(
-                                  onPressed: () => _showAddEditAccountModal(),
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: surfaceCell,
-                                    foregroundColor: Colors.white,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(10),
-                                      side: BorderSide(color: surfaceBorder),
-                                    ),
-                                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                                  ),
-                                  icon: const Icon(Remix.add_line, size: 14),
-                                  label: const Text(
-                                    'إضافة أول حساب',
-                                    style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold),
+                                icon: const Icon(Remix.add_line, size: 14),
+                                label: const Text(
+                                  'إضافة أول حساب',
+                                  style: TextStyle(
+                                    fontSize: 11.5,
+                                    fontWeight: FontWeight.bold,
                                   ),
                                 ),
-                              ],
-                            ),
+                              ),
+                            ],
                           ),
-                        )
-                      : SingleChildScrollView(
-                          physics: const ClampingScrollPhysics(),
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                          child: _buildCardsGrid(filtered),
                         ),
+                      )
+                      : SingleChildScrollView(
+                        physics: const ClampingScrollPhysics(),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 4,
+                        ),
+                        child: _buildCardsGrid(filtered),
+                      ),
             ),
           ],
         ),
@@ -679,9 +780,10 @@ class _PersonAccountsModalSheetState extends State<PersonAccountsModalSheet> {
             Expanded(child: _buildAccountCard(list[idx1])),
             const SizedBox(width: 8),
             Expanded(
-              child: idx2 < list.length
-                  ? _buildAccountCard(list[idx2])
-                  : const SizedBox.shrink(),
+              child:
+                  idx2 < list.length
+                      ? _buildAccountCard(list[idx2])
+                      : const SizedBox.shrink(),
             ),
           ],
         );
@@ -715,7 +817,11 @@ class _PersonAccountsModalSheetState extends State<PersonAccountsModalSheet> {
               child: Row(
                 children: [
                   const SizedBox(width: 8),
-                  Icon(_getServiceIcon(account.service), size: 12, color: brandGreen),
+                  Icon(
+                    _getServiceIcon(account.service),
+                    size: 12,
+                    color: brandGreen,
+                  ),
                   const SizedBox(width: 5),
                   Expanded(
                     child: Text(
@@ -743,7 +849,11 @@ class _PersonAccountsModalSheetState extends State<PersonAccountsModalSheet> {
                           onTap: () => _showAddEditAccountModal(account),
                           child: const Padding(
                             padding: EdgeInsets.all(3),
-                            child: Icon(Remix.pencil_line, size: 11, color: Color(0xFFA1A1AA)),
+                            child: Icon(
+                              Remix.pencil_line,
+                              size: 11,
+                              color: Color(0xFFA1A1AA),
+                            ),
                           ),
                         ),
                         const SizedBox(width: 2),
@@ -751,7 +861,11 @@ class _PersonAccountsModalSheetState extends State<PersonAccountsModalSheet> {
                           onTap: () => _confirmDelete(account),
                           child: const Padding(
                             padding: EdgeInsets.all(3),
-                            child: Icon(Remix.delete_bin_6_line, size: 11, color: Color(0xFF71717A)),
+                            child: Icon(
+                              Remix.delete_bin_6_line,
+                              size: 11,
+                              color: Color(0xFF71717A),
+                            ),
                           ),
                         ),
                       ],
@@ -771,12 +885,20 @@ class _PersonAccountsModalSheetState extends State<PersonAccountsModalSheet> {
                 children: [
                   Expanded(
                     child: InkWell(
-                      onTap: () => _copy(account.email, 'تم نسخ إيميل ${account.service}'),
+                      onTap:
+                          () => _copy(
+                            account.email,
+                            'تم نسخ إيميل ${account.service}',
+                          ),
                       child: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 8),
                         child: Row(
                           children: [
-                            const Icon(Remix.mail_line, size: 11, color: Color(0xFFA1A1AA)),
+                            const Icon(
+                              Remix.mail_line,
+                              size: 11,
+                              color: Color(0xFFA1A1AA),
+                            ),
                             const SizedBox(width: 5),
                             Expanded(
                               child: Text(
@@ -796,7 +918,11 @@ class _PersonAccountsModalSheetState extends State<PersonAccountsModalSheet> {
                     ),
                   ),
                   InkWell(
-                    onTap: () => _copy(account.email, 'تم نسخ إيميل ${account.service}'),
+                    onTap:
+                        () => _copy(
+                          account.email,
+                          'تم نسخ إيميل ${account.service}',
+                        ),
                     child: Container(
                       width: 28,
                       height: 29,
@@ -827,12 +953,20 @@ class _PersonAccountsModalSheetState extends State<PersonAccountsModalSheet> {
                 children: [
                   Expanded(
                     child: InkWell(
-                      onTap: () => _copy(account.password, 'تم نسخ باسورد ${account.service}'),
+                      onTap:
+                          () => _copy(
+                            account.password,
+                            'تم نسخ باسورد ${account.service}',
+                          ),
                       child: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 8),
                         child: Row(
                           children: [
-                            Icon(Remix.key_2_line, size: 11, color: brandYellow),
+                            Icon(
+                              Remix.key_2_line,
+                              size: 11,
+                              color: brandYellow,
+                            ),
                             const SizedBox(width: 5),
                             Expanded(
                               child: Text(
@@ -842,8 +976,14 @@ class _PersonAccountsModalSheetState extends State<PersonAccountsModalSheet> {
                                 style: TextStyle(
                                   fontFamily: 'monospace',
                                   fontSize: 10,
-                                  fontWeight: isRevealed ? FontWeight.w600 : FontWeight.w800,
-                                  color: isRevealed ? brandYellow : const Color(0xFFA1A1AA),
+                                  fontWeight:
+                                      isRevealed
+                                          ? FontWeight.w600
+                                          : FontWeight.w800,
+                                  color:
+                                      isRevealed
+                                          ? brandYellow
+                                          : const Color(0xFFA1A1AA),
                                   letterSpacing: isRevealed ? 0.2 : 1.2,
                                 ),
                               ),
@@ -870,17 +1010,28 @@ class _PersonAccountsModalSheetState extends State<PersonAccountsModalSheet> {
                             child: Icon(
                               isRevealed ? Remix.eye_off_line : Remix.eye_line,
                               size: 11,
-                              color: isRevealed ? brandYellow : const Color(0xFFA1A1AA),
+                              color:
+                                  isRevealed
+                                      ? brandYellow
+                                      : const Color(0xFFA1A1AA),
                             ),
                           ),
                         ),
                         Container(width: 1, height: 29, color: surfaceBorder),
                         InkWell(
-                          onTap: () => _copy(account.password, 'تم نسخ باسورد ${account.service}'),
+                          onTap:
+                              () => _copy(
+                                account.password,
+                                'تم نسخ باسورد ${account.service}',
+                              ),
                           child: Container(
                             width: 26,
                             alignment: Alignment.center,
-                            child: Icon(Remix.file_copy_line, size: 11, color: textMuted),
+                            child: Icon(
+                              Remix.file_copy_line,
+                              size: 11,
+                              color: textMuted,
+                            ),
                           ),
                         ),
                       ],
@@ -901,10 +1052,7 @@ class _AddEditAccountSheet extends StatefulWidget {
   final PersonModel person;
   final PersonAccountModel? account;
 
-  const _AddEditAccountSheet({
-    required this.person,
-    this.account,
-  });
+  const _AddEditAccountSheet({required this.person, this.account});
 
   @override
   State<_AddEditAccountSheet> createState() => _AddEditAccountSheetState();
@@ -912,14 +1060,18 @@ class _AddEditAccountSheet extends StatefulWidget {
 
 class _AddEditAccountSheetState extends State<_AddEditAccountSheet> {
   static bool get _isDark => AppTheme.isDarkMode;
-  static Color get surfaceMain => _isDark ? const Color(0xFF121417) : const Color(0xFFFFFFFF);
-  static Color get surfaceCell => _isDark ? const Color(0xFF16191E) : const Color(0xFFF9FAFB);
-  static Color get surfaceBorder => _isDark ? const Color(0xFF22262E) : const Color(0xFFE5E7EB);
+  static Color get surfaceMain =>
+      _isDark ? const Color(0xFF121417) : const Color(0xFFFFFFFF);
+  static Color get surfaceCell =>
+      _isDark ? const Color(0xFF16191E) : const Color(0xFFF9FAFB);
+  static Color get surfaceBorder =>
+      _isDark ? const Color(0xFF22262E) : const Color(0xFFE5E7EB);
   static const Color brandGreen = Color(0xFF0F766E);
-  static Color get brandYellow =>
-      const Color(0xFFFFD600);
-  static Color get textWhite => _isDark ? Colors.white : const Color(0xFF111827);
-  static Color get textMuted => _isDark ? const Color(0xFF9CA3AF) : const Color(0xFF4B5563);
+  static Color get brandYellow => AppColors.warningFor(_isDark);
+  static Color get textWhite =>
+      _isDark ? Colors.white : const Color(0xFF111827);
+  static Color get textMuted =>
+      _isDark ? const Color(0xFF9CA3AF) : const Color(0xFF4B5563);
 
   final PeopleRepository _repository = PeopleRepository();
   final _formKey = GlobalKey<FormState>();
@@ -946,11 +1098,17 @@ class _AddEditAccountSheetState extends State<_AddEditAccountSheet> {
   @override
   void initState() {
     super.initState();
-    _serviceController = TextEditingController(text: widget.account?.service ?? '');
-    _emailController = TextEditingController(
-      text: widget.account?.email ?? (widget.person.email ?? 'yasenlafi972@gmail.com'),
+    _serviceController = TextEditingController(
+      text: widget.account?.service ?? '',
     );
-    _passwordController = TextEditingController(text: widget.account?.password ?? '');
+    _emailController = TextEditingController(
+      text:
+          widget.account?.email ??
+          (widget.person.email ?? 'yasenlafi972@gmail.com'),
+    );
+    _passwordController = TextEditingController(
+      text: widget.account?.password ?? '',
+    );
   }
 
   @override
@@ -962,9 +1120,11 @@ class _AddEditAccountSheetState extends State<_AddEditAccountSheet> {
   }
 
   void _generateStrongPassword() {
-    const chars = r'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#$%';
+    const chars =
+        r'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#$%';
     final rand = Random.secure();
-    final pass = List.generate(10, (_) => chars[rand.nextInt(chars.length)]).join();
+    final pass =
+        List.generate(10, (_) => chars[rand.nextInt(chars.length)]).join();
     setState(() {
       _passwordController.text = pass;
       _obscurePassword = false;
@@ -1049,10 +1209,16 @@ class _AddEditAccountSheetState extends State<_AddEditAccountSheet> {
                   children: [
                     Row(
                       children: [
-                        const Icon(Remix.shield_keyhole_line, size: 16, color: brandGreen),
+                        const Icon(
+                          Remix.shield_keyhole_line,
+                          size: 16,
+                          color: brandGreen,
+                        ),
                         const SizedBox(width: 8),
                         Text(
-                          isEdit ? 'تعديل حساب ${widget.account!.service}' : 'إضافة حساب جديد للخزنة',
+                          isEdit
+                              ? 'تعديل حساب ${widget.account!.service}'
+                              : 'إضافة حساب جديد للخزنة',
                           style: TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.bold,
@@ -1065,7 +1231,11 @@ class _AddEditAccountSheetState extends State<_AddEditAccountSheet> {
                       onTap: () => Navigator.pop(context),
                       child: const Padding(
                         padding: EdgeInsets.all(4),
-                        child: Icon(Remix.close_line, size: 18, color: Color(0xFFA1A1AA)),
+                        child: Icon(
+                          Remix.close_line,
+                          size: 18,
+                          color: Color(0xFFA1A1AA),
+                        ),
                       ),
                     ),
                   ],
@@ -1079,34 +1249,47 @@ class _AddEditAccountSheetState extends State<_AddEditAccountSheet> {
                     scrollDirection: Axis.horizontal,
                     physics: const ClampingScrollPhysics(),
                     child: Row(
-                      children: _presets.map((preset) {
-                        final isSelected = _serviceController.text.trim().toLowerCase() == preset.toLowerCase();
-                        return Padding(
-                          padding: const EdgeInsets.only(right: 6),
-                          child: InkWell(
-                            onTap: () => _selectPreset(preset),
-                            borderRadius: BorderRadius.circular(6),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3.5),
-                              decoration: BoxDecoration(
-                                color: isSelected ? brandGreen.withValues(alpha: 0.15) : surfaceCell,
+                      children:
+                          _presets.map((preset) {
+                            final isSelected =
+                                _serviceController.text.trim().toLowerCase() ==
+                                preset.toLowerCase();
+                            return Padding(
+                              padding: const EdgeInsets.only(right: 6),
+                              child: InkWell(
+                                onTap: () => _selectPreset(preset),
                                 borderRadius: BorderRadius.circular(6),
-                                border: Border.all(
-                                  color: isSelected ? brandGreen : surfaceBorder,
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 3.5,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color:
+                                        isSelected
+                                            ? brandGreen.withValues(alpha: 0.15)
+                                            : surfaceCell,
+                                    borderRadius: BorderRadius.circular(6),
+                                    border: Border.all(
+                                      color:
+                                          isSelected
+                                              ? brandGreen
+                                              : surfaceBorder,
+                                    ),
+                                  ),
+                                  child: Text(
+                                    preset,
+                                    style: TextStyle(
+                                      fontSize: 10.5,
+                                      fontWeight: FontWeight.w600,
+                                      color:
+                                          isSelected ? brandGreen : textMuted,
+                                    ),
+                                  ),
                                 ),
                               ),
-                              child: Text(
-                                preset,
-                                style: TextStyle(
-                                  fontSize: 10.5,
-                                  fontWeight: FontWeight.w600,
-                                  color: isSelected ? brandGreen : textMuted,
-                                ),
-                              ),
-                            ),
-                          ),
-                        );
-                      }).toList(),
+                            );
+                          }).toList(),
                     ),
                   ),
                 ),
@@ -1116,7 +1299,10 @@ class _AddEditAccountSheetState extends State<_AddEditAccountSheet> {
                 Directionality(
                   textDirection: TextDirection.ltr,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 8,
+                    ),
                     decoration: BoxDecoration(
                       color: surfaceCell,
                       borderRadius: BorderRadius.circular(10),
@@ -1137,20 +1323,35 @@ class _AddEditAccountSheetState extends State<_AddEditAccountSheet> {
                         const SizedBox(height: 4),
                         Row(
                           children: [
-                            const Icon(Remix.apps_2_line, size: 13, color: brandGreen),
+                            const Icon(
+                              Remix.apps_2_line,
+                              size: 13,
+                              color: brandGreen,
+                            ),
                             const SizedBox(width: 8),
                             Expanded(
                               child: TextFormField(
                                 controller: _serviceController,
-                                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: textWhite),
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                  color: textWhite,
+                                ),
                                 decoration: const InputDecoration(
                                   hintText: 'e.g. Apple, PayPal, Netflix...',
-                                  hintStyle: TextStyle(fontSize: 11, color: Color(0xFF52525B)),
+                                  hintStyle: TextStyle(
+                                    fontSize: 11,
+                                    color: Color(0xFF52525B),
+                                  ),
                                   border: InputBorder.none,
                                   isDense: true,
                                   contentPadding: EdgeInsets.zero,
                                 ),
-                                validator: (v) => (v == null || v.trim().isEmpty) ? 'مطلوب' : null,
+                                validator:
+                                    (v) =>
+                                        (v == null || v.trim().isEmpty)
+                                            ? 'مطلوب'
+                                            : null,
                               ),
                             ),
                           ],
@@ -1175,7 +1376,10 @@ class _AddEditAccountSheetState extends State<_AddEditAccountSheet> {
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 8,
+                          ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -1191,7 +1395,11 @@ class _AddEditAccountSheetState extends State<_AddEditAccountSheet> {
                               const SizedBox(height: 4),
                               Row(
                                 children: [
-                                  Icon(Remix.mail_line, size: 13, color: brandYellow),
+                                  Icon(
+                                    Remix.mail_line,
+                                    size: 13,
+                                    color: brandYellow,
+                                  ),
                                   const SizedBox(width: 8),
                                   Expanded(
                                     child: TextFormField(
@@ -1203,12 +1411,19 @@ class _AddEditAccountSheetState extends State<_AddEditAccountSheet> {
                                       ),
                                       decoration: const InputDecoration(
                                         hintText: 'yasenlafi972@gmail.com',
-                                        hintStyle: TextStyle(fontSize: 11, color: Color(0xFF52525B)),
+                                        hintStyle: TextStyle(
+                                          fontSize: 11,
+                                          color: Color(0xFF52525B),
+                                        ),
                                         border: InputBorder.none,
                                         isDense: true,
                                         contentPadding: EdgeInsets.zero,
                                       ),
-                                      validator: (v) => (v == null || v.trim().isEmpty) ? 'مطلوب' : null,
+                                      validator:
+                                          (v) =>
+                                              (v == null || v.trim().isEmpty)
+                                                  ? 'مطلوب'
+                                                  : null,
                                     ),
                                   ),
                                 ],
@@ -1218,20 +1433,33 @@ class _AddEditAccountSheetState extends State<_AddEditAccountSheet> {
                         ),
                         // Quick fill bar
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 4,
+                          ),
                           decoration: BoxDecoration(
                             color: surfaceCell,
-                            border: Border(top: BorderSide(color: surfaceBorder)),
+                            border: Border(
+                              top: BorderSide(color: surfaceBorder),
+                            ),
                           ),
                           child: Row(
                             children: [
                               const Text(
                                 'اختيار سريع:',
-                                style: TextStyle(fontSize: 9.5, color: Color(0xFFA1A1AA)),
+                                style: TextStyle(
+                                  fontSize: 9.5,
+                                  color: Color(0xFFA1A1AA),
+                                ),
                               ),
                               const SizedBox(width: 8),
                               InkWell(
-                                onTap: () => setState(() => _emailController.text = 'yasenlafi972@gmail.com'),
+                                onTap:
+                                    () => setState(
+                                      () =>
+                                          _emailController.text =
+                                              'yasenlafi972@gmail.com',
+                                    ),
                                 child: const Text(
                                   'yasenlafi972@gmail.com',
                                   style: TextStyle(
@@ -1243,10 +1471,21 @@ class _AddEditAccountSheetState extends State<_AddEditAccountSheet> {
                                 ),
                               ),
                               const SizedBox(width: 6),
-                              const Text('|', style: TextStyle(color: Color(0xFF52525B), fontSize: 9.5)),
+                              const Text(
+                                '|',
+                                style: TextStyle(
+                                  color: Color(0xFF52525B),
+                                  fontSize: 9.5,
+                                ),
+                              ),
                               const SizedBox(width: 6),
                               InkWell(
-                                onTap: () => setState(() => _emailController.text = 'yasenlafe972@gmail.com'),
+                                onTap:
+                                    () => setState(
+                                      () =>
+                                          _emailController.text =
+                                              'yasenlafe972@gmail.com',
+                                    ),
                                 child: Text(
                                   'yasenlafe972@gmail.com',
                                   style: TextStyle(
@@ -1270,7 +1509,10 @@ class _AddEditAccountSheetState extends State<_AddEditAccountSheet> {
                 Directionality(
                   textDirection: TextDirection.ltr,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 8,
+                    ),
                     decoration: BoxDecoration(
                       color: surfaceCell,
                       borderRadius: BorderRadius.circular(10),
@@ -1291,7 +1533,11 @@ class _AddEditAccountSheetState extends State<_AddEditAccountSheet> {
                         const SizedBox(height: 4),
                         Row(
                           children: [
-                            Icon(Remix.key_2_line, size: 13, color: brandYellow),
+                            Icon(
+                              Remix.key_2_line,
+                              size: 13,
+                              color: brandYellow,
+                            ),
                             const SizedBox(width: 8),
                             Expanded(
                               child: TextFormField(
@@ -1304,21 +1550,35 @@ class _AddEditAccountSheetState extends State<_AddEditAccountSheet> {
                                   color: textWhite,
                                 ),
                                 decoration: const InputDecoration(
-hintText: 'Enter password...',
-                                  hintStyle: TextStyle(fontSize: 11, color: Color(0xFF52525B)),
+                                  hintText: 'Enter password...',
+                                  hintStyle: TextStyle(
+                                    fontSize: 11,
+                                    color: Color(0xFF52525B),
+                                  ),
                                   border: InputBorder.none,
                                   isDense: true,
                                   contentPadding: EdgeInsets.zero,
                                 ),
-                                validator: (v) => (v == null || v.trim().isEmpty) ? 'مطلوب' : null,
+                                validator:
+                                    (v) =>
+                                        (v == null || v.trim().isEmpty)
+                                            ? 'مطلوب'
+                                            : null,
                               ),
                             ),
                             InkWell(
-                              onTap: () => setState(() => _obscurePassword = !_obscurePassword),
+                              onTap:
+                                  () => setState(
+                                    () => _obscurePassword = !_obscurePassword,
+                                  ),
                               child: Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 4),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 4,
+                                ),
                                 child: Icon(
-                                  _obscurePassword ? Remix.eye_line : Remix.eye_off_line,
+                                  _obscurePassword
+                                      ? Remix.eye_line
+                                      : Remix.eye_off_line,
                                   size: 13,
                                   color: const Color(0xFFA1A1AA),
                                 ),
@@ -1329,7 +1589,10 @@ hintText: 'Enter password...',
                               onTap: _generateStrongPassword,
                               borderRadius: BorderRadius.circular(6),
                               child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 7,
+                                  vertical: 4,
+                                ),
                                 decoration: BoxDecoration(
                                   color: surfaceMain,
                                   borderRadius: BorderRadius.circular(6),
@@ -1360,13 +1623,19 @@ hintText: 'Enter password...',
                     backgroundColor: brandGreen,
                     foregroundColor: const Color(0xFF0A0B0D),
                     elevation: 0,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
                     padding: const EdgeInsets.symmetric(vertical: 11),
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Icon(Remix.check_line, size: 16, color: Color(0xFF0A0B0D)),
+                      const Icon(
+                        Remix.check_line,
+                        size: 16,
+                        color: Color(0xFF0A0B0D),
+                      ),
                       const SizedBox(width: 6),
                       Text(
                         _isSaving ? 'جارٍ الحفظ...' : 'حفظ الحساب في الخزنة',

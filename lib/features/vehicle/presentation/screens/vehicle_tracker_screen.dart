@@ -1,5 +1,6 @@
 import 'package:sanad_app/core/widgets/banking_animations.dart';
 import 'package:sanad_app/core/theme/app_theme.dart';
+import 'package:sanad_app/core/theme/app_colors.dart';
 import 'dart:convert';
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
@@ -50,7 +51,7 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
   Color get surfaceBorder =>
       _isDark ? const Color(0xFF1E1E24) : const Color(0xFFE5E7EB);
   static const Color brandGreen = Color(0xFF0F766E);
-  Color get brandYellow => const Color(0xFFFFD600);
+  Color get brandYellow => AppColors.warningFor(_isDark);
   static const Color brandRed = Color(0xFFEF4444);
   Color get textWhite => _isDark ? Colors.white : const Color(0xFF111827);
   Color get textMuted =>
@@ -3218,7 +3219,7 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                                 style: TextStyle(fontWeight: FontWeight.w800),
                               ),
                               style: OutlinedButton.styleFrom(
-                                foregroundColor: const Color(0xFFFFD600),
+                                foregroundColor: brandYellow,
                                 side: const BorderSide(
                                   color: Color(0xFFFFD600),
                                 ),

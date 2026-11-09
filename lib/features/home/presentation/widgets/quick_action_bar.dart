@@ -63,7 +63,9 @@ class QuickActionBar extends StatelessWidget {
             child: _QuickActionButton(
               label: 'دين أو سلفة',
               icon: Icons.receipt_long_rounded,
-              accentColor: const Color(0xFFFFD600),
+              accentColor: AppColors.warningFor(
+                Theme.of(context).brightness == Brightness.dark,
+              ),
               onTap: onAddDebt,
             ),
           ),
@@ -136,25 +138,30 @@ class _QuickActionButtonState extends State<_QuickActionButton> {
           curve: Curves.easeInOut,
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 150),
-            padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 4.0),
+            padding: const EdgeInsets.symmetric(
+              vertical: 12.0,
+              horizontal: 4.0,
+            ),
             decoration: BoxDecoration(
               color: _isPressed ? AppColors.surfaceElevated : AppColors.surface,
               borderRadius: BorderRadius.circular(16.0),
               border: Border.all(
-                color: _isPressed
-                    ? widget.accentColor.withValues(alpha: 0.45)
-                    : const Color(0xFF1E1E24),
+                color:
+                    _isPressed
+                        ? widget.accentColor.withValues(alpha: 0.45)
+                        : const Color(0xFF1E1E24),
                 width: 1.0,
               ),
-              boxShadow: _isPressed
-                  ? [
-                      BoxShadow(
-                        color: widget.accentColor.withValues(alpha: 0.15),
-                        blurRadius: 10,
-                        offset: const Offset(0, 2),
-                      ),
-                    ]
-                  : null,
+              boxShadow:
+                  _isPressed
+                      ? [
+                        BoxShadow(
+                          color: widget.accentColor.withValues(alpha: 0.15),
+                          blurRadius: 10,
+                          offset: const Offset(0, 2),
+                        ),
+                      ]
+                      : null,
             ),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(15.0),

@@ -1,4 +1,5 @@
 import 'package:sanad_app/core/theme/app_theme.dart';
+import 'package:sanad_app/core/theme/app_colors.dart';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart' hide TextDirection;
@@ -51,18 +52,19 @@ class AddWorkLogSheet extends StatefulWidget {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       barrierColor: Colors.black.withValues(alpha: 0.7),
-      builder: (_) => AddWorkLogSheet(
-        existingLog: existingLog,
-        preselectedWorkplace: preselectedWorkplace,
-        preselectedPerson: preselectedPerson,
-        onSave: (log) async {
-          if (existingLog != null) {
-            await workLogsRepo.updateWorkLog(log);
-          } else {
-            await workLogsRepo.addWorkLog(log);
-          }
-        },
-      ),
+      builder:
+          (_) => AddWorkLogSheet(
+            existingLog: existingLog,
+            preselectedWorkplace: preselectedWorkplace,
+            preselectedPerson: preselectedPerson,
+            onSave: (log) async {
+              if (existingLog != null) {
+                await workLogsRepo.updateWorkLog(log);
+              } else {
+                await workLogsRepo.addWorkLog(log);
+              }
+            },
+          ),
     );
   }
 
@@ -96,15 +98,20 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
 
   // Design Tokens (Adaptive Light / Dark Mode)
   static bool get _isDark => AppTheme.isDarkMode;
-  static Color get surfaceMain => _isDark ? const Color(0xFF121413) : const Color(0xFFFFFFFF);
-  static Color get surfaceField => _isDark ? const Color(0xFF171A19) : const Color(0xFFF9FAFB);
-  static Color get surfaceBorder => _isDark ? const Color(0xFF242927) : const Color(0xFFE5E7EB);
+  static Color get surfaceMain =>
+      _isDark ? const Color(0xFF121413) : const Color(0xFFFFFFFF);
+  static Color get surfaceField =>
+      _isDark ? const Color(0xFF171A19) : const Color(0xFFF9FAFB);
+  static Color get surfaceBorder =>
+      _isDark ? const Color(0xFF242927) : const Color(0xFFE5E7EB);
   static const Color brandGreen = Color(0xFF0F766E);
-  static Color get brandYellow =>
-      const Color(0xFFFFD600);
-  static Color get textMuted => _isDark ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280);
-  static Color get textSubtle => _isDark ? const Color(0xFF71717A) : const Color(0xFF6B7280);
-  static Color get textWhite => _isDark ? Colors.white : const Color(0xFF111827);
+  static Color get brandYellow => AppColors.warningFor(_isDark);
+  static Color get textMuted =>
+      _isDark ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280);
+  static Color get textSubtle =>
+      _isDark ? const Color(0xFF71717A) : const Color(0xFF6B7280);
+  static Color get textWhite =>
+      _isDark ? Colors.white : const Color(0xFF111827);
 
   @override
   void initState() {
@@ -117,9 +124,10 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
     );
     _notesController = TextEditingController(text: log?.notes ?? '');
 
-    _selectedDate = log != null
-        ? DateTime.tryParse(log.date) ?? DateTime.now()
-        : DateTime.now();
+    _selectedDate =
+        log != null
+            ? DateTime.tryParse(log.date) ?? DateTime.now()
+            : DateTime.now();
 
     _latitude = log?.latitude;
     _longitude = log?.longitude;
@@ -154,12 +162,16 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
 
       if (_selectedWorkplace == null) {
         if (widget.existingLog?.workplaceId != null) {
-          final match = _allWorkplaces
-              .where((w) => w.id == widget.existingLog!.workplaceId)
-              .firstOrNull;
-          _selectedWorkplace = match ?? (_allWorkplaces.isNotEmpty ? _allWorkplaces.first : null);
+          final match =
+              _allWorkplaces
+                  .where((w) => w.id == widget.existingLog!.workplaceId)
+                  .firstOrNull;
+          _selectedWorkplace =
+              match ??
+              (_allWorkplaces.isNotEmpty ? _allWorkplaces.first : null);
         } else if (_allWorkplaces.isNotEmpty) {
-          final firstActive = _allWorkplaces.where((w) => w.isActive).firstOrNull;
+          final firstActive =
+              _allWorkplaces.where((w) => w.isActive).firstOrNull;
           _selectedWorkplace = firstActive ?? _allWorkplaces.first;
         }
       }
@@ -196,142 +208,160 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
     final newRate = await showDialog<double>(
       context: context,
       barrierColor: Colors.black.withValues(alpha: 0.75),
-      builder: (ctx) => Directionality(
-        textDirection: TextDirection.rtl,
-        child: Dialog(
-          backgroundColor: Colors.transparent,
-          insetPadding: const EdgeInsets.symmetric(horizontal: 20),
-          child: Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: surfaceMain,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: surfaceBorder, width: 1.2),
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      builder:
+          (ctx) => Directionality(
+            textDirection: TextDirection.rtl,
+            child: Dialog(
+              backgroundColor: Colors.transparent,
+              insetPadding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: surfaceMain,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: surfaceBorder, width: 1.2),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Icon(Remix.money_dollar_circle_line,
-                            color: brandYellow, size: 18),
-                        const SizedBox(width: 8),
-                        Text(
-                          'تعديل سعر اليومية (₪)',
-                          style: TextStyle(
-                            color: textWhite,
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
+                        Row(
+                          children: [
+                            Icon(
+                              Remix.money_dollar_circle_line,
+                              color: brandYellow,
+                              size: 18,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              'تعديل سعر اليومية (₪)',
+                              style: TextStyle(
+                                color: textWhite,
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                        InkWell(
+                          onTap: () => Navigator.pop(ctx),
+                          borderRadius: BorderRadius.circular(20),
+                          child: Padding(
+                            padding: const EdgeInsets.all(4),
+                            child: Icon(
+                              Remix.close_line,
+                              size: 18,
+                              color: textMuted,
+                            ),
                           ),
                         ),
                       ],
                     ),
-                    InkWell(
-                      onTap: () => Navigator.pop(ctx),
-                      borderRadius: BorderRadius.circular(20),
-                      child: Padding(
-                        padding: const EdgeInsets.all(4),
-                        child: Icon(Remix.close_line,
-                            size: 18, color: textMuted),
+                    const SizedBox(height: 6),
+                    Text(
+                      'سيتم تطبيق سعر اليومية الجديد وتحديث جميع أيام العمل المسجلة لهذا المشغّل في السجل تلقائياً.',
+                      style: TextStyle(
+                        color: textMuted,
+                        fontSize: 11,
+                        height: 1.4,
                       ),
                     ),
-                  ],
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  'سيتم تطبيق سعر اليومية الجديد وتحديث جميع أيام العمل المسجلة لهذا المشغّل في السجل تلقائياً.',
-                  style: TextStyle(
-                    color: textMuted,
-                    fontSize: 11,
-                    height: 1.4,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Container(
-                  decoration: BoxDecoration(
-                    color: surfaceField,
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: brandYellow.withValues(alpha: 0.5)),
-                  ),
-                  child: TextField(
-                    controller: ctrl,
-                    autofocus: true,
-                    keyboardType:
-                        const TextInputType.numberWithOptions(decimal: true),
-                    style: TextStyle(
-                      color: textWhite,
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    decoration: InputDecoration(
-                      hintText: 'مثال: 350',
-                      hintStyle: TextStyle(color: textSubtle, fontSize: 13),
-                      suffixText: '₪ / يوم',
-                      suffixStyle: TextStyle(
-                        color: brandYellow,
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
+                    const SizedBox(height: 12),
+                    Container(
+                      decoration: BoxDecoration(
+                        color: surfaceField,
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                          color: brandYellow.withValues(alpha: 0.5),
+                        ),
                       ),
-                      border: InputBorder.none,
-                      contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 10),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 14),
-                Row(
-                  children: [
-                    Expanded(
-                      child: ElevatedButton.icon(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: brandGreen,
-                          foregroundColor: Colors.white,
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
+                      child: TextField(
+                        controller: ctrl,
+                        autofocus: true,
+                        keyboardType: const TextInputType.numberWithOptions(
+                          decimal: true,
+                        ),
+                        style: TextStyle(
+                          color: textWhite,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        decoration: InputDecoration(
+                          hintText: 'مثال: 350',
+                          hintStyle: TextStyle(color: textSubtle, fontSize: 13),
+                          suffixText: '₪ / يوم',
+                          suffixStyle: TextStyle(
+                            color: brandYellow,
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
                           ),
-                          padding: const EdgeInsets.symmetric(vertical: 10),
-                        ),
-                        onPressed: () {
-                          final parsed = double.tryParse(ctrl.text.trim());
-                          if (parsed != null && parsed > 0) {
-                            Navigator.pop(ctx, parsed);
-                          }
-                        },
-                        icon: const Icon(Remix.check_line, size: 16),
-                        label: const Text(
-                          'تحديث كل اليوميات',
-                          style: TextStyle(
-                              fontSize: 12, fontWeight: FontWeight.bold),
+                          border: InputBorder.none,
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 10,
+                          ),
                         ),
                       ),
                     ),
-                    const SizedBox(width: 8),
-                    OutlinedButton(
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: textMuted,
-                        side: BorderSide(color: surfaceBorder),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
+                    const SizedBox(height: 14),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: ElevatedButton.icon(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: brandGreen,
+                              foregroundColor: Colors.white,
+                              elevation: 0,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              padding: const EdgeInsets.symmetric(vertical: 10),
+                            ),
+                            onPressed: () {
+                              final parsed = double.tryParse(ctrl.text.trim());
+                              if (parsed != null && parsed > 0) {
+                                Navigator.pop(ctx, parsed);
+                              }
+                            },
+                            icon: const Icon(Remix.check_line, size: 16),
+                            label: const Text(
+                              'تحديث كل اليوميات',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
                         ),
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 14, vertical: 10),
-                      ),
-                      onPressed: () => Navigator.pop(ctx),
-                      child:
-                          const Text('إلغاء', style: TextStyle(fontSize: 12)),
+                        const SizedBox(width: 8),
+                        OutlinedButton(
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: textMuted,
+                            side: BorderSide(color: surfaceBorder),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 10,
+                            ),
+                          ),
+                          onPressed: () => Navigator.pop(ctx),
+                          child: const Text(
+                            'إلغاء',
+                            style: TextStyle(fontSize: 12),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
-              ],
+              ),
             ),
           ),
-        ),
-      ),
     );
 
     if (newRate != null && newRate > 0 && mounted) {
@@ -344,9 +374,10 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
             updatedAt: DateTime.now(),
           );
           _selectedWorkplace = updatedWp;
-          _allWorkplaces = _allWorkplaces
-              .map((w) => w.id == updatedWp.id ? updatedWp : w)
-              .toList();
+          _allWorkplaces =
+              _allWorkplaces
+                  .map((w) => w.id == updatedWp.id ? updatedWp : w)
+                  .toList();
         }
       });
 
@@ -389,7 +420,10 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
       context,
       initialLatitude: _latitude,
       initialLongitude: _longitude,
-      initialCity: _cityController.text.trim().isNotEmpty ? _cityController.text.trim() : null,
+      initialCity:
+          _cityController.text.trim().isNotEmpty
+              ? _cityController.text.trim()
+              : null,
       initialAddress: _locationAddress,
     );
 
@@ -443,7 +477,9 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
         setState(() => _isFetchingLocation = false);
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('يرجى تفعيل الـ GPS وإعطاء إذن الموقع لتحديد مكان العمل'),
+            content: Text(
+              'يرجى تفعيل الـ GPS وإعطاء إذن الموقع لتحديد مكان العمل',
+            ),
             backgroundColor: Color(0xFFEF4444),
             behavior: SnackBarBehavior.floating,
             duration: Duration(seconds: 3),
@@ -563,7 +599,11 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
                     children: [
                       Row(
                         children: [
-                          const Icon(Remix.building_2_line, color: brandGreen, size: 18),
+                          const Icon(
+                            Remix.building_2_line,
+                            color: brandGreen,
+                            size: 18,
+                          ),
                           SizedBox(width: 8),
                           Text(
                             'اختر المشغّل / صاحب العمل',
@@ -580,7 +620,11 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
                         borderRadius: BorderRadius.circular(20),
                         child: Padding(
                           padding: const EdgeInsets.all(4),
-                          child: Icon(Remix.close_line, size: 18, color: textMuted),
+                          child: Icon(
+                            Remix.close_line,
+                            size: 18,
+                            color: textMuted,
+                          ),
                         ),
                       ),
                     ],
@@ -603,16 +647,18 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
                           },
                           borderRadius: BorderRadius.circular(10),
                           child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 10,
+                            ),
                             decoration: BoxDecoration(
-                              color: isSelected
-                                  ? brandGreen.withValues(alpha: 0.12)
-                                  : surfaceField,
+                              color:
+                                  isSelected
+                                      ? brandGreen.withValues(alpha: 0.12)
+                                      : surfaceField,
                               borderRadius: BorderRadius.circular(10),
                               border: Border.all(
-                                color: isSelected
-                                    ? brandGreen
-                                    : surfaceBorder,
+                                color: isSelected ? brandGreen : surfaceBorder,
                               ),
                             ),
                             child: Row(
@@ -623,35 +669,52 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
                                     Icon(
                                       Remix.building_line,
                                       size: 16,
-                                      color: isSelected ? brandGreen : textMuted,
+                                      color:
+                                          isSelected ? brandGreen : textMuted,
                                     ),
                                     const SizedBox(width: 10),
                                     Text(
                                       wp.name,
                                       style: TextStyle(
-                                        color: isSelected ? textWhite : textMuted,
+                                        color:
+                                            isSelected ? textWhite : textMuted,
                                         fontSize: 13,
-                                        fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+                                        fontWeight:
+                                            isSelected
+                                                ? FontWeight.bold
+                                                : FontWeight.w600,
                                       ),
                                     ),
                                     const SizedBox(width: 6),
                                     Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 5,
+                                        vertical: 1.5,
+                                      ),
                                       decoration: BoxDecoration(
-                                        color: wp.isActive
-                                            ? brandGreen.withValues(alpha: 0.12)
-                                            : surfaceMain,
+                                        color:
+                                            wp.isActive
+                                                ? brandGreen.withValues(
+                                                  alpha: 0.12,
+                                                )
+                                                : surfaceMain,
                                         borderRadius: BorderRadius.circular(4),
                                         border: Border.all(
-                                          color: wp.isActive
-                                              ? brandGreen.withValues(alpha: 0.4)
-                                              : surfaceBorder,
+                                          color:
+                                              wp.isActive
+                                                  ? brandGreen.withValues(
+                                                    alpha: 0.4,
+                                                  )
+                                                  : surfaceBorder,
                                         ),
                                       ),
                                       child: Text(
                                         wp.isActive ? 'نشط' : 'منتهي',
                                         style: TextStyle(
-                                          color: wp.isActive ? brandGreen : textSubtle,
+                                          color:
+                                              wp.isActive
+                                                  ? brandGreen
+                                                  : textSubtle,
                                           fontSize: 9.5,
                                           fontWeight: FontWeight.w600,
                                         ),
@@ -660,7 +723,10 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
                                   ],
                                 ),
                                 Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 3,
+                                  ),
                                   decoration: BoxDecoration(
                                     color: surfaceMain,
                                     borderRadius: BorderRadius.circular(6),
@@ -725,9 +791,10 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
       rateApplied: rate,
       totalEarned: rate,
       amountCollected: 0.0, // الحساب والقبض يتم شهرياً تلقائياً
-      notes: _notesController.text.trim().isEmpty
-          ? null
-          : _notesController.text.trim(),
+      notes:
+          _notesController.text.trim().isEmpty
+              ? null
+              : _notesController.text.trim(),
       latitude: _latitude,
       longitude: _longitude,
       locationAddress: _locationAddress,
@@ -735,7 +802,9 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
       createdAt: widget.existingLog?.createdAt ?? DateTime.now(),
     );
 
-    if (_selectedWorkplace != null && rate > 0 && rate != _selectedWorkplace!.dailyRate) {
+    if (_selectedWorkplace != null &&
+        rate > 0 &&
+        rate != _selectedWorkplace!.dailyRate) {
       await _workplacesRepo.cascadeEmployerDailyRate(
         workplaceId: _selectedWorkplace!.id,
         workplaceName: _selectedWorkplace!.name,
@@ -754,14 +823,16 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
   Widget build(BuildContext context) {
     final media = MediaQuery.of(context);
     final keyboardInset = media.viewInsets.bottom;
-    final bottomNavPadding = media.padding.bottom > 0
-        ? media.padding.bottom
-        : media.viewPadding.bottom;
+    final bottomNavPadding =
+        media.padding.bottom > 0
+            ? media.padding.bottom
+            : media.viewPadding.bottom;
 
     final employerName = _selectedWorkplace?.name ?? 'محدد تلقائياً';
     final dayName = ArabicDateHelper.getArabicWeekday(_selectedDate);
-    final relativeDay =
-        ArabicDateHelper.getRelativeDayDescription(_selectedDate);
+    final relativeDay = ArabicDateHelper.getRelativeDayDescription(
+      _selectedDate,
+    );
     final dateFormatted = DateFormat('yyyy-MM-dd').format(_selectedDate);
 
     return Directionality(
@@ -780,9 +851,10 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
           left: 14,
           right: 14,
           top: 10,
-          bottom: keyboardInset > 0
-              ? keyboardInset + 8
-              : (bottomNavPadding > 0 ? bottomNavPadding + 8 : 16),
+          bottom:
+              keyboardInset > 0
+                  ? keyboardInset + 8
+                  : (bottomNavPadding > 0 ? bottomNavPadding + 8 : 16),
         ),
         child: SingleChildScrollView(
           physics: const BouncingScrollPhysics(),
@@ -832,10 +904,7 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
                             const SizedBox(height: 1),
                             Text(
                               'توثيق يوم العمل وإضافته لحساب الشهر تلقائياً',
-                              style: TextStyle(
-                                color: textMuted,
-                                fontSize: 10,
-                              ),
+                              style: TextStyle(color: textMuted, fontSize: 10),
                             ),
                           ],
                         ),
@@ -869,8 +938,11 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
                       children: [
                         Row(
                           children: [
-                            Icon(Remix.building_2_line,
-                                size: 13, color: brandYellow),
+                            Icon(
+                              Remix.building_2_line,
+                              size: 13,
+                              color: brandYellow,
+                            ),
                             const SizedBox(width: 5),
                             Text(
                               'اختر المشغّل لهذا اليوم:',
@@ -895,8 +967,11 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
                                 ),
                               ),
                               const SizedBox(width: 2),
-                              Icon(Remix.arrow_down_s_line,
-                                  size: 12, color: brandYellow),
+                              Icon(
+                                Remix.arrow_down_s_line,
+                                size: 12,
+                                color: brandYellow,
+                              ),
                             ],
                           ),
                         ),
@@ -907,111 +982,135 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
                       scrollDirection: Axis.horizontal,
                       physics: const BouncingScrollPhysics(),
                       child: Row(
-                        children: _allWorkplaces.map((wp) {
-                          final isSelected = wp.id == _selectedWorkplace?.id;
-                          final rateStr = wp.dailyRate > 0
-                              ? (wp.dailyRate == wp.dailyRate.roundToDouble()
-                                  ? '${wp.dailyRate.toInt()} ₪'
-                                  : '${wp.dailyRate.toStringAsFixed(1)} ₪')
-                              : '';
-                          return Padding(
-                            padding: const EdgeInsets.only(left: 8),
-                            child: InkWell(
-                              onTap: () {
-                                SpendoHaptics.selection();
-                                setState(() {
-                                  _selectedWorkplace = wp;
-                                });
-                              },
-                              borderRadius: BorderRadius.circular(10),
-                              child: AnimatedContainer(
-                                duration: const Duration(milliseconds: 180),
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 11, vertical: 7),
-                                decoration: BoxDecoration(
-                                  color: isSelected
-                                      ? brandGreen.withValues(alpha: 0.18)
-                                      : surfaceField,
+                        children:
+                            _allWorkplaces.map((wp) {
+                              final isSelected =
+                                  wp.id == _selectedWorkplace?.id;
+                              final rateStr =
+                                  wp.dailyRate > 0
+                                      ? (wp.dailyRate ==
+                                              wp.dailyRate.roundToDouble()
+                                          ? '${wp.dailyRate.toInt()} ₪'
+                                          : '${wp.dailyRate.toStringAsFixed(1)} ₪')
+                                      : '';
+                              return Padding(
+                                padding: const EdgeInsets.only(left: 8),
+                                child: InkWell(
+                                  onTap: () {
+                                    SpendoHaptics.selection();
+                                    setState(() {
+                                      _selectedWorkplace = wp;
+                                    });
+                                  },
                                   borderRadius: BorderRadius.circular(10),
-                                  border: Border.all(
-                                    color: isSelected
-                                        ? brandGreen
-                                        : surfaceBorder,
-                                    width: isSelected ? 1.4 : 1.0,
-                                  ),
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    if (isSelected) ...[
-                                      const Icon(Remix.check_line,
-                                          size: 13, color: brandGreen),
-                                      const SizedBox(width: 4),
-                                    ],
-                                    Text(
-                                      wp.name,
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        fontWeight: isSelected
-                                            ? FontWeight.bold
-                                            : FontWeight.w600,
-                                        color: isSelected
-                                            ? textWhite
-                                            : textMuted,
+                                  child: AnimatedContainer(
+                                    duration: const Duration(milliseconds: 180),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 11,
+                                      vertical: 7,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color:
+                                          isSelected
+                                              ? brandGreen.withValues(
+                                                alpha: 0.18,
+                                              )
+                                              : surfaceField,
+                                      borderRadius: BorderRadius.circular(10),
+                                      border: Border.all(
+                                        color:
+                                            isSelected
+                                                ? brandGreen
+                                                : surfaceBorder,
+                                        width: isSelected ? 1.4 : 1.0,
                                       ),
                                     ),
-                                    if (!wp.isActive) ...[
-                                      const SizedBox(width: 4),
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 4, vertical: 1),
-                                        decoration: BoxDecoration(
-                                          color: surfaceMain,
-                                          borderRadius:
-                                              BorderRadius.circular(4),
-                                          border:
-                                              Border.all(color: surfaceBorder),
-                                        ),
-                                        child: Text(
-                                          'منتهي',
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        if (isSelected) ...[
+                                          const Icon(
+                                            Remix.check_line,
+                                            size: 13,
+                                            color: brandGreen,
+                                          ),
+                                          const SizedBox(width: 4),
+                                        ],
+                                        Text(
+                                          wp.name,
                                           style: TextStyle(
-                                            fontSize: 8.5,
-                                            color: textSubtle,
-                                            fontWeight: FontWeight.bold,
+                                            fontSize: 12,
+                                            fontWeight:
+                                                isSelected
+                                                    ? FontWeight.bold
+                                                    : FontWeight.w600,
+                                            color:
+                                                isSelected
+                                                    ? textWhite
+                                                    : textMuted,
                                           ),
                                         ),
-                                      ),
-                                    ],
-                                    if (rateStr.isNotEmpty) ...[
-                                      const SizedBox(width: 6),
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 5, vertical: 1.5),
-                                        decoration: BoxDecoration(
-                                          color: isSelected
-                                              ? brandGreen.withValues(alpha: 0.32)
-                                              : surfaceMain,
-                                          borderRadius:
-                                              BorderRadius.circular(5),
-                                        ),
-                                        child: Text(
-                                          rateStr,
-                                          style: TextStyle(
-                                            fontSize: 9.5,
-                                            fontWeight: FontWeight.bold,
-                                            color: isSelected
-                                                ? textWhite
-                                                : brandYellow,
+                                        if (!wp.isActive) ...[
+                                          const SizedBox(width: 4),
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 4,
+                                              vertical: 1,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color: surfaceMain,
+                                              borderRadius:
+                                                  BorderRadius.circular(4),
+                                              border: Border.all(
+                                                color: surfaceBorder,
+                                              ),
+                                            ),
+                                            child: Text(
+                                              'منتهي',
+                                              style: TextStyle(
+                                                fontSize: 8.5,
+                                                color: textSubtle,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
                                           ),
-                                        ),
-                                      ),
-                                    ],
-                                  ],
+                                        ],
+                                        if (rateStr.isNotEmpty) ...[
+                                          const SizedBox(width: 6),
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 5,
+                                              vertical: 1.5,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color:
+                                                  isSelected
+                                                      ? brandGreen.withValues(
+                                                        alpha: 0.32,
+                                                      )
+                                                      : surfaceMain,
+                                              borderRadius:
+                                                  BorderRadius.circular(5),
+                                            ),
+                                            child: Text(
+                                              rateStr,
+                                              style: TextStyle(
+                                                fontSize: 9.5,
+                                                fontWeight: FontWeight.bold,
+                                                color:
+                                                    isSelected
+                                                        ? textWhite
+                                                        : brandYellow,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ],
+                                    ),
+                                  ),
                                 ),
-                              ),
-                            ),
-                          );
-                        }).toList(),
+                              );
+                            }).toList(),
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -1020,7 +1119,9 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
                   // بطاقة المشغّل المختار الحالية (تأكيد الاختيار بدون قفل)
                   Container(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 12, vertical: 9),
+                      horizontal: 12,
+                      vertical: 9,
+                    ),
                     decoration: BoxDecoration(
                       color: surfaceField,
                       borderRadius: BorderRadius.circular(12),
@@ -1073,7 +1174,9 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
                           borderRadius: BorderRadius.circular(8),
                           child: Container(
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 8, vertical: 4),
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
                             decoration: BoxDecoration(
                               color: surfaceMain,
                               borderRadius: BorderRadius.circular(8),
@@ -1122,7 +1225,9 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
                 children: [
                   Container(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 12, vertical: 6),
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
                     decoration: BoxDecoration(
                       color: surfaceField,
                       borderRadius: BorderRadius.circular(12),
@@ -1145,16 +1250,16 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
                               color: textWhite,
                             ),
                             decoration: InputDecoration(
-                              hintText:
-                                  'مكان العمل / البلد لهذا اليوم *',
+                              hintText: 'مكان العمل / البلد لهذا اليوم *',
                               hintStyle: TextStyle(
                                 color: textSubtle,
                                 fontSize: 11.5,
                               ),
                               border: InputBorder.none,
                               isDense: true,
-                              contentPadding:
-                                  const EdgeInsets.symmetric(vertical: 6),
+                              contentPadding: const EdgeInsets.symmetric(
+                                vertical: 6,
+                              ),
                             ),
                             onChanged: (val) {
                               setState(() {
@@ -1199,10 +1304,7 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
                             const SizedBox(width: 4),
                             Text(
                               'أماكن سابقة:',
-                              style: TextStyle(
-                                fontSize: 10,
-                                color: textMuted,
-                              ),
+                              style: TextStyle(fontSize: 10, color: textMuted),
                             ),
                           ],
                         ),
@@ -1216,14 +1318,17 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
                               borderRadius: BorderRadius.circular(6),
                               child: Container(
                                 padding: const EdgeInsets.symmetric(
-                                    horizontal: 8, vertical: 3),
+                                  horizontal: 8,
+                                  vertical: 3,
+                                ),
                                 decoration: BoxDecoration(
                                   color: surfaceField,
                                   borderRadius: BorderRadius.circular(6),
                                   border: Border.all(
-                                    color: isSelected
-                                        ? brandYellow
-                                        : surfaceBorder,
+                                    color:
+                                        isSelected
+                                            ? brandYellow
+                                            : surfaceBorder,
                                   ),
                                 ),
                                 child: Text(
@@ -1231,9 +1336,8 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
                                   style: TextStyle(
                                     fontSize: 10,
                                     fontWeight: FontWeight.w600,
-                                    color: isSelected
-                                        ? (brandYellow)
-                                        : textMuted,
+                                    color:
+                                        isSelected ? (brandYellow) : textMuted,
                                   ),
                                 ),
                               ),
@@ -1255,8 +1359,10 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
 
               // 3. تاريخ يوم العمل (مع اسم اليوم وشارة اليوم وزر التغيير)
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
                 decoration: BoxDecoration(
                   color: surfaceField,
                   borderRadius: BorderRadius.circular(12),
@@ -1289,7 +1395,9 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
                                 const SizedBox(width: 6),
                                 Container(
                                   padding: const EdgeInsets.symmetric(
-                                      horizontal: 6, vertical: 2),
+                                    horizontal: 6,
+                                    vertical: 2,
+                                  ),
                                   decoration: BoxDecoration(
                                     color: surfaceMain,
                                     borderRadius: BorderRadius.circular(4),
@@ -1326,7 +1434,9 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
                       borderRadius: BorderRadius.circular(8),
                       child: Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 10, vertical: 4),
+                          horizontal: 10,
+                          vertical: 4,
+                        ),
                         decoration: BoxDecoration(
                           color: surfaceMain,
                           borderRadius: BorderRadius.circular(8),
@@ -1364,12 +1474,16 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
                 onTap: _editDailyRateDialog,
                 borderRadius: BorderRadius.circular(12),
                 child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 10,
+                  ),
                   decoration: BoxDecoration(
                     color: surfaceField,
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: brandGreen.withValues(alpha: 0.4)),
+                    border: Border.all(
+                      color: brandGreen.withValues(alpha: 0.4),
+                    ),
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -1396,10 +1510,7 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
                               const SizedBox(height: 1),
                               Text(
                                 'اضغط لتعديل اليومية وتحديث كل السجل تلقائياً',
-                                style: TextStyle(
-                                  fontSize: 9,
-                                  color: textMuted,
-                                ),
+                                style: TextStyle(fontSize: 9, color: textMuted),
                               ),
                             ],
                           ),
@@ -1439,11 +1550,7 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
                             ),
                           ),
                           const SizedBox(width: 6),
-                          Icon(
-                            Remix.pencil_line,
-                            size: 13,
-                            color: textMuted,
-                          ),
+                          Icon(Remix.pencil_line, size: 13, color: textMuted),
                         ],
                       ),
                     ],
@@ -1455,8 +1562,10 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
 
               // 5. ملاحظات وتفاصيل العمل (اختياري)
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
                   color: surfaceField,
                   borderRadius: BorderRadius.circular(12),
@@ -1464,19 +1573,12 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
                 ),
                 child: Row(
                   children: [
-                    Icon(
-                      Remix.file_list_3_line,
-                      size: 16,
-                      color: textMuted,
-                    ),
+                    Icon(Remix.file_list_3_line, size: 16, color: textMuted),
                     const SizedBox(width: 8),
                     Expanded(
                       child: TextField(
                         controller: _notesController,
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: textWhite,
-                        ),
+                        style: TextStyle(fontSize: 12, color: textWhite),
                         decoration: InputDecoration(
                           hintText: 'ملاحظات وتفاصيل العمل (اختياري)',
                           hintStyle: TextStyle(
@@ -1485,7 +1587,9 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
                           ),
                           border: InputBorder.none,
                           isDense: true,
-                          contentPadding: const EdgeInsets.symmetric(vertical: 6),
+                          contentPadding: const EdgeInsets.symmetric(
+                            vertical: 6,
+                          ),
                         ),
                       ),
                     ),
@@ -1515,10 +1619,7 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
                 icon: const Icon(Remix.check_line, size: 16),
                 label: const Text(
                   'حفظ يوم العمل',
-                  style: TextStyle(
-                    fontSize: 12.5,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold),
                 ),
               ),
             ],
@@ -1560,7 +1661,9 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        hasLoc ? 'تم تثبيت مكان العمل' : 'موقع العمل على الخريطة',
+                        hasLoc
+                            ? 'تم تثبيت مكان العمل'
+                            : 'موقع العمل على الخريطة',
                         style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.bold,
@@ -1570,14 +1673,14 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
                       const SizedBox(height: 1),
                       Text(
                         hasLoc
-                            ? (_locationAddress != null && _locationAddress!.isNotEmpty
+                            ? (_locationAddress != null &&
+                                    _locationAddress!.isNotEmpty
                                 ? _locationAddress!
-                                : (_cityController.text.isNotEmpty ? _cityController.text : 'موقع موثّق على الخريطة ✓'))
+                                : (_cityController.text.isNotEmpty
+                                    ? _cityController.text
+                                    : 'موقع موثّق على الخريطة ✓'))
                             : 'تحديد شارع أو بلد لتتذكر مكان الشغل لاحقاً',
-                        style: TextStyle(
-                          fontSize: 9.5,
-                          color: textMuted,
-                        ),
+                        style: TextStyle(fontSize: 9.5, color: textMuted),
                       ),
                     ],
                   ),
@@ -1598,8 +1701,11 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
                   behavior: HitTestBehavior.opaque,
                   child: const Padding(
                     padding: EdgeInsets.all(4),
-                    child: Icon(Remix.close_circle_line,
-                        size: 16, color: Color(0xFFEF4444)),
+                    child: Icon(
+                      Remix.close_circle_line,
+                      size: 16,
+                      color: Color(0xFFEF4444),
+                    ),
                   ),
                 ),
             ],
@@ -1620,12 +1726,18 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
                       decoration: BoxDecoration(
                         color: surfaceMain,
                         borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: brandGreen.withValues(alpha: 0.5)),
+                        border: Border.all(
+                          color: brandGreen.withValues(alpha: 0.5),
+                        ),
                       ),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Icon(Remix.map_2_line, size: 13, color: brandGreen),
+                          const Icon(
+                            Remix.map_2_line,
+                            size: 13,
+                            color: brandGreen,
+                          ),
                           const SizedBox(width: 5),
                           Text(
                             'تحديد من الخريطة',
@@ -1655,7 +1767,11 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Remix.crosshair_2_line, size: 13, color: brandYellow),
+                          Icon(
+                            Remix.crosshair_2_line,
+                            size: 13,
+                            color: brandYellow,
+                          ),
                           const SizedBox(width: 5),
                           Text(
                             'موقعي الحالي',
@@ -1714,7 +1830,9 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
                       decoration: BoxDecoration(
                         color: brandGreen.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: brandGreen.withValues(alpha: 0.4)),
+                        border: Border.all(
+                          color: brandGreen.withValues(alpha: 0.4),
+                        ),
                       ),
                       child: const Row(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -1775,10 +1893,7 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
                       const SizedBox(height: 1),
                       Text(
                         'صور المكيف، الفواتير، الكفالات، أو العقد',
-                        style: TextStyle(
-                          fontSize: 9.5,
-                          color: textMuted,
-                        ),
+                        style: TextStyle(fontSize: 9.5, color: textMuted),
                       ),
                     ],
                   ),
@@ -1786,12 +1901,16 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
               ),
               if (_attachments.isNotEmpty)
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 7,
+                    vertical: 2,
+                  ),
                   decoration: BoxDecoration(
                     color: brandGreen.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(6),
-                    border: Border.all(color: brandGreen.withValues(alpha: 0.3)),
+                    border: Border.all(
+                      color: brandGreen.withValues(alpha: 0.3),
+                    ),
                   ),
                   child: Text(
                     '${_attachments.length} مرفق',
@@ -1854,7 +1973,11 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(Remix.image_line, size: 13, color: Color(0xFF38BDF8)),
+                        const Icon(
+                          Remix.image_line,
+                          size: 13,
+                          color: Color(0xFF38BDF8),
+                        ),
                         const SizedBox(width: 4),
                         Text(
                           'من المعرض',
@@ -1884,7 +2007,11 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(Remix.file_pdf_2_line, size: 13, color: Color(0xFFEF4444)),
+                        const Icon(
+                          Remix.file_pdf_2_line,
+                          size: 13,
+                          color: Color(0xFFEF4444),
+                        ),
                         const SizedBox(width: 4),
                         Text(
                           'ملف / PDF',
@@ -1930,43 +2057,48 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
                             border: Border.all(color: surfaceBorder),
                           ),
                           clipBehavior: Clip.antiAlias,
-                          child: item.isImage
-                              ? Image.file(
-                                  File(path),
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (_, __, ___) => Icon(
-                                    Remix.image_line,
-                                    color: textMuted,
-                                    size: 20,
-                                  ),
-                                )
-                              : Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(
-                                      item.isPdf
-                                          ? Remix.file_pdf_2_fill
-                                          : Remix.file_text_fill,
-                                      size: 24,
-                                      color: item.isPdf
-                                          ? const Color(0xFFEF4444)
-                                          : const Color(0xFF38BDF8),
-                                    ),
-                                    const SizedBox(height: 2),
-                                    Padding(
-                                      padding: const EdgeInsets.symmetric(horizontal: 2),
-                                      child: Text(
-                                        item.name,
-                                        style: TextStyle(
-                                          fontSize: 8,
+                          child:
+                              item.isImage
+                                  ? Image.file(
+                                    File(path),
+                                    fit: BoxFit.cover,
+                                    errorBuilder:
+                                        (_, __, ___) => Icon(
+                                          Remix.image_line,
                                           color: textMuted,
+                                          size: 20,
                                         ),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
+                                  )
+                                  : Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(
+                                        item.isPdf
+                                            ? Remix.file_pdf_2_fill
+                                            : Remix.file_text_fill,
+                                        size: 24,
+                                        color:
+                                            item.isPdf
+                                                ? const Color(0xFFEF4444)
+                                                : const Color(0xFF38BDF8),
                                       ),
-                                    ),
-                                  ],
-                                ),
+                                      const SizedBox(height: 2),
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 2,
+                                        ),
+                                        child: Text(
+                                          item.name,
+                                          style: TextStyle(
+                                            fontSize: 8,
+                                            color: textMuted,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                         ),
                       ),
                       Positioned(
