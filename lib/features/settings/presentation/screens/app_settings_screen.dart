@@ -1808,7 +1808,10 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                   InkWell(
                     onTap: () {
                       SpendoHaptics.selection();
-                      AppTheme.fontScaleNotifier.value = (scale - 0.04).clamp(0.80, 1.25);
+                      AppTheme.fontScaleNotifier.value = (scale - 0.04).clamp(
+                        0.80,
+                        1.25,
+                      );
                       _hasUnsavedChanges = true;
                     },
                     borderRadius: BorderRadius.circular(6),
@@ -1861,7 +1864,10 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                   InkWell(
                     onTap: () {
                       SpendoHaptics.selection();
-                      AppTheme.fontScaleNotifier.value = (scale + 0.04).clamp(0.80, 1.25);
+                      AppTheme.fontScaleNotifier.value = (scale + 0.04).clamp(
+                        0.80,
+                        1.25,
+                      );
                       _hasUnsavedChanges = true;
                     },
                     borderRadius: BorderRadius.circular(6),
@@ -3181,17 +3187,27 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                                     child: SizedBox(
                                       height: 38,
                                       child: OutlinedButton(
-                                        onPressed: _hasUnsavedChanges ? _handleCancelSettings : null,
+                                        onPressed:
+                                            _hasUnsavedChanges
+                                                ? _handleCancelSettings
+                                                : null,
                                         style: OutlinedButton.styleFrom(
                                           foregroundColor: textMuted,
-                                          side: BorderSide(color: surfaceBorder),
+                                          side: BorderSide(
+                                            color: surfaceBorder,
+                                          ),
                                           shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(10),
+                                            borderRadius: BorderRadius.circular(
+                                              10,
+                                            ),
                                           ),
                                         ),
                                         child: const Text(
                                           'إلغاء',
-                                          style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold),
+                                          style: TextStyle(
+                                            fontSize: 11.5,
+                                            fontWeight: FontWeight.bold,
+                                          ),
                                         ),
                                       ),
                                     ),
