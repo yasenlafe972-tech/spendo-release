@@ -178,8 +178,6 @@ class _SpendoCalendarSheetState extends State<_SpendoCalendarSheet> {
     });
   }
 
-  int _daysInMonth(int year, int month) => DateUtils.getDaysInMonth(year, month);
-
   void _chooseDay(DateTime day) {
     if (!_isAllowed(day)) return;
     SpendoHaptics.selection();
@@ -284,8 +282,13 @@ class _SpendoCalendarSheetState extends State<_SpendoCalendarSheet> {
 
     if (!mounted || picked == null) return;
     SpendoHaptics.light();
+    var month = _visibleMonth.month;
+    if (!_monthIsAllowed(picked, month)) {
+      month = List<int>.generate(12, (index) => index + 1)
+          .firstWhere((candidate) => _monthIsAllowed(picked, candidate));
+    }
     setState(() {
-      _visibleMonth = DateTime(picked, _visibleMonth.month, 1);
+      _visibleMonth = DateTime(picked, month, 1);
     });
   }
 
@@ -420,13 +423,7 @@ class _SpendoCalendarSheetState extends State<_SpendoCalendarSheet> {
 
   Widget _buildSelectedDate() {
     final monthName = SpendoDatePicker.arabicMonths[_selectedDate.month - 1];
-    final dateText = _weekdayName(_selectedDate) +
-        '، ' +
-        _selectedDate.day.toString() +
-        ' ' +
-        monthName +
-        ' ' +
-        _selectedDate.year.toString();
+    final dateText = '،   ';
 
     return Container(
       width: double.infinity,
@@ -472,11 +469,7 @@ class _SpendoCalendarSheetState extends State<_SpendoCalendarSheet> {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  _selectedDate.day.toString().padLeft(2, '0') +
-                      '/' +
-                      _selectedDate.month.toString().padLeft(2, '0') +
-                      '/' +
-                      _selectedDate.year.toString(),
+                  '//',
                   style: const TextStyle(
                     fontFamily: 'PlusJakartaSans',
                     fontSize: 11,
@@ -496,7 +489,7 @@ class _SpendoCalendarSheetState extends State<_SpendoCalendarSheet> {
                 border: Border.all(color: _gold.withValues(alpha: 0.5)),
               ),
               child: Text(
-                _ageFor(_selectedDate).toString() + ' سنة',
+                ' سنة',
                 style: const TextStyle(
                   fontFamily: 'Cairo',
                   color: _gold,
