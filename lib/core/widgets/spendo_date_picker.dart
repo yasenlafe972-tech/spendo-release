@@ -1,45 +1,20 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:remixicon/remixicon.dart';
 import 'package:sanad_app/core/utils/spendo_haptic_feedback.dart';
 
-/// A luxury, GitHub & Revolut-inspired FinTech DatePicker for Spendo.
-///
-/// Features:
-/// 1. Dual Mode: Smooth 3D Cupertino Wheels & Modern Arabic Calendar Grid.
-/// 2. Signature Amber / Gold (#F59E0B) branding matching Spendo FinTech identity.
-/// 3. Live Age and Relative Date Showcase.
-/// 4. Quick Jump Presets for Birthdates and Transactions.
-/// 5. 100% Native Arabic Localization (Weekdays & Months).
+/// Arabic calendar date picker shared across the app.
 class SpendoDatePicker {
   SpendoDatePicker._();
 
   static const List<String> arabicMonths = [
-    'يناير',
-    'فبراير',
-    'مارس',
-    'أبريل',
-    'مايو',
-    'يونيو',
-    'يوليو',
-    'أغسطس',
-    'سبتمبر',
-    'أكتوبر',
-    'نوفمبر',
-    'ديسمبر',
+    'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
+    'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر',
   ];
 
   static const List<String> arabicWeekdays = [
-    'سبت',
-    'أحد',
-    'إثنين',
-    'ثلاثاء',
-    'أربعاء',
-    'خميس',
-    'جمعة',
+    'سبت', 'أحد', 'إثنين', 'ثلاثاء', 'أربعاء', 'خميس', 'جمعة',
   ];
 
-  /// Standard date picker for work logs, payments, vehicle logs, and debts.
   static Future<DateTime?> pickDate(
     BuildContext context, {
     required DateTime initialDate,
@@ -49,48 +24,43 @@ class SpendoDatePicker {
     String? helpText,
     String cancelText = 'إلغاء',
     String confirmText = 'تأكيد التاريخ',
-  }) async {
+  }) {
     SpendoHaptics.light();
-    return _showModalPicker(
+    return _showCalendar(
       context,
       initialDate: initialDate,
       firstDate: firstDate,
       lastDate: lastDate,
       isBirthDate: false,
-      helpText: helpText ?? 'تحديد وتأكيد التاريخ',
+      helpText: helpText ?? 'اختيار التاريخ',
       cancelText: cancelText,
       confirmText: confirmText,
     );
   }
 
-  /// Specialized birth date picker: starts in Wheel mode with quick age presets
-  /// and live age badge calculation.
   static Future<DateTime?> pickBirthDate(
     BuildContext context, {
     DateTime? initialDate,
     DateTime? firstDate,
     DateTime? lastDate,
-    String helpText = 'اختر وتأكيد تاريخ الميلاد',
+    String helpText = 'اختر تاريخ الميلاد',
     String cancelText = 'إلغاء',
     String confirmText = 'تثبيت تاريخ الميلاد',
-  }) async {
+  }) {
     SpendoHaptics.light();
-    final now = DateTime.now();
-    final effectiveFirst = firstDate ?? DateTime(1930, 1, 1);
-    final effectiveLast = lastDate ?? now;
-    final effectiveInitial = initialDate ?? DateTime(now.year - 25, 1, 1);
+    final today = DateTime.now();
+    final earliest = firstDate ?? DateTime(1930, 1, 1);
+    final latest = lastDate ?? DateTime(today.year, today.month, today.day);
+    final requested = initialDate ?? DateTime(today.year - 25, 1, 1);
+    final safeInitial = requested.isAfter(latest)
+        ? latest
+        : (requested.isBefore(earliest) ? earliest : requested);
 
-    final clampedInitial = effectiveInitial.isAfter(effectiveLast)
-        ? effectiveLast
-        : (effectiveInitial.isBefore(effectiveFirst)
-            ? effectiveFirst
-            : effectiveInitial);
-
-    return _showModalPicker(
+    return _showCalendar(
       context,
-      initialDate: clampedInitial,
-      firstDate: effectiveFirst,
-      lastDate: effectiveLast,
+      initialDate: safeInitial,
+      firstDate: earliest,
+      lastDate: latest,
       isBirthDate: true,
       helpText: helpText,
       cancelText: cancelText,
@@ -98,7 +68,7 @@ class SpendoDatePicker {
     );
   }
 
-  static Future<DateTime?> _showModalPicker(
+  static Future<DateTime?> _showCalendar(
     BuildContext context, {
     required DateTime initialDate,
     required DateTime firstDate,
@@ -107,28 +77,30 @@ class SpendoDatePicker {
     required String helpText,
     required String cancelText,
     required String confirmText,
-  }) async {
+  }) {
+    final safeInitial = initialDate.isBefore(firstDate)
+        ? firstDate
+        : (initialDate.isAfter(lastDate) ? lastDate : initialDate);
     return showModalBottomSheet<DateTime>(
       context: context,
       isScrollControlled: true,
+      useSafeArea: true,
       backgroundColor: Colors.transparent,
-      barrierColor: Colors.black.withValues(alpha: 0.55),
-      builder: (ctx) {
-        return _SpendoDatePickerSheet(
-          initialDate: initialDate,
-          firstDate: firstDate,
-          lastDate: lastDate,
-          isBirthDate: isBirthDate,
-          helpText: helpText,
-          cancelText: cancelText,
-          confirmText: confirmText,
-        );
-      },
+      barrierColor: Colors.black.withValues(alpha: 0.58),
+      builder: (context) => _SpendoCalendarSheet(
+        initialDate: safeInitial,
+        firstDate: firstDate,
+        lastDate: lastDate,
+        isBirthDate: isBirthDate,
+        helpText: helpText,
+        cancelText: cancelText,
+        confirmText: confirmText,
+      ),
     );
   }
 }
 
-class _SpendoDatePickerSheet extends StatefulWidget {
+class _SpendoCalendarSheet extends StatefulWidget {
   final DateTime initialDate;
   final DateTime firstDate;
   final DateTime lastDate;
@@ -137,7 +109,7 @@ class _SpendoDatePickerSheet extends StatefulWidget {
   final String cancelText;
   final String confirmText;
 
-  const _SpendoDatePickerSheet({
+  const _SpendoCalendarSheet({
     required this.initialDate,
     required this.firstDate,
     required this.lastDate,
@@ -148,483 +120,474 @@ class _SpendoDatePickerSheet extends StatefulWidget {
   });
 
   @override
-  State<_SpendoDatePickerSheet> createState() => _SpendoDatePickerSheetState();
+  State<_SpendoCalendarSheet> createState() => _SpendoCalendarSheetState();
 }
 
-class _SpendoDatePickerSheetState extends State<_SpendoDatePickerSheet> {
+class _SpendoCalendarSheetState extends State<_SpendoCalendarSheet> {
   late DateTime _selectedDate;
-  late DateTime _calendarViewMonth;
-  bool _useWheelMode = true;
+  late DateTime _visibleMonth;
 
-  // Controllers for CupertinoPickers
-  late FixedExtentScrollController _dayController;
-  late FixedExtentScrollController _monthController;
-  late FixedExtentScrollController _yearController;
-
-  Color get brandYellow =>
-      const Color(0xFFFFD600);
-  static const Color brandGreen = Color(0xFF0F766E);
+  static const Color _teal = Color(0xFF0F766E);
+  static const Color _gold = Color(0xFFD6AD52);
 
   bool get _isDark => Theme.of(context).brightness == Brightness.dark;
-  Color get surfaceMain =>
-      _isDark ? const Color(0xFF0F0F12) : const Color(0xFFFFFFFF);
-  Color get surfaceField =>
-      _isDark ? const Color(0xFF17171C) : const Color(0xFFF4F5F7);
-  Color get surfaceBorder =>
-      _isDark ? const Color(0xFF262630) : const Color(0xFFE5E7EB);
-  Color get textPrimary =>
-      _isDark ? Colors.white : const Color(0xFF111827);
-  Color get textMuted =>
-      _isDark ? const Color(0xFF8E8E9A) : const Color(0xFF6B7280);
-  Color get textSubtle =>
-      _isDark ? const Color(0xFF5E5E68) : const Color(0xFF9CA3AF);
+  Color get _background => _isDark ? const Color(0xFF101114) : Colors.white;
+  Color get _surface => _isDark ? const Color(0xFF18191D) : const Color(0xFFF5F6F7);
+  Color get _border => _isDark ? const Color(0xFF292B31) : const Color(0xFFE2E5E9);
+  Color get _primaryText => _isDark ? const Color(0xFFF4F4F5) : const Color(0xFF181A1F);
+  Color get _mutedText => _isDark ? const Color(0xFF9296A1) : const Color(0xFF747985);
+  Color get _quietText => _isDark ? const Color(0xFF5D626D) : const Color(0xFFADB2BB);
 
   @override
   void initState() {
     super.initState();
-    _selectedDate = widget.initialDate;
-    _calendarViewMonth = DateTime(_selectedDate.year, _selectedDate.month, 1);
-    // Birthdays default to wheels; standard dates default to calendar
-    _useWheelMode = widget.isBirthDate;
-
-    _initControllers();
+    _selectedDate = _dateOnly(widget.initialDate);
+    _visibleMonth = DateTime(_selectedDate.year, _selectedDate.month);
   }
 
-  void _initControllers() {
-    final dayIndex = _selectedDate.day - 1;
-    final monthIndex = _selectedDate.month - 1;
-    final yearIndex = _selectedDate.year - widget.firstDate.year;
+  DateTime _dateOnly(DateTime date) => DateTime(date.year, date.month, date.day);
 
-    _dayController = FixedExtentScrollController(initialItem: dayIndex);
-    _monthController = FixedExtentScrollController(initialItem: monthIndex);
-    _yearController = FixedExtentScrollController(
-      initialItem: yearIndex.clamp(0, widget.lastDate.year - widget.firstDate.year),
+  bool _isAllowed(DateTime date) {
+    final day = _dateOnly(date);
+    return !day.isBefore(_dateOnly(widget.firstDate)) &&
+        !day.isAfter(_dateOnly(widget.lastDate));
+  }
+
+  int _saturdayFirstWeekday(DateTime date) {
+    // Dart: Monday = 1; this calendar starts with Saturday.
+    return (date.weekday + 1) % 7;
+  }
+
+  bool _monthIsAllowed(int year, int month) {
+    final first = DateTime(year, month, 1);
+    final last = DateTime(year, month + 1, 0);
+    return !last.isBefore(_dateOnly(widget.firstDate)) &&
+        !first.isAfter(_dateOnly(widget.lastDate));
+  }
+
+  bool _canMoveMonth(int delta) {
+    final candidate = DateTime(_visibleMonth.year, _visibleMonth.month + delta, 1);
+    return _monthIsAllowed(candidate.year, candidate.month);
+  }
+
+  void _moveMonth(int delta) {
+    if (!_canMoveMonth(delta)) return;
+    SpendoHaptics.selection();
+    setState(() {
+      _visibleMonth = DateTime(_visibleMonth.year, _visibleMonth.month + delta, 1);
+    });
+  }
+
+  int _daysInMonth(int year, int month) => DateUtils.getDaysInMonth(year, month);
+
+  void _chooseDay(DateTime day) {
+    if (!_isAllowed(day)) return;
+    SpendoHaptics.selection();
+    setState(() {
+      _selectedDate = _dateOnly(day);
+      _visibleMonth = DateTime(day.year, day.month, 1);
+    });
+  }
+
+  Future<void> _chooseMonth() async {
+    final picked = await showModalBottomSheet<int>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) => Directionality(
+        textDirection: TextDirection.rtl,
+        child: _ChoiceSheet(
+          title: 'اختيار الشهر',
+          background: _background,
+          surface: _surface,
+          border: _border,
+          primaryText: _primaryText,
+          mutedText: _mutedText,
+          child: GridView.builder(
+            shrinkWrap: true,
+            itemCount: 12,
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 3,
+              mainAxisExtent: 46,
+              mainAxisSpacing: 8,
+              crossAxisSpacing: 8,
+            ),
+            itemBuilder: (context, index) {
+              final month = index + 1;
+              final enabled = _monthIsAllowed(_visibleMonth.year, month);
+              final selected = month == _visibleMonth.month;
+              return _ChoiceTile(
+                label: SpendoDatePicker.arabicMonths[index],
+                enabled: enabled,
+                selected: selected,
+                teal: _teal,
+                surface: _surface,
+                border: _border,
+                primaryText: _primaryText,
+                quietText: _quietText,
+                onTap: () => Navigator.pop(sheetContext, month),
+              );
+            },
+          ),
+        ),
+      ),
     );
-  }
 
-  @override
-  void dispose() {
-    _dayController.dispose();
-    _monthController.dispose();
-    _yearController.dispose();
-    super.dispose();
-  }
-
-  int _daysInCurrentSelection(int year, int month) {
-    return DateUtils.getDaysInMonth(year, month);
-  }
-
-  void _onWheelChanged() {
-    final year = widget.firstDate.year + _yearController.selectedItem;
-    final month = (_monthController.selectedItem + 1).clamp(1, 12);
-    final maxDays = _daysInCurrentSelection(year, month);
-    final day = (_dayController.selectedItem + 1).clamp(1, maxDays);
-
-    DateTime candidate = DateTime(year, month, day);
-    if (candidate.isAfter(widget.lastDate)) candidate = widget.lastDate;
-    if (candidate.isBefore(widget.firstDate)) candidate = widget.firstDate;
-
-    setState(() {
-      _selectedDate = candidate;
-      _calendarViewMonth = DateTime(candidate.year, candidate.month, 1);
-    });
-  }
-
-  void _jumpToDate(DateTime date) {
-    DateTime clamped = date;
-    if (clamped.isAfter(widget.lastDate)) clamped = widget.lastDate;
-    if (clamped.isBefore(widget.firstDate)) clamped = widget.firstDate;
-
-    setState(() {
-      _selectedDate = clamped;
-      _calendarViewMonth = DateTime(clamped.year, clamped.month, 1);
-    });
-
-    final dayIndex = clamped.day - 1;
-    final monthIndex = clamped.month - 1;
-    final yearIndex = clamped.year - widget.firstDate.year;
-
-    if (_dayController.hasClients) _dayController.jumpToItem(dayIndex);
-    if (_monthController.hasClients) _monthController.jumpToItem(monthIndex);
-    if (_yearController.hasClients) _yearController.jumpToItem(yearIndex);
-
+    if (!mounted || picked == null) return;
     SpendoHaptics.light();
+    setState(() {
+      _visibleMonth = DateTime(_visibleMonth.year, picked, 1);
+    });
   }
 
-  int _calculateAge(DateTime birthdate) {
-    final now = DateTime.now();
-    int age = now.year - birthdate.year;
-    if (now.month < birthdate.month ||
-        (now.month == birthdate.month && now.day < birthdate.day)) {
+  Future<void> _chooseYear() async {
+    final yearCount = widget.lastDate.year - widget.firstDate.year + 1;
+    final picked = await showModalBottomSheet<int>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) => Directionality(
+        textDirection: TextDirection.rtl,
+        child: _ChoiceSheet(
+          title: 'اختيار السنة',
+          background: _background,
+          surface: _surface,
+          border: _border,
+          primaryText: _primaryText,
+          mutedText: _mutedText,
+          child: GridView.builder(
+            shrinkWrap: true,
+            itemCount: yearCount,
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 4,
+              mainAxisExtent: 46,
+              mainAxisSpacing: 8,
+              crossAxisSpacing: 8,
+            ),
+            itemBuilder: (context, index) {
+              final year = widget.firstDate.year + index;
+              final selected = year == _visibleMonth.year;
+              return _ChoiceTile(
+                label: year.toString(),
+                enabled: true,
+                selected: selected,
+                teal: _teal,
+                surface: _surface,
+                border: _border,
+                primaryText: _primaryText,
+                quietText: _quietText,
+                onTap: () => Navigator.pop(sheetContext, year),
+              );
+            },
+          ),
+        ),
+      ),
+    );
+
+    if (!mounted || picked == null) return;
+    SpendoHaptics.light();
+    setState(() {
+      _visibleMonth = DateTime(picked, _visibleMonth.month, 1);
+    });
+  }
+
+  int _ageFor(DateTime birthDate) {
+    final today = DateTime.now();
+    var age = today.year - birthDate.year;
+    if (today.month < birthDate.month ||
+        (today.month == birthDate.month && today.day < birthDate.day)) {
       age--;
     }
-    return age >= 0 ? age : 0;
+    return age < 0 ? 0 : age;
   }
 
-  String _formatArabicFullDate(DateTime date) {
-    final weekday = SpendoDatePicker.arabicWeekdays[_getArabicWeekdayIndex(date)];
-    final monthName = SpendoDatePicker.arabicMonths[date.month - 1];
-    return '$weekday، ${date.day} $monthName ${date.year}';
-  }
-
-  int _getArabicWeekdayIndex(DateTime date) {
-    // DateTime.monday = 1 ... DateTime.sunday = 7
-    // Spendo: سبت (0), أحد (1), إثنين (2), ثلاثاء (3), أربعاء (4), خميس (5), جمعة (6)
-    switch (date.weekday) {
-      case DateTime.saturday:
-        return 0;
-      case DateTime.sunday:
-        return 1;
-      case DateTime.monday:
-        return 2;
-      case DateTime.tuesday:
-        return 3;
-      case DateTime.wednesday:
-        return 4;
-      case DateTime.thursday:
-        return 5;
-      case DateTime.friday:
-        return 6;
-      default:
-        return 0;
-    }
+  String _weekdayName(DateTime date) {
+    const names = ['السبت', 'الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة'];
+    return names[_saturdayFirstWeekday(date)];
   }
 
   @override
   Widget build(BuildContext context) {
-    final media = MediaQuery.of(context);
-    final bottomNavPadding = media.padding.bottom > 0
-        ? media.padding.bottom
-        : media.viewPadding.bottom;
+    final monthName = SpendoDatePicker.arabicMonths[_visibleMonth.month - 1];
+    final maxHeight = MediaQuery.sizeOf(context).height * 0.88;
 
     return Directionality(
       textDirection: TextDirection.rtl,
-      child: SafeArea(
-        top: false,
-        bottom: true,
+      child: ConstrainedBox(
+        constraints: BoxConstraints(maxHeight: maxHeight),
         child: Container(
           decoration: BoxDecoration(
-            color: surfaceMain,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-            border: Border.all(color: surfaceBorder),
+            color: _background,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(26)),
+            border: Border.all(color: _border),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.35),
-                blurRadius: 20,
-                offset: const Offset(0, -4),
+                color: Colors.black.withValues(alpha: 0.32),
+                blurRadius: 28,
+                offset: const Offset(0, -5),
               ),
             ],
           ),
-          padding: EdgeInsets.only(
-            bottom: bottomNavPadding > 0 ? bottomNavPadding + 8 : 16,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // 1. مقبض السحب العلوي
-              const SizedBox(height: 8),
-              Center(
-                child: Container(
-                  width: 38,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: surfaceBorder,
-                    borderRadius: BorderRadius.circular(99),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 10),
-
-              // 2. ترويسة منتقي التاريخ الفينتك
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Row(
-                  children: [
-                    // أيقونة خضراء
-                    Container(
-                      width: 38,
-                      height: 38,
+          child: SafeArea(
+            top: false,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(18, 10, 18, 14),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 42,
+                      height: 4,
                       decoration: BoxDecoration(
-                        color: brandGreen.withValues(alpha: 0.14),
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(
-                          color: brandGreen.withValues(alpha: 0.35),
-                        ),
-                      ),
-                      child: Icon(
-                        widget.isBirthDate
-                            ? Remix.cake_2_line
-                            : Remix.calendar_2_line,
-                        size: 18,
-                        color: brandGreen,
+                        color: _border,
+                        borderRadius: BorderRadius.circular(20),
                       ),
                     ),
-                    const SizedBox(width: 10),
+                  ),
+                  const SizedBox(height: 14),
+                  _buildHeader(),
+                  const SizedBox(height: 14),
+                  _buildSelectedDate(),
+                  const SizedBox(height: 16),
+                  _buildMonthNavigation(monthName),
+                  const SizedBox(height: 8),
+                  _buildWeekdayLabels(),
+                  const SizedBox(height: 4),
+                  _buildDaysGrid(),
+                  const SizedBox(height: 14),
+                  _buildActions(),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 
-                    // عنوان المنتقي
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            widget.helpText,
-                            style: TextStyle(
-                              fontFamily: 'Cairo',
-                              fontSize: 13.5,
-                              fontWeight: FontWeight.bold,
-                              color: textPrimary,
-                            ),
-                          ),
-                          Text(
-                            widget.isBirthDate
-                                ? 'مرر العجلات لاختيار اليوم والشهر والسنة وحساب العمر'
-                                : 'اختر التاريخ من التقويم أو عجلات التمرير',
-                            style: TextStyle(
-                              fontFamily: 'Cairo',
-                              fontSize: 10,
-                              color: textMuted,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    // مفتاح التبديل (عجلات / تقويم)
-                    InkWell(
-                      onTap: () {
-                        SpendoHaptics.light();
-                        setState(() {
-                          _useWheelMode = !_useWheelMode;
-                        });
-                      },
-                      borderRadius: BorderRadius.circular(8),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: surfaceField,
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: surfaceBorder),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              _useWheelMode
-                                  ? Remix.calendar_event_line
-                                  : Remix.compass_discover_line,
-                              size: 13,
-                              color: brandYellow,
-                            ),
-                            const SizedBox(width: 4),
-                            Text(
-                              _useWheelMode ? 'تقويم' : 'عجلات',
-                              style: TextStyle(
-                                fontFamily: 'Cairo',
-                                fontSize: 10.5,
-                                fontWeight: FontWeight.bold,
-                                color: brandYellow,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 6),
-
-                    // زر الإغلاق
-                    InkWell(
-                      onTap: () => Navigator.pop(context),
-                      borderRadius: BorderRadius.circular(20),
-                      child: Container(
-                        padding: const EdgeInsets.all(6),
-                        decoration: BoxDecoration(
-                          color: surfaceBorder.withValues(alpha: 0.4),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Icon(Remix.close_line, size: 16, color: textMuted),
-                      ),
-                    ),
-                  ],
+  Widget _buildHeader() {
+    return Row(
+      children: [
+        Container(
+          width: 42,
+          height: 42,
+          decoration: BoxDecoration(
+            color: _teal.withValues(alpha: 0.14),
+            borderRadius: BorderRadius.circular(13),
+            border: Border.all(color: _teal.withValues(alpha: 0.3)),
+          ),
+          child: Icon(
+            widget.isBirthDate ? Remix.cake_2_line : Remix.calendar_2_line,
+            color: _teal,
+            size: 20,
+          ),
+        ),
+        const SizedBox(width: 11),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                widget.helpText,
+                style: TextStyle(
+                  fontFamily: 'Cairo',
+                  fontSize: 15,
+                  fontWeight: FontWeight.w800,
+                  color: _primaryText,
                 ),
               ),
-              const SizedBox(height: 10),
+              Text(
+                'اختر السنة والشهر ثم اضغط اليوم',
+                style: TextStyle(fontFamily: 'Cairo', fontSize: 10.5, color: _mutedText),
+              ),
+            ],
+          ),
+        ),
+        Material(
+          color: _surface,
+          shape: CircleBorder(side: BorderSide(color: _border)),
+          child: InkWell(
+            customBorder: const CircleBorder(),
+            onTap: () => Navigator.pop(context),
+            child: Padding(
+              padding: const EdgeInsets.all(9),
+              child: Icon(Remix.close_line, size: 17, color: _mutedText),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
 
-              // 3. بطاقة المعاينة الفينتك (Hero Bento Date & Age Card)
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                  decoration: BoxDecoration(
-                    color: surfaceField,
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(
-                      color: brandGreen.withValues(alpha: 0.35),
-                      width: 1.2,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: brandGreen.withValues(alpha: 0.08),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              _formatArabicFullDate(_selectedDate),
-                              style: TextStyle(
-                                fontFamily: 'Cairo',
-                                fontSize: 13.5,
-                                fontWeight: FontWeight.bold,
-                                color: textPrimary,
-                              ),
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              '${_selectedDate.day.toString().padLeft(2, '0')}/${_selectedDate.month.toString().padLeft(2, '0')}/${_selectedDate.year}',
-                              style: TextStyle(
-                                fontFamily: 'PlusJakartaSans',
-                                fontFamilyFallback: const ['Cairo', 'Heebo'],
-                                fontSize: 11.5,
-                                fontWeight: FontWeight.w700,
-                                color: brandGreen,
-                                letterSpacing: 0.5,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      if (widget.isBirthDate)
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 10, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: brandYellow.withValues(alpha: 0.18),
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(
-                              color: brandYellow.withValues(alpha: 0.5),
-                            ),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(Remix.cake_2_line,
-                                  size: 13, color: brandYellow),
-                              const SizedBox(width: 4),
-                              Text(
-                                '${_calculateAge(_selectedDate)} سنة',
-                                style: TextStyle(
-                                  fontFamily: 'PlusJakartaSans',
-                                  fontFamilyFallback: const ['Cairo', 'Heebo'],
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
-                                  color: brandYellow,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                    ],
+  Widget _buildSelectedDate() {
+    final monthName = SpendoDatePicker.arabicMonths[_selectedDate.month - 1];
+    final dateText = _weekdayName(_selectedDate) +
+        '، ' +
+        _selectedDate.day.toString() +
+        ' ' +
+        monthName +
+        ' ' +
+        _selectedDate.year.toString();
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 12),
+      decoration: BoxDecoration(
+        color: _surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: _teal.withValues(alpha: 0.45)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 42,
+            height: 42,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: _teal.withValues(alpha: 0.16),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Text(
+              _selectedDate.day.toString(),
+              style: const TextStyle(
+                fontFamily: 'PlusJakartaSans',
+                fontSize: 21,
+                fontWeight: FontWeight.w800,
+                color: _teal,
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  dateText,
+                  style: TextStyle(
+                    fontFamily: 'Cairo',
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.bold,
+                    color: _primaryText,
                   ),
                 ),
+                const SizedBox(height: 2),
+                Text(
+                  _selectedDate.day.toString().padLeft(2, '0') +
+                      '/' +
+                      _selectedDate.month.toString().padLeft(2, '0') +
+                      '/' +
+                      _selectedDate.year.toString(),
+                  style: const TextStyle(
+                    fontFamily: 'PlusJakartaSans',
+                    fontSize: 11,
+                    color: _teal,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          if (widget.isBirthDate)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+              decoration: BoxDecoration(
+                color: _gold.withValues(alpha: 0.14),
+                borderRadius: BorderRadius.circular(11),
+                border: Border.all(color: _gold.withValues(alpha: 0.5)),
               ),
-
-              const SizedBox(height: 10),
-
-              // 4. جسم المنتقي الرئيسي: عجلات دوارة ثلاثية أو تقويم شهري
-              AnimatedSwitcher(
-                duration: const Duration(milliseconds: 220),
-                child: _useWheelMode
-                    ? _buildCupertinoWheelPicker()
-                    : _buildCalendarGrid(),
-              ),
-
-              const SizedBox(height: 12),
-
-              // 5. أزرار التأكيد والإلغاء (زر فينتك مميز)
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: InkWell(
-                        onTap: () {
-                          SpendoHaptics.success();
-                          Navigator.pop(context, _selectedDate);
-                        },
-                        borderRadius: BorderRadius.circular(12),
-                        child: Container(
-                          height: 44,
-                          decoration: BoxDecoration(
-                            color: brandGreen,
-                            borderRadius: BorderRadius.circular(12),
-                            boxShadow: [
-                              BoxShadow(
-                                color: brandGreen.withValues(alpha: 0.3),
-                                blurRadius: 10,
-                                offset: const Offset(0, 3),
-                              ),
-                            ],
-                          ),
-                          alignment: Alignment.center,
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              const Icon(
-                                Remix.check_line,
-                                size: 18,
-                                color: Colors.white,
-                              ),
-                              const SizedBox(width: 6),
-                              Text(
-                                widget.confirmText,
-                                style: const TextStyle(
-                                  fontFamily: 'Cairo',
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    InkWell(
-                      onTap: () => Navigator.pop(context),
-                      borderRadius: BorderRadius.circular(12),
-                      child: Container(
-                        height: 44,
-                        padding: const EdgeInsets.symmetric(horizontal: 20),
-                        decoration: BoxDecoration(
-                          color: surfaceField,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: surfaceBorder),
-                        ),
-                        alignment: Alignment.center,
-                        child: Text(
-                          widget.cancelText,
-                          style: TextStyle(
-                            fontFamily: 'Cairo',
-                            fontSize: 12.5,
-                            fontWeight: FontWeight.w600,
-                            color: textMuted,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
+              child: Text(
+                _ageFor(_selectedDate).toString() + ' سنة',
+                style: const TextStyle(
+                  fontFamily: 'Cairo',
+                  color: _gold,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 11,
                 ),
               ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMonthNavigation(String monthName) {
+    return Row(
+      children: [
+        _navigationButton(
+          icon: Remix.arrow_right_s_line,
+          tooltip: 'الشهر السابق',
+          enabled: _canMoveMonth(-1),
+          onTap: () => _moveMonth(-1),
+        ),
+        const SizedBox(width: 6),
+        Expanded(
+          child: Row(
+            children: [
+              Expanded(
+                child: _selectorButton(
+                  label: monthName,
+                  icon: Remix.arrow_down_s_line,
+                  onTap: _chooseMonth,
+                ),
+              ),
+              const SizedBox(width: 7),
+              Expanded(
+                child: _selectorButton(
+                  label: _visibleMonth.year.toString(),
+                  icon: Remix.arrow_down_s_line,
+                  onTap: _chooseYear,
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(width: 6),
+        _navigationButton(
+          icon: Remix.arrow_left_s_line,
+          tooltip: 'الشهر التالي',
+          enabled: _canMoveMonth(1),
+          onTap: () => _moveMonth(1),
+        ),
+      ],
+    );
+  }
+
+  Widget _selectorButton({
+    required String label,
+    required IconData icon,
+    required VoidCallback onTap,
+  }) {
+    return Material(
+      color: _surface,
+      borderRadius: BorderRadius.circular(12),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: onTap,
+        child: Container(
+          height: 43,
+          padding: const EdgeInsets.symmetric(horizontal: 11),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: _border),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Flexible(
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontFamily: 'Cairo',
+                    fontSize: 13,
+                    color: _primaryText,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 3),
+              Icon(icon, size: 17, color: _teal),
             ],
           ),
         ),
@@ -632,290 +595,247 @@ class _SpendoDatePickerSheetState extends State<_SpendoDatePickerSheet> {
     );
   }
 
-  Widget _buildCupertinoWheelPicker() {
-    final maxDays = _daysInCurrentSelection(
-      _selectedDate.year,
-      _selectedDate.month,
-    );
-    final totalYears = widget.lastDate.year - widget.firstDate.year + 1;
-
-    return Container(
-      height: 190,
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      decoration: BoxDecoration(
-        color: surfaceField,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: surfaceBorder),
+  Widget _navigationButton({
+    required IconData icon,
+    required String tooltip,
+    required bool enabled,
+    required VoidCallback onTap,
+  }) {
+    return Material(
+      color: _surface,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: _border),
       ),
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          // مؤشر الاختيار المضيء باللون الذهبي
-          Container(
-            height: 38,
-            margin: const EdgeInsets.symmetric(horizontal: 8),
-            decoration: BoxDecoration(
-              color: brandYellow.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(
-                color: brandYellow.withValues(alpha: 0.45),
-                width: 1.2,
-              ),
-            ),
-          ),
-          // العجلات الثلاث: اليوم / الشهر / السنة
-          Row(
-            children: [
-              // 1. عجلة اليوم
-              Expanded(
-                flex: 3,
-                child: CupertinoPicker.builder(
-                  scrollController: _dayController,
-                  itemExtent: 38,
-                  magnification: 1.15,
-                  useMagnifier: true,
-                  squeeze: 1.1,
-                  childCount: maxDays,
-                  onSelectedItemChanged: (index) {
-                    SpendoHaptics.selection();
-                    _onWheelChanged();
-                  },
-                  itemBuilder: (context, index) {
-                    final day = index + 1;
-                    final isSel = day == _selectedDate.day;
-                    return Center(
-                      child: Text(
-                        day.toString().padLeft(2, '0'),
-                        style: TextStyle(
-                          fontFamily: 'PlusJakartaSans',
-                          fontFamilyFallback: const ['Cairo', 'Heebo'],
-                          fontSize: isSel ? 16 : 13,
-                          fontWeight:
-                              isSel ? FontWeight.bold : FontWeight.normal,
-                          color: isSel ? brandGreen : textMuted,
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
-
-              Container(width: 1, height: 120, color: surfaceBorder),
-
-              // 2. عجلة الشهر باللغة العربية
-              Expanded(
-                flex: 5,
-                child: CupertinoPicker.builder(
-                  scrollController: _monthController,
-                  itemExtent: 38,
-                  magnification: 1.15,
-                  useMagnifier: true,
-                  squeeze: 1.1,
-                  childCount: 12,
-                  onSelectedItemChanged: (index) {
-                    SpendoHaptics.selection();
-                    _onWheelChanged();
-                  },
-                  itemBuilder: (context, index) {
-                    final monthName = SpendoDatePicker.arabicMonths[index];
-                    final isSel = index + 1 == _selectedDate.month;
-                    return Center(
-                      child: Text(
-                        '${(index + 1).toString().padLeft(2, '0')} - $monthName',
-                        style: TextStyle(
-                          fontFamily: 'PlusJakartaSans',
-                          fontFamilyFallback: const ['Cairo', 'Heebo'],
-                          fontSize: isSel ? 14 : 12,
-                          fontWeight:
-                              isSel ? FontWeight.bold : FontWeight.normal,
-                          color: isSel ? brandYellow : textMuted,
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
-
-              Container(width: 1, height: 120, color: surfaceBorder),
-
-              // 3. عجلة السنة
-              Expanded(
-                flex: 4,
-                child: CupertinoPicker.builder(
-                  scrollController: _yearController,
-                  itemExtent: 38,
-                  magnification: 1.15,
-                  useMagnifier: true,
-                  squeeze: 1.1,
-                  childCount: totalYears,
-                  onSelectedItemChanged: (index) {
-                    SpendoHaptics.selection();
-                    _onWheelChanged();
-                  },
-                  itemBuilder: (context, index) {
-                    final year = widget.firstDate.year + index;
-                    final isSel = year == _selectedDate.year;
-                    return Center(
-                      child: Text(
-                        year.toString(),
-                        style: TextStyle(
-                          fontFamily: 'PlusJakartaSans',
-                          fontFamilyFallback: const ['Cairo', 'Heebo'],
-                          fontSize: isSel ? 16 : 13,
-                          fontWeight:
-                              isSel ? FontWeight.bold : FontWeight.normal,
-                          color: isSel ? brandGreen : textMuted,
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
-            ],
-          ),
-        ],
+      child: IconButton(
+        tooltip: tooltip,
+        onPressed: enabled ? onTap : null,
+        icon: Icon(icon, size: 20),
+        color: _teal,
+        disabledColor: _quietText,
+        constraints: const BoxConstraints.tightFor(width: 43, height: 43),
+        padding: EdgeInsets.zero,
       ),
     );
   }
 
-  Widget _buildCalendarGrid() {
-    final year = _calendarViewMonth.year;
-    final month = _calendarViewMonth.month;
-    final daysInMonth = DateUtils.getDaysInMonth(year, month);
-    final firstDayOfMonth = DateTime(year, month, 1);
-    final startWeekdayOffset = _getArabicWeekdayIndex(firstDayOfMonth);
-
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: surfaceField,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: surfaceBorder),
-      ),
-      child: Column(
-        children: [
-          // شريط التنقل بين الشهور
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              IconButton(
-                onPressed: () {
-                  SpendoHaptics.light();
-                  setState(() {
-                    _calendarViewMonth = DateTime(year, month - 1, 1);
-                  });
-                },
-                icon: const Icon(Remix.arrow_right_s_line, size: 20),
-                color: brandGreen,
-                tooltip: 'الشهر السابق',
+  Widget _buildWeekdayLabels() {
+    return Row(
+      children: SpendoDatePicker.arabicWeekdays.map((label) {
+        return Expanded(
+          child: Center(
+            child: Text(
+              label,
+              style: TextStyle(
+                fontFamily: 'Cairo',
+                fontSize: 10,
+                fontWeight: FontWeight.bold,
+                color: _mutedText,
               ),
-              Text(
-                '${SpendoDatePicker.arabicMonths[month - 1]} $year',
-                style: TextStyle(
-                  fontFamily: 'Cairo',
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                  color: textPrimary,
-                ),
-              ),
-              IconButton(
-                onPressed: () {
-                  SpendoHaptics.light();
-                  setState(() {
-                    _calendarViewMonth = DateTime(year, month + 1, 1);
-                  });
-                },
-                icon: const Icon(Remix.arrow_left_s_line, size: 20),
-                color: brandGreen,
-                tooltip: 'الشهر القادم',
-              ),
-            ],
-          ),
-          const SizedBox(height: 6),
-
-          // أسماء أيام الأسبوع العربية
-          Row(
-            children: SpendoDatePicker.arabicWeekdays.map((w) {
-              return Expanded(
-                child: Center(
-                  child: Text(
-                    w,
-                    style: TextStyle(
-                      fontFamily: 'Cairo',
-                      fontSize: 10.5,
-                      fontWeight: FontWeight.bold,
-                      color: textMuted,
-                    ),
-                  ),
-                ),
-              );
-            }).toList(),
-          ),
-          const SizedBox(height: 6),
-
-          // شبكة أيام الشهر
-          GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: startWeekdayOffset + daysInMonth,
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 7,
-              mainAxisSpacing: 4,
-              crossAxisSpacing: 4,
-              childAspectRatio: 1.15,
             ),
-            itemBuilder: (context, index) {
-              if (index < startWeekdayOffset) {
-                return const SizedBox.shrink();
-              }
-              final dayNumber = index - startWeekdayOffset + 1;
-              final cellDate = DateTime(year, month, dayNumber);
-              final isSelected = cellDate.year == _selectedDate.year &&
-                  cellDate.month == _selectedDate.month &&
-                  cellDate.day == _selectedDate.day;
-              final isToday = DateUtils.isSameDay(cellDate, DateTime.now());
-              final isDisabled = cellDate.isAfter(widget.lastDate) ||
-                  cellDate.isBefore(widget.firstDate);
-
-              return InkWell(
-                onTap: isDisabled
-                    ? null
-                    : () {
-                        _jumpToDate(cellDate);
-                      },
-                borderRadius: BorderRadius.circular(8),
-                child: Container(
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    color: isSelected
-                        ? brandGreen
-                        : (isToday
-                            ? brandYellow.withValues(alpha: 0.15)
-                            : Colors.transparent),
-                    borderRadius: BorderRadius.circular(8),
-                    border: isToday && !isSelected
-                        ? Border.all(color: brandYellow, width: 1.0)
-                        : null,
-                  ),
-                  child: Text(
-                    dayNumber.toString(),
-                    style: TextStyle(
-                      fontFamily: 'PlusJakartaSans',
-                      fontFamilyFallback: const ['Cairo', 'Heebo'],
-                      fontSize: 12,
-                      fontWeight:
-                          isSelected || isToday ? FontWeight.bold : FontWeight.w600,
-                      color: isSelected
-                          ? Colors.white
-                          : (isDisabled ? textSubtle : textPrimary),
-                    ),
-                  ),
-                ),
-              );
-            },
           ),
-        ],
+        );
+      }).toList(),
+    );
+  }
+
+  Widget _buildDaysGrid() {
+    final firstOfMonth = DateTime(_visibleMonth.year, _visibleMonth.month, 1);
+    final offset = _saturdayFirstWeekday(firstOfMonth);
+    final gridStart = firstOfMonth.subtract(Duration(days: offset));
+
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: 42,
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 7,
+        mainAxisSpacing: 3,
+        crossAxisSpacing: 3,
+        childAspectRatio: 1,
+      ),
+      itemBuilder: (context, index) {
+        final date = gridStart.add(Duration(days: index));
+        final inCurrentMonth = date.month == _visibleMonth.month;
+        final selected = DateUtils.isSameDay(date, _selectedDate);
+        final today = DateUtils.isSameDay(date, DateTime.now());
+        final allowed = _isAllowed(date);
+        final color = selected ? Colors.white : (allowed ? _primaryText : _quietText);
+
+        return Material(
+          color: selected
+              ? _teal
+              : (today ? _gold.withValues(alpha: 0.12) : Colors.transparent),
+          borderRadius: BorderRadius.circular(11),
+          child: InkWell(
+            onTap: allowed ? () => _chooseDay(date) : null,
+            borderRadius: BorderRadius.circular(11),
+            child: Container(
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(11),
+                border: today && !selected ? Border.all(color: _gold, width: 1) : null,
+              ),
+              child: Text(
+                date.day.toString(),
+                style: TextStyle(
+                  fontFamily: 'PlusJakartaSans',
+                  fontSize: 12.5,
+                  fontWeight: selected || today ? FontWeight.w800 : FontWeight.w600,
+                  color: inCurrentMonth ? color : (allowed ? _mutedText : _quietText),
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildActions() {
+    return Row(
+      children: [
+        Expanded(
+          child: OutlinedButton(
+            onPressed: () => Navigator.pop(context),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: _mutedText,
+              side: BorderSide(color: _border),
+              minimumSize: const Size.fromHeight(48),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+            ),
+            child: Text(
+              widget.cancelText,
+              style: const TextStyle(fontFamily: 'Cairo', fontWeight: FontWeight.w700),
+            ),
+          ),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          flex: 2,
+          child: FilledButton.icon(
+            onPressed: () {
+              SpendoHaptics.success();
+              Navigator.pop(context, _selectedDate);
+            },
+            style: FilledButton.styleFrom(
+              backgroundColor: _teal,
+              foregroundColor: Colors.white,
+              minimumSize: const Size.fromHeight(48),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+              elevation: 0,
+            ),
+            icon: const Icon(Remix.check_line, size: 18),
+            label: Text(
+              widget.confirmText,
+              style: const TextStyle(fontFamily: 'Cairo', fontWeight: FontWeight.w800),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _ChoiceSheet extends StatelessWidget {
+  final String title;
+  final Color background;
+  final Color surface;
+  final Color border;
+  final Color primaryText;
+  final Color mutedText;
+  final Widget child;
+
+  const _ChoiceSheet({
+    required this.title,
+    required this.background,
+    required this.surface,
+    required this.border,
+    required this.primaryText,
+    required this.mutedText,
+    required this.child,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      top: false,
+      child: Container(
+        constraints: BoxConstraints(maxHeight: MediaQuery.sizeOf(context).height * 0.62),
+        padding: const EdgeInsets.fromLTRB(18, 18, 18, 14),
+        decoration: BoxDecoration(
+          color: background,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          border: Border.all(color: border),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              title,
+              style: TextStyle(
+                fontFamily: 'Cairo',
+                fontSize: 15,
+                fontWeight: FontWeight.w800,
+                color: primaryText,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Flexible(child: child),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ChoiceTile extends StatelessWidget {
+  final String label;
+  final bool enabled;
+  final bool selected;
+  final Color teal;
+  final Color surface;
+  final Color border;
+  final Color primaryText;
+  final Color quietText;
+  final VoidCallback onTap;
+
+  const _ChoiceTile({
+    required this.label,
+    required this.enabled,
+    required this.selected,
+    required this.teal,
+    required this.surface,
+    required this.border,
+    required this.primaryText,
+    required this.quietText,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: selected ? teal.withValues(alpha: 0.18) : surface,
+      borderRadius: BorderRadius.circular(12),
+      child: InkWell(
+        onTap: enabled ? onTap : null,
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: selected ? teal : border),
+          ),
+          child: Text(
+            label,
+            style: TextStyle(
+              fontFamily: 'Cairo',
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+              color: !enabled ? quietText : (selected ? teal : primaryText),
+            ),
+          ),
+        ),
       ),
     );
   }
