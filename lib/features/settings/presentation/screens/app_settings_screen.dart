@@ -727,6 +727,7 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                                 } else {
                                   _emailController.text = val;
                                 }
+                                _hasUnsavedChanges = true;
                               });
                               Navigator.pop(ctx);
                               _showCustomToast(
