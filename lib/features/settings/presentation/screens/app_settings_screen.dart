@@ -60,6 +60,11 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
   bool _dailyReminderEnabled = true;
   TimeOfDay _reminderTime = const TimeOfDay(hour: 17, minute: 0);
   bool _showTimeSelector = false;
+  ThemeMode _savedThemeMode = AppTheme.themeModeNotifier.value;
+  double _savedFontScale = AppTheme.fontScaleNotifier.value;
+  bool _savedReminderEnabled = true;
+  TimeOfDay _savedReminderTime = const TimeOfDay(hour: 17, minute: 0);
+  bool _hasUnsavedChanges = false;
 
   @override
   void initState() {
@@ -71,6 +76,10 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
 
   @override
   void dispose() {
+    if (_hasUnsavedChanges) {
+      AppTheme.themeModeNotifier.value = _savedThemeMode;
+      AppTheme.fontScaleNotifier.value = _savedFontScale;
+    }
     _nameController.dispose();
     _emailController.dispose();
     super.dispose();
@@ -127,6 +136,11 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                       : 'yasenlafe972@gmail.com');
         }
         _dailyReminderEnabled = reminder;
+        _savedReminderEnabled = reminder;
+        _savedReminderTime = parsedTime;
+        _savedThemeMode = AppTheme.themeModeNotifier.value;
+        _savedFontScale = AppTheme.fontScaleNotifier.value;
+        _hasUnsavedChanges = false;
         _reminderTime = parsedTime;
         _isLoading = false;
       });
@@ -206,7 +220,8 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
 
       await _settingsService.setDailyReminderEnabled(_dailyReminderEnabled);
       await _settingsService.setDailyReminderTime(
-        _formatTimeOfDay(_reminderTime),
++
++      );
       );
       await _backupService.setAutoBackupEnabled(true);
       await _backupService.performBackup();
@@ -219,6 +234,20 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
     }
   }
 
+  void _handleCancelSettings() {
+    SpendoHaptics.light();
+    setState(() {
+      AppTheme.themeModeNotifier.value = _savedThemeMode;
+      AppTheme.fontScaleNotifier.value = _savedFontScale;
+      _dailyReminderEnabled = _savedReminderEnabled;
+      _reminderTime = _savedReminderTime;
+      _showTimeSelector = false;
+      _hasUnsavedChanges = false;
+      _nameController.text = _userProfile?.name ?? 'لافي';
+      _emailController.text = _userProfile?.email ?? _linkedAccountEmail;
+    });
+    _showCustomToast('تم إلغاء التغييرات غير المحفوظة');
+  }
   void _copyEmail() {
     final email =
         _emailController.text.trim().isNotEmpty
@@ -233,7 +262,7 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
       _dailyReminderEnabled = !_dailyReminderEnabled;
       if (!_dailyReminderEnabled) _showTimeSelector = false;
     });
-    _settingsService.setDailyReminderEnabled(_dailyReminderEnabled);
+    _hasUnsavedChanges = true;
     _showCustomToast(
       _dailyReminderEnabled
           ? 'تم تفعيل تذكير تسجيل يوم العمل'
@@ -255,7 +284,9 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
       _reminderTime = TimeOfDay(hour: h, minute: m);
       _dailyReminderEnabled = true;
     });
-    _settingsService.setDailyReminderTime(timeStr);
++
++    _settingsService.setDailyReminderEnabled(true);+
++    _showCustomToast('تم ضبط وقت التذكير على $timeStr');
     _settingsService.setDailyReminderEnabled(true);
     _showCustomToast('تم ضبط وقت التذكير على $timeStr');
   }
@@ -310,7 +341,9 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
         _reminderTime = picked;
         _dailyReminderEnabled = true;
       });
-      await _settingsService.setDailyReminderTime(timeStr);
++
++      await _settingsService.setDailyReminderEnabled(true);+
++      _showCustomToast('تم ضبط وقت التذكير على $timeStr وتفعيله');
       await _settingsService.setDailyReminderEnabled(true);
       _showCustomToast('تم ضبط وقت التذكير على $timeStr وتفعيله');
     }
