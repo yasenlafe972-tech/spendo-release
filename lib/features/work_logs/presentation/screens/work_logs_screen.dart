@@ -1,13 +1,13 @@
 import 'package:sanad_app/core/widgets/banking_animations.dart';
 import 'package:sanad_app/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
+import '../../../../core/widgets/spendo_app_menu.dart';
 import 'package:remixicon/remixicon.dart';
 import 'package:sanad_app/features/workplaces/models/workplace_model.dart';
 import 'package:sanad_app/features/workplaces/repositories/workplaces_repository.dart';
 import 'package:sanad_app/features/workplaces/presentation/screens/employer_details_screen.dart';
 import 'package:sanad_app/features/work_logs/models/work_log_model.dart';
 import 'package:sanad_app/features/work_logs/repositories/work_logs_repository.dart';
-import 'package:sanad_app/features/settings/presentation/screens/app_settings_screen.dart';
 import 'package:sanad_app/core/utils/spendo_haptic_feedback.dart';
 import 'package:sanad_app/core/database/database_helper.dart';
 import 'package:sanad_app/core/widgets/spendo_confirm_delete_dialog.dart';
@@ -91,85 +91,6 @@ class _WorkLogsScreenState extends State<WorkLogsScreen> {
       ),
     );
     _loadData();
-  }
-
-  Future<void> _openSideMenu() async {
-    SpendoHaptics.light();
-    await showGeneralDialog<void>(
-      context: context,
-      barrierDismissible: true,
-      barrierLabel: 'إغلاق القائمة الجانبية',
-      barrierColor: Colors.black.withValues(alpha: 0.52),
-      transitionDuration: const Duration(milliseconds: 220),
-      pageBuilder: (dialogContext, _, __) => SafeArea(
-        child: Align(
-          alignment: AlignmentDirectional.centerEnd,
-          child: Material(
-            color: surfaceMain,
-            elevation: 0,
-            child: SizedBox(
-              width: MediaQuery.of(dialogContext).size.width * 0.82 > 320
-                  ? 320
-                  : MediaQuery.of(dialogContext).size.width * 0.82,
-              height: double.infinity,
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  border: BorderDirectional(
-                    start: BorderSide(color: surfaceBorder),
-                  ),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(18, 18, 12, 14),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: Text('القائمة',
-                              style: TextStyle(fontFamily: 'Cairo',
-                                color: textWhite, fontSize: 16,
-                                fontWeight: FontWeight.bold)),
-                          ),
-                          IconButton(
-                            tooltip: 'إغلاق',
-                            onPressed: () => Navigator.pop(dialogContext),
-                            icon: Icon(Remix.close_line, color: textMuted),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Divider(height: 1, color: surfaceBorder),
-                    ListTile(
-                      leading: Icon(Remix.settings_4_line, color: brandGreen),
-                      title: Text('الإعدادات',
-                        style: TextStyle(fontFamily: 'Cairo', color: textWhite,
-                          fontSize: 13, fontWeight: FontWeight.w600)),
-                      trailing: Icon(Remix.arrow_left_s_line, color: textMuted),
-                      onTap: () async {
-                        Navigator.pop(dialogContext);
-                        await Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) => const AppSettingsScreen(),
-                          ),
-                        );
-                        if (mounted) _loadData();
-                      },
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
-      transitionBuilder: (_, animation, __, child) => SlideTransition(
-        position: Tween<Offset>(
-          begin: const Offset(1, 0), end: Offset.zero,
-        ).animate(CurvedAnimation(parent: animation, curve: Curves.easeOutCubic)),
-        child: child,
-      ),
-    );
   }
 
 Future<void> _openEmployerModal([WorkplaceModel? existing]) async {
@@ -1059,11 +980,14 @@ Future<void> _openEmployerModal([WorkplaceModel? existing]) async {
                       ],
                     ),
 
-                    IconButton(
-                      tooltip: 'فتح القائمة',
-                      onPressed: _openSideMenu,
-                      icon: Icon(Remix.menu_line, color: textMuted, size: 20),
-                      splashRadius: 22,
+                    SpendoMenuButton(
+                      color: textMuted,
+                      size: 20,
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
+                      onSettingsClosed: () async {
+                        if (mounted) await _loadData();
+                      },
                     ),
                   ],
                 ),
