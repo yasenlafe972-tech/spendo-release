@@ -1,4 +1,4 @@
-﻿import 'package:flutter/cupertino.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:remixicon/remixicon.dart';
 import 'package:sanad_app/core/utils/spendo_haptic_feedback.dart';
@@ -163,7 +163,7 @@ class _SpendoDatePickerSheetState extends State<_SpendoDatePickerSheet> {
 
   Color get brandYellow =>
       const Color(0xFFFFD600);
-  static const Color brandGreen = Color(0xFF2563EB);
+  static const Color brandGreen = Color(0xFF10B981);
 
   bool get _isDark => Theme.of(context).brightness == Brightness.dark;
   Color get surfaceMain =>

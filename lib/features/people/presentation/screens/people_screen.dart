@@ -38,7 +38,7 @@ class _PeopleScreenState extends State<PeopleScreen> {
   Color get surfaceMain => _isDark ? const Color(0xFF0A0A0C) : const Color(0xFFF8F9FA);
   Color get surfaceField => _isDark ? const Color(0xFF121215) : const Color(0xFFFFFFFF);
   Color get surfaceBorder => _isDark ? const Color(0xFF1E1E24) : const Color(0xFFE5E7EB);
-  static const Color brandGreen = Color(0xFF2563EB);
+  static const Color brandGreen = Color(0xFF10B981);
   Color get brandYellow =>
       const Color(0xFFFFD600);
   Color get textPrimary => _isDark ? const Color(0xFFFFFFFF) : const Color(0xFF111827);

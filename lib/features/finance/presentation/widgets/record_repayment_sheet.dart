@@ -38,7 +38,7 @@ class _RecordRepaymentSheetState extends State<RecordRepaymentSheet> {
   static Color get surfaceMain => _isDark ? const Color(0xFF121413) : const Color(0xFFFFFFFF);
   static Color get surfaceField => _isDark ? const Color(0xFF171A19) : const Color(0xFFF9FAFB);
   static Color get surfaceBorder => _isDark ? const Color(0xFF242927) : const Color(0xFFE5E7EB);
-  static const Color brandBlue = Color(0xFF2563EB);
+  static const Color brandBlue = Color(0xFF10B981);
   static Color get brandYellow => AppColors.warningFor(_isDark);
   static Color get successColor => AppColors.successFor(_isDark);
   static Color get textWhite => _isDark ? Colors.white : const Color(0xFF111827);

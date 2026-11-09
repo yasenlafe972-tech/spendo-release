@@ -226,7 +226,7 @@ class PdfStatementService {
                   child: _buildSummaryBox(
                     title: _ar('إجمالي المدفوع والمقبوض'),
                     value: '${totalPaid.toStringAsFixed(0)} ₪',
-                    color: const PdfColor.fromInt(0xFF3B82F6),
+                    color: const PdfColor.fromInt(0xFF34D399),
                     font: boldFont,
                   ),
                 ),
@@ -669,7 +669,7 @@ class PdfStatementService {
                 child: _buildSummaryBox(
                   title: _ar('إجمالي المدفوع'),
                   value: '${totalPaid.toStringAsFixed(1)} ₪',
-                  color: const PdfColor.fromInt(0xFF3B82F6),
+                  color: const PdfColor.fromInt(0xFF34D399),
                   font: boldFont,
                 ),
               ),

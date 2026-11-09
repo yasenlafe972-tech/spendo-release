@@ -196,7 +196,7 @@ class AppTheme {
         surface: Color(0xFFFFFFFF),
         primary: AppColors.spendoBlue,
         onPrimary: Colors.white,
-        secondary: Color(0xFF1D4ED8),
+        secondary: Color(0xFF059669),
         error: AppColors.dangerRed,
         onSurface: Color(0xFF111827),
       ),

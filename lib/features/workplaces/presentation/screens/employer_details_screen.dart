@@ -1,4 +1,4 @@
-﻿import 'package:sanad_app/core/theme/app_theme.dart';
+import 'package:sanad_app/core/theme/app_theme.dart';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -50,7 +50,7 @@ class EmployerDetailsScreen extends StatefulWidget {
   static Color get surfaceField => _isDark ? const Color(0xFF121215) : const Color(0xFFFFFFFF);
   static Color get surfaceHover => _isDark ? const Color(0xFF16161A) : const Color(0xFFF1F3F5);
   static Color get surfaceBorder => _isDark ? const Color(0xFF1E1E24) : const Color(0xFFE5E7EB);
-  static const Color brandGreen = Color(0xFF2563EB);
+  static const Color brandGreen = Color(0xFF10B981);
   static Color get brandYellow =>
       const Color(0xFFFFD600);
   static Color get textPrimary => _isDark ? const Color(0xFFFFFFFF) : const Color(0xFF111827);

@@ -1,4 +1,4 @@
-﻿import 'package:sanad_app/core/theme/app_theme.dart';
+import 'package:sanad_app/core/theme/app_theme.dart';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart' hide TextDirection;
@@ -99,7 +99,7 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
   static Color get surfaceMain => _isDark ? const Color(0xFF121413) : const Color(0xFFFFFFFF);
   static Color get surfaceField => _isDark ? const Color(0xFF171A19) : const Color(0xFFF9FAFB);
   static Color get surfaceBorder => _isDark ? const Color(0xFF242927) : const Color(0xFFE5E7EB);
-  static const Color brandGreen = Color(0xFF2563EB);
+  static const Color brandGreen = Color(0xFF10B981);
   static Color get brandYellow =>
       const Color(0xFFFFD600);
   static Color get textMuted => _isDark ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280);

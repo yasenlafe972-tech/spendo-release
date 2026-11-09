@@ -1,4 +1,4 @@
-﻿import 'package:sanad_app/core/theme/app_theme.dart';
+import 'package:sanad_app/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:remixicon/remixicon.dart';
@@ -28,7 +28,7 @@ class RecordWorkplacePaymentSheet extends StatefulWidget {
   static Color get surfaceField => _isDark ? const Color(0xFF171A19) : const Color(0xFFF9FAFB);
   static Color get surfaceHover => _isDark ? const Color(0xFF1D211F) : const Color(0xFFF1F3F5);
   static Color get surfaceBorder => _isDark ? const Color(0xFF242927) : const Color(0xFFE5E7EB);
-  static const Color brandGreen = Color(0xFF2563EB);
+  static const Color brandGreen = Color(0xFF10B981);
   static Color get brandYellow =>
       const Color(0xFFFFD600);
   static Color get textPrimary => _isDark ? const Color(0xFFF3F4F6) : const Color(0xFF111827);

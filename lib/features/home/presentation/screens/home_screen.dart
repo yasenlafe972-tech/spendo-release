@@ -48,7 +48,7 @@ class _HomeScreenState extends State<HomeScreen> {
   bool get _isDark => Theme.of(context).brightness == Brightness.dark;
 
   // Static brand accents
-  static const Color brandGreen = Color(0xFF2563EB);
+  static const Color brandGreen = Color(0xFF10B981);
   static const Color brandYellow = Color(0xFFFFD600);
   static const Color brandRed = Color(0xFFEF4444);
 
@@ -938,7 +938,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     itemColor = brandYellow;
                   } else if (item.category == 'maintenance') {
                     itemIcon = Remix.tools_line;
-                    itemColor = const Color(0xFF60A5FA);
+                    itemColor = const Color(0xFF6EE7B7);
                   } else {
                     itemIcon = Remix.shopping_bag_3_line;
                     itemColor = brandGreen;

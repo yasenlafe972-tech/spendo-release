@@ -1,4 +1,4 @@
-﻿import 'dart:io';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:remixicon/remixicon.dart';
@@ -65,7 +65,7 @@ class _PersonDetailsModalSheetState extends State<PersonDetailsModalSheet> {
       _isDark ? const Color(0xFF16161A) : const Color(0xFFF9FAFB);
   static Color get surfaceBorder =>
       _isDark ? const Color(0xFF222229) : const Color(0xFFE5E7EB);
-  static const Color brandBlue = Color(0xFF2563EB);
+  static const Color brandBlue = Color(0xFF10B981);
   static Color get brandYellow =>
       const Color(0xFFFFD600);
   static const Color brandRed = Color(0xFFEF4444);
