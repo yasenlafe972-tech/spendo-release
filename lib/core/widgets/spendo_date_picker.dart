@@ -489,7 +489,8 @@ class _SpendoCalendarSheetState extends State<_SpendoCalendarSheet> {
                 border: Border.all(color: _gold.withValues(alpha: 0.5)),
               ),
               child: Text(
-                ' سنة',
+                // ignore: prefer_interpolation_to_compose_strings
+                _ageFor(_selectedDate).toString() + ' سنة',
                 style: const TextStyle(
                   fontFamily: 'Cairo',
                   color: _gold,
