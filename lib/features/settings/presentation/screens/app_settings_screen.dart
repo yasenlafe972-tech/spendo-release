@@ -229,6 +229,7 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
 
       SpendoHaptics.success();
       _showCustomToast('تم حفظ ومزامنة كافة الإعدادات بنجاح');
+      if (mounted) Navigator.of(context).pop();
     } catch (e) {
       debugPrint('Error saving settings: $e');
       _showCustomToast('حدث خطأ أثناء حفظ الإعدادات');
@@ -248,6 +249,7 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
       _hasUnsavedChanges = false;
     });
     _showCustomToast('تم إلغاء التغييرات غير المحفوظة');
+    Navigator.of(context).pop();
   }
 
   void _copyEmail() {
