@@ -467,8 +467,7 @@ class _HomeScreenState extends State<HomeScreen> {
             category: 'fuel',
             date: f.date,
             title: f.title.isNotEmpty ? f.title : 'تعبئة وقود • Yellow פז',
-            subtitle:
-                '${ArabicDateHelper.getRelativeDayDescription(f.date)} • وقود المركبة',
+            subtitle: ArabicDateHelper.getRelativeDayDescription(f.date),
             amount: f.amount,
             fuelRecord: f,
           ),
