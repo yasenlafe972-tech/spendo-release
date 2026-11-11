@@ -3154,31 +3154,37 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                                             0xFF0A0B0D,
                                           ),
                                           elevation: 0,
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 8,
+                                          ),
                                           shape: RoundedRectangleBorder(
                                             borderRadius: BorderRadius.circular(
                                               10,
                                             ),
                                           ),
                                         ),
-                                        child: const Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: [
-                                            Icon(
-                                              Remix.check_line,
-                                              size: 15,
-                                              color: Color(0xFF0A0B0D),
-                                            ),
-                                            SizedBox(width: 4),
-                                            Text(
-                                              'حفظ الإعدادات',
-                                              style: TextStyle(
-                                                fontSize: 11.5,
-                                                fontWeight: FontWeight.bold,
+                                        child: const FittedBox(
+                                          fit: BoxFit.scaleDown,
+                                          child: Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              Icon(
+                                                Remix.check_line,
+                                                size: 15,
                                                 color: Color(0xFF0A0B0D),
                                               ),
-                                            ),
-                                          ],
+                                              SizedBox(width: 4),
+                                              Text(
+                                                'حفظ الإعدادات',
+                                                style: TextStyle(
+                                                  fontSize: 11.5,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Color(0xFF0A0B0D),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
                                         ),
                                       ),
                                     ),
@@ -3186,7 +3192,7 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                                   const SizedBox(width: 6),
 
                                   Expanded(
-                                    flex: 4,
+                                    flex: 3,
                                     child: SizedBox(
                                       height: 38,
                                       child: OutlinedButton(
@@ -3194,6 +3200,9 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                                         style: OutlinedButton.styleFrom(
                                           foregroundColor: textWhite,
                                           backgroundColor: surfaceCell,
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 8,
+                                          ),
                                           side: BorderSide(
                                             color: brandGreen.withValues(
                                               alpha: 0.35,
@@ -3205,11 +3214,14 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                                             ),
                                           ),
                                         ),
-                                        child: const Text(
-                                          'إلغاء',
-                                          style: TextStyle(
-                                            fontSize: 11.5,
-                                            fontWeight: FontWeight.bold,
+                                        child: const FittedBox(
+                                          fit: BoxFit.scaleDown,
+                                          child: Text(
+                                            'إلغاء',
+                                            style: TextStyle(
+                                              fontSize: 11.5,
+                                              fontWeight: FontWeight.bold,
+                                            ),
                                           ),
                                         ),
                                       ),
@@ -3219,13 +3231,16 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
 
                                   // Logout Button
                                   Expanded(
-                                    flex: 4,
+                                    flex: 5,
                                     child: SizedBox(
                                       height: 38,
                                       child: OutlinedButton(
                                         onPressed: _handleLogout,
                                         style: OutlinedButton.styleFrom(
                                           backgroundColor: surfaceCell,
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 8,
+                                          ),
                                           side: BorderSide(
                                             color: brandRed.withValues(
                                               alpha: 0.3,
@@ -3237,25 +3252,28 @@ class _AppSettingsScreenState extends State<AppSettingsScreen> {
                                             ),
                                           ),
                                         ),
-                                        child: const Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: [
-                                            Icon(
-                                              Remix.logout_box_r_line,
-                                              size: 14,
-                                              color: brandRed,
-                                            ),
-                                            SizedBox(width: 4),
-                                            Text(
-                                              'تسجيل الخروج',
-                                              style: TextStyle(
-                                                fontSize: 11.5,
-                                                fontWeight: FontWeight.bold,
+                                        child: const FittedBox(
+                                          fit: BoxFit.scaleDown,
+                                          child: Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              Icon(
+                                                Remix.logout_box_r_line,
+                                                size: 14,
                                                 color: brandRed,
                                               ),
-                                            ),
-                                          ],
+                                              SizedBox(width: 4),
+                                              Text(
+                                                'تسجيل الخروج',
+                                                style: TextStyle(
+                                                  fontSize: 11.5,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: brandRed,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
                                         ),
                                       ),
                                     ),
