@@ -8,6 +8,7 @@ import '../models/debt_payment_model.dart';
 import '../models/debt_stats_model.dart';
 
 export '../models/debt_stats_model.dart';
+export '../models/debt_payment_model.dart';
 
 class FinanceRepository {
   final DatabaseHelper _dbHelper = DatabaseHelper.instance;
@@ -113,6 +114,29 @@ class FinanceRepository {
           ? DebtModel.fromMap(debtRows.first)
           : parentDebt;
 
+      // تنظيف أي دفعات يتيمة قديمة غير محتسبة إذا كان الدين لم يُخصم منه شيء بعد
+      if (currentDebt.paidAmount <= 0.01) {
+        final oldPayments = await txn.query(
+          'debt_payments',
+          columns: ['id'],
+          where: 'debt_id = ?',
+          whereArgs: [currentDebt.id],
+        );
+        if (oldPayments.isNotEmpty) {
+          await txn.delete(
+            'debt_payments',
+            where: 'debt_id = ?',
+            whereArgs: [currentDebt.id],
+          );
+          for (final op in oldPayments) {
+            final opId = op['id']?.toString();
+            if (opId != null) {
+              await DeletionSyncService.recordDeletion('debt_payments', opId);
+            }
+          }
+        }
+      }
+
       // 2. إدراج الدفعة في جدول debt_payments
       await txn.insert(
         'debt_payments',
@@ -213,9 +237,47 @@ class FinanceRepository {
       'debt_payments',
       where: 'debt_id = ?',
       whereArgs: [debtId],
-      orderBy: 'payment_date DESC, created_at DESC',
+      orderBy: 'created_at DESC, payment_date DESC',
     );
-    return maps.map((map) => DebtPaymentModel.fromMap(map)).toList();
+    final allPayments = maps.map((map) => DebtPaymentModel.fromMap(map)).toList();
+    if (allPayments.isEmpty) return [];
+
+    // مطابقة الدفعات مع المبلغ المسدد الفعلي في جدول الديون وتنظيف أي سجلات يتيمة سابقة
+    final debt = await getDebtById(debtId);
+    if (debt == null) return allPayments;
+
+    final totalRecorded = allPayments.fold<double>(0.0, (sum, p) => sum + p.amount);
+    final actualPaid = debt.paidAmount;
+
+    if (totalRecorded > actualPaid + 0.01) {
+      final validPayments = <DebtPaymentModel>[];
+      final orphanIds = <String>[];
+      double runningSum = 0.0;
+
+      for (final p in allPayments) {
+        if (runningSum + p.amount <= actualPaid + 0.01) {
+          validPayments.add(p);
+          runningSum += p.amount;
+        } else {
+          orphanIds.add(p.id);
+        }
+      }
+
+      if (orphanIds.isNotEmpty) {
+        await db.transaction((txn) async {
+          for (final id in orphanIds) {
+            await txn.delete('debt_payments', where: 'id = ?', whereArgs: [id]);
+            await DeletionSyncService.recordDeletion('debt_payments', id);
+          }
+        });
+        FirebaseBackupService.instance.scheduleAutoBackup(
+          debounce: const Duration(seconds: 1),
+        );
+      }
+      return validPayments;
+    }
+
+    return allPayments;
   }
 
   // =================== STATISTICAL DOMAIN FUNCTIONS ===================

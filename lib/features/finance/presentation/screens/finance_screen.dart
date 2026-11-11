@@ -294,6 +294,23 @@ class _FinanceScreenState extends State<FinanceScreen> {
           'تاريخ السداد المتوقع: ${ArabicDateHelper.formatArabicDateWithWeekdayFromString(debt.dueDate!)}',
         );
       }
+      final payments = await _financeRepo.getPaymentsForDebt(debt.id);
+      if (payments.isNotEmpty) {
+        buffer.writeln('\nسجل الدفعات المسددة (${payments.length}):');
+        for (final p in payments) {
+          final pDate =
+              ArabicDateHelper.formatArabicDateWithWeekdayFromString(
+                p.paymentDate,
+              );
+          final notePart =
+              (p.notes != null && p.notes!.trim().isNotEmpty)
+                  ? ' (${p.notes!.trim()})'
+                  : '';
+          buffer.writeln(
+            '• ${_formatCurrency(p.amount)} ₪ - $pDate [${p.paymentMethodTitle}]$notePart',
+          );
+        }
+      }
       if (debt.notes != null) {
         buffer.writeln('ملاحظات: ${debt.notes}');
       }
@@ -1076,12 +1093,12 @@ class _FinanceScreenState extends State<FinanceScreen> {
             ? (isSettled
                 ? 'تم الدفع'
                 : (isPartiallyPaid
-                    ? 'متبقي من ${_formatCurrency(debt.originalAmount)} ₪'
+                    ? 'متبقي (سُدد ${_formatCurrency(debt.paidAmount)})'
                     : 'للدفع لاحقاً'))
             : isSettled
             ? 'تم السداد'
             : isPartiallyPaid
-            ? 'متبقي من ${_formatCurrency(debt.originalAmount)} ₪'
+            ? 'متبقي (سُدد ${_formatCurrency(debt.paidAmount)})'
             : debt.isIOwe
             ? 'مستحق الدفع'
             : 'بانتظار السداد';
@@ -1185,42 +1202,14 @@ class _FinanceScreenState extends State<FinanceScreen> {
     );
   }
 
-  /// النافذة المنبثقة الوسطية لتفاصيل المعاملة المالية (Popup Dialog وسطية وليست سلايد)
-  void _showDebtDetailsDialog(DebtModel debt) {
+  /// النافذة المنبثقة الوسطية لتفاصيل المعاملة المالية وسجل الدفعات المسددة
+  Future<void> _showDebtDetailsDialog(DebtModel initialDebt) async {
     SpendoHaptics.selection();
-    final person = _peopleMap[debt.personId];
-    final isTheyOwe = debt.isTheyOwe;
-    final isSettled = debt.isSettled;
-    final isReceived = debt.isReceived;
+    var debt = await _financeRepo.getDebtById(initialDebt.id) ?? initialDebt;
+    var payments = await _financeRepo.getPaymentsForDebt(debt.id);
+    if (!mounted) return;
 
-    String badgeText = 'إلي عنده';
-    Color badgeColor = brandBlue;
-    String amountPrefix = '';
-    String subStatus = isSettled ? 'تم السداد بالكامل' : 'بانتظار السداد';
-
-    if (debt.isPayLater) {
-      badgeText = 'عالحساب (مؤجل)';
-      badgeColor = brandYellow;
-      amountPrefix = '-';
-      subStatus = isSettled ? 'تم الدفع بالكامل' : 'مستحق للدفع لاحقاً';
-    } else if (debt.isIOwe) {
-      badgeText = 'عليّ إله';
-      badgeColor = brandRed;
-      amountPrefix = '-';
-      subStatus = isSettled ? 'تم السداد بالكامل' : 'مستحق الدفع فوراً';
-    } else if (isReceived) {
-      badgeText = 'مبالغ مستلمة';
-      badgeColor = successColor;
-      amountPrefix = '+';
-      subStatus = 'خالص ومسدد';
-    }
-
-    if (isSettled) badgeColor = successColor;
-
-    final double displayAmount =
-        isReceived
-            ? debt.originalAmount
-            : (isSettled ? debt.originalAmount : debt.remainingAmount);
+    bool isHistoryExpanded = true;
 
     showGeneralDialog(
       context: context,
@@ -1229,504 +1218,868 @@ class _FinanceScreenState extends State<FinanceScreen> {
       barrierColor: Colors.black.withValues(alpha: 0.65),
       transitionDuration: const Duration(milliseconds: 220),
       pageBuilder: (dialogCtx, anim1, anim2) {
-        return Center(
-          child: Material(
-            color: Colors.transparent,
-            child: Container(
-              width: MediaQuery.of(dialogCtx).size.width.clamp(280.0, 380.0),
-              margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
-              decoration: BoxDecoration(
-                color: surfaceField,
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: surfaceBorder),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(
-                      alpha: _isDark ? 0.45 : 0.15,
-                    ),
-                    blurRadius: 24,
-                    offset: const Offset(0, 8),
+        return StatefulBuilder(
+          builder: (dialogCtx, setDialogState) {
+            final person = _peopleMap[debt.personId];
+            final isTheyOwe = debt.isTheyOwe;
+            final isSettled = debt.isSettled;
+            final isReceived = debt.isReceived;
+
+            String badgeText = 'إلي عنده';
+            Color badgeColor = brandBlue;
+            String amountPrefix = '';
+            String subStatus = isSettled ? 'تم السداد بالكامل' : 'بانتظار السداد';
+
+            if (debt.isPayLater) {
+              badgeText = 'عالحساب (مؤجل)';
+              badgeColor = brandYellow;
+              amountPrefix = '-';
+              subStatus = isSettled ? 'تم الدفع بالكامل' : 'مستحق للدفع لاحقاً';
+            } else if (debt.isIOwe) {
+              badgeText = 'عليّ إله';
+              badgeColor = brandRed;
+              amountPrefix = '-';
+              subStatus = isSettled ? 'تم السداد بالكامل' : 'مستحق الدفع فوراً';
+            } else if (isReceived) {
+              badgeText = 'مبالغ مستلمة';
+              badgeColor = successColor;
+              amountPrefix = '+';
+              subStatus = 'خالص ومسدد';
+            }
+
+            if (isSettled) badgeColor = successColor;
+
+            final double displayAmount =
+                isReceived
+                    ? debt.originalAmount
+                    : (isSettled ? debt.originalAmount : debt.remainingAmount);
+
+            final bool hasRepaymentBreakdown =
+                !isReceived &&
+                (debt.remainingAmount < debt.originalAmount ||
+                    payments.isNotEmpty);
+
+            return Center(
+              child: Material(
+                color: Colors.transparent,
+                child: Container(
+                  width: MediaQuery.of(dialogCtx).size.width.clamp(280.0, 380.0),
+                  constraints: BoxConstraints(
+                    maxHeight: MediaQuery.of(dialogCtx).size.height * 0.86,
                   ),
-                ],
-              ),
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  // 1. ترويسة النافذة المنبثقة: زر الإغلاق + اسم الشخص + وسم الحالة
-                  Row(
-                    children: [
-                      InkWell(
-                        onTap: () => Navigator.pop(dialogCtx),
-                        borderRadius: BorderRadius.circular(16),
-                        child: Container(
-                          padding: const EdgeInsets.all(5),
-                          decoration: BoxDecoration(
-                            color: surfaceBorder.withValues(alpha: 0.4),
-                            shape: BoxShape.circle,
-                          ),
-                          child: Icon(
-                            Remix.close_line,
-                            size: 16,
-                            color: textMuted,
-                          ),
+                  margin: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 20,
+                  ),
+                  decoration: BoxDecoration(
+                    color: surfaceField,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: surfaceBorder),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(
+                          alpha: _isDark ? 0.45 : 0.15,
                         ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              person?.name ?? 'شخص غير مسجل',
-                              style: TextStyle(
-                                fontFamily: 'Cairo',
-                                color: textWhite,
-                                fontSize: 14.5,
-                                fontWeight: FontWeight.bold,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            Text(
-                              'تفاصيل المعاملة المالية',
-                              style: TextStyle(
-                                fontFamily: 'Cairo',
-                                color: textMuted,
-                                fontSize: 10,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 7,
-                          vertical: 2.5,
-                        ),
-                        decoration: BoxDecoration(
-                          color: badgeColor.withValues(
-                            alpha: _isDark ? 0.14 : 0.20,
-                          ),
-                          borderRadius: BorderRadius.circular(6),
-                          border: Border.all(
-                            color: badgeColor.withValues(alpha: 0.4),
-                          ),
-                        ),
-                        child: Text(
-                          badgeText,
-                          style: TextStyle(
-                            fontFamily: 'Cairo',
-                            color: badgeColor,
-                            fontSize: 10.5,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
+                        blurRadius: 24,
+                        offset: const Offset(0, 8),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 12),
-
-                  // 2. بطاقة Bento 1: المبلغ المالي وحالة السداد
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 12,
-                    ),
-                    decoration: BoxDecoration(
-                      color: surfaceMain,
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(
-                        color: badgeColor.withValues(alpha: 0.35),
-                      ),
-                    ),
-                    child: Column(
-                      children: [
-                        Text(
-                          isReceived
-                              ? 'إجمالي المبلغ المستلم'
-                              : (isSettled
-                                  ? 'المبلغ المسدد'
-                                  : 'المبلغ المستحق'),
-                          style: TextStyle(
-                            fontFamily: 'Cairo',
-                            fontSize: 10.5,
-                            color: textMuted,
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              '$amountPrefix${_formatCurrency(displayAmount)} ',
-                              style: TextStyle(
-                                fontFamily: 'Cairo',
-                                fontSize: 24,
-                                fontWeight: FontWeight.w900,
-                                color:
-                                    isReceived
-                                        ? successColor
-                                        : (isSettled
-                                            ? successColor
-                                            : (debt.isPayLater || isTheyOwe
-                                                ? brandYellow
-                                                : brandRed)),
-                              ),
-                            ),
-                            Text(
-                              '₪',
-                              style: TextStyle(
-                                fontFamily: 'Cairo',
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: badgeColor,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 4),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 2,
-                          ),
-                          decoration: BoxDecoration(
-                            color: badgeColor.withValues(alpha: 0.14),
-                            borderRadius: BorderRadius.circular(6),
-                            border: Border.all(
-                              color: badgeColor.withValues(alpha: 0.4),
-                            ),
-                          ),
-                          child: Text(
-                            subStatus,
-                            style: TextStyle(
-                              fontFamily: 'Cairo',
-                              color: badgeColor,
-                              fontSize: 10.5,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                        // تفصيل السداد الجزئي إن وجد
-                        if (!isSettled &&
-                            !isReceived &&
-                            debt.remainingAmount < debt.originalAmount) ...[
-                          const SizedBox(height: 8),
-                          Divider(color: surfaceBorder, height: 1),
-                          const SizedBox(height: 8),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceAround,
-                            children: [
-                              Column(
-                                children: [
-                                  Text(
-                                    'المبلغ الأصلي',
-                                    style: TextStyle(
-                                      fontFamily: 'Cairo',
-                                      fontSize: 10,
-                                      color: textMuted,
-                                    ),
-                                  ),
-                                  Text(
-                                    '${_formatCurrency(debt.originalAmount)} ₪',
-                                    style: TextStyle(
-                                      fontFamily: 'Cairo',
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.bold,
-                                      color: textWhite,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              Column(
-                                children: [
-                                  Text(
-                                    'المسدد',
-                                    style: TextStyle(
-                                      fontFamily: 'Cairo',
-                                      fontSize: 10,
-                                      color: textMuted,
-                                    ),
-                                  ),
-                                  Text(
-                                    '${_formatCurrency(debt.originalAmount - debt.remainingAmount)} ₪',
-                                    style: TextStyle(
-                                      fontFamily: 'Cairo',
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.bold,
-                                      color: successColor,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              Column(
-                                children: [
-                                  Text(
-                                    'المتبقي',
-                                    style: TextStyle(
-                                      fontFamily: 'Cairo',
-                                      fontSize: 10,
-                                      color: textMuted,
-                                    ),
-                                  ),
-                                  Text(
-                                    '${_formatCurrency(debt.remainingAmount)} ₪',
-                                    style: TextStyle(
-                                      fontFamily: 'Cairo',
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.bold,
-                                      color: brandRed,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ],
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-
-                  // 3. بطاقة Bento 2: تفاصيل المعاملة (التاريخ + وسيلة الدفع)
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 10,
-                    ),
-                    decoration: BoxDecoration(
-                      color: surfaceMain,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: surfaceBorder),
-                    ),
-                    child: Column(
-                      children: [
-                        // التاريخ
-                        Row(
-                          children: [
-                            Icon(
-                              Remix.calendar_2_line,
-                              color: textMuted,
-                              size: 14,
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              'تاريخ المعاملة:',
-                              style: TextStyle(
-                                fontFamily: 'Cairo',
-                                color: textMuted,
-                                fontSize: 11,
-                              ),
-                            ),
-                            const Spacer(),
-                            Text(
-                              ArabicDateHelper.formatArabicDateWithWeekdayFromString(
-                                debt.transactionDate,
-                              ),
-                              style: TextStyle(
-                                fontFamily: 'Cairo',
-                                color: textWhite,
-                                fontSize: 11,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                        Divider(
-                          color: surfaceBorder.withValues(alpha: 0.6),
-                          height: 12,
-                        ),
-                        // وسيلة الدفع
-                        Row(
-                          children: [
-                            Icon(
-                              _getPaymentMethodIcon(debt.paymentMethod),
-                              color: _getPaymentMethodColor(debt.paymentMethod),
-                              size: 14,
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              'طريقة الدفع:',
-                              style: TextStyle(
-                                fontFamily: 'Cairo',
-                                color: textMuted,
-                                fontSize: 11,
-                              ),
-                            ),
-                            const Spacer(),
-                            Text(
-                              debt.paymentMethodTitle,
-                              style: TextStyle(
-                                fontFamily: 'Cairo',
-                                color: textWhite,
-                                fontSize: 11,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  // 4. ملاحظات المعاملة إن وجدت
-                  if (debt.notes != null && debt.notes!.trim().isNotEmpty) ...[
-                    const SizedBox(height: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 8,
-                      ),
-                      decoration: BoxDecoration(
-                        color: surfaceMain,
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: surfaceBorder),
-                      ),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 14),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      // 1. ترويسة النافذة المنبثقة: زر الإغلاق + اسم الشخص + وسم الحالة
+                      Row(
                         children: [
-                          Icon(
-                            Remix.file_text_line,
-                            color: textMuted,
-                            size: 13,
+                          InkWell(
+                            onTap: () => Navigator.pop(dialogCtx),
+                            borderRadius: BorderRadius.circular(16),
+                            child: Container(
+                              padding: const EdgeInsets.all(5),
+                              decoration: BoxDecoration(
+                                color: surfaceBorder.withValues(alpha: 0.4),
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(
+                                Remix.close_line,
+                                size: 16,
+                                color: textMuted,
+                              ),
+                            ),
                           ),
                           const SizedBox(width: 8),
                           Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  person?.name ?? 'شخص غير مسجل',
+                                  style: TextStyle(
+                                    fontFamily: 'Cairo',
+                                    color: textWhite,
+                                    fontSize: 14.5,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                Text(
+                                  'تفاصيل المعاملة المالية',
+                                  style: TextStyle(
+                                    fontFamily: 'Cairo',
+                                    color: textMuted,
+                                    fontSize: 10,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 7,
+                              vertical: 2.5,
+                            ),
+                            decoration: BoxDecoration(
+                              color: badgeColor.withValues(
+                                alpha: _isDark ? 0.14 : 0.20,
+                              ),
+                              borderRadius: BorderRadius.circular(6),
+                              border: Border.all(
+                                color: badgeColor.withValues(alpha: 0.4),
+                              ),
+                            ),
                             child: Text(
-                              debt.notes!,
+                              badgeText,
                               style: TextStyle(
                                 fontFamily: 'Cairo',
-                                color: textWhite,
-                                fontSize: 11,
-                                height: 1.3,
+                                color: badgeColor,
+                                fontSize: 10.5,
+                                fontWeight: FontWeight.bold,
                               ),
                             ),
                           ),
                         ],
                       ),
-                    ),
-                  ],
+                      const SizedBox(height: 12),
 
-                  const SizedBox(height: 14),
+                      // المحتوى القابل للتمرير (الملخص المالي + التفاصيل + سجل الدفعات)
+                      Flexible(
+                        child: SingleChildScrollView(
+                          physics: const BouncingScrollPhysics(),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              // 2. بطاقة Bento 1: المبلغ المالي وحالة السداد
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 14,
+                                  vertical: 12,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: surfaceMain,
+                                  borderRadius: BorderRadius.circular(14),
+                                  border: Border.all(
+                                    color: badgeColor.withValues(alpha: 0.35),
+                                  ),
+                                ),
+                                child: Column(
+                                  children: [
+                                    Text(
+                                      isReceived
+                                          ? 'إجمالي المبلغ المستلم'
+                                          : (isSettled
+                                              ? 'المبلغ المسدد بالكامل'
+                                              : 'المبلغ المستحق'),
+                                      style: TextStyle(
+                                        fontFamily: 'Cairo',
+                                        fontSize: 10.5,
+                                        color: textMuted,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        Text(
+                                          '$amountPrefix${_formatCurrency(displayAmount)} ',
+                                          style: TextStyle(
+                                            fontFamily: 'Cairo',
+                                            fontSize: 24,
+                                            fontWeight: FontWeight.w900,
+                                            color:
+                                                isReceived
+                                                    ? successColor
+                                                    : (isSettled
+                                                        ? successColor
+                                                        : (debt.isPayLater ||
+                                                                isTheyOwe
+                                                            ? brandYellow
+                                                            : brandRed)),
+                                          ),
+                                        ),
+                                        Text(
+                                          '₪',
+                                          style: TextStyle(
+                                            fontFamily: 'Cairo',
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold,
+                                            color: badgeColor,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 8,
+                                        vertical: 2,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: badgeColor.withValues(alpha: 0.14),
+                                        borderRadius: BorderRadius.circular(6),
+                                        border: Border.all(
+                                          color: badgeColor.withValues(
+                                            alpha: 0.4,
+                                          ),
+                                        ),
+                                      ),
+                                      child: Text(
+                                        subStatus,
+                                        style: TextStyle(
+                                          fontFamily: 'Cairo',
+                                          color: badgeColor,
+                                          fontSize: 10.5,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                    // تفصيل السداد والدفعات إن وجد
+                                    if (hasRepaymentBreakdown) ...[
+                                      const SizedBox(height: 8),
+                                      Divider(color: surfaceBorder, height: 1),
+                                      const SizedBox(height: 8),
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceAround,
+                                        children: [
+                                          Column(
+                                            children: [
+                                              Text(
+                                                'المبلغ الأصلي',
+                                                style: TextStyle(
+                                                  fontFamily: 'Cairo',
+                                                  fontSize: 10,
+                                                  color: textMuted,
+                                                ),
+                                              ),
+                                              Text(
+                                                '${_formatCurrency(debt.originalAmount)} ₪',
+                                                style: TextStyle(
+                                                  fontFamily: 'Cairo',
+                                                  fontSize: 11,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: textWhite,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          InkWell(
+                                            onTap:
+                                                payments.isEmpty
+                                                    ? null
+                                                    : () => setDialogState(
+                                                      () =>
+                                                          isHistoryExpanded =
+                                                              !isHistoryExpanded,
+                                                    ),
+                                            borderRadius: BorderRadius.circular(
+                                              6,
+                                            ),
+                                            child: Padding(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    horizontal: 6,
+                                                    vertical: 2,
+                                                  ),
+                                              child: Column(
+                                                children: [
+                                                  Row(
+                                                    mainAxisSize:
+                                                        MainAxisSize.min,
+                                                    children: [
+                                                      Text(
+                                                        'المسدد',
+                                                        style: TextStyle(
+                                                          fontFamily: 'Cairo',
+                                                          fontSize: 10,
+                                                          color: textMuted,
+                                                        ),
+                                                      ),
+                                                      if (payments
+                                                          .isNotEmpty) ...[
+                                                        const SizedBox(width: 3),
+                                                        Icon(
+                                                          Remix.history_line,
+                                                          size: 10,
+                                                          color: successColor,
+                                                        ),
+                                                      ],
+                                                    ],
+                                                  ),
+                                                  Text(
+                                                    '${_formatCurrency(debt.paidAmount)} ₪',
+                                                    style: TextStyle(
+                                                      fontFamily: 'Cairo',
+                                                      fontSize: 11,
+                                                      fontWeight: FontWeight.bold,
+                                                      color: successColor,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+                                          Column(
+                                            children: [
+                                              Text(
+                                                'المتبقي',
+                                                style: TextStyle(
+                                                  fontFamily: 'Cairo',
+                                                  fontSize: 10,
+                                                  color: textMuted,
+                                                ),
+                                              ),
+                                              Text(
+                                                '${_formatCurrency(debt.remainingAmount)} ₪',
+                                                style: TextStyle(
+                                                  fontFamily: 'Cairo',
+                                                  fontSize: 11,
+                                                  fontWeight: FontWeight.bold,
+                                                  color:
+                                                      isSettled
+                                                          ? successColor
+                                                          : brandRed,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 10),
 
-                  // 5. أزرار الإجراءات داخل النافذة المنبثقة
-                  // زر سداد دفعة إذا كانت المعاملة فعالة
-                  if (!isSettled && !isReceived) ...[
-                    InkWell(
-                      onTap: () {
-                        Navigator.pop(dialogCtx);
-                        _showRepaymentSheet(debt);
-                      },
-                      borderRadius: BorderRadius.circular(10),
-                      child: Container(
-                        height: 38,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF0F766E),
-                          borderRadius: BorderRadius.circular(10),
+                              // 3. بطاقة Bento 2: تفاصيل المعاملة (التاريخ + وسيلة الدفع)
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 10,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: surfaceMain,
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(color: surfaceBorder),
+                                ),
+                                child: Column(
+                                  children: [
+                                    // التاريخ
+                                    Row(
+                                      children: [
+                                        Icon(
+                                          Remix.calendar_2_line,
+                                          color: textMuted,
+                                          size: 14,
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Text(
+                                          'تاريخ المعاملة:',
+                                          style: TextStyle(
+                                            fontFamily: 'Cairo',
+                                            color: textMuted,
+                                            fontSize: 11,
+                                          ),
+                                        ),
+                                        const Spacer(),
+                                        Text(
+                                          ArabicDateHelper.formatArabicDateWithWeekdayFromString(
+                                            debt.transactionDate,
+                                          ),
+                                          style: TextStyle(
+                                            fontFamily: 'Cairo',
+                                            color: textWhite,
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    Divider(
+                                      color: surfaceBorder.withValues(alpha: 0.6),
+                                      height: 12,
+                                    ),
+                                    // وسيلة الدفع
+                                    Row(
+                                      children: [
+                                        Icon(
+                                          _getPaymentMethodIcon(
+                                            debt.paymentMethod,
+                                          ),
+                                          color: _getPaymentMethodColor(
+                                            debt.paymentMethod,
+                                          ),
+                                          size: 14,
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Text(
+                                          'طريقة الدفع:',
+                                          style: TextStyle(
+                                            fontFamily: 'Cairo',
+                                            color: textMuted,
+                                            fontSize: 11,
+                                          ),
+                                        ),
+                                        const Spacer(),
+                                        Text(
+                                          debt.paymentMethodTitle,
+                                          style: TextStyle(
+                                            fontFamily: 'Cairo',
+                                            color: textWhite,
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+
+                              // 4. سجل الدفعات المسددة (تاريخ ومبلغ وطريقة كل دفعة)
+                              if (payments.isNotEmpty) ...[
+                                const SizedBox(height: 10),
+                                Container(
+                                  decoration: BoxDecoration(
+                                    color: surfaceMain,
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(
+                                      color: successColor.withValues(alpha: 0.3),
+                                    ),
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.stretch,
+                                    children: [
+                                      InkWell(
+                                        onTap:
+                                            () => setDialogState(
+                                              () =>
+                                                  isHistoryExpanded =
+                                                      !isHistoryExpanded,
+                                            ),
+                                        borderRadius: BorderRadius.circular(12),
+                                        child: Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 12,
+                                            vertical: 9,
+                                          ),
+                                          child: Row(
+                                            children: [
+                                              Icon(
+                                                Remix.history_line,
+                                                color: successColor,
+                                                size: 15,
+                                              ),
+                                              const SizedBox(width: 6),
+                                              Text(
+                                                'سجل الدفعات المسددة',
+                                                style: TextStyle(
+                                                  fontFamily: 'Cairo',
+                                                  color: textWhite,
+                                                  fontSize: 11.5,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                              const SizedBox(width: 6),
+                                              Container(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                      horizontal: 6,
+                                                      vertical: 1,
+                                                    ),
+                                                decoration: BoxDecoration(
+                                                  color: successColor
+                                                      .withValues(alpha: 0.15),
+                                                  borderRadius:
+                                                      BorderRadius.circular(99),
+                                                ),
+                                                child: Text(
+                                                  '${payments.length}',
+                                                  style: TextStyle(
+                                                    fontFamily: 'Cairo',
+                                                    color: successColor,
+                                                    fontSize: 10,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                              ),
+                                              const Spacer(),
+                                              Icon(
+                                                isHistoryExpanded
+                                                    ? Remix.arrow_up_s_line
+                                                    : Remix.arrow_down_s_line,
+                                                color: textMuted,
+                                                size: 16,
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                      if (isHistoryExpanded) ...[
+                                        Divider(
+                                          color: surfaceBorder.withValues(
+                                            alpha: 0.6,
+                                          ),
+                                          height: 1,
+                                        ),
+                                        Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 10,
+                                            vertical: 6,
+                                          ),
+                                          child: Column(
+                                            children: [
+                                              for (
+                                                int i = 0;
+                                                i < payments.length;
+                                                i++
+                                              ) ...[
+                                                if (i > 0)
+                                                  Divider(
+                                                    color: surfaceBorder
+                                                        .withValues(alpha: 0.4),
+                                                    height: 10,
+                                                  ),
+                                                Builder(
+                                                  builder: (_) {
+                                                    final p = payments[i];
+                                                    final pDateFormatted =
+                                                        ArabicDateHelper.formatArabicDateWithWeekdayFromString(
+                                                          p.paymentDate,
+                                                        );
+                                                    return Row(
+                                                      children: [
+                                                        Icon(
+                                                          _getPaymentMethodIcon(
+                                                            p.paymentMethod,
+                                                          ),
+                                                          color:
+                                                              _getPaymentMethodColor(
+                                                                p.paymentMethod,
+                                                              ),
+                                                          size: 15,
+                                                        ),
+                                                        const SizedBox(width: 8),
+                                                        Expanded(
+                                                          child: Column(
+                                                            crossAxisAlignment:
+                                                                CrossAxisAlignment
+                                                                    .start,
+                                                            children: [
+                                                              Text(
+                                                                pDateFormatted,
+                                                                style: TextStyle(
+                                                                  fontFamily:
+                                                                      'Cairo',
+                                                                  color:
+                                                                      textWhite,
+                                                                  fontSize: 10.5,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .bold,
+                                                                ),
+                                                              ),
+                                                              Text(
+                                                                (p.notes !=
+                                                                            null &&
+                                                                        p.notes!
+                                                                            .trim()
+                                                                            .isNotEmpty)
+                                                                    ? '${p.paymentMethodTitle} • ${p.notes!.trim()}'
+                                                                    : 'طريقة السداد: ${p.paymentMethodTitle}',
+                                                                style: TextStyle(
+                                                                  fontFamily:
+                                                                      'Cairo',
+                                                                  color:
+                                                                      textMuted,
+                                                                  fontSize: 9.5,
+                                                                ),
+                                                                maxLines: 1,
+                                                                overflow:
+                                                                    TextOverflow
+                                                                        .ellipsis,
+                                                              ),
+                                                            ],
+                                                          ),
+                                                        ),
+                                                        const SizedBox(width: 6),
+                                                        Text(
+                                                          '${_formatCurrency(p.amount)} ₪',
+                                                          style: TextStyle(
+                                                            fontFamily: 'Cairo',
+                                                            color: successColor,
+                                                            fontSize: 11.5,
+                                                            fontWeight:
+                                                                FontWeight.bold,
+                                                          ),
+                                                        ),
+                                                        const SizedBox(width: 4),
+                                                        InkWell(
+                                                          onTap: () async {
+                                                            SpendoHaptics.light();
+                                                            await _financeRepo
+                                                                .deleteDebtRepayment(
+                                                                  paymentId: p.id,
+                                                                  debtId: debt.id,
+                                                                );
+                                                            final updatedDebt =
+                                                                await _financeRepo
+                                                                    .getDebtById(
+                                                                      debt.id,
+                                                                    );
+                                                            final updatedPayments =
+                                                                await _financeRepo
+                                                                    .getPaymentsForDebt(
+                                                                      debt.id,
+                                                                    );
+                                                            _loadData();
+                                                            if (dialogCtx
+                                                                .mounted) {
+                                                              setDialogState(() {
+                                                                if (updatedDebt !=
+                                                                    null) {
+                                                                  debt =
+                                                                      updatedDebt;
+                                                                }
+                                                                payments =
+                                                                    updatedPayments;
+                                                              });
+                                                            }
+                                                            _showToast(
+                                                              'تم إلغاء الدفعة وإعادة احتساب المتبقي',
+                                                            );
+                                                          },
+                                                          borderRadius:
+                                                              BorderRadius.circular(
+                                                                6,
+                                                              ),
+                                                          child: Padding(
+                                                            padding:
+                                                                const EdgeInsets.all(
+                                                                  4,
+                                                                ),
+                                                            child: Icon(
+                                                              Remix
+                                                                  .delete_bin_line,
+                                                              size: 13.5,
+                                                              color: textMuted,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    );
+                                                  },
+                                                ),
+                                              ],
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    ],
+                                  ),
+                                ),
+                              ],
+
+                              // 5. ملاحظات المعاملة إن وجدت
+                              if (debt.notes != null &&
+                                  debt.notes!.trim().isNotEmpty) ...[
+                                const SizedBox(height: 8),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 8,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: surfaceMain,
+                                    borderRadius: BorderRadius.circular(10),
+                                    border: Border.all(color: surfaceBorder),
+                                  ),
+                                  child: Row(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Icon(
+                                        Remix.file_text_line,
+                                        color: textMuted,
+                                        size: 13,
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Expanded(
+                                        child: Text(
+                                          debt.notes!,
+                                          style: TextStyle(
+                                            fontFamily: 'Cairo',
+                                            color: textWhite,
+                                            fontSize: 11,
+                                            height: 1.3,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
                         ),
-                        alignment: Alignment.center,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              debt.isPayLater
-                                  ? Remix.checkbox_circle_line
-                                  : Remix.cash_line,
-                              size: 15,
-                              color: Colors.white,
+                      ),
+
+                      const SizedBox(height: 12),
+
+                      // 6. أزرار الإجراءات داخل النافذة المنبثقة
+                      // زر سداد دفعة إذا كانت المعاملة فعالة
+                      if (!isSettled && !isReceived) ...[
+                        InkWell(
+                          onTap: () async {
+                            await _showRepaymentSheet(debt);
+                            final updatedDebt = await _financeRepo.getDebtById(
+                              debt.id,
+                            );
+                            final updatedPayments = await _financeRepo
+                                .getPaymentsForDebt(debt.id);
+                            if (dialogCtx.mounted) {
+                              setDialogState(() {
+                                if (updatedDebt != null) {
+                                  debt = updatedDebt;
+                                }
+                                payments = updatedPayments;
+                                isHistoryExpanded = true;
+                              });
+                            }
+                          },
+                          borderRadius: BorderRadius.circular(10),
+                          child: Container(
+                            height: 38,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF0F766E),
+                              borderRadius: BorderRadius.circular(10),
                             ),
-                            const SizedBox(width: 6),
-                            Text(
-                              debt.isPayLater
-                                  ? 'تأكيد دفع المعاملة'
-                                  : 'تسجيل سداد دفعة',
-                              style: const TextStyle(
-                                fontFamily: 'Cairo',
-                                color: Colors.white,
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
+                            alignment: Alignment.center,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  debt.isPayLater
+                                      ? Remix.checkbox_circle_line
+                                      : Remix.cash_line,
+                                  size: 15,
+                                  color: Colors.white,
+                                ),
+                                const SizedBox(width: 6),
+                                Text(
+                                  debt.isPayLater
+                                      ? 'تأكيد دفع المعاملة'
+                                      : 'تسجيل سداد دفعة',
+                                  style: const TextStyle(
+                                    fontFamily: 'Cairo',
+                                    color: Colors.white,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                      ],
+
+                      // أزرار الإجراءات كأيقونات نقية بدون خلفية (واتساب، تعديل بالقلم، وحذف بالسطل)
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          // أيقونة واتساب بدون خلفية
+                          InkWell(
+                            onTap: () {
+                              Navigator.pop(dialogCtx);
+                              _shareDebtViaWhatsApp(debt);
+                            },
+                            borderRadius: BorderRadius.circular(20),
+                            child: const Padding(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 14,
+                                vertical: 6,
+                              ),
+                              child: Icon(
+                                Remix.whatsapp_line,
+                                size: 22,
+                                color: Color(0xFF10B981),
                               ),
                             ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                  ],
+                          ),
+                          const SizedBox(width: 12),
 
-                  // أزرار الإجراءات كأيقونات نقية بدون خلفية (واتساب، تعديل بالقلم، وحذف بالسطل)
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      // أيقونة واتساب بدون خلفية
-                      InkWell(
-                        onTap: () {
-                          Navigator.pop(dialogCtx);
-                          _shareDebtViaWhatsApp(debt);
-                        },
-                        borderRadius: BorderRadius.circular(20),
-                        child: const Padding(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 14,
-                            vertical: 6,
+                          // أيقونة التعديل (قلم) بدون خلفية
+                          InkWell(
+                            onTap: () {
+                              Navigator.pop(dialogCtx);
+                              _showEditDebtSheet(debt);
+                            },
+                            borderRadius: BorderRadius.circular(20),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 14,
+                                vertical: 6,
+                              ),
+                              child: Icon(
+                                Remix.pencil_line,
+                                size: 20,
+                                color: textMuted,
+                              ),
+                            ),
                           ),
-                          child: Icon(
-                            Remix.whatsapp_line,
-                            size: 22,
-                            color: Color(0xFF10B981),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
+                          const SizedBox(width: 12),
 
-                      // أيقونة التعديل (قلم) بدون خلفية
-                      InkWell(
-                        onTap: () {
-                          Navigator.pop(dialogCtx);
-                          _showEditDebtSheet(debt);
-                        },
-                        borderRadius: BorderRadius.circular(20),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 14,
-                            vertical: 6,
+                          // أيقونة الحذف (سطل) بدون خلفية
+                          InkWell(
+                            onTap: () {
+                              Navigator.pop(dialogCtx);
+                              _confirmDelete(debt);
+                            },
+                            borderRadius: BorderRadius.circular(20),
+                            child: const Padding(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 14,
+                                vertical: 6,
+                              ),
+                              child: Icon(
+                                Remix.delete_bin_line,
+                                size: 20,
+                                color: brandRed,
+                              ),
+                            ),
                           ),
-                          child: Icon(
-                            Remix.pencil_line,
-                            size: 20,
-                            color: textMuted,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-
-                      // أيقونة الحذف (سطل) بدون خلفية
-                      InkWell(
-                        onTap: () {
-                          Navigator.pop(dialogCtx);
-                          _confirmDelete(debt);
-                        },
-                        borderRadius: BorderRadius.circular(20),
-                        child: const Padding(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 14,
-                            vertical: 6,
-                          ),
-                          child: Icon(
-                            Remix.delete_bin_line,
-                            size: 20,
-                            color: brandRed,
-                          ),
-                        ),
+                        ],
                       ),
                     ],
                   ),
-                ],
+                ),
               ),
-            ),
-          ),
+            );
+          },
         );
       },
       transitionBuilder: (ctx, anim1, anim2, child) {
