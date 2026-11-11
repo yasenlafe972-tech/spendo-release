@@ -943,23 +943,51 @@ class _FinanceScreenState extends State<FinanceScreen> {
     for (final debt in sorted) {
       groups.putIfAbsent(debt.personId, () => []).add(debt);
     }
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final cardWidth = (constraints.maxWidth - 8) / 2;
-        return Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children:
-              groups.entries
-                  .map(
-                    (entry) => SizedBox(
-                      width: cardWidth,
-                      child: _buildPersonHistoryCard(entry.key, entry.value),
-                    ),
-                  )
-                  .toList(),
-        );
-      },
+    final firstColumn = <Widget>[];
+    final secondColumn = <Widget>[];
+    var firstHeight = 0;
+    var secondHeight = 0;
+
+    for (final entry in groups.entries) {
+      final expanded = _expandedPeople.contains(entry.key);
+      final visibleCount =
+          expanded ? entry.value.length : entry.value.take(3).length;
+      final estimatedHeight =
+          28 + (visibleCount * 46) + (entry.value.length > 3 ? 28 : 0);
+      final card = _buildPersonHistoryCard(entry.key, entry.value);
+
+      if (firstHeight <= secondHeight) {
+        if (firstColumn.isNotEmpty) {
+          firstColumn.add(const SizedBox(height: 8));
+        }
+        firstColumn.add(card);
+        firstHeight += estimatedHeight + 8;
+      } else {
+        if (secondColumn.isNotEmpty) {
+          secondColumn.add(const SizedBox(height: 8));
+        }
+        secondColumn.add(card);
+        secondHeight += estimatedHeight + 8;
+      }
+    }
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: firstColumn,
+          ),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: secondColumn,
+          ),
+        ),
+      ],
     );
   }
 
