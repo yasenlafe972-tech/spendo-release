@@ -16,7 +16,7 @@ import '../../../../core/widgets/spendo_date_picker.dart';
 class RecordRepaymentSheet extends StatefulWidget {
   final DebtModel debt;
   final PersonModel person;
-  final Function(DebtPaymentModel) onConfirm;
+  final Future<void> Function(DebtPaymentModel) onConfirm;
 
   const RecordRepaymentSheet({
     super.key,
@@ -34,6 +34,8 @@ class _RecordRepaymentSheetState extends State<RecordRepaymentSheet> {
   final _notesCtrl = TextEditingController();
   String _paymentMethod = 'bit';
   DateTime _paymentDate = DateTime.now();
+  bool _didAutoSelectAmount = false;
+  bool _isSubmitting = false;
 
   static bool get _isDark => AppTheme.isDarkMode;
   static Color get surfaceMain => _isDark ? const Color(0xFF121413) : const Color(0xFFFFFFFF);
@@ -69,10 +71,12 @@ class _RecordRepaymentSheetState extends State<RecordRepaymentSheet> {
     super.dispose();
   }
 
-  void _confirm() {
+  Future<void> _confirm() async {
+    if (_isSubmitting) return;
     final amount = NumberFormatter.tryParse(_amountCtrl.text) ?? 0.0;
     if (amount <= 0) return;
 
+    setState(() => _isSubmitting = true);
     SpendoHaptics.success();
     final payment = DebtPaymentModel(
       id: const Uuid().v4(),
@@ -84,8 +88,16 @@ class _RecordRepaymentSheetState extends State<RecordRepaymentSheet> {
       createdAt: DateTime.now(),
     );
 
-    widget.onConfirm(payment);
-    Navigator.pop(context);
+    try {
+      await widget.onConfirm(payment);
+      if (mounted) {
+        Navigator.pop(context);
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isSubmitting = false);
+      }
+    }
   }
 
   Future<void> _pickDate() async {
@@ -279,6 +291,17 @@ class _RecordRepaymentSheetState extends State<RecordRepaymentSheet> {
                               child: TextField(
                                 controller: _amountCtrl,
                                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                                textInputAction: TextInputAction.done,
+                                onTap: () {
+                                  if (!_didAutoSelectAmount && _amountCtrl.text.isNotEmpty) {
+                                    _didAutoSelectAmount = true;
+                                    _amountCtrl.selection = TextSelection(
+                                      baseOffset: 0,
+                                      extentOffset: _amountCtrl.text.length,
+                                    );
+                                  }
+                                },
+                                onSubmitted: (_) => _confirm(),
                                 inputFormatters: const [
                                   ThousandsSeparatorInputFormatter(),
                                 ],
@@ -456,6 +479,8 @@ class _RecordRepaymentSheetState extends State<RecordRepaymentSheet> {
                             Expanded(
                               child: TextField(
                                 controller: _notesCtrl,
+                                textInputAction: TextInputAction.done,
+                                onSubmitted: (_) => _confirm(),
                                 style: TextStyle(fontFamily: 'Cairo', color: textWhite, fontSize: 12),
                                 decoration: const InputDecoration(
                                   hintText: 'ملاحظات وتفاصيل الدفعة (اختياري)',
@@ -469,39 +494,41 @@ class _RecordRepaymentSheetState extends State<RecordRepaymentSheet> {
                           ],
                         ),
                       ),
-                      const SizedBox(height: 16),
+                    ],
+                  ),
+                ),
+              ),
 
-                      // زر التأكيد
-                      InkWell(
-                        onTap: _confirm,
-                        borderRadius: BorderRadius.circular(12),
-                        child: Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.symmetric(vertical: 11),
-                          decoration: BoxDecoration(
-                            color: brandBlue,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          alignment: Alignment.center,
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              const Icon(Remix.check_line, color: Colors.white, size: 18),
-                              const SizedBox(width: 6),
-                              Text(
-                                d.isPayLater ? 'تأكيد تم الدفع' : 'تأكيد تسجيل الدفعة',
-                                style: const TextStyle(
-                                  fontFamily: 'Cairo',
-                                  color: Colors.white,
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
+              // زر التأكيد مثبت في الأسفل دائماً حتى مع ظهور لوحة المفاتيح
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 6, 16, 4),
+                child: InkWell(
+                  onTap: _isSubmitting ? null : _confirm,
+                  borderRadius: BorderRadius.circular(12),
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(vertical: 11),
+                    decoration: BoxDecoration(
+                      color: brandBlue,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    alignment: Alignment.center,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Remix.check_line, color: Colors.white, size: 18),
+                        const SizedBox(width: 6),
+                        Text(
+                          d.isPayLater ? 'تأكيد تم الدفع' : 'تأكيد تسجيل الدفعة',
+                          style: const TextStyle(
+                            fontFamily: 'Cairo',
+                            color: Colors.white,
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),

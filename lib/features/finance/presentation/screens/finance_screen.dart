@@ -1055,6 +1055,14 @@ class _FinanceScreenState extends State<FinanceScreen> {
 
   Widget _buildHistoryEntry(DebtModel debt) {
     final isSettled = debt.isSettled;
+    final isPartiallyPaid =
+        !isSettled &&
+        !debt.isReceived &&
+        debt.remainingAmount < debt.originalAmount;
+    final displayAmount =
+        (isSettled || debt.isReceived)
+            ? debt.originalAmount
+            : debt.remainingAmount;
     final statusColor =
         isSettled || debt.isReceived
             ? successColor
@@ -1065,9 +1073,15 @@ class _FinanceScreenState extends State<FinanceScreen> {
         debt.isReceived
             ? 'خالص ومسدد'
             : debt.isPayLater
-            ? (isSettled ? 'تم الدفع' : 'للدفع لاحقاً')
+            ? (isSettled
+                ? 'تم الدفع'
+                : (isPartiallyPaid
+                    ? 'متبقي من ${_formatCurrency(debt.originalAmount)} ₪'
+                    : 'للدفع لاحقاً'))
             : isSettled
             ? 'تم السداد'
+            : isPartiallyPaid
+            ? 'متبقي من ${_formatCurrency(debt.originalAmount)} ₪'
             : debt.isIOwe
             ? 'مستحق الدفع'
             : 'بانتظار السداد';
@@ -1098,10 +1112,10 @@ class _FinanceScreenState extends State<FinanceScreen> {
                 ),
               ),
               Text(
-                '${_formatCurrency(debt.originalAmount)} ₪',
+                '${_formatCurrency(displayAmount)} ₪',
                 style: TextStyle(
                   fontFamily: 'Cairo',
-                  color: textWhite,
+                  color: isSettled || debt.isReceived ? successColor : textWhite,
                   fontSize: 11,
                   fontWeight: FontWeight.bold,
                 ),

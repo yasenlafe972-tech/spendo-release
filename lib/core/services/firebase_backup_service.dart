@@ -423,9 +423,14 @@ class FirebaseBackupService {
   /// Uploads all database tables to Firebase under the user's secure backup document
   Future<BackupResult> performBackup({bool isSilent = false}) async {
     try {
-      // First pull & merge any newer cloud records so neither device ever overwrites the other
+      // Only pull & merge from cloud before uploading if the cloud has a snapshot newer/different than our last sync
       try {
-        await performRestore();
+        final lastSyncStr = await _safeStorageRead(_keyLastCloudSyncTimestamp);
+        final lastSyncTs = int.tryParse(lastSyncStr ?? '0') ?? 0;
+        final cloudInfo = await getLatestCloudBackupInfo();
+        if (cloudInfo != null && cloudInfo.timestamp != lastSyncTs) {
+          await performRestore();
+        }
       } catch (_) {}
 
       final backupKey = await getBackupKey();

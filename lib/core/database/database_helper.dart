@@ -763,6 +763,13 @@ class DatabaseHelper {
           final tableInfo = await txn.rawQuery('PRAGMA table_info("$table")');
           final validColumns = tableInfo.map((c) => c['name'] as String).toSet();
 
+          // Index existing local rows by id so newer local edits are never overwritten by stale cloud snapshots
+          final existingRows = await txn.query(table);
+          final existingById = <String, Map<String, dynamic>>{
+            for (final r in existingRows)
+              if (r['id'] != null) r['id'].toString(): r,
+          };
+
           for (final rawRow in rawRows) {
             if (rawRow is! Map) continue;
             try {
@@ -776,6 +783,21 @@ class DatabaseHelper {
                 Map<String, dynamic>.from(rawRow),
                 validColumns,
               );
+
+              if (rawId.isNotEmpty && existingById.containsKey(rawId)) {
+                final localRow = existingById[rawId]!;
+                final localTsStr =
+                    (localRow['updated_at'] ?? localRow['created_at'])?.toString() ?? '';
+                final cloudTsStr =
+                    (sanitized['updated_at'] ?? sanitized['created_at'])?.toString() ?? '';
+                final localTs = DateTime.tryParse(localTsStr);
+                final cloudTs = DateTime.tryParse(cloudTsStr);
+                if (localTs != null && cloudTs != null && !cloudTs.isAfter(localTs)) {
+                  // Local record is newer than or equal to cloud record — preserve local state
+                  continue;
+                }
+              }
+
               await txn.insert(
                 table,
                 sanitized,

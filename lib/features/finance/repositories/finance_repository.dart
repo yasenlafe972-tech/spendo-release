@@ -49,7 +49,10 @@ class FinanceRepository {
   Future<void> addDebt(DebtModel debt) async {
     final db = await _dbHelper.database;
     await db.insert('debts', debt.toMap(), conflictAlgorithm: ConflictAlgorithm.replace);
-    FirebaseBackupService.instance.scheduleAutoBackup();
+    DatabaseHelper.notifyDataChanged();
+    FirebaseBackupService.instance.scheduleAutoBackup(
+      debounce: const Duration(seconds: 1),
+    );
   }
 
   Future<void> updateDebt(DebtModel debt) async {
@@ -61,7 +64,10 @@ class FinanceRepository {
       where: 'id = ?',
       whereArgs: [debt.id],
     );
-    FirebaseBackupService.instance.scheduleAutoBackup();
+    DatabaseHelper.notifyDataChanged();
+    FirebaseBackupService.instance.scheduleAutoBackup(
+      debounce: const Duration(seconds: 1),
+    );
   }
 
   Future<void> deleteDebt(String id) async {
@@ -141,7 +147,10 @@ class FinanceRepository {
         whereArgs: [currentDebt.id],
       );
     });
-    FirebaseBackupService.instance.scheduleAutoBackup();
+    DatabaseHelper.notifyDataChanged();
+    FirebaseBackupService.instance.scheduleAutoBackup(
+      debounce: const Duration(seconds: 1),
+    );
   }
 
   /// حذف دفعة سداد وإعادة احتساب المبلغ المتبقي وحالة الدين تلقائياً داخل Transaction
@@ -192,7 +201,10 @@ class FinanceRepository {
         whereArgs: [debtId],
       );
     });
-    FirebaseBackupService.instance.scheduleAutoBackup();
+    DatabaseHelper.notifyDataChanged();
+    FirebaseBackupService.instance.scheduleAutoBackup(
+      debounce: const Duration(seconds: 1),
+    );
   }
 
   Future<List<DebtPaymentModel>> getPaymentsForDebt(String debtId) async {
