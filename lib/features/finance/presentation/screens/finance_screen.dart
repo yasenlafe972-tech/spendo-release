@@ -6,6 +6,7 @@ import 'package:remixicon/remixicon.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/utils/arabic_date_helper.dart';
+import '../../../../core/utils/number_formatter.dart';
 import '../../../../core/utils/spendo_haptic_feedback.dart';
 import '../../../people/models/person_model.dart';
 import '../../../people/repositories/people_repository.dart';
@@ -263,7 +264,7 @@ class _FinanceScreenState extends State<FinanceScreen> {
         'تاريخ المعاملة: ${ArabicDateHelper.formatArabicDateWithWeekdayFromString(debt.transactionDate)}',
       );
       buffer.writeln(
-        'المبلغ المستلم: ${debt.originalAmount.toStringAsFixed(1)} ₪',
+        'المبلغ المستلم: ${_formatCurrency(debt.originalAmount)} ₪',
       );
       buffer.writeln('الحالة: خالص ومسدد (مستلم بالكامل)');
       if (debt.notes != null) {
@@ -280,13 +281,13 @@ class _FinanceScreenState extends State<FinanceScreen> {
         'تاريخ السلفة: ${ArabicDateHelper.formatArabicDateWithWeekdayFromString(debt.transactionDate)}',
       );
       buffer.writeln(
-        'المبلغ الأصلي (من أصل): ${debt.originalAmount.toStringAsFixed(1)} ₪',
+        'المبلغ الأصلي (من أصل): ${_formatCurrency(debt.originalAmount)} ₪',
       );
       buffer.writeln(
-        'المسدد حتى الآن: ${debt.paidAmount.toStringAsFixed(1)} ₪',
+        'المسدد حتى الآن: ${_formatCurrency(debt.paidAmount)} ₪',
       );
       buffer.writeln(
-        'المبلغ المتبقي: ${debt.remainingAmount.toStringAsFixed(1)} ₪',
+        'المبلغ المتبقي: ${_formatCurrency(debt.remainingAmount)} ₪',
       );
       if (debt.dueDate != null) {
         buffer.writeln(
@@ -323,7 +324,7 @@ class _FinanceScreenState extends State<FinanceScreen> {
     final confirmed = await SpendoConfirmDeleteDialog.show(
       context,
       title: 'حذف المعاملة المالية',
-      itemName: '$personName - ${debt.originalAmount.toStringAsFixed(0)} ₪',
+      itemName: '$personName - ${_formatCurrency(debt.originalAmount)} ₪',
       itemIcon: Remix.hand_coin_line,
       description:
           'هل أنت متأكد من حذف هذا السجل المالي وسجل الدفعات المرتبطة به نهائياً؟',
@@ -337,12 +338,7 @@ class _FinanceScreenState extends State<FinanceScreen> {
     }
   }
 
-  String _formatCurrency(double amount) {
-    if (amount == amount.roundToDouble()) {
-      return '${amount.toInt()}';
-    }
-    return amount.toStringAsFixed(1);
-  }
+  String _formatCurrency(double amount) => NumberFormatter.formatAmount(amount);
 
   IconData _getPaymentMethodIcon(String method) {
     switch (method.toLowerCase()) {

@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:remixicon/remixicon.dart';
 import 'package:uuid/uuid.dart';
 import '../../../../core/utils/arabic_date_helper.dart';
+import '../../../../core/utils/number_formatter.dart';
 import '../../../../core/utils/spendo_haptic_feedback.dart';
 import '../../../people/models/person_model.dart';
 import '../../../people/repositories/people_repository.dart';
@@ -74,9 +75,7 @@ class _AddDebtSheetState extends State<AddDebtSheet> {
       final debt = widget.initialDebt!;
       _debtType = debt.type;
       _paymentMethod = debt.paymentMethod;
-      _amountCtrl.text = debt.originalAmount == debt.originalAmount.roundToDouble()
-          ? debt.originalAmount.toInt().toString()
-          : debt.originalAmount.toStringAsFixed(1);
+      _amountCtrl.text = NumberFormatter.formatAmount(debt.originalAmount);
       _notesCtrl.text = debt.notes ?? '';
       _selectedPersonId = debt.personId;
       final p = _peopleList.where((x) => x.id == debt.personId).firstOrNull;
@@ -131,7 +130,7 @@ class _AddDebtSheetState extends State<AddDebtSheet> {
     final enteredName = _nameCtrl.text.trim();
     if (enteredName.isEmpty) return;
 
-    final amount = double.tryParse(_amountCtrl.text.trim()) ?? 0.0;
+    final amount = NumberFormatter.tryParse(_amountCtrl.text) ?? 0.0;
     if (amount <= 0) return;
 
     setState(() => _isSaving = true);
@@ -758,6 +757,9 @@ class _AddDebtSheetState extends State<AddDebtSheet> {
             child: TextFormField(
               controller: _amountCtrl,
               keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              inputFormatters: const [
+                ThousandsSeparatorInputFormatter(),
+              ],
               style: TextStyle(
                 fontFamily: 'Cairo',
                 color: textWhite,
@@ -779,7 +781,7 @@ class _AddDebtSheetState extends State<AddDebtSheet> {
                 if (val == null || val.trim().isEmpty) {
                   return 'يرجى إدخال المبلغ';
                 }
-                final num = double.tryParse(val.trim());
+                final num = NumberFormatter.tryParse(val);
                 if (num == null || num <= 0) {
                   return 'يرجى إدخال مبلغ صحيح';
                 }

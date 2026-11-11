@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:remixicon/remixicon.dart';
 import 'package:uuid/uuid.dart';
 import '../../../../core/utils/arabic_date_helper.dart';
+import '../../../../core/utils/number_formatter.dart';
 import '../../../../core/utils/spendo_haptic_feedback.dart';
 import '../../../people/models/person_model.dart';
 import '../../models/debt_model.dart';
@@ -58,7 +59,7 @@ class _RecordRepaymentSheetState extends State<RecordRepaymentSheet> {
     _paymentMethod = (initialMethod == 'pending' || initialMethod == 'check')
         ? 'cash'
         : initialMethod;
-    _amountCtrl.text = widget.debt.remainingAmount.toStringAsFixed(0);
+    _amountCtrl.text = NumberFormatter.formatAmount(widget.debt.remainingAmount);
   }
 
   @override
@@ -69,7 +70,7 @@ class _RecordRepaymentSheetState extends State<RecordRepaymentSheet> {
   }
 
   void _confirm() {
-    final amount = double.tryParse(_amountCtrl.text.trim()) ?? 0.0;
+    final amount = NumberFormatter.tryParse(_amountCtrl.text) ?? 0.0;
     if (amount <= 0) return;
 
     SpendoHaptics.success();
@@ -230,7 +231,7 @@ class _RecordRepaymentSheetState extends State<RecordRepaymentSheet> {
                                 const Text('المبلغ الأصلي', style: TextStyle(fontFamily: 'Cairo', color: Color(0xFF9CA3AF), fontSize: 10)),
                                 const SizedBox(height: 2),
                                 Text(
-                                  '${d.originalAmount.toStringAsFixed(0)} ₪',
+                                  '${NumberFormatter.formatAmount(d.originalAmount)} ₪',
                                   style: TextStyle(fontFamily: 'Cairo', color: textWhite, fontWeight: FontWeight.bold, fontSize: 13),
                                 ),
                               ],
@@ -241,7 +242,7 @@ class _RecordRepaymentSheetState extends State<RecordRepaymentSheet> {
                                 const Text('المسدد حالياً', style: TextStyle(fontFamily: 'Cairo', color: Color(0xFF9CA3AF), fontSize: 10)),
                                 const SizedBox(height: 2),
                                 Text(
-                                  '${d.paidAmount.toStringAsFixed(0)} ₪',
+                                  '${NumberFormatter.formatAmount(d.paidAmount)} ₪',
                                   style: TextStyle(fontFamily: 'Cairo', color: successColor, fontWeight: FontWeight.bold, fontSize: 13),
                                 ),
                               ],
@@ -252,7 +253,7 @@ class _RecordRepaymentSheetState extends State<RecordRepaymentSheet> {
                                 const Text('المتبقي للسداد', style: TextStyle(fontFamily: 'Cairo', color: Color(0xFF9CA3AF), fontSize: 10)),
                                 const SizedBox(height: 2),
                                 Text(
-                                  '${d.remainingAmount.toStringAsFixed(0)} ₪',
+                                  '${NumberFormatter.formatAmount(d.remainingAmount)} ₪',
                                   style: TextStyle(fontFamily: 'Cairo', color: brandYellow, fontWeight: FontWeight.w900, fontSize: 14),
                                 ),
                               ],
@@ -278,6 +279,9 @@ class _RecordRepaymentSheetState extends State<RecordRepaymentSheet> {
                               child: TextField(
                                 controller: _amountCtrl,
                                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                                inputFormatters: const [
+                                  ThousandsSeparatorInputFormatter(),
+                                ],
                                 style: TextStyle(
                                   fontFamily: 'Cairo',
                                   color: textWhite,
@@ -317,7 +321,7 @@ class _RecordRepaymentSheetState extends State<RecordRepaymentSheet> {
                         child: InkWell(
                           onTap: () {
                             SpendoHaptics.light();
-                            _amountCtrl.text = d.remainingAmount.toStringAsFixed(0);
+                            _amountCtrl.text = NumberFormatter.formatAmount(d.remainingAmount);
                           },
                           borderRadius: BorderRadius.circular(6),
                           child: Padding(
@@ -328,7 +332,7 @@ class _RecordRepaymentSheetState extends State<RecordRepaymentSheet> {
                                 const Icon(Remix.check_line, size: 13, color: brandBlue),
                                 const SizedBox(width: 4),
                                 Text(
-                                  'سداد كامل المتبقي (${d.remainingAmount.toStringAsFixed(0)} ₪)',
+                                  'سداد كامل المتبقي (${NumberFormatter.formatAmount(d.remainingAmount)} ₪)',
                                   style: const TextStyle(
                                     fontFamily: 'Cairo',
                                     color: brandBlue,

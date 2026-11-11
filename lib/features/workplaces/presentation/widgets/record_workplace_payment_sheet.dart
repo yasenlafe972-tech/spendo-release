@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:remixicon/remixicon.dart';
 import 'package:uuid/uuid.dart';
 import 'package:sanad_app/core/utils/arabic_date_helper.dart';
+import 'package:sanad_app/core/utils/number_formatter.dart';
 import 'package:sanad_app/core/utils/spendo_haptic_feedback.dart';
 import 'package:sanad_app/features/workplaces/models/workplace_model.dart';
 import 'package:sanad_app/features/workplaces/models/workplace_payment_model.dart';
@@ -90,7 +91,7 @@ class _RecordWorkplacePaymentSheetState
     super.initState();
     if (widget.existingPayment != null) {
       final p = widget.existingPayment!;
-      _amountController.text = p.amount.toStringAsFixed(0);
+      _amountController.text = NumberFormatter.formatAmount(p.amount);
       _notesController.text = p.notes ?? '';
       _paymentMethod = p.paymentMethod;
       try {
@@ -121,10 +122,10 @@ class _RecordWorkplacePaymentSheetState
 
   void _addQuickAmount(double addition) {
     SpendoHaptics.selection();
-    final current = double.tryParse(_amountController.text.trim()) ?? 0.0;
+    final current = NumberFormatter.tryParse(_amountController.text) ?? 0.0;
     final updated = current + addition;
     setState(() {
-      _amountController.text = updated.toStringAsFixed(0);
+      _amountController.text = NumberFormatter.formatAmount(updated);
     });
   }
 
@@ -133,7 +134,7 @@ class _RecordWorkplacePaymentSheetState
     final rem = widget.remainingDue ?? 0.0;
     if (rem > 0) {
       setState(() {
-        _amountController.text = rem.toStringAsFixed(0);
+        _amountController.text = NumberFormatter.formatAmount(rem);
       });
     }
   }
@@ -146,7 +147,7 @@ class _RecordWorkplacePaymentSheetState
   }
 
   Future<void> _handleSave() async {
-    final amount = double.tryParse(_amountController.text.trim());
+    final amount = NumberFormatter.tryParse(_amountController.text);
     if (amount == null || amount <= 0) {
       SpendoHaptics.medium();
       ScaffoldMessenger.of(context).showSnackBar(
@@ -209,7 +210,7 @@ class _RecordWorkplacePaymentSheetState
     );
     final remainingFormatted =
         (widget.remainingDue != null && widget.remainingDue! > 0)
-            ? '${widget.remainingDue!.toStringAsFixed(0)} ₪'
+            ? '${NumberFormatter.formatAmount(widget.remainingDue!)} ₪'
             : '0 ₪';
 
     return Container(
@@ -374,6 +375,9 @@ class _RecordWorkplacePaymentSheetState
                                     const TextInputType.numberWithOptions(
                                       decimal: true,
                                     ),
+                                inputFormatters: const [
+                                  ThousandsSeparatorInputFormatter(),
+                                ],
                                 style: TextStyle(
                                   color: RecordWorkplacePaymentSheet.textWhite,
                                   fontSize: 22,
