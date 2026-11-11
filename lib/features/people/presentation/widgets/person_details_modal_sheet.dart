@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:remixicon/remixicon.dart';
@@ -214,14 +213,6 @@ class _PersonDetailsModalSheetState extends State<PersonDetailsModalSheet> {
             ? p.notes!.trim()
             : null;
 
-    final hasAvatarPhoto =
-        p.avatarPath != null &&
-        p.avatarPath!.trim().isNotEmpty &&
-        File(p.avatarPath!).existsSync();
-
-    final isHighlighted = p.isPinned || p.isUser;
-    final highlightColor = p.isUser ? brandBlue : brandYellow;
-
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Container(
@@ -257,62 +248,19 @@ class _PersonDetailsModalSheetState extends State<PersonDetailsModalSheet> {
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Row(
                     children: [
-                      // صورة البروفايل أو المونوغرام الفخم
-                      Container(
-                        width: 54,
-                        height: 54,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color:
-                              isHighlighted
-                                  ? highlightColor.withValues(alpha: 0.16)
-                                  : brandYellow.withValues(alpha: 0.14),
-                          border: Border.all(
-                            color:
-                                isHighlighted
-                                    ? highlightColor.withValues(alpha: 0.6)
-                                    : brandYellow.withValues(alpha: 0.5),
-                            width: 1.8,
+                      // أيقونة المستخدم بدون خلفية مطابقة للبطاقة الخارجية
+                      SizedBox(
+                        width: 28,
+                        height: 28,
+                        child: Center(
+                          child: Icon(
+                            p.isUser ? Remix.user_star_line : Remix.user_3_line,
+                            size: 22,
+                            color: p.isUser ? brandBlue : textMuted,
                           ),
-                          boxShadow: [
-                            BoxShadow(
-                              color:
-                                  isHighlighted
-                                      ? highlightColor.withValues(alpha: 0.18)
-                                      : brandYellow.withValues(alpha: 0.15),
-                              blurRadius: 10,
-                              spreadRadius: 1,
-                            ),
-                          ],
-                        ),
-                        child: ClipOval(
-                          child:
-                              hasAvatarPhoto
-                                  ? Image.file(
-                                    File(p.avatarPath!),
-                                    width: 54,
-                                    height: 54,
-                                    fit: BoxFit.cover,
-                                  )
-                                  : Center(
-                                    child: Text(
-                                      p.name.trim().isNotEmpty
-                                          ? p.name.trim().characters.first
-                                          : '؟',
-                                      style: TextStyle(
-                                        fontFamily: 'Cairo',
-                                        fontSize: 22,
-                                        fontWeight: FontWeight.bold,
-                                        color:
-                                            isHighlighted
-                                                ? highlightColor
-                                                : brandYellow,
-                                      ),
-                                    ),
-                                  ),
                         ),
                       ),
-                      const SizedBox(width: 12),
+                      const SizedBox(width: 10),
 
                       // اسم الشخص والبادجات
                       Expanded(
