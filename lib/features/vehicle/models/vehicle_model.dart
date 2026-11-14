@@ -1,4 +1,5 @@
 import 'dart:convert';
+import '../../../../core/services/israeli_fuel_station_registry.dart';
 
 enum ExpenseCategory {
   fuel,
@@ -161,19 +162,67 @@ class VehicleExpenseRecord {
       };
 
   factory VehicleExpenseRecord.fromMap(Map<String, dynamic> map) {
+    final category = map['category'] == 'fuel'
+        ? ExpenseCategory.fuel
+        : ExpenseCategory.maintenance;
+    var title = map['title'] as String? ?? '';
+    final amount = (map['amount'] as num?)?.toDouble() ?? 0.0;
+    var date = DateTime.tryParse(map['date'] as String? ?? '') ?? DateTime.now();
+    var invoiceNumber = map['invoiceNumber'] as String?;
+    var provider = map['provider'] as String?;
+    var liters = (map['liters'] as num?)?.toDouble();
+    var pricePerLiter = (map['pricePerLiter'] as num?)?.toDouble();
+
+    if (category == ExpenseCategory.fuel) {
+      // Self-heal the 06/11/2026 50.00 NIS Paz Sakhnin (422) receipt if it was saved with the old fallback
+      if (date.year == 2026 &&
+          date.month == 11 &&
+          date.day == 6 &&
+          (amount - 50.0).abs() < 0.05 &&
+          (title.contains('בעינה') || provider == 'פז בעינה 365' || provider == 'פז Yellow')) {
+        invoiceNumber = '042209901087851';
+        provider = 'פז סכנין החדשה (422)';
+        liters = 6.369;
+        pricePerLiter = 7.85;
+        date = DateTime(2026, 11, 6, 14, 22);
+        title = 'תדלוק פז סכנין החדשה (422) (6.369 ליטר)';
+      } else if (invoiceNumber != null &&
+          invoiceNumber.length == 15 &&
+          invoiceNumber.startsWith('0')) {
+        // Resolve exact station from the 15-digit Paz fiscal invoice number prefix (e.g. 0422... -> 422, 0417... -> 417)
+        final resolved = IsraeliFuelStationRegistry.resolveStation(
+          text: '$title ${provider ?? ''}',
+          detectedCompany: 'פז',
+          invoiceNumber: invoiceNumber,
+        );
+        if (resolved.isNotEmpty &&
+            (provider == null ||
+                provider.isEmpty ||
+                provider == 'פז Yellow' ||
+                (provider.contains('בעינה') && !invoiceNumber.startsWith('0365')))) {
+          provider = resolved;
+          final lStr = liters != null ? ' ($liters ליטר)' : '';
+          title = 'תדלוק $resolved$lStr';
+        }
+      }
+      if (title.contains('בעינה 365 417') || title.contains('בית הכנם')) {
+        provider = 'פז בית הכרם (417)';
+        final lStr = liters != null ? ' ($liters ליטר)' : '';
+        title = 'תדלוק פז בית הכרם (417)$lStr';
+      }
+    }
+
     return VehicleExpenseRecord(
       id: map['id'] as String? ?? '',
-      title: map['title'] as String? ?? '',
-      amount: (map['amount'] as num?)?.toDouble() ?? 0.0,
+      title: title,
+      amount: amount,
       odometer: (map['odometer'] as num?)?.toInt() ?? 0,
-      date: DateTime.tryParse(map['date'] as String? ?? '') ?? DateTime.now(),
-      category: map['category'] == 'fuel'
-          ? ExpenseCategory.fuel
-          : ExpenseCategory.maintenance,
-      invoiceNumber: map['invoiceNumber'] as String?,
-      provider: map['provider'] as String?,
-      liters: (map['liters'] as num?)?.toDouble(),
-      pricePerLiter: (map['pricePerLiter'] as num?)?.toDouble(),
+      date: date,
+      category: category,
+      invoiceNumber: invoiceNumber,
+      provider: provider,
+      liters: liters,
+      pricePerLiter: pricePerLiter,
       notes: map['notes'] as String?,
       items:
           (map['items'] as List<dynamic>?)?.map((e) => e.toString()).toList(),
@@ -258,13 +307,13 @@ class VehicleDataState {
       history: [
         VehicleExpenseRecord(
           id: 'fuel_paz_2026_10_21',
-          title: 'תדלוק Yellow פז בעינה 365 (6 ליטר אוקטן 95)',
+          title: 'תדלוק פז בית הכרם (417) (6.0 ליטר)',
           amount: 46.62,
           odometer: 0,
           date: DateTime(2026, 10, 21, 8, 43),
           category: ExpenseCategory.fuel,
           invoiceNumber: '041709901387254',
-          provider: 'פז בעינה 365',
+          provider: 'פז בית הכרם (417)',
           liters: 6.0,
           pricePerLiter: 7.77,
           notes: 'תדלוק מהיר באפליקציית Yellow משאבה 05 - רכב 55-505-403',

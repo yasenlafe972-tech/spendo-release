@@ -1,5 +1,6 @@
 import 'package:sanad_app/core/theme/app_theme.dart';
 import 'package:sanad_app/core/theme/app_colors.dart';
+import 'package:sanad_app/core/database/database_helper.dart';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -97,6 +98,7 @@ class _EmployerDetailsScreenState extends State<EmployerDetailsScreen> {
   void initState() {
     super.initState();
     AppTheme.themeModeNotifier.addListener(_onThemeChanged);
+    DatabaseHelper.dataVersionNotifier.addListener(_loadData);
     _workplace = widget.workplace;
     if (widget.initialMonth != null) {
       _selectedMonth = widget.initialMonth!;
@@ -106,6 +108,7 @@ class _EmployerDetailsScreenState extends State<EmployerDetailsScreen> {
 
   @override
   void dispose() {
+    DatabaseHelper.dataVersionNotifier.removeListener(_loadData);
     AppTheme.themeModeNotifier.removeListener(_onThemeChanged);
     super.dispose();
   }

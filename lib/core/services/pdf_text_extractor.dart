@@ -169,7 +169,7 @@ class PdfTextExtractor {
     // Match parenthesized text: (some text) Tj or (some text) '
     final strRegex = RegExp(r'\(([^)]+)\)\s*(?:Tj|\x27|\x22|(?=\]))');
     for (final m in strRegex.allMatches(streamContent)) {
-      final t = _unescapePdfString(m.group(1) ?? '');
+      final t = _normalizeHebrewEncoding(_unescapePdfString(m.group(1) ?? ''));
       if (t.isNotEmpty && _hasPrintableContent(t)) {
         result.write('$t ');
       }
@@ -178,10 +178,29 @@ class PdfTextExtractor {
     return result.toString();
   }
 
+  /// Converts Windows-1255 / ISO-8859-8 Hebrew byte range (0xE0..0xFA) to Unicode Hebrew (0x05D0..0x05EA)
+  static String _normalizeHebrewEncoding(String s) {
+    if (s.isEmpty) return s;
+    final units = s.codeUnits;
+    bool hasWin1255Heb = false;
+    for (final c in units) {
+      if (c >= 0xE0 && c <= 0xFA) {
+        hasWin1255Heb = true;
+        break;
+      }
+    }
+    if (!hasWin1255Heb) return s;
+    return String.fromCharCodes(
+      units.map((c) => (c >= 0xE0 && c <= 0xFA) ? (c + 0x04F0) : c),
+    );
+  }
+
   static bool _hasPrintableContent(String s) {
     for (int i = 0; i < s.length; i++) {
       final code = s.codeUnitAt(i);
-      if (code >= 32 && code <= 126 || code >= 0x0590 && code <= 0x05FF || code >= 0x0600 && code <= 0x06FF) {
+      if (code >= 32 && code <= 126 ||
+          code >= 0x0590 && code <= 0x05FF ||
+          code >= 0x0600 && code <= 0x06FF) {
         return true;
       }
     }

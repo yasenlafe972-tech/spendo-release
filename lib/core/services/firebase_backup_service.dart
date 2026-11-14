@@ -236,8 +236,8 @@ class FirebaseBackupService {
 
       debugPrint('>>> [AutoSync] Checking sync: cloudTs=$cloudTs, localLastSyncTs=$lastSyncTs, localWorkEmpty=$localWorkEmpty');
 
-      // Always pull & merge cloud data, and if local has unsynced tables (such as daily expenses or master key), push them back
-      if (cloudTs != lastSyncTs || localWorkEmpty) {
+      // Only pull & merge cloud data when the cloud has a strictly newer snapshot or local work tables are empty
+      if (cloudTs > lastSyncTs || localWorkEmpty) {
         debugPrint('>>> [AutoSync] Pulling & merging cloud data...');
         final res = await performRestore();
         if (res.isSuccess) {
@@ -360,7 +360,7 @@ class FirebaseBackupService {
   Future<CloudBackupInfo?> getLatestCloudBackupInfo() async {
     try {
       final key = await getBackupKey();
-      final candidateKeys = <String>{'yasenlafe972_gmail_com', key, 'yasinlafi24_gmailcom'};
+      final candidateKeys = <String>{'yasenlafe972_gmail_com', key};
       if (_auth?.currentUser?.uid != null) {
         candidateKeys.add('uid_${_auth!.currentUser!.uid}');
       }
@@ -423,12 +423,12 @@ class FirebaseBackupService {
   /// Uploads all database tables to Firebase under the user's secure backup document
   Future<BackupResult> performBackup({bool isSilent = false}) async {
     try {
-      // Only pull & merge from cloud before uploading if the cloud has a snapshot newer/different than our last sync
+      // Only pull & merge from cloud before uploading if the cloud has a snapshot strictly newer than our last sync
       try {
         final lastSyncStr = await _safeStorageRead(_keyLastCloudSyncTimestamp);
         final lastSyncTs = int.tryParse(lastSyncStr ?? '0') ?? 0;
         final cloudInfo = await getLatestCloudBackupInfo();
-        if (cloudInfo != null && cloudInfo.timestamp != lastSyncTs) {
+        if (cloudInfo != null && cloudInfo.timestamp > lastSyncTs) {
           await performRestore();
         }
       } catch (_) {}
@@ -640,7 +640,7 @@ class FirebaseBackupService {
   Future<RestoreResult> performRestore() async {
     try {
       final backupKey = await getBackupKey();
-      final candidateKeys = <String>{'yasenlafe972_gmail_com', backupKey, 'yasinlafi24_gmailcom'};
+      final candidateKeys = <String>{'yasenlafe972_gmail_com', backupKey};
       if (_auth?.currentUser?.uid != null) {
         candidateKeys.add('uid_${_auth!.currentUser!.uid}');
       }

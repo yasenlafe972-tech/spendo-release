@@ -21,6 +21,7 @@ class WorkLogModel {
   final String? locationAddress; // اسم أو وصف موقع الورشة على الخريطة
   final List<String> attachments; // مسارات الصور والمرفقات (صور المكيف، الفاتورة، الكفالة...)
   final DateTime createdAt;
+  final DateTime updatedAt;
 
   WorkLogModel({
     required this.id,
@@ -44,12 +45,14 @@ class WorkLogModel {
     this.locationAddress,
     List<String>? attachments,
     required this.createdAt,
+    DateTime? updatedAt,
   })  : workplaceId = workplaceId ?? employerId,
         workplaceName = (workplaceName ?? employerName ?? '').trim(),
         dayName = (dayName != null && dayName.trim().isNotEmpty)
             ? dayName.trim()
             : ArabicDateHelper.getWeekdayFromDateString(date),
-        attachments = attachments ?? const [];
+        attachments = attachments ?? const [],
+        updatedAt = updatedAt ?? createdAt;
 
   /// معرف المشغّل / الورشة المرتبط بيوم العمل (Master-Detail Employer ID)
   String? get employerId => workplaceId;
@@ -100,6 +103,7 @@ class WorkLogModel {
     String? locationAddress,
     List<String>? attachments,
     DateTime? createdAt,
+    DateTime? updatedAt,
   }) {
     return WorkLogModel(
       id: id ?? this.id,
@@ -121,6 +125,7 @@ class WorkLogModel {
       locationAddress: locationAddress ?? this.locationAddress,
       attachments: attachments ?? this.attachments,
       createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? DateTime.now(),
     );
   }
 
@@ -145,6 +150,7 @@ class WorkLogModel {
       'location_address': locationAddress,
       'attachments': jsonEncode(attachments),
       'created_at': createdAt.toIso8601String(),
+      'updated_at': updatedAt.toIso8601String(),
     };
   }
 
@@ -168,6 +174,9 @@ class WorkLogModel {
       parsedAttachments = rawAttachments.map((e) => e.toString()).toList();
     }
 
+    final created = DateTime.tryParse(map['created_at']?.toString() ?? '') ?? DateTime.now();
+    final updated = DateTime.tryParse(map['updated_at']?.toString() ?? '') ?? created;
+
     return WorkLogModel(
       id: map['id'] as String,
       personId: map['person_id'] as String?,
@@ -187,7 +196,8 @@ class WorkLogModel {
       longitude: (map['longitude'] as num?)?.toDouble(),
       locationAddress: map['location_address'] as String?,
       attachments: parsedAttachments,
-      createdAt: DateTime.parse(map['created_at'] as String),
+      createdAt: created,
+      updatedAt: updated,
     );
   }
 }

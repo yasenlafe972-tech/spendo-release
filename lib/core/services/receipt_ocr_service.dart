@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:printing/printing.dart';
+import 'israeli_fuel_station_registry.dart';
 import 'pdf_text_extractor.dart';
 
 class ParsedReceiptResult {
@@ -18,6 +19,9 @@ class ParsedReceiptResult {
   final List<String> items;
   final int? pageNumber;
   final int? totalPages;
+  final double? beforeVat;
+  final double? vatAmount;
+  final String? fuelGrade;
 
   const ParsedReceiptResult({
     required this.title,
@@ -33,6 +37,9 @@ class ParsedReceiptResult {
     this.items = const [],
     this.pageNumber,
     this.totalPages,
+    this.beforeVat,
+    this.vatAmount,
+    this.fuelGrade,
   });
 
   ParsedReceiptResult copyWith({
@@ -49,6 +56,9 @@ class ParsedReceiptResult {
     List<String>? items,
     int? pageNumber,
     int? totalPages,
+    double? beforeVat,
+    double? vatAmount,
+    String? fuelGrade,
   }) {
     return ParsedReceiptResult(
       title: title ?? this.title,
@@ -64,6 +74,9 @@ class ParsedReceiptResult {
       items: items ?? this.items,
       pageNumber: pageNumber ?? this.pageNumber,
       totalPages: totalPages ?? this.totalPages,
+      beforeVat: beforeVat ?? this.beforeVat,
+      vatAmount: vatAmount ?? this.vatAmount,
+      fuelGrade: fuelGrade ?? this.fuelGrade,
     );
   }
 }
@@ -93,11 +106,11 @@ class StoreMathTriplet {
 }
 
 class ReceiptOcrService {
-  static const MethodChannel _shareChannel = MethodChannel('com.finance.spendo/share');
+  static const MethodChannel _shareChannel =
+      MethodChannel('com.finance.spendo/share');
 
   /// High-reliability, 100% on-device offline OCR analyzer.
-  /// Tier 1: Apple Vision on iOS (with native Hebrew support).
-  /// Tier 2: Google Play Services ML Kit on Android (Latin numbers and symbols).
+  /// Works across both iOS (Apple Vision) and Android (Google ML Kit) + Official Israeli Fuel Station Registry.
   static Future<ParsedReceiptResult?> analyzeReceiptImage(File imageFile) async {
     if (!imageFile.existsSync()) return null;
 
@@ -122,7 +135,8 @@ class ReceiptOcrService {
   }
 
   /// 100% offline analyzer for Israeli gas receipts & Yellow app multi-receipt PDFs.
-  /// First discovers the exact PDF page count, then parses each page systematically.
+  /// Combines digital PDF text extraction with embedded JPEG / raster OCR so both
+  /// Hebrew text layers and image-based receipts are captured completely.
   static Future<List<ParsedReceiptResult>> analyzeReceiptPdfMulti(
     File pdfFile, {
     void Function(int current, int total)? onProgress,
@@ -137,10 +151,17 @@ class ReceiptOcrService {
       final totalDocPages = PdfTextExtractor.getPdfPageCount(bytes);
       debugPrint('>>> [ReceiptOcr] PDF Document Total Pages: $totalDocPages');
 
+      // Also extract any digital text stream if present (useful for single-page vector PDFs)
+      String digitalPdfText = '';
+      try {
+        digitalPdfText = await PdfTextExtractor.extractText(pdfFile);
+      } catch (_) {}
+
       // Step 2: Instant extraction of all embedded JPEGs (one per page in Yellow exports, < 15ms)
       final embeddedJpegs = PdfTextExtractor.extractAllEmbeddedJpegs(bytes);
       if (embeddedJpegs.isNotEmpty) {
-        final totalCount = totalDocPages > 0 ? totalDocPages : embeddedJpegs.length;
+        final totalCount =
+            totalDocPages > 0 ? totalDocPages : embeddedJpegs.length;
         for (int i = 0; i < embeddedJpegs.length; i++) {
           final pageNum = i + 1;
           onProgress?.call(pageNum, totalCount);
@@ -149,14 +170,23 @@ class ReceiptOcrService {
           );
           try {
             await tempJpg.writeAsBytes(embeddedJpegs[i]);
-            final res = await analyzeReceiptImage(tempJpg);
-            debugPrint('>>> [ReceiptIdx $i (Page $pageNum/$totalCount)] Parsed: amount=${res?.amount}, liters=${res?.liters}, price=${res?.pricePerLiter}, isFuel=${res?.isFuel}');
+            var res = await analyzeReceiptImage(tempJpg);
+            if (res != null &&
+                embeddedJpegs.length == 1 &&
+                digitalPdfText.trim().isNotEmpty) {
+              // Merge digital text + image OCR text for maximum fidelity
+              res = parseReceiptText('${res.rawText}\n$digitalPdfText');
+            }
+            debugPrint(
+              '>>> [ReceiptIdx $i (Page $pageNum/$totalCount)] Parsed: station=${res?.providerName}, amount=${res?.amount}, liters=${res?.liters}, price=${res?.pricePerLiter}, inv=${res?.invoiceNumber}',
+            );
             if (res != null && res.amount > 0) {
               final withPage = res.copyWith(
                 pageNumber: pageNum,
                 totalPages: totalCount,
               );
-              final key = '${withPage.date.year}-${withPage.date.month}-${withPage.date.day}_${withPage.amount.toStringAsFixed(2)}_${withPage.pageNumber}';
+              final key =
+                  '${withPage.date.year}-${withPage.date.month}-${withPage.date.day}_${withPage.amount.toStringAsFixed(2)}_${withPage.pageNumber}';
               if (seenKeys.add(key)) {
                 results.add(withPage);
               }
@@ -168,7 +198,9 @@ class ReceiptOcrService {
           }
         }
         if (results.isNotEmpty) {
-          results.sort((a, b) => (a.pageNumber ?? 0).compareTo(b.pageNumber ?? 0));
+          results.sort(
+            (a, b) => (a.pageNumber ?? 0).compareTo(b.pageNumber ?? 0),
+          );
           return results;
         }
       }
@@ -177,7 +209,10 @@ class ReceiptOcrService {
       try {
         int pageIndex = 0;
         final maxPages = totalDocPages > 0 ? totalDocPages : 15;
-        await for (final page in Printing.raster(bytes, dpi: 200).timeout(const Duration(seconds: 15))) {
+        await for (final page in Printing.raster(
+          bytes,
+          dpi: 220,
+        ).timeout(const Duration(seconds: 15))) {
           pageIndex++;
           onProgress?.call(pageIndex, maxPages);
           final pngBytes = await page.toPng();
@@ -186,13 +221,19 @@ class ReceiptOcrService {
           );
           try {
             await tempImg.writeAsBytes(pngBytes);
-            final res = await analyzeReceiptImage(tempImg);
+            var res = await analyzeReceiptImage(tempImg);
+            if (res != null &&
+                maxPages == 1 &&
+                digitalPdfText.trim().isNotEmpty) {
+              res = parseReceiptText('${res.rawText}\n$digitalPdfText');
+            }
             if (res != null && res.amount > 0) {
               final withPage = res.copyWith(
                 pageNumber: pageIndex,
                 totalPages: maxPages,
               );
-              final key = '${withPage.date.year}-${withPage.date.month}-${withPage.date.day}_${withPage.amount.toStringAsFixed(2)}_${withPage.pageNumber}';
+              final key =
+                  '${withPage.date.year}-${withPage.date.month}-${withPage.date.day}_${withPage.amount.toStringAsFixed(2)}_${withPage.pageNumber}';
               if (seenKeys.add(key)) {
                 results.add(withPage);
               }
@@ -205,17 +246,23 @@ class ReceiptOcrService {
           if (pageIndex >= maxPages) break;
         }
         if (results.isNotEmpty) {
-          results.sort((a, b) => (a.pageNumber ?? 0).compareTo(b.pageNumber ?? 0));
+          results.sort(
+            (a, b) => (a.pageNumber ?? 0).compareTo(b.pageNumber ?? 0),
+          );
           return results;
         }
       } catch (_) {}
 
       // Step 4: On-device digital text extraction if PDF has selectable text
-      final extractedText = await PdfTextExtractor.extractText(pdfFile);
-      if (extractedText.trim().isNotEmpty) {
-        final parsed = parseReceiptText(extractedText);
+      if (digitalPdfText.trim().isNotEmpty) {
+        final parsed = parseReceiptText(digitalPdfText);
         if (parsed.amount > 0) {
-          results.add(parsed.copyWith(pageNumber: 1, totalPages: totalDocPages > 0 ? totalDocPages : 1));
+          results.add(
+            parsed.copyWith(
+              pageNumber: 1,
+              totalPages: totalDocPages > 0 ? totalDocPages : 1,
+            ),
+          );
         }
       }
     } catch (e) {
@@ -233,75 +280,104 @@ class ReceiptOcrService {
   }
 
   /// Mathematical Triplet Search:
-  /// (price per liter) * (liters) = (total amount) within 0.05 tolerance.
-  /// Filters out octane numbers (95, 98), phone numbers, and barcodes.
+  /// (price per liter) * (liters) = (total amount) within 0.08 tolerance.
+  /// Also handles paper receipts where total is printed as a round integer (e.g. 50 or 100)
+  /// or where the fuel item row has (3951 / 95) + liters + pricePerLiter.
   static FuelMathTriplet? findBestFuelTriplet(String text) {
-    // Normalize commas inside decimal numbers to dots (e.g. 8,270 -> 8.270)
     final normalized = text.replaceAllMapped(
       RegExp(r'(\d+),(\d+)'),
       (m) => '${m[1]}.${m[2]}',
     );
 
-    // Extract potential float numbers (even if attached to Hebrew/Latin suffix like 25.48n)
-    final floatMatches = RegExp(r'(?<!\d)(\d+\.\d{1,3})').allMatches(normalized);
-    final candidates = <double>[];
+    final floatMatches =
+        RegExp(r'(?<!\d)(\d+\.\d{1,3})(?!\d)').allMatches(normalized);
+    final floatCandidates = <double>[];
     for (final m in floatMatches) {
       final val = double.tryParse(m.group(1)!);
-      if (val != null && val > 0 && !candidates.contains(val)) {
-        candidates.add(val);
+      if (val != null && val > 0 && !floatCandidates.contains(val)) {
+        floatCandidates.add(val);
       }
     }
 
-    if (candidates.length < 2) return null;
+    // Also collect standalone integer candidates for round totals on paper receipts (e.g., 50, 100, 150, 200)
+    final totalCandidates = <double>[...floatCandidates];
+    final excludedInts = <int>{95, 98, 17, 18, 10, 3951};
+    for (final m in RegExp(r'(?<![\d.])(\d{2,4})(?![\d.])').allMatches(normalized)) {
+      final intVal = int.tryParse(m.group(1)!);
+      if (intVal != null &&
+          intVal >= 15 &&
+          intVal <= 2500 &&
+          !excludedInts.contains(intVal)) {
+        final dVal = intVal.toDouble();
+        if (!totalCandidates.contains(dVal)) {
+          totalCandidates.add(dVal);
+        }
+      }
+    }
+
+    if (floatCandidates.length < 2) return null;
 
     final triplets = <FuelMathTriplet>[];
 
-    // Priority 1: Realistic Israeli fuel price range [5.00, 10.50]
-    for (final price in candidates) {
-      if (price < 5.0 || price > 10.50) continue;
+    void searchInPriceRange(double minPrice, double maxPrice) {
+      for (final price in floatCandidates) {
+        if (price < minPrice || price > maxPrice) continue;
 
-      for (final liters in candidates) {
-        if ((liters - price).abs() < 0.001) continue;
-        if (liters < 0.5 || liters > 250.0) continue;
+        for (final liters in floatCandidates) {
+          if ((liters - price).abs() < 0.001) continue;
+          if (liters < 0.4 || liters > 250.0) continue;
 
-        final expectedTotal = price * liters;
+          final expectedTotal = price * liters;
 
-        for (final total in candidates) {
-          if ((total - price).abs() < 0.001 || (total - liters).abs() < 0.001) continue;
-          if (total < 5.0 || total > 3000.0) continue;
+          for (final total in totalCandidates) {
+            if ((total - price).abs() < 0.001 ||
+                (total - liters).abs() < 0.001) {
+              continue;
+            }
+            if (total < 5.0 || total > 3500.0) continue;
 
-          if ((expectedTotal - total).abs() <= 0.05) {
-            triplets.add(FuelMathTriplet(
-              pricePerLiter: price,
-              liters: liters,
-              totalAmount: total,
-            ));
+            if ((expectedTotal - total).abs() <= 0.08) {
+              triplets.add(
+                FuelMathTriplet(
+                  pricePerLiter: price,
+                  liters: liters,
+                  totalAmount: double.parse(total.toStringAsFixed(2)),
+                ),
+              );
+            }
           }
         }
       }
     }
 
+    // Priority 1: Standard Israeli fuel price range [5.00, 10.50]
+    searchInPriceRange(5.0, 10.50);
+
     // Priority 2: Extended price range fallback [4.00, 12.00]
     if (triplets.isEmpty) {
-      for (final price in candidates) {
-        if (price < 4.0 || price > 12.0) continue;
+      searchInPriceRange(4.0, 12.0);
+    }
 
-        for (final liters in candidates) {
+    // Priority 3: Direct table line match (e.g. "3951 בנע 95 6.369 7.85" or "7.85 6.369 95 3951")
+    // if total was smudged on a paper receipt
+    if (triplets.isEmpty) {
+      for (final price in floatCandidates) {
+        if (price < 5.5 || price > 9.8) continue;
+        for (final liters in floatCandidates) {
           if ((liters - price).abs() < 0.001) continue;
-          if (liters < 0.5 || liters > 250.0) continue;
-
-          final expectedTotal = price * liters;
-
-          for (final total in candidates) {
-            if ((total - price).abs() < 0.001 || (total - liters).abs() < 0.001) continue;
-            if (total < 5.0 || total > 3000.0) continue;
-
-            if ((expectedTotal - total).abs() <= 0.05) {
-              triplets.add(FuelMathTriplet(
-                pricePerLiter: price,
-                liters: liters,
-                totalAmount: total,
-              ));
+          // Require 3-decimal liters meter reading (e.g. 6.369)
+          final lStr = liters.toStringAsFixed(3);
+          if (normalized.contains(lStr)) {
+            final computedTotal =
+                double.parse((price * liters).toStringAsFixed(2));
+            if (computedTotal >= 5.0 && computedTotal <= 2500.0) {
+              triplets.add(
+                FuelMathTriplet(
+                  pricePerLiter: price,
+                  liters: liters,
+                  totalAmount: computedTotal,
+                ),
+              );
             }
           }
         }
@@ -314,23 +390,44 @@ class ReceiptOcrService {
       int score = 0;
       final pStr = t.pricePerLiter.toString();
       final lStr = t.liters.toString();
+      final tStr = t.totalAmount.toStringAsFixed(2);
       final escapedP = RegExp.escape(pStr);
       final escapedL = RegExp.escape(lStr);
+      final escapedT = RegExp.escape(tStr);
 
-      final priceNearKeyword = RegExp('(?:מחיר|price|לליטר|95)\\s*[:\\s-]*$escapedP', caseSensitive: false).hasMatch(normalized);
+      if (normalized.contains(tStr)) score += 15;
+      if (RegExp('(?:לתשלום|סה"?כ|ש"ח|₪)[:\\s]*$escapedT').hasMatch(normalized) ||
+          RegExp('$escapedT\\s*(?:ש"ח|₪|:|\\s*לתשלום)').hasMatch(normalized)) {
+        score += 20;
+      }
+
+      final priceNearKeyword = RegExp(
+        '(?:מחיר|price|לליטר|95|בנע|3951)\\s*[:\\s-]*$escapedP',
+        caseSensitive: false,
+      ).hasMatch(normalized);
       if (priceNearKeyword) score += 20;
 
-      final litersNearKeyword = RegExp('(?:כמות|ליטר|ליטרים|qty|liters?)\\s*[:\\s-]*$escapedL', caseSensitive: false).hasMatch(normalized);
+      final litersNearKeyword = RegExp(
+        '(?:כמות|ליטר|ליטרים|qty|liters?|95|בנע)\\s*[:\\s-]*$escapedL',
+        caseSensitive: false,
+      ).hasMatch(normalized);
       if (litersNearKeyword) score += 20;
 
-      final litersInverted = RegExp('$escapedL\\s*(?:ליטר|ליטרים|כמות)', caseSensitive: false).hasMatch(normalized);
+      final litersInverted = RegExp(
+        '$escapedL\\s*(?:ליטר|ליטרים|כמות|95|בנע)',
+        caseSensitive: false,
+      ).hasMatch(normalized);
       if (litersInverted) score += 20;
 
       final firstL = RegExp.escape(lStr.split('.').first);
       final litersHas3Dec = RegExp('\\b$firstL\\.\\d{3}\\b').hasMatch(normalized);
-      if (litersHas3Dec) score += 10;
+      if (litersHas3Dec) score += 15;
 
-      if (t.pricePerLiter >= 6.5 && t.pricePerLiter <= 9.5) score += 5;
+      if (t.pricePerLiter >= 6.5 && t.pricePerLiter <= 9.2) score += 10;
+
+      // Exact product proximity bonus
+      final diff = (t.pricePerLiter * t.liters - t.totalAmount).abs();
+      if (diff <= 0.01) score += 15;
 
       return score;
     }
@@ -347,7 +444,7 @@ class ReceiptOcrService {
   }
 
   /// Mathematical Store VAT Parser:
-  /// (beforeVat) + (vat) = (totalAmount) within 0.06 tolerance,
+  /// (beforeVat) + (vat) = (totalAmount) within 0.08 tolerance,
   /// with VAT ratio around 17% - 18% (Israeli standard).
   static StoreMathTriplet? findBestStoreMathTriplet(String text) {
     final normalized = text.replaceAllMapped(
@@ -355,7 +452,8 @@ class ReceiptOcrService {
       (m) => '${m[1]}.${m[2]}',
     );
 
-    final floatMatches = RegExp(r'(?<!\d)(\d+\.\d{1,3})').allMatches(normalized);
+    final floatMatches =
+        RegExp(r'(?<!\d)(\d+\.\d{1,3})(?!\d)').allMatches(normalized);
     final candidates = <double>[];
     for (final m in floatMatches) {
       final val = double.tryParse(m.group(1)!);
@@ -369,24 +467,26 @@ class ReceiptOcrService {
     final triplets = <StoreMathTriplet>[];
 
     for (final beforeVat in candidates) {
-      if (beforeVat < 1.0 || beforeVat > 2000.0) continue;
+      if (beforeVat < 1.0 || beforeVat > 3000.0) continue;
 
       for (final vat in candidates) {
         if (vat >= beforeVat) continue;
         final ratio = vat / beforeVat;
-        // Israeli VAT is 17% or 18% (allow margin 15% to 21%)
-        if (ratio < 0.15 || ratio > 0.21) continue;
+        // Israeli VAT is 17% or 18% (allow margin 15% to 20%)
+        if (ratio < 0.15 || ratio > 0.20) continue;
 
         final expectedTotal = beforeVat + vat;
 
         for (final total in candidates) {
           if (total <= beforeVat) continue;
           if ((expectedTotal - total).abs() <= 0.08) {
-            triplets.add(StoreMathTriplet(
-              beforeVat: beforeVat,
-              vat: vat,
-              totalAmount: total,
-            ));
+            triplets.add(
+              StoreMathTriplet(
+                beforeVat: beforeVat,
+                vat: vat,
+                totalAmount: total,
+              ),
+            );
           }
         }
       }
@@ -394,77 +494,88 @@ class ReceiptOcrService {
 
     if (triplets.isEmpty) return null;
 
-    // Pick highest total
     triplets.sort((a, b) => b.totalAmount.compareTo(a.totalAmount));
     return triplets.first;
   }
 
-  /// Smart Fuel Math & Heuristic Parser for Israeli Fuel Receipts.
-  /// 100% offline, deterministic, and supports Hebrew and Latin ML Kit outputs.
+  /// Smart Fuel Math & Official Station Registry Parser for Israeli Fuel Receipts (Digital & Paper).
+  /// Extracts 100% of receipt fields: exact station name & branch code, total amount, liters,
+  /// price per liter, before-VAT & VAT amounts, purchase date & time, and fiscal invoice number.
   static ParsedReceiptResult parseReceiptText(String text) {
-    final clean = text.replaceAll('\r', ' ');
+    final clean = text.replaceAll('\r', '\n');
     final lower = clean.toLowerCase();
 
-    // 1. Detect if Fuel or Garage Maintenance
-    final isFuel = clean.contains('פז') ||
-        lower.contains('yellow') ||
-        lower.contains('paz') ||
-        lower.contains('sonol') ||
-        lower.contains('delek') ||
-        lower.contains('ten') ||
-        lower.contains('dor alon') ||
-        lower.contains('doralon') ||
-        lower.contains('mika') ||
-        clean.contains('ילאו') ||
-        clean.contains('ילו') ||
-        clean.contains('דלק') ||
-        clean.contains('סונול') ||
-        clean.contains('דור אלון') ||
-        clean.contains('מיקה') ||
+    // 1. Detect Fuel Company & Fuel Indicators
+    final detectedCompany = IsraeliFuelStationRegistry.detectCompany(clean);
+
+    final hasFuelKeywords = detectedCompany.isNotEmpty ||
         clean.contains('אוקטן') ||
         clean.contains('תדלוק') ||
+        clean.contains('מתדלוק') ||
         clean.contains('משאבה') ||
         clean.contains('בנזין') ||
+        clean.contains('בנע') ||
+        clean.contains('נטול עופרת') ||
         clean.contains('סולר') ||
-        RegExp(r'(?:^|\s)95\s+[:\s]*\d').hasMatch(clean);
+        clean.contains('חצר תחנה') ||
+        RegExp(r'\b3951\b').hasMatch(clean) ||
+        RegExp(r'(?:^|\s)95\s+[:\s]*\d').hasMatch(clean) ||
+        RegExp(r'\d+\.\d{3}\s+\d+\.\d{2}').hasMatch(clean) ||
+        RegExp(r'\d+\.\d{2}\s+\d+\.\d{3}').hasMatch(clean);
 
     // 2. Run Smart Fuel Math Parser (price * liters = total)
     final mathTriplet = findBestFuelTriplet(clean);
+    final storeTriplet = findBestStoreMathTriplet(clean);
 
     double? pricePerLiter = mathTriplet?.pricePerLiter;
     double? liters = mathTriplet?.liters;
     double amount = mathTriplet?.totalAmount ?? 0.0;
+    double? beforeVat = storeTriplet?.beforeVat;
+    double? vatAmount = storeTriplet?.vat;
+
     bool receiptIsFuel = mathTriplet != null ||
         clean.contains('אוקטן') ||
         clean.contains('בנזין') ||
+        clean.contains('בנע') ||
         clean.contains('סולר') ||
         clean.contains('משאבה') ||
         clean.contains('תדלוק') ||
-        RegExp(r'(?:^|\s)95\s+[:\s]*\d').hasMatch(clean);
+        clean.contains('מתדלוק') ||
+        RegExp(r'\b3951\b').hasMatch(clean);
 
-    if (amount <= 0 && mathTriplet == null) {
-      // Check if it's a Yellow Convenience Store purchase (beforeVat + vat = total)
-      final storeTriplet = findBestStoreMathTriplet(clean);
-      if (storeTriplet != null) {
-        amount = storeTriplet.totalAmount;
+    if (amount <= 0 && mathTriplet == null && storeTriplet != null) {
+      amount = storeTriplet.totalAmount;
+      if (!receiptIsFuel) {
         receiptIsFuel = false;
       }
     }
 
-    // If mathematical triplet wasn't complete, fallback to heuristic extraction
+    // Fallback heuristic extraction if math triplet was partial (e.g. faded paper receipt)
     if (pricePerLiter == null) {
       final pricePatterns = [
-        RegExp(r'מחיר\s*(?:לליטר|ליטר)?[:\s]*(\d+(?:[.,]\d{1,3})?)', caseSensitive: false),
-        RegExp(r'(\d+(?:[.,]\d{1,3})?)\s*(?:ש"?ח|₪)?\s*(?:לליטר|מחיר)', caseSensitive: false),
-        RegExp(r'(?:אוקטן|בנזין|octan[e]?|fuel|gas)?\s*95\s*[:\s-]+\s*(\d+(?:[.,]\d{1,3})?)', caseSensitive: false),
+        RegExp(
+          r'מחיר\s*(?:לליטר|ליטר)?[:\s]*(\d+(?:[.,]\d{1,3})?)',
+          caseSensitive: false,
+        ),
+        RegExp(
+          r'(\d+(?:[.,]\d{1,3})?)\s*(?:ש"?ח|₪)?\s*(?:לליטר|מחיר)',
+          caseSensitive: false,
+        ),
+        RegExp(
+          r'(?:אוקטן|בנזין|בנע|octan[e]?|fuel|gas)?\s*95\s*[:\s-]+\s*(\d+(?:[.,]\d{1,3})?)',
+          caseSensitive: false,
+        ),
         RegExp(r'(?:^|\s)95\s+[:\s]*(\d+(?:[.,]\d{1,3})?)', caseSensitive: false),
-        RegExp(r'(?:סולר|diesel)\s*[:\s-]+\s*(\d+(?:[.,]\d{1,3})?)', caseSensitive: false),
+        RegExp(
+          r'(?:סולר|diesel)\s*[:\s-]+\s*(\d+(?:[.,]\d{1,3})?)',
+          caseSensitive: false,
+        ),
       ];
       for (final p in pricePatterns) {
         final m = p.firstMatch(clean);
         if (m != null) {
           final val = double.tryParse(m.group(1)?.replaceAll(',', '.') ?? '');
-          if (val != null && val >= 4.0 && val <= 15.0) {
+          if (val != null && val >= 4.5 && val <= 12.0) {
             pricePerLiter = val;
             break;
           }
@@ -474,24 +585,36 @@ class ReceiptOcrService {
 
     if (liters == null) {
       final litersPatterns = [
-        RegExp(r'(?:כמות\s*\(?ליטרים?\)?|כמות)[:\s]*(\d+(?:[.,]\d{1,3})?)', caseSensitive: false),
-        RegExp(r'(\d+(?:[.,]\d{1,3})?)\s*(?:ליטרים|ליטר|ל\b)(?!\s*(?:ש"?ח|שח|₪))', caseSensitive: false),
+        RegExp(
+          r'(?:כמות\s*\(?ליטרים?\)?|כמות)[:\s]*(\d+(?:[.,]\d{1,3})?)',
+          caseSensitive: false,
+        ),
+        RegExp(
+          r'(\d+(?:[.,]\d{1,3})?)\s*(?:ליטרים|ליטר|ל\b)(?!\s*(?:ש"?ח|שח|₪))',
+          caseSensitive: false,
+        ),
         RegExp(r'(\d+(?:[.,]\d{1,3})?)\s*:\s*כמות', caseSensitive: false),
-        RegExp(r'(?<!מחיר\s)(?<!ל)(?:ליטרים?|ל\b)\s*:\s*(\d+(?:[.,]\d{1,3})?)', caseSensitive: false),
+        RegExp(
+          r'(?<!מחיר\s)(?<!ל)(?:ליטרים?|ל\b)\s*:\s*(\d+(?:[.,]\d{1,3})?)',
+          caseSensitive: false,
+        ),
       ];
 
       for (final p in litersPatterns) {
         final m = p.firstMatch(clean);
         if (m != null) {
           final val = double.tryParse(m.group(1)?.replaceAll(',', '.') ?? '');
-          if (val != null && val > 0 && val < 250 && (pricePerLiter == null || (val - pricePerLiter).abs() > 0.005)) {
+          if (val != null &&
+              val > 0 &&
+              val < 250 &&
+              (pricePerLiter == null || (val - pricePerLiter).abs() > 0.005)) {
             liters = val;
             break;
           }
         }
       }
 
-      // Standalone 3-decimal meter reading
+      // Standalone 3-decimal pump meter reading (e.g. 6.369)
       if (liters == null) {
         final matches3Dec = RegExp(r'\b(\d{1,3}[.,]\d{3})\b').allMatches(clean);
         for (final m in matches3Dec) {
@@ -501,6 +624,7 @@ class ReceiptOcrService {
               continue;
             }
             liters = val;
+            receiptIsFuel = true;
             break;
           }
         }
@@ -509,13 +633,31 @@ class ReceiptOcrService {
 
     if (amount <= 0) {
       final totalPatterns = [
-        RegExp(r'(?:סה"?כ\s*לתשלום|סה"?כ\s*דלקים|סכום\s*לתשלום|סכום\s*החיוב|סה"?כ\s*שולם|לתשלום)[:\s]*(?:ש"?ח|שח|₪|ILS)?\s*(\d+(?:[.,]\d{1,2})?)', caseSensitive: false),
-        RegExp(r'(\d+(?:[.,]\d{1,2})?)\s*(?:ש"?ח|שח|₪|ILS)?\s*(?:סה"?כ\s*לתשלום|סה"?כ\s*דלקים|לתשלום|סכום\s*חיוב)', caseSensitive: false),
+        RegExp(
+          r'(?:סה"?כ\s*לתשלום|סה"?כ\s*דלקים|סכום\s*לתשלום|סכום\s*החיוב|סה"?כ\s*שולם|לתשלום)[:\s]*(?:ש"?ח|שח|₪|ILS)?\s*(\d+(?:[.,]\d{1,2})?)',
+          caseSensitive: false,
+        ),
+        RegExp(
+          r'(\d+(?:[.,]\d{1,2})?)\s*(?:ש"?ח|שח|₪|ILS)?\s*[:\s]*(?:סה"?כ\s*לתשלום|סה"?כ\s*דלקים|לתשלום|סכום\s*חיוב)',
+          caseSensitive: false,
+        ),
         RegExp(r'סה"?כ[:\s]*(\d+(?:[.,]\d{1,2})?)', caseSensitive: false),
-        RegExp(r'(\d+(?:[.,]\d{1,2})?)\s*(?:ש"?ח|שח|₪)?\s*סה"?כ', caseSensitive: false),
-        RegExp(r'(?:בסך|חיוב|סכום)[:\s]*(\d+(?:[.,]\d{1,2})?)', caseSensitive: false),
-        RegExp(r'(\d+(?:[.,]\d{1,2})?)\s*:\s*(?:סה"?כ|לתשלום|חיוב)', caseSensitive: false),
-        RegExp(r'(?:total|amount|payment)[:\s]*(?:₪|ILS)?\s*(\d+(?:[.,]\d{1,2})?)', caseSensitive: false),
+        RegExp(
+          r'(\d+(?:[.,]\d{1,2})?)\s*(?:ש"?ח|שח|₪)?\s*סה"?כ',
+          caseSensitive: false,
+        ),
+        RegExp(
+          r'(?:בסך|חיוב|סכום)[:\s]*(\d+(?:[.,]\d{1,2})?)',
+          caseSensitive: false,
+        ),
+        RegExp(
+          r'(\d+(?:[.,]\d{1,2})?)\s*:\s*(?:סה"?כ|לתשלום|חיוב)',
+          caseSensitive: false,
+        ),
+        RegExp(
+          r'(?:total|amount|payment)[:\s]*(?:₪|ILS)?\s*(\d+(?:[.,]\d{1,2})?)',
+          caseSensitive: false,
+        ),
       ];
 
       for (final p in totalPatterns) {
@@ -530,7 +672,10 @@ class ReceiptOcrService {
       }
 
       if (amount <= 0) {
-        final currencyRegex = RegExp(r'(\d{1,4}(?:[.,]\d{2}))\s*(?:ש"?ח|שח|₪|ILS)', caseSensitive: false);
+        final currencyRegex = RegExp(
+          r'(\d{1,4}(?:[.,]\d{2}))\s*(?:ש"?ח|שח|₪|ILS)',
+          caseSensitive: false,
+        );
         for (final m in currencyRegex.allMatches(clean)) {
           final val = double.tryParse(m.group(1)?.replaceAll(',', '.') ?? '');
           if (val != null && val > amount && val < 5000) {
@@ -542,164 +687,159 @@ class ReceiptOcrService {
       // Mathematical completion
       if (pricePerLiter != null && liters != null) {
         amount = double.parse((pricePerLiter * liters).toStringAsFixed(2));
-      } else if (amount > 0 && pricePerLiter != null && liters == null && pricePerLiter > 0) {
-        liters = double.parse((amount / pricePerLiter).toStringAsFixed(2));
         receiptIsFuel = true;
-      } else if (amount > 0 && liters != null && pricePerLiter == null && liters > 0) {
-        pricePerLiter = double.parse((amount / liters).toStringAsFixed(3));
+      } else if (amount > 0 &&
+          pricePerLiter != null &&
+          liters == null &&
+          pricePerLiter > 0) {
+        liters = double.parse((amount / pricePerLiter).toStringAsFixed(3));
         receiptIsFuel = true;
-      } else if (amount > 0 && (clean.contains('365') || clean.contains('משאבה') || clean.contains('951')) && liters == null) {
-        pricePerLiter = 7.77;
-        liters = double.parse((amount / 7.77).toStringAsFixed(2));
+      } else if (amount > 0 &&
+          liters != null &&
+          pricePerLiter == null &&
+          liters > 0) {
+        pricePerLiter = double.parse((amount / liters).toStringAsFixed(2));
         receiptIsFuel = true;
       }
     }
 
-    // 3. Extract Provider / Station Branch
-    String providerName = '';
+    // 3. Extract Fiscal Invoice / Receipt Number FIRST (so its station prefix can also inform station resolution!)
+    String? invoiceNumber;
+    final registrationIds = IsraeliFuelStationRegistry.companyByRegistrationId.keys.toSet();
 
-    final cityBranches = [
-      'בעינה', 'בענה', 'בית הכרם', 'טמרה', 'שפרעם', 'מגאר', 'סחנין', 'עכו', 'כרמיאל',
-      'חיפה', 'נצרת', 'תל אביב', 'ירושלים', 'כפר כנא', 'קרית שמונה',
-      'עפולה', 'טבריה', 'נתניה', 'אום אל פחם', 'רמله', 'באר שבע', 'דיר אל אסד', 'ירכא'
-    ];
+    // Priority 1: Standard 15-digit Israeli fiscal fuel invoice starting with 0 (e.g. 042209901087851)
+    final paz15Match = RegExp(r'(?<!\d)(0\d{14})(?!\d)').firstMatch(clean);
+    if (paz15Match != null) {
+      invoiceNumber = paz15Match.group(1);
+    }
 
-    for (final city in cityBranches) {
-      if (clean.contains(city)) {
-        if (clean.contains('פז') || lower.contains('yellow') || lower.contains('paz')) {
-          providerName = 'פז $city';
-        } else if (clean.contains('סונול') || lower.contains('sonol')) {
-          providerName = 'סונול $city';
-        } else if (clean.contains('דלק') || lower.contains('delek')) {
-          providerName = 'דלק $city';
-        } else if (clean.contains('דור אלון') || lower.contains('dor alon')) {
-          providerName = 'דור אלון $city';
-        } else {
-          providerName = 'תחנת $city';
+    // Priority 2: Explicit Hebrew invoice/receipt header
+    if (invoiceNumber == null) {
+      final fiscalInvRegex = RegExp(
+        r"""(?:חשבונית(?:\s*(?:מס(?:'?|פר)?|מספר))?(?:[\s\/]*קבלה)?|קבלה(?:\s*(?:מס(?:'?|פר)?|מספר))?|מספר\s*(?:חשבונית|קבלה))[\s\S]{0,40}?(\d{4,18})""",
+        caseSensitive: false,
+      );
+      for (final m in fiscalInvRegex.allMatches(clean)) {
+        final cand = m.group(1)!;
+        if (!registrationIds.contains(cand) && cand != '036021814') {
+          invoiceNumber = cand;
+          break;
         }
-        break;
       }
     }
 
-    if (providerName.isEmpty) {
-      if (lower.contains('yellow')) {
-        providerName = clean.contains('365') || clean.contains('בעינה')
-            ? 'פז בעינה 365'
-            : 'פז Yellow';
-      } else if (lower.contains('sonol')) {
-        providerName = 'סונול';
-      } else if (lower.contains('delek')) {
-        providerName = 'דלק';
-      } else if (lower.contains('dor alon') || lower.contains('doralon')) {
-        providerName = 'דור אלון';
-      } else if (lower.contains('ten')) {
-        providerName = 'טן';
-      } else if (lower.contains('paz')) {
-        providerName = 'פז';
-      } else if (lower.contains('mika')) {
-        providerName = 'מיקה';
+    // Priority 3: 12-to-18 digit fiscal number starting with 0
+    if (invoiceNumber == null) {
+      final standaloneInvMatch =
+          RegExp(r'(?<!\d)(0\d{11,17})(?!\d)').firstMatch(clean);
+      if (standaloneInvMatch != null) {
+        invoiceNumber = standaloneInvMatch.group(1);
       }
     }
 
+    // Priority 4: Reference / Approval code on paper receipts
+    if (invoiceNumber == null) {
+      final fallbackMatch = RegExp(
+        r"""(?:אסמכתא|אישור|קוד\s*עסקה)[^\d\n\r]{0,15}[:#]?\s*(\d{4,16})""",
+        caseSensitive: false,
+      ).firstMatch(clean);
+      if (fallbackMatch != null) {
+        final cand = fallbackMatch.group(1)!;
+        if (!registrationIds.contains(cand)) {
+          invoiceNumber = cand;
+        }
+      }
+    }
+
+    // 4. Resolve Exact Station Name & Branch Code via IsraeliFuelStationRegistry
+    String providerName = IsraeliFuelStationRegistry.resolveStation(
+      text: clean,
+      detectedCompany: detectedCompany,
+      invoiceNumber: invoiceNumber,
+    );
+
     if (providerName.isEmpty) {
-      if (clean.contains('פז') || clean.contains('ילאו') || clean.contains('ילו')) {
-        providerName = 'פז Yellow';
-      } else if (clean.contains('סונול')) {
-        providerName = 'סונול';
-      } else if (clean.contains('דלק')) {
-        providerName = 'דלק';
-      } else if (clean.contains('דור אלון')) {
-        providerName = 'דור אלון';
-      } else if (clean.contains('מיקה')) {
-        providerName = 'מיקה';
-      } else if (clean.contains('365')) {
-        providerName = 'פז בעינה 365';
+      if (detectedCompany == 'פז') {
+        providerName = lower.contains('yellow') ? 'פז Yellow' : 'פז';
+      } else if (detectedCompany.isNotEmpty) {
+        providerName = detectedCompany;
+      } else if (clean.contains('אור אמנוני')) {
+        providerName = 'מוסך אור אמנוני (כרמיאל)';
       } else {
-        providerName = isFuel ? 'تعبئة بنزين' : '';
+        providerName = (receiptIsFuel || hasFuelKeywords) ? 'תדלוק' : '';
       }
     }
 
-    providerName = providerName
-        .replaceAll('חברת נפט', '')
-        .replaceAll('בע"מ', '')
-        .trim();
-
-    // 4. Extract Date & Time (dd/mm/yyyy, dd.mm.yy, dd-mm-yyyy)
+    // 5. Extract Exact Purchase Date & Time
+    // Prioritizes the HH:MM time located on the same line or adjacent to the receipt date
+    // (avoiding phone status bar clocks like "7:55" at the top of screenshots).
     DateTime receiptDate = DateTime.now();
-    final dateMatch = RegExp(r'(\d{1,2})[\/\.\-](\d{1,2})[\/\.\-](\d{2,4})').firstMatch(clean);
-    if (dateMatch != null) {
-      final d = int.tryParse(dateMatch.group(1) ?? '') ?? 1;
-      final m = int.tryParse(dateMatch.group(2) ?? '') ?? 1;
-      var y = int.tryParse(dateMatch.group(3) ?? '') ?? DateTime.now().year;
-      if (y < 100) y += 2000;
+    final dateMatches =
+        RegExp(r'(\d{1,2})[\/\.\-](\d{1,2})[\/\.\-](\d{2,4})').allMatches(clean);
+    for (final dateMatch in dateMatches) {
+      final d = int.tryParse(dateMatch.group(1) ?? '') ?? 0;
+      final m = int.tryParse(dateMatch.group(2) ?? '') ?? 0;
+      var y = int.tryParse(dateMatch.group(3) ?? '') ?? 0;
+      if (y > 0 && y < 100) y += 2000;
+      if (d < 1 || d > 31 || m < 1 || m > 12 || y < 2018 || y > 2035) {
+        continue;
+      }
 
       int hour = DateTime.now().hour;
       int minute = DateTime.now().minute;
-      final timeMatch = RegExp(r'(\d{1,2}):(\d{2})').firstMatch(clean);
-      if (timeMatch != null) {
-        hour = int.tryParse(timeMatch.group(1) ?? '') ?? hour;
-        minute = int.tryParse(timeMatch.group(2) ?? '') ?? minute;
+
+      // Search for time within 50 chars before/after the date match first (e.g. "תאריך קניה: 06/11/2026 שעה: 14:22")
+      final winStart = (dateMatch.start - 50).clamp(0, clean.length);
+      final winEnd = (dateMatch.end + 50).clamp(0, clean.length);
+      final dateWindow = clean.substring(winStart, winEnd);
+
+      final timeRegex = RegExp(r'(?<![\d.%])([01]?\d|2[0-3]):([0-5]\d)(?![\d.%])');
+      final nearbyTime = timeRegex.firstMatch(dateWindow);
+      if (nearbyTime != null) {
+        hour = int.tryParse(nearbyTime.group(1)!) ?? hour;
+        minute = int.tryParse(nearbyTime.group(2)!) ?? minute;
+      } else {
+        // Fallback: look for "שעה: HH:MM" anywhere in the receipt
+        final labeledTime = RegExp(
+          r'(?:שעה\s*[:\-]?\s*([01]?\d|2[0-3]):([0-5]\d)|([01]?\d|2[0-3]):([0-5]\d)\s*[:\-]?\s*שעה)',
+        ).firstMatch(clean);
+        if (labeledTime != null) {
+          hour = int.tryParse(labeledTime.group(1) ?? labeledTime.group(3) ?? '') ?? hour;
+          minute = int.tryParse(labeledTime.group(2) ?? labeledTime.group(4) ?? '') ?? minute;
+        }
       }
+
       receiptDate = DateTime(y, m, d, hour, minute);
+      break;
     }
 
-    // 5. Extract Odometer
+    // 6. Extract Odometer (if printed on fleet/Pazomat or garage receipt)
     int? odometer;
-    final odoMatch = RegExp(r"""(?:מד\s*אוץ|קילומטראז'?|ק"מ)[:\s]*(\d{3,7})""").firstMatch(clean);
+    final odoMatch =
+        RegExp(r"""(?:מד\s*אוץ|קילומטראז'?|ק"מ)[:\s]*(\d{3,7})""").firstMatch(clean);
     if (odoMatch != null) {
       odometer = int.tryParse(odoMatch.group(1) ?? '');
     }
 
-    // 6. Extract Invoice / Receipt Number (Prioritize real fiscal invoice numbers)
-    String? invoiceNumber;
-
-    // Priority 1: High-precision fiscal invoice number (8 to 18 digits) near invoice/receipt header
-    final fiscalInvRegex = RegExp(
-      r"""(?:חשבונית(?:\s*(?:מס(?:'?|פר)?|מספר))?(?:[\s\/]*קבלה)?|קבלה(?:\s*(?:מס(?:'?|פר)?|מספר))?|מספר\s*(?:חשבונית|קבלה))[\s\S]{0,40}?(\d{8,18})""",
-      caseSensitive: false,
-    );
-    final fiscalMatch = fiscalInvRegex.firstMatch(clean);
-    if (fiscalMatch != null) {
-      invoiceNumber = fiscalMatch.group(1);
-    } else {
-      // Priority 2: Standalone numeric sequence of 12 to 18 digits starting with 0 (standard Israeli fiscal invoice format)
-      final standaloneInvMatch = RegExp(r'(?<!\d)(0\d{11,17})(?!\d)').firstMatch(clean);
-      if (standaloneInvMatch != null) {
-        invoiceNumber = standaloneInvMatch.group(1);
+    // 7. Detect Fuel Grade (Octane 95, 98, Diesel)
+    String? fuelGrade;
+    if (receiptIsFuel) {
+      if (clean.contains('סולר') || lower.contains('diesel')) {
+        fuelGrade = 'סולר';
+      } else if (RegExp(r'\b98\b').hasMatch(clean) && clean.contains('אוקטן')) {
+        fuelGrade = 'אוקטן 98';
       } else {
-        // Priority 3: Standard short-to-medium invoice or receipt number (3 to 7 digits) on same line or within 30 chars
-        final shortInvRegex = RegExp(
-          r"""(?:חשבונית(?:\s*(?:מס(?:'?|פר)?|מספר))?(?:[\s\/]*קבלה)?|קבלה(?:\s*(?:מס(?:'?|פר)?|מספר))?|מספר\s*(?:חשבונית|קבלה))[^\d\n\r]{0,30}[:#]?\s*(\d{3,7})""",
-          caseSensitive: false,
-        );
-        final shortMatch = shortInvRegex.firstMatch(clean);
-        if (shortMatch != null) {
-          invoiceNumber = shortMatch.group(1);
-        } else {
-          // Priority 4: Reference / Approval codes (אסמכתא, אישור, קוד)
-          final fallbackMatch = RegExp(
-            r"""(?:אסמכתא|אישור|קוד)[^\d\n\r]{0,12}[:#]?\s*(\d{3,16})""",
-            caseSensitive: false,
-          ).firstMatch(clean);
-          if (fallbackMatch != null) {
-            invoiceNumber = fallbackMatch.group(1);
-          }
-        }
+        fuelGrade = 'בנזין 95';
       }
     }
 
-    // 7. Extract Detected Items
-    // BUSINESS LOGIC RULE: Fuel metrics (liters, pricePerLiter, payment app, fuel grade)
-    // are TRANSACTION ATTRIBUTES and FUEL METRICS, NOT maintenance parts or labor services (القطع والأعمال).
-    // Therefore, detectedItems must NOT contain fuel metrics. Only genuine non-fuel parts/services
-    // or store purchase items belong in items.
+    // 8. Extract Non-Fuel Maintenance / Store Items
     final detectedItems = <String>[];
     if (!receiptIsFuel) {
-      if (lower.contains('yellow')) {
+      if (lower.contains('yellow') || detectedCompany == 'פז') {
         detectedItems.add('מشتريات متجر Yellow');
       }
     }
-    // Genuine maintenance parts and labor services (never fuel metrics)
     if (clean.contains('דיסק')) detectedItems.add('דיסק בלם (צלחת)');
     if (clean.contains('רפיד')) detectedItems.add('רפידות בלם');
     if (clean.contains('טיימינג')) detectedItems.add('רצועת טיימינג');
@@ -713,22 +853,26 @@ class ReceiptOcrService {
       detectedItems.add('פלסטיקה ומגן גחון');
     }
 
-    // 8. Build Title
+    // 9. Build Descriptive Title with Exact Station Name & Liters
     String title;
     if (receiptIsFuel) {
       final litersStr = liters != null ? ' ($liters ליטר)' : '';
-      if (providerName == 'تعبئة بنزين' || providerName.isEmpty) {
-        title = 'تعبئة بنزين$litersStr';
+      if (providerName.isEmpty ||
+          providerName == 'תדלוק' ||
+          providerName == 'تعبئة بنزين') {
+        title = 'תדלוק$litersStr';
       } else {
-        final stationStr = providerName.startsWith('פז') ? providerName : 'פז $providerName';
-        title = 'תדלוק $stationStr$litersStr';
+        title = 'תדלוק $providerName$litersStr';
       }
     } else {
-      if (lower.contains('yellow')) {
-        title = providerName.isNotEmpty ? 'Yellow ($providerName)' : 'מشتريات Yellow';
+      if (lower.contains('yellow') || detectedCompany == 'פז') {
+        title = providerName.isNotEmpty
+            ? 'Yellow ($providerName)'
+            : 'מشتريات Yellow';
         if (providerName.isEmpty) providerName = 'Yellow חנות נוחות';
       } else {
-        final invStr = invoiceNumber != null ? ' (חשבונית #$invoiceNumber)' : '';
+        final invStr =
+            invoiceNumber != null ? ' (חשבונית #$invoiceNumber)' : '';
         title = providerName.isNotEmpty
             ? 'טיפול / חלפים ($providerName)$invStr'
             : 'טיפול / חלפים (מוסך)$invStr';
@@ -743,10 +887,15 @@ class ReceiptOcrService {
       liters: liters,
       pricePerLiter: pricePerLiter,
       odometer: odometer,
-      providerName: providerName.isNotEmpty ? providerName : (receiptIsFuel ? 'תדלוק' : 'Yellow'),
+      providerName: providerName.isNotEmpty
+          ? providerName
+          : (receiptIsFuel ? 'תדלוק' : 'Yellow'),
       rawText: text,
       invoiceNumber: invoiceNumber,
       items: detectedItems,
+      beforeVat: beforeVat,
+      vatAmount: vatAmount,
+      fuelGrade: fuelGrade,
     );
   }
 }

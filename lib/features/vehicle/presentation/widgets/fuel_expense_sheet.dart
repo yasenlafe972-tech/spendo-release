@@ -5,6 +5,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../../../core/database/database_helper.dart';
 import '../../../../core/services/firebase_backup_service.dart';
 import '../../../../core/services/israel_gov_api_service.dart';
 import '../../../../core/services/receipt_ocr_service.dart';
@@ -338,6 +339,7 @@ class FuelExpenseSheet {
               final updated = [newRecord, ...state.history];
               final updatedState = state.copyWith(history: updated);
               await prefs.setString(storageKey, updatedState.toJson());
+              DatabaseHelper.notifyDataChanged();
               FirebaseBackupService.instance.scheduleAutoBackup(
                 debounce: const Duration(seconds: 1),
               );
@@ -522,7 +524,7 @@ class FuelExpenseSheet {
                             ),
                             Row(
                               children: [
-                                // زر ملف PDF (فاتورة Yellow)
+                                // زر ملف PDF (فاتورة Yellow / פז)
                                 Expanded(
                                   child: ClipRRect(
                                     borderRadius: BorderRadius.circular(12),
@@ -533,7 +535,7 @@ class FuelExpenseSheet {
                                         borderRadius: BorderRadius.circular(12),
                                         child: Container(
                                           padding: const EdgeInsets.symmetric(
-                                            horizontal: 12,
+                                            horizontal: 8,
                                             vertical: 9,
                                           ),
                                           decoration: BoxDecoration(
@@ -544,78 +546,160 @@ class FuelExpenseSheet {
                                               color: brandYellow,
                                             ),
                                           ),
-                                          child: Stack(
-                                            clipBehavior: Clip.antiAlias,
+                                          child: Column(
+                                            mainAxisSize: MainAxisSize.min,
                                             children: [
-                                              Positioned(
-                                                left: 2,
-                                                bottom: -4,
-                                                child: Icon(
-                                                  Icons.picture_as_pdf_outlined,
-                                                  size: 34,
-                                                  color: Colors.white
-                                                      .withValues(alpha: 0.035),
+                                              Icon(
+                                                Icons.picture_as_pdf_rounded,
+                                                color: brandYellow,
+                                                size: 18,
+                                              ),
+                                              const SizedBox(height: 3),
+                                              Text(
+                                                'ملف PDF',
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                                style: TextStyle(
+                                                  fontSize: 10.5,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: textWhite,
                                                 ),
                                               ),
-                                              Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment
-                                                        .spaceBetween,
-                                                children: [
-                                                  Row(
-                                                    children: [
-                                                      Icon(
-                                                        Icons
-                                                            .picture_as_pdf_rounded,
-                                                        color: brandYellow,
-                                                        size: 20,
-                                                      ),
-                                                      const SizedBox(width: 8),
-                                                      Column(
-                                                        crossAxisAlignment:
-                                                            CrossAxisAlignment
-                                                                .start,
-                                                        children: [
-                                                          Text(
-                                                            'اختيار ملف فاتورة PDF',
-                                                            style: TextStyle(
-                                                              fontSize: 12,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .bold,
-                                                              color: textWhite,
-                                                            ),
-                                                          ),
-                                                          const SizedBox(
-                                                            height: 2,
-                                                          ),
-                                                          Text(
-                                                            'من تطبيق Yellow / פז',
-                                                            style: TextStyle(
-                                                              fontSize: 9.5,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w600,
-                                                              color:
-                                                                  brandYellow,
-                                                            ),
-                                                          ),
-                                                        ],
-                                                      ),
-                                                    ],
-                                                  ),
-                                                  Container(
-                                                    width: 3,
-                                                    height: 18,
-                                                    decoration: BoxDecoration(
-                                                      color: brandYellow,
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                            99,
-                                                          ),
-                                                    ),
-                                                  ),
-                                                ],
+                                              Text(
+                                                'Yellow / פז',
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                                style: TextStyle(
+                                                  fontSize: 8.5,
+                                                  fontWeight: FontWeight.w600,
+                                                  color: brandYellow,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 6),
+                                // زر اختيار صورة فاتورة أو لقطة شاشة من الاستوديو
+                                Expanded(
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(12),
+                                    child: Material(
+                                      color: surfaceField,
+                                      child: InkWell(
+                                        onTap:
+                                            () => scanFuelReceipt(
+                                              ImageSource.gallery,
+                                            ),
+                                        borderRadius: BorderRadius.circular(12),
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 8,
+                                            vertical: 9,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            borderRadius: BorderRadius.circular(
+                                              12,
+                                            ),
+                                            border: Border.all(
+                                              color: brandGreen.withValues(
+                                                alpha: 0.7,
+                                              ),
+                                            ),
+                                          ),
+                                          child: Column(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              const Icon(
+                                                Icons.photo_library_rounded,
+                                                color: brandGreen,
+                                                size: 18,
+                                              ),
+                                              const SizedBox(height: 3),
+                                              Text(
+                                                'صورة فاتورة',
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                                style: TextStyle(
+                                                  fontSize: 10.5,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: textWhite,
+                                                ),
+                                              ),
+                                              const Text(
+                                                'لقطة شاشة / معرض',
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                                style: TextStyle(
+                                                  fontSize: 8.5,
+                                                  fontWeight: FontWeight.w600,
+                                                  color: brandGreen,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 6),
+                                // زر تصوير فاتورة ورقية بالكاميرا مباشرة
+                                Expanded(
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(12),
+                                    child: Material(
+                                      color: surfaceField,
+                                      child: InkWell(
+                                        onTap:
+                                            () => scanFuelReceipt(
+                                              ImageSource.camera,
+                                            ),
+                                        borderRadius: BorderRadius.circular(12),
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 8,
+                                            vertical: 9,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            borderRadius: BorderRadius.circular(
+                                              12,
+                                            ),
+                                            border: Border.all(
+                                              color: surfaceBorder,
+                                            ),
+                                          ),
+                                          child: Column(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Icon(
+                                                Icons.camera_alt_rounded,
+                                                color: textWhite,
+                                                size: 18,
+                                              ),
+                                              const SizedBox(height: 3),
+                                              Text(
+                                                'تصوير ورقية',
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                                style: TextStyle(
+                                                  fontSize: 10.5,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: textWhite,
+                                                ),
+                                              ),
+                                              Text(
+                                                'كاميرا مباشرة',
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                                style: TextStyle(
+                                                  fontSize: 8.5,
+                                                  fontWeight: FontWeight.w600,
+                                                  color: textMuted,
+                                                ),
                                               ),
                                             ],
                                           ),
@@ -875,6 +959,115 @@ class FuelExpenseSheet {
                             ),
                           ),
                         ],
+
+                        const SizedBox(height: 8),
+
+                        // 2.5 خانة المحطة / مكان التعبئة (تُستخرج تلقائياً من الفاتورة أو تُعدل يدوياً)
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: surfaceField,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color:
+                                    parsedResult != null
+                                        ? brandGreen.withValues(alpha: 0.7)
+                                        : surfaceBorder,
+                              ),
+                            ),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 8,
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        const Icon(
+                                          Icons.location_on_rounded,
+                                          size: 13,
+                                          color: brandGreen,
+                                        ),
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          'المحطة / مكان التعبئة (סניף)',
+                                          style: TextStyle(
+                                            fontSize: 10.5,
+                                            fontWeight: FontWeight.w600,
+                                            color: textMuted,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    if (parsedResult != null &&
+                                        parsedResult!.providerName.isNotEmpty)
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 6,
+                                          vertical: 2,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: brandGreen.withValues(
+                                            alpha: 0.14,
+                                          ),
+                                          borderRadius: BorderRadius.circular(
+                                            4,
+                                          ),
+                                        ),
+                                        child: Text(
+                                          parsedResult!.providerName,
+                                          style: const TextStyle(
+                                            fontSize: 9.5,
+                                            fontWeight: FontWeight.bold,
+                                            color: brandGreen,
+                                          ),
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                                const SizedBox(height: 4),
+                                TextField(
+                                  controller: stationCtrl,
+                                  onChanged: (_) => setSheetState(() {}),
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.bold,
+                                    color: textWhite,
+                                  ),
+                                  cursorColor: brandGreen,
+                                  decoration: InputDecoration(
+                                    isDense: true,
+                                    border: InputBorder.none,
+                                    hintText:
+                                        'مثال: תדלוק פז סכנין החדשה (422)',
+                                    hintStyle: TextStyle(
+                                      color: textMuted.withValues(alpha: 0.6),
+                                      fontSize: 12,
+                                    ),
+                                    contentPadding: EdgeInsets.zero,
+                                  ),
+                                ),
+                                if (parsedResult?.invoiceNumber != null) ...[
+                                  const SizedBox(height: 3),
+                                  Text(
+                                    'رقم الفاتورة المستخرج: #${parsedResult!.invoiceNumber}',
+                                    style: TextStyle(
+                                      fontSize: 9.5,
+                                      fontWeight: FontWeight.w600,
+                                      color: textMuted,
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ),
+                        ),
 
                         const SizedBox(height: 8),
 

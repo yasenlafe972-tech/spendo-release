@@ -18,7 +18,7 @@ class DatabaseHelper {
   }
 
   static Database? _database;
-  static const int _databaseVersion = 11;
+  static const int _databaseVersion = 12;
 
   Future<Database> get database async {
     if (_database != null) return _database!;
@@ -91,10 +91,15 @@ class DatabaseHelper {
         location_address TEXT,
         attachments TEXT DEFAULT '[]',
         created_at TEXT NOT NULL,
+        updated_at TEXT,
         FOREIGN KEY (person_id) REFERENCES people(id) ON DELETE SET NULL,
         FOREIGN KEY (workplace_id) REFERENCES workplaces(id) ON DELETE SET NULL
       )
     ''');
+
+    try {
+      await db.execute("ALTER TABLE work_logs ADD COLUMN updated_at TEXT");
+    } catch (_) {}
 
     await db.execute('''
       CREATE TABLE IF NOT EXISTS workplace_payments (
@@ -105,9 +110,14 @@ class DatabaseHelper {
         payment_method TEXT NOT NULL DEFAULT 'كاش',
         notes TEXT,
         created_at TEXT NOT NULL,
+        updated_at TEXT,
         FOREIGN KEY (workplace_id) REFERENCES workplaces(id) ON DELETE CASCADE
       )
     ''');
+
+    try {
+      await db.execute("ALTER TABLE workplace_payments ADD COLUMN updated_at TEXT");
+    } catch (_) {}
 
     await db.execute('''
       CREATE TABLE IF NOT EXISTS payments (
@@ -231,6 +241,48 @@ class DatabaseHelper {
         });
       }
     } catch (_) {}
+
+    try {
+      await _syncWorkLogsWithWorkplaceRates(db);
+    } catch (_) {}
+  }
+
+  /// Synchronizes work_logs rate_applied and total_earned with their parent workplace's daily_rate
+  /// so legacy logs without updated_at or logs restored from older snapshots never revert to a stale rate.
+  static Future<void> _syncWorkLogsWithWorkplaceRates(DatabaseExecutor db) async {
+    final workplaces = await db.query('workplaces');
+    for (final wp in workplaces) {
+      final wpId = (wp['id']?.toString() ?? '').trim();
+      final wpName = (wp['name']?.toString() ?? '').trim();
+      final dailyRate = (wp['daily_rate'] as num? ?? 0.0).toDouble();
+      final wpUpdatedAt = wp['updated_at']?.toString() ?? DateTime.now().toIso8601String();
+      if (dailyRate <= 0) continue;
+
+      await db.rawUpdate(
+        '''
+        UPDATE work_logs
+        SET rate_applied = ?,
+            total_earned = ? * COALESCE(day_fraction, 1.0),
+            updated_at = COALESCE(updated_at, ?),
+            workplace_id = CASE WHEN (workplace_id IS NULL OR workplace_id = '') AND ? != '' THEN ? ELSE workplace_id END
+        WHERE ((? != '' AND workplace_id = ?) OR (? != '' AND TRIM(workplace_name) = ?))
+          AND (ABS(rate_applied - ?) > 0.01 OR ABS(total_earned - (? * COALESCE(day_fraction, 1.0))) > 0.01)
+        ''',
+        [
+          dailyRate,
+          dailyRate,
+          wpUpdatedAt,
+          wpId,
+          wpId,
+          wpId,
+          wpId,
+          wpName,
+          wpName,
+          dailyRate,
+          dailyRate,
+        ],
+      );
+    }
   }
 
   Future<Database> _initDatabase() async {
@@ -811,6 +863,9 @@ class DatabaseHelper {
 
         // Purge any local tombstoned records
         await DeletionSyncService.purgeDeletedRowsFromDatabase(txn);
+
+        // Enforce relational consistency between workplaces.daily_rate and work_logs
+        await _syncWorkLogsWithWorkplaceRates(txn);
       });
     } finally {
       // Always re-enable foreign keys OUTSIDE after transaction completes

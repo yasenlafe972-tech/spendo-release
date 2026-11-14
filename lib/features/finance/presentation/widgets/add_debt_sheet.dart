@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:sanad_app/core/theme/app_colors.dart';
 import 'package:sanad_app/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
@@ -18,7 +19,7 @@ class AddDebtSheet extends StatefulWidget {
   final List<PersonModel> people;
   final String? initialPersonId;
   final DebtModel? initialDebt;
-  final Function(DebtModel) onSave;
+  final FutureOr<void> Function(DebtModel) onSave;
 
   const AddDebtSheet({
     super.key,
@@ -205,7 +206,7 @@ class _AddDebtSheetState extends State<AddDebtSheet> {
         );
       }
 
-      widget.onSave(debtToSave);
+      await widget.onSave(debtToSave);
       if (mounted) {
         Navigator.pop(context);
       }

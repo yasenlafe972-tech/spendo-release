@@ -1,6 +1,7 @@
 import 'package:sanad_app/core/theme/app_colors.dart';
 import 'package:sanad_app/core/widgets/banking_animations.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../../../core/widgets/spendo_app_menu.dart';
 import 'package:remixicon/remixicon.dart';
 import 'package:share_plus/share_plus.dart';
@@ -175,7 +176,7 @@ class _FinanceScreenState extends State<FinanceScreen> {
     );
   }
 
-  Future<void> _showAddDebtSheet() async {
+  Future<void> _showAddDebtSheet([String? initialPersonId]) async {
     SpendoHaptics.light();
     final people = await _peopleRepo.getAllPeople();
     if (!mounted) return;
@@ -187,9 +188,10 @@ class _FinanceScreenState extends State<FinanceScreen> {
       builder:
           (_) => AddDebtSheet(
             people: people,
+            initialPersonId: initialPersonId,
             onSave: (debt) async {
               await _financeRepo.addDebt(debt);
-              _loadData();
+              await _loadData();
               _showToast('تم حفظ المعاملة في كشف المالية');
             },
           ),
@@ -211,7 +213,7 @@ class _FinanceScreenState extends State<FinanceScreen> {
             initialDebt: debt,
             onSave: (updatedDebt) async {
               await _financeRepo.updateDebt(updatedDebt);
-              _loadData();
+              await _loadData();
               _showToast('تم تعديل المعاملة بنجاح');
             },
           ),
@@ -243,7 +245,7 @@ class _FinanceScreenState extends State<FinanceScreen> {
                 payment: payment,
                 parentDebt: debt,
               );
-              _loadData();
+              await _loadData();
               _showToast('تم تسجيل الدفعة بنجاح');
             },
           ),
@@ -857,7 +859,7 @@ class _FinanceScreenState extends State<FinanceScreen> {
             SizedBox(width: 90, child: _buildFilterDropdown()),
             const SizedBox(width: 6),
             FilledButton.icon(
-              onPressed: _showAddDebtSheet,
+              onPressed: () => _showAddDebtSheet(),
               icon: const Icon(Remix.add_line, size: 15),
               label: const Text('تسجيل جديد'),
               style: FilledButton.styleFrom(
@@ -1020,24 +1022,36 @@ class _FinanceScreenState extends State<FinanceScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Row(
-              children: [
-                Icon(Remix.user_3_line, size: 19, color: textMuted),
-                const SizedBox(width: 5),
-                Expanded(
-                  child: Text(
-                    _peopleMap[personId]?.name ?? 'شخص غير مسجل',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontFamily: 'Cairo',
-                      color: textWhite,
-                      fontSize: 11.5,
-                      fontWeight: FontWeight.bold,
+            InkWell(
+              onTap: () => _showPersonSummaryDialog(personId),
+              borderRadius: BorderRadius.circular(8),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 2),
+                child: Row(
+                  children: [
+                    Icon(Remix.user_3_line, size: 19, color: textMuted),
+                    const SizedBox(width: 5),
+                    Expanded(
+                      child: Text(
+                        _peopleMap[personId]?.name ?? 'شخص غير مسجل',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontFamily: 'Cairo',
+                          color: textWhite,
+                          fontSize: 11.5,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
-                  ),
+                    Icon(
+                      Remix.arrow_left_s_line,
+                      size: 15,
+                      color: textMuted,
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
             for (final debt in visible) ...[
               Divider(height: 9, thickness: 0.6, color: surfaceBorder),
@@ -1199,6 +1213,1515 @@ class _FinanceScreenState extends State<FinanceScreen> {
           child: Icon(icon, size: 14, color: color),
         ),
       ),
+    );
+  }
+
+  /// مشاركة كشف الحساب الكامل للشخص عبر واتساب أو نظام المشاركة
+  Future<void> _sharePersonFullStatementViaWhatsApp(
+    PersonModel? person,
+    List<DebtModel> debts,
+    Map<String, List<DebtPaymentModel>> paymentsByDebt,
+  ) async {
+    SpendoHaptics.light();
+    final personName = person?.name ?? 'غير محدد';
+    final totalTheyOwe = FinanceRepository.calculateTotalTheyOwe(debts);
+    final totalIOwe = FinanceRepository.calculateTotalIOwe(debts);
+    final netBalance = FinanceRepository.calculateNetDebtBalance(debts);
+    final totalPaidAndReceived = debts.fold<double>(
+      0.0,
+      (sum, d) => sum + (d.isReceived ? d.originalAmount : d.paidAmount),
+    );
+
+    final buffer = StringBuffer();
+    buffer.writeln('كشف حساب مالي شامل - Spendo');
+    buffer.writeln('================================');
+    buffer.writeln('الاسم: $personName');
+    buffer.writeln('عدد المعاملات المسجلة: ${debts.length}');
+    if (totalTheyOwe > 0.01) {
+      buffer.writeln('إجمالي السلف المتبقية لي: ${_formatCurrency(totalTheyOwe)} ₪');
+    }
+    if (totalIOwe > 0.01) {
+      buffer.writeln('إجمالي الديون المتبقية عليّ: ${_formatCurrency(totalIOwe)} ₪');
+    }
+    if (totalPaidAndReceived > 0.01) {
+      buffer.writeln('إجمالي المسدد والمستلم: ${_formatCurrency(totalPaidAndReceived)} ₪');
+    }
+    if (netBalance.abs() <= 0.01) {
+      buffer.writeln('الصافي الحالي: 0 ₪ (خالص ومتوازن)');
+    } else if (netBalance > 0) {
+      buffer.writeln('الصافي المتبقي لي: ${_formatCurrency(netBalance)} ₪');
+    } else {
+      buffer.writeln('الصافي المتبقي عليّ: ${_formatCurrency(netBalance.abs())} ₪');
+    }
+
+    if (debts.isNotEmpty) {
+      buffer.writeln('\nتفاصيل المعاملات:');
+      buffer.writeln('--------------------------------');
+      for (int i = 0; i < debts.length; i++) {
+        final d = debts[i];
+        final dateStr = ArabicDateHelper.formatArabicDateWithWeekdayFromString(
+          d.transactionDate,
+        );
+        final statusLabel =
+            d.isReceived
+                ? 'مستلم بالكامل'
+                : (d.isSettled ? 'تم السداد بالكامل' : 'متبقي ${_formatCurrency(d.remainingAmount)} ₪');
+        buffer.writeln(
+          '${i + 1}) ${d.typeTitle} • ${_formatCurrency(d.originalAmount)} ₪',
+        );
+        buffer.writeln('   التاريخ: $dateStr | الدفع: ${d.paymentMethodTitle}');
+        buffer.writeln('   الحالة: $statusLabel');
+        if (d.notes != null && d.notes!.trim().isNotEmpty) {
+          buffer.writeln('   ملاحظة: ${d.notes!.trim()}');
+        }
+        final dPayments = paymentsByDebt[d.id] ?? const <DebtPaymentModel>[];
+        if (dPayments.isNotEmpty) {
+          for (final p in dPayments) {
+            final pDate = ArabicDateHelper.formatArabicDateWithWeekdayFromString(
+              p.paymentDate,
+            );
+            buffer.writeln(
+              '   ↳ دفعة مسددة: ${_formatCurrency(p.amount)} ₪ بتاريخ $pDate (${p.paymentMethodTitle})',
+            );
+          }
+        }
+      }
+    }
+    buffer.writeln('\nتم التوثيق عبر تطبيق Spendo');
+
+    final rawPhone =
+        (person?.whatsapp != null && person!.whatsapp!.trim().isNotEmpty)
+            ? person.whatsapp!.trim()
+            : (person?.phone ?? '').trim();
+    if (rawPhone.isNotEmpty) {
+      var cleanPhone = rawPhone.replaceAll(RegExp(r'[^0-9]'), '');
+      if (cleanPhone.startsWith('0')) {
+        cleanPhone = '972${cleanPhone.substring(1)}';
+      }
+      if (cleanPhone.isNotEmpty) {
+        final url = Uri.parse(
+          'https://wa.me/$cleanPhone?text=${Uri.encodeComponent(buffer.toString())}',
+        );
+        if (await canLaunchUrl(url)) {
+          await launchUrl(url, mode: LaunchMode.externalApplication);
+          return;
+        }
+      }
+    }
+
+    SharePlus.instance.share(
+      ShareParams(
+        text: buffer.toString(),
+        subject: 'كشف حساب مالي - $personName',
+      ),
+    );
+  }
+
+  /// النافذة المنبثقة الشاملة عند الضغط على اسم الشخص: تعرض كافة بياناته وملخصه وكامل معاملاته ودفعاته
+  Future<void> _showPersonSummaryDialog(String personId) async {
+    SpendoHaptics.selection();
+    var person = _peopleMap[personId];
+    var personDebts = await _financeRepo.getDebtsForPerson(personId);
+    var paymentsByDebt = <String, List<DebtPaymentModel>>{};
+    for (final d in personDebts) {
+      paymentsByDebt[d.id] = await _financeRepo.getPaymentsForDebt(d.id);
+    }
+    if (!mounted) return;
+
+    Future<void> refreshPersonData(StateSetter setDialogState) async {
+      await _loadData();
+      final freshDebts = await _financeRepo.getDebtsForPerson(personId);
+      final freshPayments = <String, List<DebtPaymentModel>>{};
+      for (final d in freshDebts) {
+        freshPayments[d.id] = await _financeRepo.getPaymentsForDebt(d.id);
+      }
+      if (mounted) {
+        setDialogState(() {
+          person = _peopleMap[personId];
+          personDebts = freshDebts;
+          paymentsByDebt = freshPayments;
+        });
+      }
+    }
+
+    showGeneralDialog(
+      context: context,
+      barrierDismissible: true,
+      barrierLabel: 'PersonFullSummaryPopup',
+      barrierColor: Colors.black.withValues(alpha: 0.68),
+      transitionDuration: const Duration(milliseconds: 220),
+      pageBuilder: (dialogCtx, anim1, anim2) {
+        return StatefulBuilder(
+          builder: (dialogCtx, setDialogState) {
+            final personName = person?.name ?? 'شخص غير مسجل';
+            final totalTheyOwe = FinanceRepository.calculateTotalTheyOwe(
+              personDebts,
+            );
+            final totalIOwe = FinanceRepository.calculateTotalIOwe(personDebts);
+            final netBalance = FinanceRepository.calculateNetDebtBalance(
+              personDebts,
+            );
+            final totalPaidAndReceived = personDebts.fold<double>(
+              0.0,
+              (sum, d) =>
+                  sum + (d.isReceived ? d.originalAmount : d.paidAmount),
+            );
+
+            final bool isNetIOwe = netBalance < -0.01;
+            final bool isNetTheyOwe = netBalance > 0.01;
+
+            final String netBadgeText =
+                isNetIOwe
+                    ? 'عليّ إله'
+                    : (isNetTheyOwe ? 'إلي عنده' : 'خالص ومتوازن');
+            final Color netAccentColor =
+                isNetIOwe
+                    ? brandRed
+                    : (isNetTheyOwe ? brandYellow : successColor);
+            final String netHeroLabel =
+                isNetIOwe
+                    ? 'صافي المبلغ المتبقي عليك'
+                    : (isNetTheyOwe
+                        ? 'صافي المبلغ المتبقي لك'
+                        : 'جميع المعاملات خالصة ومتوازنة');
+            final String netPrefix =
+                isNetIOwe ? '-' : (isNetTheyOwe ? '+' : '');
+
+            final hasPhone =
+                (person?.phone != null && person!.phone!.trim().isNotEmpty) ||
+                (person?.whatsapp != null &&
+                    person!.whatsapp!.trim().isNotEmpty);
+            final displayPhone =
+                (person?.phone != null && person!.phone!.trim().isNotEmpty)
+                    ? person!.phone!.trim()
+                    : (person?.whatsapp?.trim() ?? '');
+            final hasEmail =
+                person?.email != null && person!.email!.trim().isNotEmpty;
+            final hasNationalId =
+                person?.nationalId != null &&
+                person!.nationalId!.trim().isNotEmpty;
+            final hasBank =
+                (person?.bank != null && person!.bank!.trim().isNotEmpty) ||
+                (person?.accountNumber != null &&
+                    person!.accountNumber!.trim().isNotEmpty);
+            final hasNotes =
+                person?.notes != null && person!.notes!.trim().isNotEmpty;
+            final hasAnyPersonInfo =
+                hasPhone || hasEmail || hasNationalId || hasBank || hasNotes;
+
+            return Center(
+              child: Material(
+                color: Colors.transparent,
+                child: Container(
+                  width: MediaQuery.of(dialogCtx).size.width.clamp(295.0, 405.0),
+                  constraints: BoxConstraints(
+                    maxHeight: MediaQuery.of(dialogCtx).size.height * 0.88,
+                  ),
+                  margin: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 18,
+                  ),
+                  decoration: BoxDecoration(
+                    color: surfaceField,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: surfaceBorder),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(
+                          alpha: _isDark ? 0.48 : 0.16,
+                        ),
+                        blurRadius: 26,
+                        offset: const Offset(0, 8),
+                      ),
+                    ],
+                  ),
+                  padding: const EdgeInsets.fromLTRB(14, 12, 14, 13),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      // 1. ترويسة النافذة المنبثقة: إغلاق + اسم الشخص + وسم الصافي
+                      Row(
+                        children: [
+                          InkWell(
+                            onTap: () => Navigator.pop(dialogCtx),
+                            borderRadius: BorderRadius.circular(14),
+                            child: Padding(
+                              padding: const EdgeInsets.all(4),
+                              child: Icon(
+                                Remix.close_line,
+                                size: 20,
+                                color: textMuted,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          Icon(
+                            Remix.user_3_line,
+                            size: 19,
+                            color: brandBlue,
+                          ),
+                          const SizedBox(width: 6),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  personName,
+                                  style: TextStyle(
+                                    fontFamily: 'Cairo',
+                                    color: textWhite,
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                Text(
+                                  'الملف المالي الشامل • ${personDebts.length} معاملات',
+                                  style: TextStyle(
+                                    fontFamily: 'Cairo',
+                                    color: textMuted,
+                                    fontSize: 10,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 3,
+                            ),
+                            decoration: BoxDecoration(
+                              color: netAccentColor.withValues(
+                                alpha: _isDark ? 0.14 : 0.16,
+                              ),
+                              borderRadius: BorderRadius.circular(7),
+                              border: Border.all(
+                                color: netAccentColor.withValues(alpha: 0.4),
+                              ),
+                            ),
+                            child: Text(
+                              netBadgeText,
+                              style: TextStyle(
+                                fontFamily: 'Cairo',
+                                color: netAccentColor,
+                                fontSize: 10.5,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 11),
+
+                      // المحتوى القابل للتمرير بالكامل
+                      Flexible(
+                        child: SingleChildScrollView(
+                          physics: const BouncingScrollPhysics(),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              // 2. بطاقة الملخص المالي الشامل للشخص
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 11,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: surfaceMain,
+                                  borderRadius: BorderRadius.circular(14),
+                                  border: Border.all(
+                                    color: netAccentColor.withValues(alpha: 0.35),
+                                  ),
+                                ),
+                                child: Column(
+                                  children: [
+                                    Text(
+                                      netHeroLabel,
+                                      style: TextStyle(
+                                        fontFamily: 'Cairo',
+                                        fontSize: 10.5,
+                                        color: textMuted,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        Text(
+                                          '$netPrefix${_formatCurrency(netBalance.abs())} ',
+                                          style: TextStyle(
+                                            fontFamily: 'Cairo',
+                                            fontSize: 23,
+                                            fontWeight: FontWeight.w900,
+                                            color: netAccentColor,
+                                          ),
+                                        ),
+                                        Text(
+                                          '₪',
+                                          style: TextStyle(
+                                            fontFamily: 'Cairo',
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.bold,
+                                            color: netAccentColor,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Divider(color: surfaceBorder, height: 1),
+                                    const SizedBox(height: 8),
+                                    IntrinsicHeight(
+                                      child: Row(
+                                        children: [
+                                          Expanded(
+                                            child: Column(
+                                              children: [
+                                                Text(
+                                                  'سلف لي',
+                                                  style: TextStyle(
+                                                    fontFamily: 'Cairo',
+                                                    fontSize: 9.5,
+                                                    color: textMuted,
+                                                  ),
+                                                ),
+                                                const SizedBox(height: 2),
+                                                Text(
+                                                  '${_formatCurrency(totalTheyOwe)} ₪',
+                                                  style: TextStyle(
+                                                    fontFamily: 'Cairo',
+                                                    fontSize: 11,
+                                                    fontWeight: FontWeight.bold,
+                                                    color:
+                                                        totalTheyOwe > 0
+                                                            ? brandYellow
+                                                            : textWhite,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                          VerticalDivider(
+                                            color: surfaceBorder,
+                                            width: 1,
+                                            thickness: 1,
+                                          ),
+                                          Expanded(
+                                            child: Column(
+                                              children: [
+                                                Text(
+                                                  'ديون عليّ',
+                                                  style: TextStyle(
+                                                    fontFamily: 'Cairo',
+                                                    fontSize: 9.5,
+                                                    color: textMuted,
+                                                  ),
+                                                ),
+                                                const SizedBox(height: 2),
+                                                Text(
+                                                  '${_formatCurrency(totalIOwe)} ₪',
+                                                  style: TextStyle(
+                                                    fontFamily: 'Cairo',
+                                                    fontSize: 11,
+                                                    fontWeight: FontWeight.bold,
+                                                    color:
+                                                        totalIOwe > 0
+                                                            ? brandRed
+                                                            : textWhite,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                          VerticalDivider(
+                                            color: surfaceBorder,
+                                            width: 1,
+                                            thickness: 1,
+                                          ),
+                                          Expanded(
+                                            child: Column(
+                                              children: [
+                                                Text(
+                                                  'مسدد ومستلم',
+                                                  style: TextStyle(
+                                                    fontFamily: 'Cairo',
+                                                    fontSize: 9.5,
+                                                    color: textMuted,
+                                                  ),
+                                                ),
+                                                const SizedBox(height: 2),
+                                                Text(
+                                                  '${_formatCurrency(totalPaidAndReceived)} ₪',
+                                                  style: TextStyle(
+                                                    fontFamily: 'Cairo',
+                                                    fontSize: 11,
+                                                    fontWeight: FontWeight.bold,
+                                                    color: successColor,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+
+                              // 3. بطاقة بيانات التواصل والهوية والبنك (تظهر فقط إذا توفرت معلومات محفوظة للشخص)
+                              if (hasAnyPersonInfo) ...[
+                                const SizedBox(height: 9),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 11,
+                                    vertical: 8,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: surfaceMain,
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(color: surfaceBorder),
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.stretch,
+                                    children: [
+                                      if (hasPhone)
+                                        Row(
+                                          children: [
+                                            Icon(
+                                              Remix.phone_line,
+                                              size: 14,
+                                              color: brandBlue,
+                                            ),
+                                            const SizedBox(width: 7),
+                                            Expanded(
+                                              child: Text(
+                                                displayPhone,
+                                                textDirection:
+                                                    TextDirection.ltr,
+                                                textAlign: TextAlign.right,
+                                                style: TextStyle(
+                                                  fontFamily: 'Cairo',
+                                                  color: textWhite,
+                                                  fontSize: 11.5,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                            ),
+                                            InkWell(
+                                              onTap: () async {
+                                                final clean = displayPhone
+                                                    .replaceAll(
+                                                      RegExp(r'[^\d+]'),
+                                                      '',
+                                                    );
+                                                final uri = Uri.parse(
+                                                  'tel:$clean',
+                                                );
+                                                if (await canLaunchUrl(uri)) {
+                                                  await launchUrl(uri);
+                                                }
+                                              },
+                                              borderRadius:
+                                                  BorderRadius.circular(6),
+                                              child: Padding(
+                                                padding: const EdgeInsets.all(
+                                                  4,
+                                                ),
+                                                child: Icon(
+                                                  Remix.phone_line,
+                                                  size: 15,
+                                                  color: brandBlue,
+                                                ),
+                                              ),
+                                            ),
+                                            InkWell(
+                                              onTap: () async {
+                                                var clean = displayPhone
+                                                    .replaceAll(
+                                                      RegExp(r'[^\d]'),
+                                                      '',
+                                                    );
+                                                if (clean.startsWith('0')) {
+                                                  clean =
+                                                      '972${clean.substring(1)}';
+                                                }
+                                                final uri = Uri.parse(
+                                                  'https://wa.me/$clean',
+                                                );
+                                                if (await canLaunchUrl(uri)) {
+                                                  await launchUrl(
+                                                    uri,
+                                                    mode:
+                                                        LaunchMode
+                                                            .externalApplication,
+                                                  );
+                                                }
+                                              },
+                                              borderRadius:
+                                                  BorderRadius.circular(6),
+                                              child: const Padding(
+                                                padding: EdgeInsets.all(4),
+                                                child: Icon(
+                                                  Remix.whatsapp_line,
+                                                  size: 15,
+                                                  color: Color(0xFF10B981),
+                                                ),
+                                              ),
+                                            ),
+                                            InkWell(
+                                              onTap: () {
+                                                Clipboard.setData(
+                                                  ClipboardData(
+                                                    text: displayPhone,
+                                                  ),
+                                                );
+                                                _showToast(
+                                                  'تم نسخ رقم الهاتف',
+                                                );
+                                              },
+                                              borderRadius:
+                                                  BorderRadius.circular(6),
+                                              child: Padding(
+                                                padding: const EdgeInsets.all(
+                                                  4,
+                                                ),
+                                                child: Icon(
+                                                  Remix.file_copy_line,
+                                                  size: 14,
+                                                  color: textMuted,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      if (hasPhone &&
+                                          (hasBank ||
+                                              hasNationalId ||
+                                              hasEmail ||
+                                              hasNotes))
+                                        Divider(
+                                          color: surfaceBorder.withValues(
+                                            alpha: 0.6,
+                                          ),
+                                          height: 10,
+                                        ),
+                                      if (hasBank) ...[
+                                        Row(
+                                          children: [
+                                            Icon(
+                                              Remix.bank_line,
+                                              size: 14,
+                                              color: brandBlue,
+                                            ),
+                                            const SizedBox(width: 7),
+                                            Expanded(
+                                              child: Text(
+                                                [
+                                                  if (person?.bank != null &&
+                                                      person!.bank!
+                                                          .trim()
+                                                          .isNotEmpty)
+                                                    person!.bank!.trim(),
+                                                  if (person?.accountNumber !=
+                                                          null &&
+                                                      person!.accountNumber!
+                                                          .trim()
+                                                          .isNotEmpty)
+                                                    person!.accountNumber!
+                                                        .trim(),
+                                                ].join(' • '),
+                                                style: TextStyle(
+                                                  fontFamily: 'Cairo',
+                                                  color: textWhite,
+                                                  fontSize: 11,
+                                                  fontWeight: FontWeight.w600,
+                                                ),
+                                              ),
+                                            ),
+                                            InkWell(
+                                              onTap: () {
+                                                final bankTxt = [
+                                                  if (person?.bank != null &&
+                                                      person!.bank!
+                                                          .trim()
+                                                          .isNotEmpty)
+                                                    person!.bank!.trim(),
+                                                  if (person?.accountNumber !=
+                                                          null &&
+                                                      person!.accountNumber!
+                                                          .trim()
+                                                          .isNotEmpty)
+                                                    person!.accountNumber!
+                                                        .trim(),
+                                                ].join(' - ');
+                                                Clipboard.setData(
+                                                  ClipboardData(text: bankTxt),
+                                                );
+                                                _showToast(
+                                                  'تم نسخ بيانات البنك والحساب',
+                                                );
+                                              },
+                                              borderRadius:
+                                                  BorderRadius.circular(6),
+                                              child: Padding(
+                                                padding: const EdgeInsets.all(
+                                                  4,
+                                                ),
+                                                child: Icon(
+                                                  Remix.file_copy_line,
+                                                  size: 14,
+                                                  color: textMuted,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        if (hasNationalId ||
+                                            hasEmail ||
+                                            hasNotes)
+                                          Divider(
+                                            color: surfaceBorder.withValues(
+                                              alpha: 0.6,
+                                            ),
+                                            height: 10,
+                                          ),
+                                      ],
+                                      if (hasNationalId) ...[
+                                        Row(
+                                          children: [
+                                            Icon(
+                                              Remix.id_card_line,
+                                              size: 14,
+                                              color: textMuted,
+                                            ),
+                                            const SizedBox(width: 7),
+                                            Text(
+                                              'الهوية:',
+                                              style: TextStyle(
+                                                fontFamily: 'Cairo',
+                                                color: textMuted,
+                                                fontSize: 10.5,
+                                              ),
+                                            ),
+                                            const SizedBox(width: 5),
+                                            Expanded(
+                                              child: Text(
+                                                person!.nationalId!.trim(),
+                                                textDirection:
+                                                    TextDirection.ltr,
+                                                textAlign: TextAlign.right,
+                                                style: TextStyle(
+                                                  fontFamily: 'Cairo',
+                                                  color: textWhite,
+                                                  fontSize: 11,
+                                                  fontWeight: FontWeight.w600,
+                                                ),
+                                              ),
+                                            ),
+                                            InkWell(
+                                              onTap: () {
+                                                Clipboard.setData(
+                                                  ClipboardData(
+                                                    text:
+                                                        person!.nationalId!
+                                                            .trim(),
+                                                  ),
+                                                );
+                                                _showToast('تم نسخ رقم الهوية');
+                                              },
+                                              borderRadius:
+                                                  BorderRadius.circular(6),
+                                              child: Padding(
+                                                padding: const EdgeInsets.all(
+                                                  4,
+                                                ),
+                                                child: Icon(
+                                                  Remix.file_copy_line,
+                                                  size: 14,
+                                                  color: textMuted,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        if (hasEmail || hasNotes)
+                                          Divider(
+                                            color: surfaceBorder.withValues(
+                                              alpha: 0.6,
+                                            ),
+                                            height: 10,
+                                          ),
+                                      ],
+                                      if (hasEmail) ...[
+                                        Row(
+                                          children: [
+                                            Icon(
+                                              Remix.mail_line,
+                                              size: 14,
+                                              color: textMuted,
+                                            ),
+                                            const SizedBox(width: 7),
+                                            Expanded(
+                                              child: Text(
+                                                person!.email!.trim(),
+                                                textDirection:
+                                                    TextDirection.ltr,
+                                                textAlign: TextAlign.right,
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                                style: TextStyle(
+                                                  fontFamily: 'Cairo',
+                                                  color: textWhite,
+                                                  fontSize: 11,
+                                                ),
+                                              ),
+                                            ),
+                                            InkWell(
+                                              onTap: () {
+                                                Clipboard.setData(
+                                                  ClipboardData(
+                                                    text:
+                                                        person!.email!.trim(),
+                                                  ),
+                                                );
+                                                _showToast(
+                                                  'تم نسخ البريد الإلكتروني',
+                                                );
+                                              },
+                                              borderRadius:
+                                                  BorderRadius.circular(6),
+                                              child: Padding(
+                                                padding: const EdgeInsets.all(
+                                                  4,
+                                                ),
+                                                child: Icon(
+                                                  Remix.file_copy_line,
+                                                  size: 14,
+                                                  color: textMuted,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        if (hasNotes)
+                                          Divider(
+                                            color: surfaceBorder.withValues(
+                                              alpha: 0.6,
+                                            ),
+                                            height: 10,
+                                          ),
+                                      ],
+                                      if (hasNotes)
+                                        Row(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Icon(
+                                              Remix.sticky_note_line,
+                                              size: 14,
+                                              color: textMuted,
+                                            ),
+                                            const SizedBox(width: 7),
+                                            Expanded(
+                                              child: Text(
+                                                person!.notes!.trim(),
+                                                style: TextStyle(
+                                                  fontFamily: 'Cairo',
+                                                  color: textWhite,
+                                                  fontSize: 10.5,
+                                                  height: 1.3,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+
+                              const SizedBox(height: 11),
+
+                              // 4. عنوان سجل المعاملات والدفعات الكامل
+                              Row(
+                                children: [
+                                  Icon(
+                                    Remix.file_list_3_line,
+                                    size: 15,
+                                    color: brandBlue,
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    'كافة المعاملات وسجل الدفعات',
+                                    style: TextStyle(
+                                      fontFamily: 'Cairo',
+                                      color: textWhite,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  const Spacer(),
+                                  Text(
+                                    '${personDebts.length} سجل',
+                                    style: TextStyle(
+                                      fontFamily: 'Cairo',
+                                      color: textMuted,
+                                      fontSize: 10.5,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 7),
+
+                              if (personDebts.isEmpty)
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 20,
+                                    horizontal: 12,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: surfaceMain,
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(color: surfaceBorder),
+                                  ),
+                                  alignment: Alignment.center,
+                                  child: Text(
+                                    'لا توجد معاملات مالية مسجلة لهذا الشخص حالياً',
+                                    style: TextStyle(
+                                      fontFamily: 'Cairo',
+                                      color: textMuted,
+                                      fontSize: 11.5,
+                                    ),
+                                  ),
+                                )
+                              else
+                                for (int idx = 0; idx < personDebts.length; idx++) ...[
+                                  if (idx > 0) const SizedBox(height: 8),
+                                  Builder(
+                                    builder: (_) {
+                                      final d = personDebts[idx];
+                                      final dPayments =
+                                          paymentsByDebt[d.id] ??
+                                          const <DebtPaymentModel>[];
+                                      final isSettled = d.isSettled;
+                                      final isReceived = d.isReceived;
+                                      final isPartiallyPaid =
+                                          !isSettled &&
+                                          !isReceived &&
+                                          d.remainingAmount < d.originalAmount;
+
+                                      String itemBadge = 'إلي عنده';
+                                      Color itemColor = brandYellow;
+                                      if (d.isPayLater) {
+                                        itemBadge = 'عالحساب';
+                                        itemColor = brandYellow;
+                                      } else if (d.isIOwe) {
+                                        itemBadge = 'عليّ إله';
+                                        itemColor = brandRed;
+                                      } else if (isReceived) {
+                                        itemBadge = 'مبلغ مستلم';
+                                        itemColor = successColor;
+                                      }
+                                      if (isSettled) {
+                                        itemColor = successColor;
+                                      }
+
+                                      final displayAmt =
+                                          (isSettled || isReceived)
+                                              ? d.originalAmount
+                                              : d.remainingAmount;
+
+                                      final statusText =
+                                          isReceived
+                                              ? 'خالص ومسدد'
+                                              : isSettled
+                                              ? 'تم السداد بالكامل (الأصل ${_formatCurrency(d.originalAmount)} ₪)'
+                                              : isPartiallyPaid
+                                              ? 'الأصل ${_formatCurrency(d.originalAmount)} ₪ • سُدد ${_formatCurrency(d.paidAmount)} ₪'
+                                              : (d.isPayLater
+                                                  ? 'للدفع لاحقاً'
+                                                  : (d.isIOwe
+                                                      ? 'مستحق الدفع'
+                                                      : 'بانتظار السداد'));
+
+                                      return Container(
+                                        padding: const EdgeInsets.fromLTRB(
+                                          10,
+                                          9,
+                                          10,
+                                          8,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: surfaceMain,
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
+                                          border: Border.all(
+                                            color:
+                                                isSettled || isReceived
+                                                    ? surfaceBorder
+                                                    : itemColor.withValues(
+                                                      alpha: 0.32,
+                                                    ),
+                                          ),
+                                        ),
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.stretch,
+                                          children: [
+                                            // السطر العلوي للمعاملة: نوعها + التاريخ + المبلغ
+                                            Row(
+                                              children: [
+                                                Container(
+                                                  padding:
+                                                      const EdgeInsets.symmetric(
+                                                        horizontal: 6,
+                                                        vertical: 1.5,
+                                                      ),
+                                                  decoration: BoxDecoration(
+                                                    color: itemColor.withValues(
+                                                      alpha:
+                                                          _isDark ? 0.14 : 0.16,
+                                                    ),
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                          5,
+                                                        ),
+                                                  ),
+                                                  child: Text(
+                                                    itemBadge,
+                                                    style: TextStyle(
+                                                      fontFamily: 'Cairo',
+                                                      color: itemColor,
+                                                      fontSize: 9.5,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                    ),
+                                                  ),
+                                                ),
+                                                const SizedBox(width: 6),
+                                                Expanded(
+                                                  child: Text(
+                                                    ArabicDateHelper.formatArabicDateWithWeekdayFromString(
+                                                      d.transactionDate,
+                                                    ),
+                                                    style: TextStyle(
+                                                      fontFamily: 'Cairo',
+                                                      color: textMuted,
+                                                      fontSize: 10,
+                                                      fontWeight:
+                                                          FontWeight.w600,
+                                                    ),
+                                                    maxLines: 1,
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
+                                                  ),
+                                                ),
+                                                Text(
+                                                  '${_formatCurrency(displayAmt)} ₪',
+                                                  style: TextStyle(
+                                                    fontFamily: 'Cairo',
+                                                    color:
+                                                        isSettled || isReceived
+                                                            ? successColor
+                                                            : textWhite,
+                                                    fontSize: 13,
+                                                    fontWeight: FontWeight.w900,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                            const SizedBox(height: 5),
+
+                                            // السطر الثاني: طريقة الدفع + حالة السداد التفصيلية
+                                            Wrap(
+                                              alignment:
+                                                  WrapAlignment.spaceBetween,
+                                              crossAxisAlignment:
+                                                  WrapCrossAlignment.center,
+                                              spacing: 6,
+                                              runSpacing: 3,
+                                              children: [
+                                                Row(
+                                                  mainAxisSize:
+                                                      MainAxisSize.min,
+                                                  children: [
+                                                    Icon(
+                                                      _getPaymentMethodIcon(
+                                                        d.paymentMethod,
+                                                      ),
+                                                      size: 13,
+                                                      color:
+                                                          _getPaymentMethodColor(
+                                                            d.paymentMethod,
+                                                          ),
+                                                    ),
+                                                    const SizedBox(width: 4),
+                                                    Text(
+                                                      d.paymentMethodTitle,
+                                                      style: TextStyle(
+                                                        fontFamily: 'Cairo',
+                                                        color: textMuted,
+                                                        fontSize: 10,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                                Text(
+                                                  statusText,
+                                                  style: TextStyle(
+                                                    fontFamily: 'Cairo',
+                                                    color: itemColor,
+                                                    fontSize: 10,
+                                                    fontWeight: FontWeight.w700,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+
+                                            // الملاحظات إن وجدت
+                                            if (d.notes != null &&
+                                                d.notes!
+                                                    .trim()
+                                                    .isNotEmpty) ...[
+                                              const SizedBox(height: 5),
+                                              Row(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  Icon(
+                                                    Remix.file_text_line,
+                                                    size: 12,
+                                                    color: textMuted,
+                                                  ),
+                                                  const SizedBox(width: 5),
+                                                  Expanded(
+                                                    child: Text(
+                                                      d.notes!.trim(),
+                                                      style: TextStyle(
+                                                        fontFamily: 'Cairo',
+                                                        color: textWhite,
+                                                        fontSize: 10.5,
+                                                        height: 1.25,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ],
+
+                                            // سجل الدفعات المسددة لهذه المعاملة
+                                            if (dPayments.isNotEmpty) ...[
+                                              const SizedBox(height: 6),
+                                              Container(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                      horizontal: 8,
+                                                      vertical: 6,
+                                                    ),
+                                                decoration: BoxDecoration(
+                                                  color: surfaceField,
+                                                  borderRadius:
+                                                      BorderRadius.circular(8),
+                                                  border: Border.all(
+                                                    color: successColor
+                                                        .withValues(
+                                                          alpha: 0.25,
+                                                        ),
+                                                  ),
+                                                ),
+                                                child: Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment
+                                                          .stretch,
+                                                  children: [
+                                                    Row(
+                                                      children: [
+                                                        Icon(
+                                                          Remix.history_line,
+                                                          size: 12,
+                                                          color: successColor,
+                                                        ),
+                                                        const SizedBox(
+                                                          width: 4,
+                                                        ),
+                                                        Text(
+                                                          'سجل الدفعات (${dPayments.length})',
+                                                          style: TextStyle(
+                                                            fontFamily: 'Cairo',
+                                                            color: successColor,
+                                                            fontSize: 9.5,
+                                                            fontWeight:
+                                                                FontWeight.bold,
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                    const SizedBox(height: 4),
+                                                    for (
+                                                      int pIdx = 0;
+                                                      pIdx < dPayments.length;
+                                                      pIdx++
+                                                    ) ...[
+                                                      if (pIdx > 0)
+                                                        Divider(
+                                                          color: surfaceBorder
+                                                              .withValues(
+                                                                alpha: 0.5,
+                                                              ),
+                                                          height: 8,
+                                                        ),
+                                                      Builder(
+                                                        builder: (_) {
+                                                          final p =
+                                                              dPayments[pIdx];
+                                                          final pDate =
+                                                              ArabicDateHelper.formatArabicDateWithWeekdayFromString(
+                                                                p.paymentDate,
+                                                              );
+                                                          return Row(
+                                                            children: [
+                                                              Icon(
+                                                                _getPaymentMethodIcon(
+                                                                  p.paymentMethod,
+                                                                ),
+                                                                size: 12,
+                                                                color:
+                                                                    _getPaymentMethodColor(
+                                                                      p.paymentMethod,
+                                                                    ),
+                                                              ),
+                                                              const SizedBox(
+                                                                width: 5,
+                                                              ),
+                                                              Expanded(
+                                                                child: Text(
+                                                                  (p.notes !=
+                                                                              null &&
+                                                                          p.notes!
+                                                                              .trim()
+                                                                              .isNotEmpty)
+                                                                      ? '$pDate • ${p.paymentMethodTitle} (${p.notes!.trim()})'
+                                                                      : '$pDate • ${p.paymentMethodTitle}',
+                                                                  style: TextStyle(
+                                                                    fontFamily:
+                                                                        'Cairo',
+                                                                    color:
+                                                                        textWhite,
+                                                                    fontSize:
+                                                                        9.5,
+                                                                  ),
+                                                                  maxLines: 1,
+                                                                  overflow:
+                                                                      TextOverflow
+                                                                          .ellipsis,
+                                                                ),
+                                                              ),
+                                                              const SizedBox(
+                                                                width: 5,
+                                                              ),
+                                                              Text(
+                                                                '${_formatCurrency(p.amount)} ₪',
+                                                                style: TextStyle(
+                                                                  fontFamily:
+                                                                      'Cairo',
+                                                                  color:
+                                                                      successColor,
+                                                                  fontSize:
+                                                                      10.5,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .bold,
+                                                                ),
+                                                              ),
+                                                              const SizedBox(
+                                                                width: 3,
+                                                              ),
+                                                              InkWell(
+                                                                onTap: () async {
+                                                                  SpendoHaptics.light();
+                                                                  await _financeRepo
+                                                                      .deleteDebtRepayment(
+                                                                        paymentId:
+                                                                            p.id,
+                                                                        debtId:
+                                                                            d.id,
+                                                                      );
+                                                                  await refreshPersonData(
+                                                                    setDialogState,
+                                                                  );
+                                                                  _showToast(
+                                                                    'تم إلغاء الدفعة وإعادة احتساب المتبقي',
+                                                                  );
+                                                                },
+                                                                borderRadius:
+                                                                    BorderRadius.circular(
+                                                                      5,
+                                                                    ),
+                                                                child: Padding(
+                                                                  padding:
+                                                                      const EdgeInsets.all(
+                                                                        3,
+                                                                      ),
+                                                                  child: Icon(
+                                                                    Remix
+                                                                        .delete_bin_line,
+                                                                    size: 12.5,
+                                                                    color:
+                                                                        textMuted,
+                                                                  ),
+                                                                ),
+                                                              ),
+                                                            ],
+                                                          );
+                                                        },
+                                                      ),
+                                                    ],
+                                                  ],
+                                                ),
+                                              ),
+                                            ],
+
+                                            const SizedBox(height: 6),
+                                            Divider(
+                                              color: surfaceBorder.withValues(
+                                                alpha: 0.55,
+                                              ),
+                                              height: 1,
+                                            ),
+                                            const SizedBox(height: 5),
+
+                                            // شريط الإجراءات المباشرة لكل معاملة (سداد دفعة + واتساب + تعديل + حذف)
+                                            Row(
+                                              children: [
+                                                if (!isSettled && !isReceived)
+                                                  InkWell(
+                                                    onTap: () async {
+                                                      await _showRepaymentSheet(
+                                                        d,
+                                                      );
+                                                      if (dialogCtx.mounted) {
+                                                        await refreshPersonData(
+                                                          setDialogState,
+                                                        );
+                                                      }
+                                                    },
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                          7,
+                                                        ),
+                                                    child: Container(
+                                                      padding:
+                                                          const EdgeInsets.symmetric(
+                                                            horizontal: 8,
+                                                            vertical: 3.5,
+                                                          ),
+                                                      decoration: BoxDecoration(
+                                                        color: brandBlue,
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                              7,
+                                                            ),
+                                                      ),
+                                                      child: Row(
+                                                        mainAxisSize:
+                                                            MainAxisSize.min,
+                                                        children: [
+                                                          const Icon(
+                                                            Remix.cash_line,
+                                                            size: 13,
+                                                            color: Colors.white,
+                                                          ),
+                                                          const SizedBox(
+                                                            width: 4,
+                                                          ),
+                                                          Text(
+                                                            d.isPayLater
+                                                                ? 'تأكيد دفع'
+                                                                : 'سداد دفعة',
+                                                            style:
+                                                                const TextStyle(
+                                                                  fontFamily:
+                                                                      'Cairo',
+                                                                  color:
+                                                                      Colors
+                                                                          .white,
+                                                                  fontSize:
+                                                                      10.5,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .bold,
+                                                                ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                  ),
+                                                const Spacer(),
+                                                _buildCardAction(
+                                                  'واتساب',
+                                                  Remix.whatsapp_line,
+                                                  const Color(0xFF10B981),
+                                                  () => _shareDebtViaWhatsApp(
+                                                    d,
+                                                  ),
+                                                ),
+                                                const SizedBox(width: 4),
+                                                _buildCardAction(
+                                                  'تعديل',
+                                                  Remix.pencil_line,
+                                                  textMuted,
+                                                  () async {
+                                                    await _showEditDebtSheet(d);
+                                                    if (dialogCtx.mounted) {
+                                                      await refreshPersonData(
+                                                        setDialogState,
+                                                      );
+                                                    }
+                                                  },
+                                                ),
+                                                const SizedBox(width: 4),
+                                                _buildCardAction(
+                                                  'حذف',
+                                                  Remix.delete_bin_line,
+                                                  brandRed,
+                                                  () async {
+                                                    await _confirmDelete(d);
+                                                    if (dialogCtx.mounted) {
+                                                      await refreshPersonData(
+                                                        setDialogState,
+                                                      );
+                                                    }
+                                                  },
+                                                ),
+                                              ],
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ],
+                            ],
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 11),
+
+                      // 5. شريط الإجراءات السفلي الموحد (معاملة جديدة لهذا الشخص + إرسال كشف كامل واتساب)
+                      Row(
+                        children: [
+                          Expanded(
+                            child: InkWell(
+                              onTap: () async {
+                                await _showAddDebtSheet(personId);
+                                if (dialogCtx.mounted) {
+                                  await refreshPersonData(setDialogState);
+                                }
+                              },
+                              borderRadius: BorderRadius.circular(10),
+                              child: Container(
+                                height: 38,
+                                decoration: BoxDecoration(
+                                  color: brandBlue,
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                alignment: Alignment.center,
+                                child: const Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      Remix.add_line,
+                                      size: 16,
+                                      color: Colors.white,
+                                    ),
+                                    SizedBox(width: 5),
+                                    Text(
+                                      'معاملة جديدة',
+                                      style: TextStyle(
+                                        fontFamily: 'Cairo',
+                                        color: Colors.white,
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          InkWell(
+                            onTap:
+                                () => _sharePersonFullStatementViaWhatsApp(
+                                  person,
+                                  personDebts,
+                                  paymentsByDebt,
+                                ),
+                            borderRadius: BorderRadius.circular(10),
+                            child: Container(
+                              height: 38,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                              ),
+                              decoration: BoxDecoration(
+                                color: const Color(
+                                  0xFF10B981,
+                                ).withValues(alpha: _isDark ? 0.14 : 0.12),
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(
+                                  color: const Color(
+                                    0xFF10B981,
+                                  ).withValues(alpha: 0.45),
+                                ),
+                              ),
+                              alignment: Alignment.center,
+                              child: const Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    Remix.whatsapp_line,
+                                    size: 16,
+                                    color: Color(0xFF10B981),
+                                  ),
+                                  SizedBox(width: 5),
+                                  Text(
+                                    'كشف الحساب',
+                                    style: TextStyle(
+                                      fontFamily: 'Cairo',
+                                      color: Color(0xFF10B981),
+                                      fontSize: 11.5,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      },
+      transitionBuilder: (ctx, anim1, anim2, child) {
+        return ScaleTransition(
+          scale: CurvedAnimation(parent: anim1, curve: Curves.easeOutBack),
+          child: FadeTransition(opacity: anim1, child: child),
+        );
+      },
     );
   }
 

@@ -59,8 +59,10 @@ class WorkplacesRepository {
   /// to all work_logs belonging to this employer.
   Future<void> updateWorkplace(WorkplaceModel workplace) async {
     final db = await _dbHelper.database;
+    final now = DateTime.now();
+    final nowIso = now.toIso8601String();
     final workplaceToSave = workplace.copyWith(
-      updatedAt: DateTime.now(),
+      updatedAt: now,
     );
     await db.transaction((txn) async {
       final existingRows = await txn.query(
@@ -89,7 +91,8 @@ class WorkplacesRepository {
           SET workplace_id = ?,
               workplace_name = ?,
               rate_applied = ?,
-              total_earned = ? * COALESCE(day_fraction, 1.0)
+              total_earned = ? * COALESCE(day_fraction, 1.0),
+              updated_at = ?
           WHERE workplace_id = ?
              OR TRIM(workplace_name) = ?
              OR (? != '' AND TRIM(workplace_name) = ?)
@@ -99,6 +102,7 @@ class WorkplacesRepository {
             newName,
             workplace.dailyRate,
             workplace.dailyRate,
+            nowIso,
             workplace.id,
             newName,
             oldName,
@@ -110,7 +114,8 @@ class WorkplacesRepository {
           '''
           UPDATE work_logs
           SET workplace_id = ?,
-              workplace_name = ?
+              workplace_name = ?,
+              updated_at = ?
           WHERE workplace_id = ?
              OR TRIM(workplace_name) = ?
              OR (? != '' AND TRIM(workplace_name) = ?)
@@ -118,6 +123,7 @@ class WorkplacesRepository {
           [
             workplace.id,
             newName,
+            nowIso,
             workplace.id,
             newName,
             oldName,
@@ -127,7 +133,9 @@ class WorkplacesRepository {
       }
     });
     DatabaseHelper.notifyDataChanged();
-    FirebaseBackupService.instance.scheduleAutoBackup();
+    FirebaseBackupService.instance.scheduleAutoBackup(
+      debounce: const Duration(seconds: 1),
+    );
   }
 
   /// Atomically updates an employer's daily rate and cascades it across all historical and current work logs
@@ -173,6 +181,7 @@ class WorkplacesRepository {
         UPDATE work_logs
         SET rate_applied = ?,
             total_earned = ? * COALESCE(day_fraction, 1.0),
+            updated_at = ?,
             workplace_id = CASE WHEN (workplace_id IS NULL OR workplace_id = '') AND ? != '' THEN ? ELSE workplace_id END
         WHERE (? != '' AND workplace_id = ?)
            OR (? != '' AND TRIM(workplace_name) = ?)
@@ -180,6 +189,7 @@ class WorkplacesRepository {
         [
           newRate,
           newRate,
+          nowIso,
           cleanId,
           cleanId,
           cleanId,
@@ -191,7 +201,9 @@ class WorkplacesRepository {
     });
 
     DatabaseHelper.notifyDataChanged();
-    FirebaseBackupService.instance.scheduleAutoBackup();
+    FirebaseBackupService.instance.scheduleAutoBackup(
+      debounce: const Duration(seconds: 1),
+    );
   }
 
   /// Deletes a workplace by ID and optionally cascades to its work logs

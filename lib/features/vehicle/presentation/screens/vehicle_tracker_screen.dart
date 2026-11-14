@@ -1,7 +1,6 @@
 import 'package:sanad_app/core/widgets/banking_animations.dart';
 import 'package:sanad_app/core/theme/app_theme.dart';
 import 'package:sanad_app/core/theme/app_colors.dart';
-import 'dart:convert';
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
@@ -88,9 +87,9 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
     if (raw != null && raw.isNotEmpty) {
       try {
         final loadedState = VehicleDataState.fromJson(raw);
-        final rawCount = (jsonDecode(raw)['history'] as List?)?.length ?? 0;
-        if (loadedState.history.length < rawCount) {
-          await prefs.setString(_storageKey, loadedState.toJson());
+        final reencoded = loadedState.toJson();
+        if (reencoded != raw) {
+          await prefs.setString(_storageKey, reencoded);
         }
         if (mounted) {
           setState(() {
@@ -3458,21 +3457,33 @@ class _VehicleTrackerScreenState extends State<VehicleTrackerScreen> {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'التاريخ: ${ArabicDateHelper.formatArabicDateWithWeekday(record.date)}',
+                    'التاريخ: ${ArabicDateHelper.formatArabicDateWithWeekday(record.date)}${(record.date.hour > 0 || record.date.minute > 0) ? ' • ${record.date.hour.toString().padLeft(2, '0')}:${record.date.minute.toString().padLeft(2, '0')}' : ''}',
                     style: TextStyle(color: textMuted, fontSize: 10.5),
                   ),
                   if (record.provider != null &&
                       record.provider!.isNotEmpty) ...[
                     const SizedBox(height: 3),
                     Text(
-                      'المزود: ${record.provider}',
-                      style: TextStyle(color: textMuted, fontSize: 10.5),
+                      'المحطة / الفرع: ${record.provider}',
+                      style: TextStyle(
+                        color: textWhite,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 10.5,
+                      ),
                     ),
                   ],
                   if (record.liters != null) ...[
                     const SizedBox(height: 3),
                     Text(
-                      'اللترات: ${record.liters} لتر',
+                      'الكمية: ${record.liters} لتر${record.pricePerLiter != null ? ' • بسعر ${record.pricePerLiter} ₪/لتر' : ''}',
+                      style: TextStyle(color: textMuted, fontSize: 10.5),
+                    ),
+                  ],
+                  if (record.invoiceNumber != null &&
+                      record.invoiceNumber!.isNotEmpty) ...[
+                    const SizedBox(height: 3),
+                    Text(
+                      'رقم الفاتورة: #${record.invoiceNumber}',
                       style: TextStyle(color: textMuted, fontSize: 10.5),
                     ),
                   ],

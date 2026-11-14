@@ -1,5 +1,6 @@
 import 'package:sanad_app/core/theme/app_theme.dart';
 import 'package:sanad_app/core/theme/app_colors.dart';
+import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart' hide TextDirection;
@@ -30,7 +31,7 @@ class AddWorkLogSheet extends StatefulWidget {
   final PersonModel? preselectedPerson;
   final WorkplaceModel? preselectedWorkplace;
   final WorkLogModel? existingLog;
-  final Function(WorkLogModel) onSave;
+  final FutureOr<void> Function(WorkLogModel) onSave;
 
   const AddWorkLogSheet({
     super.key,
@@ -160,7 +161,14 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
       _allWorkplaces = sortedWorkplaces;
       _recentCities = citiesSet.toList();
 
-      if (_selectedWorkplace == null) {
+      if (_selectedWorkplace != null) {
+        final refreshed = _allWorkplaces
+            .where((w) => w.id == _selectedWorkplace!.id)
+            .firstOrNull;
+        if (refreshed != null) {
+          _selectedWorkplace = refreshed;
+        }
+      } else {
         if (widget.existingLog?.workplaceId != null) {
           final match =
               _allWorkplaces
@@ -804,7 +812,7 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
 
     if (_selectedWorkplace != null &&
         rate > 0 &&
-        rate != _selectedWorkplace!.dailyRate) {
+        (_overrideDailyRate != null || rate != _selectedWorkplace!.dailyRate)) {
       await _workplacesRepo.cascadeEmployerDailyRate(
         workplaceId: _selectedWorkplace!.id,
         workplaceName: _selectedWorkplace!.name,
@@ -812,7 +820,7 @@ class _AddWorkLogSheetState extends State<AddWorkLogSheet> {
       );
     }
 
-    widget.onSave(log);
+    await widget.onSave(log);
 
     if (mounted) {
       Navigator.pop(context, log);

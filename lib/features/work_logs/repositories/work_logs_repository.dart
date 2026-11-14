@@ -74,21 +74,49 @@ class WorkLogsRepository {
   Future<List<WorkLogModel>> getLogsForEmployer(String employerId) =>
       getLogsForWorkplace(employerId);
 
-  Future<void> addWorkLog(WorkLogModel log) async {
+  Future<void> addWorkLog(WorkLogModel log, {bool cascadeRate = false}) async {
     final db = await _dbHelper.database;
+    final now = DateTime.now();
+    final nowIso = now.toIso8601String();
     await db.transaction((txn) async {
-      await txn.insert('work_logs', log.toMap(), conflictAlgorithm: ConflictAlgorithm.replace);
+      final wpId = (log.workplaceId ?? '').trim();
+      final wpName = log.workplaceName.trim();
 
-      if (log.rateApplied > 0) {
-        final wpId = (log.workplaceId ?? '').trim();
-        final wpName = log.workplaceName.trim();
-        final nowIso = DateTime.now().toIso8601String();
+      double effectiveRate = log.rateApplied;
+      if (!cascadeRate && (wpId.isNotEmpty || wpName.isNotEmpty)) {
+        final wpRows = await txn.query(
+          'workplaces',
+          columns: ['daily_rate'],
+          where: wpId.isNotEmpty ? 'id = ?' : 'TRIM(name) = ?',
+          whereArgs: [wpId.isNotEmpty ? wpId : wpName],
+          limit: 1,
+        );
+        if (wpRows.isNotEmpty) {
+          final wpRate = (wpRows.first['daily_rate'] as num? ?? 0.0).toDouble();
+          if (wpRate > 0) {
+            effectiveRate = wpRate;
+          }
+        }
+      }
 
+      final logToSave = log.copyWith(
+        rateApplied: effectiveRate,
+        totalEarned: effectiveRate * log.dayFraction,
+        updatedAt: now,
+      );
+
+      await txn.insert(
+        'work_logs',
+        logToSave.toMap(),
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+
+      if (effectiveRate > 0 && (wpId.isNotEmpty || wpName.isNotEmpty)) {
         if (wpId.isNotEmpty) {
           await txn.update(
             'workplaces',
             {
-              'daily_rate': log.rateApplied,
+              'daily_rate': effectiveRate,
               'updated_at': nowIso,
             },
             where: 'id = ?',
@@ -99,7 +127,7 @@ class WorkLogsRepository {
           await txn.update(
             'workplaces',
             {
-              'daily_rate': log.rateApplied,
+              'daily_rate': effectiveRate,
               'updated_at': nowIso,
             },
             where: 'TRIM(name) = ?',
@@ -107,54 +135,80 @@ class WorkLogsRepository {
           );
         }
 
-        if (wpId.isNotEmpty || wpName.isNotEmpty) {
-          await txn.rawUpdate(
-            '''
-            UPDATE work_logs
-            SET rate_applied = ?,
-                total_earned = ? * COALESCE(day_fraction, 1.0),
-                workplace_id = CASE WHEN (workplace_id IS NULL OR workplace_id = '') AND ? != '' THEN ? ELSE workplace_id END
-            WHERE (? != '' AND workplace_id = ?)
-               OR (? != '' AND TRIM(workplace_name) = ?)
-            ''',
-            [
-              log.rateApplied,
-              log.rateApplied,
-              wpId,
-              wpId,
-              wpId,
-              wpId,
-              wpName,
-              wpName,
-            ],
-          );
-        }
+        await txn.rawUpdate(
+          '''
+          UPDATE work_logs
+          SET rate_applied = ?,
+              total_earned = ? * COALESCE(day_fraction, 1.0),
+              updated_at = ?,
+              workplace_id = CASE WHEN (workplace_id IS NULL OR workplace_id = '') AND ? != '' THEN ? ELSE workplace_id END
+          WHERE (? != '' AND workplace_id = ?)
+             OR (? != '' AND TRIM(workplace_name) = ?)
+          ''',
+          [
+            effectiveRate,
+            effectiveRate,
+            nowIso,
+            wpId,
+            wpId,
+            wpId,
+            wpId,
+            wpName,
+            wpName,
+          ],
+        );
       }
     });
     DatabaseHelper.notifyDataChanged();
-    FirebaseBackupService.instance.scheduleAutoBackup();
+    FirebaseBackupService.instance.scheduleAutoBackup(
+      debounce: const Duration(seconds: 1),
+    );
   }
 
-  Future<void> updateWorkLog(WorkLogModel log) async {
+  Future<void> updateWorkLog(WorkLogModel log, {bool cascadeRate = false}) async {
     final db = await _dbHelper.database;
+    final now = DateTime.now();
+    final nowIso = now.toIso8601String();
     await db.transaction((txn) async {
+      final wpId = (log.workplaceId ?? '').trim();
+      final wpName = log.workplaceName.trim();
+
+      double effectiveRate = log.rateApplied;
+      if (!cascadeRate && (wpId.isNotEmpty || wpName.isNotEmpty)) {
+        final wpRows = await txn.query(
+          'workplaces',
+          columns: ['daily_rate'],
+          where: wpId.isNotEmpty ? 'id = ?' : 'TRIM(name) = ?',
+          whereArgs: [wpId.isNotEmpty ? wpId : wpName],
+          limit: 1,
+        );
+        if (wpRows.isNotEmpty) {
+          final wpRate = (wpRows.first['daily_rate'] as num? ?? 0.0).toDouble();
+          if (wpRate > 0) {
+            effectiveRate = wpRate;
+          }
+        }
+      }
+
+      final logToSave = log.copyWith(
+        rateApplied: effectiveRate,
+        totalEarned: effectiveRate * log.dayFraction,
+        updatedAt: now,
+      );
+
       await txn.update(
         'work_logs',
-        log.toMap(),
+        logToSave.toMap(),
         where: 'id = ?',
         whereArgs: [log.id],
       );
 
-      if (log.rateApplied > 0) {
-        final wpId = (log.workplaceId ?? '').trim();
-        final wpName = log.workplaceName.trim();
-        final nowIso = DateTime.now().toIso8601String();
-
+      if (effectiveRate > 0 && (wpId.isNotEmpty || wpName.isNotEmpty)) {
         if (wpId.isNotEmpty) {
           await txn.update(
             'workplaces',
             {
-              'daily_rate': log.rateApplied,
+              'daily_rate': effectiveRate,
               'updated_at': nowIso,
             },
             where: 'id = ?',
@@ -165,7 +219,7 @@ class WorkLogsRepository {
           await txn.update(
             'workplaces',
             {
-              'daily_rate': log.rateApplied,
+              'daily_rate': effectiveRate,
               'updated_at': nowIso,
             },
             where: 'TRIM(name) = ?',
@@ -173,32 +227,34 @@ class WorkLogsRepository {
           );
         }
 
-        if (wpId.isNotEmpty || wpName.isNotEmpty) {
-          await txn.rawUpdate(
-            '''
-            UPDATE work_logs
-            SET rate_applied = ?,
-                total_earned = ? * COALESCE(day_fraction, 1.0),
-                workplace_id = CASE WHEN (workplace_id IS NULL OR workplace_id = '') AND ? != '' THEN ? ELSE workplace_id END
-            WHERE (? != '' AND workplace_id = ?)
-               OR (? != '' AND TRIM(workplace_name) = ?)
-            ''',
-            [
-              log.rateApplied,
-              log.rateApplied,
-              wpId,
-              wpId,
-              wpId,
-              wpId,
-              wpName,
-              wpName,
-            ],
-          );
-        }
+        await txn.rawUpdate(
+          '''
+          UPDATE work_logs
+          SET rate_applied = ?,
+              total_earned = ? * COALESCE(day_fraction, 1.0),
+              updated_at = ?,
+              workplace_id = CASE WHEN (workplace_id IS NULL OR workplace_id = '') AND ? != '' THEN ? ELSE workplace_id END
+          WHERE (? != '' AND workplace_id = ?)
+             OR (? != '' AND TRIM(workplace_name) = ?)
+          ''',
+          [
+            effectiveRate,
+            effectiveRate,
+            nowIso,
+            wpId,
+            wpId,
+            wpId,
+            wpId,
+            wpName,
+            wpName,
+          ],
+        );
       }
     });
     DatabaseHelper.notifyDataChanged();
-    FirebaseBackupService.instance.scheduleAutoBackup();
+    FirebaseBackupService.instance.scheduleAutoBackup(
+      debounce: const Duration(seconds: 1),
+    );
   }
 
   Future<void> updateWorkLogAmountCollected(String id, double amountCollected) async {
